@@ -63,57 +63,6 @@ namespace StringDiagrams
 
 universe u₀ u₁ u₂
 
-/-! ## Decidability of well-typedness -/
-
-section Decidable
-
-variable {S : Signature.{u₀, u₁, u₂}}
-
-instance Signature.decOk [DecidableEq S.Region] :
-    (r : S.Region) → (w : List S.Colour) → Decidable (S.ok r w)
-  | _, [] => isTrue trivial
-  | r, c :: w =>
-    have := Signature.decOk (S.colourTgt c) w
-    decidable_of_iff _ (Signature.ok_cons r c w).symm
-
-instance Obj.decEq [DecidableEq S.Region] [DecidableEq S.Colour] : DecidableEq (Obj S) :=
-  fun a b => decidable_of_iff (a.start = b.start ∧ a.word = b.word) Obj.ext_iff.symm
-
-instance Layer.decValid [DecidableEq S.Region] (L : Layer S) : Decidable L.Valid :=
-  decidable_of_iff
-    (S.ok L.start L.left ∧ S.endR L.start L.left = S.left L.gen ∧
-      S.ok (S.left L.gen) (S.dom L.gen) ∧ S.endR (S.left L.gen) (S.dom L.gen) = S.right L.gen ∧
-      S.ok (S.left L.gen) (S.cod L.gen) ∧ S.endR (S.left L.gen) (S.cod L.gen) = S.right L.gen ∧
-      S.ok (S.right L.gen) L.right)
-    ⟨fun ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇⟩ => ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇⟩,
-      fun ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇⟩ => ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇⟩⟩
-
-instance decChain [DecidableEq S.Region] [DecidableEq S.Colour] :
-    (a : Obj S) → (ls : List (Layer S)) → (b : Obj S) → Decidable (Chain a ls b)
-  | a, [], b => decidable_of_iff (a = b) (chain_nil a b).symm
-  | a, L :: ls, b =>
-    have := decChain L.cod ls b
-    decidable_of_iff _ (chain_cons a b L ls).symm
-
-instance Layer.decEq [DecidableEq S.Region] [DecidableEq S.Colour] [DecidableEq S.Gen] :
-    DecidableEq (Layer S) :=
-  fun L L' => decidable_of_iff
-    (L.start = L'.start ∧ L.left = L'.left ∧ L.gen = L'.gen ∧ L.right = L'.right)
-    Layer.ext_iff.symm
-
-/-- The top boundary of a layer list read from the bottom boundary `a`: the codomain of its
-last layer, or `a` if there are no layers. -/
-def Chain.target (a : Obj S) : List (Layer S) → Obj S
-  | [] => a
-  | L :: ls => Chain.target L.cod ls
-
-theorem Chain.target_eq {a b : Obj S} {ls : List (Layer S)} (h : Chain a ls b) :
-    Chain.target a ls = b := by
-  induction ls generalizing a with
-  | nil => exact h
-  | cons L ls ih => exact ih h.2.2
-
-end Decidable
 
 /-! ## Names -/
 

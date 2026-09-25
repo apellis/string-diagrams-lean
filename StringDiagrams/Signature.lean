@@ -223,4 +223,37 @@ theorem Valid.whisker {L : Layer S} (h : L.Valid) {u : Obj S} {v : List S.Colour
 
 end Layer
 
+/-! ## Decidability of well-formedness -/
+
+section Decidable
+
+variable {S : Signature.{u₀, u₁, u₂}}
+
+instance Signature.decOk [DecidableEq S.Region] :
+    (r : S.Region) → (w : List S.Colour) → Decidable (S.ok r w)
+  | _, [] => isTrue trivial
+  | r, c :: w =>
+    have := Signature.decOk (S.colourTgt c) w
+    decidable_of_iff _ (Signature.ok_cons r c w).symm
+
+instance Obj.decEq [DecidableEq S.Region] [DecidableEq S.Colour] : DecidableEq (Obj S) :=
+  fun a b => decidable_of_iff (a.start = b.start ∧ a.word = b.word) Obj.ext_iff.symm
+
+instance Layer.decValid [DecidableEq S.Region] (L : Layer S) : Decidable L.Valid :=
+  decidable_of_iff
+    (S.ok L.start L.left ∧ S.endR L.start L.left = S.left L.gen ∧
+      S.ok (S.left L.gen) (S.dom L.gen) ∧ S.endR (S.left L.gen) (S.dom L.gen) = S.right L.gen ∧
+      S.ok (S.left L.gen) (S.cod L.gen) ∧ S.endR (S.left L.gen) (S.cod L.gen) = S.right L.gen ∧
+      S.ok (S.right L.gen) L.right)
+    ⟨fun ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇⟩ => ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇⟩,
+      fun ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇⟩ => ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇⟩⟩
+
+instance Layer.decEq [DecidableEq S.Region] [DecidableEq S.Colour] [DecidableEq S.Gen] :
+    DecidableEq (Layer S) :=
+  fun L L' => decidable_of_iff
+    (L.start = L'.start ∧ L.left = L'.left ∧ L.gen = L'.gen ∧ L.right = L'.right)
+    Layer.ext_iff.symm
+
+end Decidable
+
 end StringDiagrams

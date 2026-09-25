@@ -82,6 +82,31 @@ theorem Chain.whisker {a b : Obj S} {ls : List (Layer S)} (h : Chain a ls b)
     have hw' : L.cod.WhiskerOK u v := Chain.whiskerOK (ls := [L]) ⟨hv, rfl, rfl⟩ hw
     exact ⟨hv.whisker hw, rfl, ih hc hw'⟩
 
+/-! ## Decidability of well-typedness -/
+
+section Decidable
+
+instance decChain [DecidableEq S.Region] [DecidableEq S.Colour] :
+    (a : Obj S) → (ls : List (Layer S)) → (b : Obj S) → Decidable (Chain a ls b)
+  | a, [], b => decidable_of_iff (a = b) (chain_nil a b).symm
+  | a, L :: ls, b =>
+    have := decChain L.cod ls b
+    decidable_of_iff _ (chain_cons a b L ls).symm
+
+/-- The top boundary of a layer list read from the bottom boundary `a`: the codomain of its
+last layer, or `a` if there are no layers. -/
+def Chain.target (a : Obj S) : List (Layer S) → Obj S
+  | [] => a
+  | L :: ls => Chain.target L.cod ls
+
+theorem Chain.target_eq {a b : Obj S} {ls : List (Layer S)} (h : Chain a ls b) :
+    Chain.target a ls = b := by
+  induction ls generalizing a with
+  | nil => exact h
+  | cons L ls ih => exact ih h.2.2
+
+end Decidable
+
 /-- A diagram from `a` to `b` in the free 2-category: a well-typed list of layers. -/
 def Diagram (a b : Obj S) : Type (max u₀ u₁ u₂) := {ls : List (Layer S) // Chain a ls b}
 
