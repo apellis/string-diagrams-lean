@@ -322,6 +322,53 @@ instance : Linear R (CategoryTheory.Quotient P.homRel) := CategoryTheory.Quotien
 /-- The object of the presented category given by an object of the free 2-category. -/
 def obj (a : Obj S) : P.Presented := ⟨Free.of R a⟩
 
+/-! ### Instance shortcuts for endomorphism rings
+
+Algebraic instance search on `End X` otherwise explores many unrelated instances on hom types;
+these high-priority shortcuts make it immediate. They are all definitionally the instances
+inferred from the linear structure. -/
+
+section EndShortcuts
+
+variable (a : Obj S)
+
+instance (priority := high) instEndZero : Zero (End (P.obj a)) := inferInstance
+instance (priority := high) instEndOne : One (End (P.obj a)) := inferInstance
+instance (priority := high) instEndAdd : Add (End (P.obj a)) := inferInstance
+instance (priority := high) instEndMul : Mul (End (P.obj a)) := inferInstance
+instance (priority := high) instEndNeg : Neg (End (P.obj a)) := inferInstance
+instance (priority := high) instEndSub : Sub (End (P.obj a)) := inferInstance
+instance (priority := high) instEndAddZeroClass : AddZeroClass (End (P.obj a)) := inferInstance
+instance (priority := high) instEndMulZeroClass : MulZeroClass (End (P.obj a)) := inferInstance
+instance (priority := high) instEndMulOneClass : MulOneClass (End (P.obj a)) := inferInstance
+instance (priority := high) instEndAddCommMagma : AddCommMagma (End (P.obj a)) := inferInstance
+instance (priority := high) instEndDistrib : Distrib (End (P.obj a)) := inferInstance
+instance (priority := high) instEndAddSemigroup : AddSemigroup (End (P.obj a)) := inferInstance
+instance (priority := high) instEndSemigroup : Semigroup (End (P.obj a)) := inferInstance
+instance (priority := high) instEndAddMonoid : AddMonoid (End (P.obj a)) := inferInstance
+instance (priority := high) instEndMonoid : Monoid (End (P.obj a)) := inferInstance
+instance (priority := high) instEndAddCommMonoid : AddCommMonoid (End (P.obj a)) := inferInstance
+instance (priority := high) instEndAddGroup : AddGroup (End (P.obj a)) := inferInstance
+instance (priority := high) instEndSubNegMonoid : SubNegMonoid (End (P.obj a)) := inferInstance
+instance (priority := high) instEndAddCommGroup : AddCommGroup (End (P.obj a)) := inferInstance
+instance (priority := high) instEndNonUnitalNonAssocSemiring : NonUnitalNonAssocSemiring (End (P.obj a)) := inferInstance
+instance (priority := high) instEndNonAssocSemiring : NonAssocSemiring (End (P.obj a)) := inferInstance
+instance (priority := high) instEndSemiring : Semiring (End (P.obj a)) := inferInstance
+instance (priority := high) instEndNonUnitalNonAssocRing : NonUnitalNonAssocRing (End (P.obj a)) := inferInstance
+instance (priority := high) instEndNonAssocRing : NonAssocRing (End (P.obj a)) := inferInstance
+instance (priority := high) instEndRing : Ring (End (P.obj a)) := inferInstance
+instance (priority := high) instEndMonoidWithZero : MonoidWithZero (End (P.obj a)) := inferInstance
+instance (priority := high) instEndSubtractionMonoid : SubtractionMonoid (End (P.obj a)) := inferInstance
+instance (priority := high) instEndNegZeroClass : NegZeroClass (End (P.obj a)) := inferInstance
+instance (priority := high) instEndHasDistribNeg : HasDistribNeg (End (P.obj a)) := inferInstance
+instance (priority := high) instEndAddGroupWithOne : AddGroupWithOne (End (P.obj a)) := inferInstance
+instance (priority := high) instEndAddMonoidWithOne : AddMonoidWithOne (End (P.obj a)) := inferInstance
+instance (priority := high) instEndSMul : SMul R (End (P.obj a)) := inferInstance
+instance (priority := high) instEndModule : Module R (End (P.obj a)) := inferInstance
+instance (priority := high) instEndAlgebra : Algebra R (End (P.obj a)) := inferInstance
+
+end EndShortcuts
+
 /-- The quotient functor from linear combinations of diagrams. -/
 def linFunctor : Free R (Obj S) ⥤ P.Presented := CategoryTheory.Quotient.functor P.homRel
 
