@@ -1,5 +1,6 @@
 import StringDiagrams.Examples.NilHecke.Relations
 import StringDiagrams.Examples.NilHecke.DividedDifference
+import StringDiagrams.Examples.NilHecke.Dots
 
 /-!
 # The longest element of the nilHecke algebra
@@ -55,6 +56,11 @@ These apply both to the crossings `ψ R n` (`ψw₀`) and to the divided differe
   divided differences along the same reduced word.
 * `idempotent_of_slide`: under the same hypothesis and `d 1 = 1`,
   `e_m = d (x^δ) * ψw₀ R n m` satisfies `e_m * e_m = e_m`.
+* `ψw₀_mul_dots_mul_ψw₀`: the case `d = dots R n` (the polynomial slide `ψ_mul_dots`):
+  `ψw₀ * dots f * ψw₀ = dots (∂_{w₀} f) * ψw₀`, for all `n`, `m`, `f`.
+* `klIdempotent R n m = dots R n (x^δ) * ψw₀ R n m` and `klIdempotent_mul_self`:
+  the paper's `x_1^{m-1} x_2^{m-2} ⋯ x_{m-1} ∂_{w₀}` (dots on the first `m` of `n` strands,
+  above the crossings) is an idempotent, over any commutative ring `R`, for all `m ≤ n`.
 
 Independence of the reduced word is proved only for the two words above (which is what the
 idempotence argument uses), not for arbitrary reduced words. Only idempotence is proved here; that `e_m ≠ 0` for `m ≤ n` (which needs a faithful
@@ -479,6 +485,44 @@ theorem idempotent_of_slide {m : ℕ}
       rw [ψw₀_mul_mul_ψw₀_of_slide d hd, divDiffW₀_xδ, h1, one_mul]
 
 end Slide
+
+/-! ## The idempotent `e_m` -/
+
+section Dots
+
+/-- `ψ_{w₀} f ψ_{w₀} = (∂_{w₀} f) ψ_{w₀}` for every polynomial `f` in the dots, where `ψ_{w₀}`
+and `∂_{w₀}` are taken along the same reduced word. It holds for all `n` and `m`; it has content
+for `m ≤ n` (for `m > n`, `m ≥ 2`, both sides vanish). -/
+theorem ψw₀_mul_dots_mul_ψw₀ (n m : ℕ) (f : MvPolynomial ℕ R) :
+    ψw₀ R n m * dots R n f * ψw₀ R n m = dots R n (divDiffW₀ R m f) * ψw₀ R n m := by
+  by_cases h : m ≤ n ∨ m ≤ 1
+  · exact ψw₀_mul_mul_ψw₀_of_slide (dots R n)
+      (fun i f hi => ψ_mul_dots R (by omega) f) f
+  · rw [ψw₀_of_lt R (by omega) (by omega), mul_zero, mul_zero]
+
+variable (R) in
+/-- The element `e_m = x^δ ψ_{w₀} = x_0^{m-1} x_1^{m-2} ⋯ x_{m-2} ψ_{w₀}` of `End (NH.obj R n)`,
+the dots acting on the first `m` of the `n` strands. In the paper's `1`-based notation this is
+`x_1^{m-1} x_2^{m-2} ⋯ x_{m-1} ∂_{w₀}` (KL I, §2.2 Example 3, p. 11), with the dots above
+(applied after) the crossings. -/
+def klIdempotent (n m : ℕ) : End (NH.obj R n) := dots R n (xδ R m) * ψw₀ R n m
+
+/-- KL I, §2.2 Example 3, p. 11: `e_m = x_1^{m-1} ⋯ x_{m-1} ∂_{w₀}` is an idempotent. Here in
+`End (NH.obj R n)` over any commutative ring `R`, for all `m ≤ n` (the statement is stated, and
+true, for all `m`; for `m > n` with `m ≥ 2` the element is `0`). Non-vanishing of `e_m` is not
+proved here. -/
+theorem klIdempotent_mul_self (n m : ℕ) :
+    klIdempotent R n m * klIdempotent R n m = klIdempotent R n m := by
+  calc klIdempotent R n m * klIdempotent R n m
+      = dots R n (xδ R m) * (ψw₀ R n m * dots R n (xδ R m) * ψw₀ R n m) := by
+        simp only [klIdempotent, mul_assoc]
+    _ = klIdempotent R n m := by
+      rw [ψw₀_mul_dots_mul_ψw₀, divDiffW₀_xδ, map_one, one_mul, klIdempotent]
+
+theorem klIdempotent_isIdempotentElem (n m : ℕ) : IsIdempotentElem (klIdempotent R n m) :=
+  klIdempotent_mul_self n m
+
+end Dots
 
 end StringDiagrams.NilHecke
 
