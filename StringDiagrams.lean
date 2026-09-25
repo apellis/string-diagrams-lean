@@ -1,6 +1,7 @@
 import StringDiagrams.Signature
 import StringDiagrams.Syntax
 import StringDiagrams.Presentation
+import StringDiagrams.DSL.Basic
 
 /-!
 # StringDiagrams
