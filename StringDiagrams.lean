@@ -3,6 +3,7 @@ import StringDiagrams.Syntax
 import StringDiagrams.Presentation
 import StringDiagrams.Interpretation
 import StringDiagrams.Whisker
+import StringDiagrams.Generation
 import StringDiagrams.Examples.Exterior
 import StringDiagrams.Examples.NilHecke.DividedDifference
 import StringDiagrams.Examples.NilHecke.Basic
