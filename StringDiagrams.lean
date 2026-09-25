@@ -6,6 +6,7 @@ import StringDiagrams.Whisker
 import StringDiagrams.Generation
 import StringDiagrams.Interchange
 import StringDiagrams.Grading
+import StringDiagrams.Monoidal
 import StringDiagrams.DSL.Basic
 import StringDiagrams.Render.SVG
 import StringDiagrams.Render.TikZ
@@ -21,6 +22,8 @@ import StringDiagrams.Examples.NilHecke.LongestElement
 import StringDiagrams.Tactic.WordRw
 import StringDiagrams.Examples.Grading
 import StringDiagrams.Examples.NilHecke.PolyRep
+import StringDiagrams.Examples.TemperleyLiebMonoidal
+import StringDiagrams.Examples.NilHecke.Monoidal
 
 /-!
 # StringDiagrams

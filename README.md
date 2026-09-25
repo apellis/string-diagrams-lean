@@ -15,6 +15,7 @@ A Lean 4 library for diagrammatic reasoning: typed diagram syntax, presentations
 | `StringDiagrams.Whisker` | Whiskering `u ⊗ f ⊗ v` on the presented category (`Presentation.whisk`), linear and functorial. |
 | `StringDiagrams.Interchange` | The interchange law for arbitrary diagrams in monoidal signatures: `(f ⊗ 1) ≫ (1 ⊗ g) = (-1)^{|f||g|} (1 ⊗ g) ≫ (f ⊗ 1)` (`Presentation.diag_interchange_diagrams`), derived from the single-generator instances. |
 | `StringDiagrams.Grading` | Gradings `deg : S.Gen → A`: degrees of diagrams; for homogeneous presentations the tensor ideal is homogeneous (`homogeneousComponent_mem_ideal`) and Hom-spaces decompose as internal direct sums `P.homDeg deg a b d` (`isInternal_homDeg`); endomorphism algebras are graded algebras (`gradedAlgebra`). Examples: nilHecke (dot 2, crossing −2), Temperley–Lieb (cup `t`, cap `−t`). |
+| `StringDiagrams.Monoidal` | For even monoidal signatures (`Signature.IsEven`), `P.Presented` is a strict monoidal `R`-linear category (Mathlib `MonoidalCategory`, `MonoidalLinear`): `P.obj a ⊗ P.obj b = P.obj (a.tensor b)`, associators and unitors are `eqToIso`, `diag_whiskerRight`/`diag_whiskerLeft`. Examples: nilHecke (`x R 1 0 ▷ NH.obj R 1 = x R 2 0`), Temperley–Lieb (one strand is self-dual: `ExactPairing` from cup and cap, `η ≫ ε = δ`). |
 | `StringDiagrams.Generation` | Induction principles: morphisms are linear combinations of diagrams, diagrams are composites of layers (`Presentation.hom_induction_layers`). |
 
 ### Example: odd dots

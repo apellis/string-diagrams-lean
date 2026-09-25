@@ -21,7 +21,7 @@ this never happens.
   `LinDiagram.whisk_comp` (functoriality, unconditional).
 * `Presentation.whisk_mem_ideal`: the tensor ideal is closed under whiskering.
 * `Presentation.whisk` with `whisk_lin`, `whisk_diag`, `whisk_comp`, `whisk_id`,
-  `whisk_add`, `whisk_smul`, `whisk_whisk`.
+  `whisk_add`, `whisk_smul`.
 -/
 
 noncomputable section
