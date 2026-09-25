@@ -32,6 +32,7 @@ Source: M. Khovanov, A. D. Lauda, *A diagrammatic approach to categorification o
 | --- | --- |
 | `StringDiagrams.Examples.NilHecke.DividedDifference` | Divided difference operators `divDiff i` on `MvPolynomial ℕ R` over any commutative ring, defined without division; all nilHecke relations for `divDiff` and multiplication by variables (`divDiff_divDiff`, `divDiff_braid`, `mulX_divDiff_sub`, `divDiff_mulX_sub`, `divDiff_comm`, `mulX_divDiff_comm`, `mulX_comm`). |
 | `StringDiagrams.Examples.NilHecke.Basic` | The nilHecke presentation `NilHecke.pres R` (dot, crossing; relations (2.17)–(2.19) and the dot slides) and the dots `x R n i`, crossings `ψ R n i` in `End` of `n` strands. |
+| `StringDiagrams.Examples.NilHecke.Dots` | Polynomials on the strands, `dots R n : MvPolynomial ℕ R →ₐ[R] End`, and the polynomial slide for all widths, positions and polynomials: `ψ_mul_dots` (`ψ_i f = (s_i f) ψ_i + ∂_i f`), `dots_mul_ψ`, `ψ_mul_dots_mul_ψ` (`ψ_i f ψ_i = (∂_i f) ψ_i`). |
 | `StringDiagrams.Examples.NilHecke.Relations` | The nilHecke relations for every width `n` and position `i`: `ψ_mul_ψ`, `ψ_braid`, `x_mul_ψ_sub_ψ_mul_x`, `ψ_mul_x_sub_x_mul_ψ`, `x_mul_x_comm`, `x_mul_ψ_comm`, `ψ_mul_ψ_comm`. |
 
 All results are free of `sorry`; the headline declarations depend only on the axioms `propext`, `Classical.choice`, and `Quot.sound`.
@@ -46,6 +47,10 @@ pinned.
 lake exe cache get
 lake build
 ```
+
+## Tactics
+
+`StringDiagrams.Tactic.WordRw` (generic, for any ring): `word_rw [e₁, ← e₂]` rewrites with equations between words of generators modulo associativity, inside linear combinations, with side conditions discharged by `omega` (configurable); `word_comm [c₁, …]` decides equality of linear combinations of words modulo given (conditional) commutations, via normal forms in partially commutative monoids.
 
 ## Notation and drawings
 

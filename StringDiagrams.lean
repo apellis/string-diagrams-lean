@@ -13,7 +13,9 @@ import StringDiagrams.Examples.TemperleyLieb
 import StringDiagrams.Examples.NilHecke.DividedDifference
 import StringDiagrams.Examples.NilHecke.Basic
 import StringDiagrams.Examples.NilHecke.Relations
+import StringDiagrams.Examples.NilHecke.Dots
 import StringDiagrams.Examples.NilHecke.LongestElement
+import StringDiagrams.Tactic.WordRw
 
 /-!
 # StringDiagrams

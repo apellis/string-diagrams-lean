@@ -12,6 +12,11 @@ determined by its list of layers (`Diagram.ext`) and changing the type along an 
 of objects never changes the underlying data (`Diagram.layers_eqToHom`). This is what makes
 diagrams of symbolic width (for example `n` strands with `n` a variable) convenient.
 
+Objects are not required to be well formed: `Chain a [] b` is just `a = b`, so every object,
+including a word whose regions do not match up, has an identity. Only layers are checked
+(`Layer.Valid`), so no diagram with at least one layer has an ill-formed boundary, and no
+relation is ever applied at an ill-formed object; identities of ill-formed objects are inert.
+
 No relations are imposed here, not even the interchange law; interchange is imposed
 together with the defining relations of a presentation (see
 `StringDiagrams.Presentation`), where the Koszul sign of a super interchange law can be
