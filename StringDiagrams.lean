@@ -30,6 +30,7 @@ import StringDiagrams.Examples.NilHecke.PolyRep
 import StringDiagrams.Examples.TemperleyLiebMonoidal
 import StringDiagrams.Examples.NilHecke.Monoidal
 import StringDiagrams.Examples.WeightedBubbles
+import StringDiagrams.Biadjunction.Basic
 
 /-!
 # StringDiagrams
