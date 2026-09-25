@@ -10,6 +10,7 @@ import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
 import StringDiagrams.Bicategory
+import StringDiagrams.LocalInterpretation
 import StringDiagrams.DSL.Basic
 import StringDiagrams.Render.SVG
 import StringDiagrams.Render.TikZ

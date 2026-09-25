@@ -1,5 +1,6 @@
 import StringDiagrams.Examples.TemperleyLieb
 import Mathlib.Data.Fintype.BigOperators
+import StringDiagrams.LocalInterpretation
 
 /-!
 # The two-dimensional representation of the Temperley–Lieb category
@@ -329,36 +330,54 @@ theorem ext_apply_of_length {n : ℕ} (f : Word n → R) {w : List (Fin 2)} (h :
 @[simp] theorem ext_apply_word {n : ℕ} (f : Word n → R) (w : Word n) : ext R n f w.1 = f w :=
   dif_pos w.2
 
+/-- Restriction of a function on words of all lengths to words of length `n`. -/
+def res (n : ℕ) : Fn R →ₗ[R] (Word n → R) where
+  toFun F w := F w.1
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+
+@[simp] theorem res_apply (n : ℕ) (F : Fn R) (w : Word n) : res R n F w = F w.1 := rfl
+
 /-- The restriction of an operator on `Fn R` to words of lengths `n` (source) and `m`
 (target). -/
-def restrict (n m : ℕ) (T : Fn R →ₗ[R] Fn R) : (Word n → R) →ₗ[R] (Word m → R) where
-  toFun f w := T (ext R n f) w.1
-  map_add' f g := by funext w; simp
-  map_smul' r f := by funext w; simp
+def restrict (n m : ℕ) (T : Fn R →ₗ[R] Fn R) : (Word n → R) →ₗ[R] (Word m → R) :=
+  res R m ∘ₗ T ∘ₗ ext R n
 
 @[simp] theorem restrict_apply (n m : ℕ) (T : Fn R →ₗ[R] Fn R) (f : Word n → R) (w : Word m) :
     restrict R n m T f w = T (ext R n f) w.1 := rfl
 
+/-- The representation as an interpretation by local operators on `Fn R`: `n` strands go to
+`Word n → R`, included by extension by zero and projected by restriction; locality of the
+layer operators is `op_agree`. -/
+def loc : LocalInterpretation sig R (Fn R) (fun n => Word n → R) where
+  κ a := a.word.length
+  ext := ext R
+  res := res R
+  op := op R
+  res_comp_ext _ := LinearMap.ext fun f => funext fun w => ext_apply_word R f w
+  res_op_ext_res L _ := LinearMap.ext fun _ => funext fun w =>
+    op_agree L (fun _ hw => ext_apply_of_length R _ hw) w.1 w.2
+
+@[simp] theorem loc_κ (a : Obj sig) : (loc R).κ a = a.word.length := rfl
+@[simp] theorem loc_ext (n : ℕ) : (loc R).ext n = ext R n := rfl
+@[simp] theorem loc_res (n : ℕ) : (loc R).res n = res R n := rfl
+@[simp] theorem loc_op (L : Layer sig) : (loc R).op L = op R L := rfl
+
+theorem loc_opList (ls : List (Layer sig)) : (loc R).opList ls = evalLayers R ls := by
+  induction ls with
+  | nil => rfl
+  | cons L ls ih => rw [LocalInterpretation.opList_cons, ih]; rfl
+
 /-- The interpretation: `n` strands go to `Word n → R`, a model of `(R²)^{⊗n}`, and a layer
 goes to the restriction of its operator. -/
-def interp : Interpretation sig (ModuleCat R) where
-  obj a := ModuleCat.of R (Word a.word.length → R)
-  layer L _ := ModuleCat.ofHom (restrict R _ _ (op R L))
+def interp : Interpretation sig (ModuleCat R) := (loc R).interp
 
 theorem mapChain_apply {a b : Obj sig} (ls : List (Layer sig)) (h : Chain a ls b)
     (f : Word a.word.length → R) (w : Word b.word.length) :
     ((interp R).mapChain a ls b h).hom f w = evalLayers R ls (ext R _ f) w.1 := by
-  induction ls generalizing a with
-  | nil =>
-    cases h
-    simp [Interpretation.mapChain]
-  | cons L ls ih =>
-    obtain ⟨hv, rfl, hc⟩ := h
-    simp only [Interpretation.mapChain, eqToHom_refl, Category.id_comp, ModuleCat.hom_comp,
-      LinearMap.comp_apply, ih, evalLayers_cons]
-    refine evalLayers_agree hc (fun v hv => ?_) _ w.2
-    rw [ext_apply_of_length R _ hv]
-    rfl
+  show ((loc R).interp.mapChain a ls b h).hom f w = _
+  rw [(loc R).interp_mapChain_hom, loc_opList]
+  rfl
 
 /-- The functor of the interpretation on a diagram: the composite of the layer operators,
 evaluated on words of the target length. -/
@@ -443,62 +462,37 @@ theorem cup_cap_op {p k : ℕ} (F : Fn R) {w : List (Fin 2)} (h : p + 2 + k ≤ 
 
 variable (R)
 
+open LocalInterpretation in
 /-- The interpretation respects the relations of `pres R (-2)` (at every position) and every
 instance of the interchange law. -/
-theorem respects : (pres R (-2)).Respects (interp R).functor where
-  rel r u v hw := by
-    cases r <;>
-    simp only [pres, relation, LinDiagram.whisker_sub, LinDiagram.whisker_smul,
-      LinDiagram.whisker_of, Functor.map_sub, Functor.map_smul, freeLift_map_of, sub_eq_zero] <;>
-    apply ModuleCat.hom_ext <;>
-    refine LinearMap.ext fun f => ?_
-    · rw [ModuleCat.hom_smul, LinearMap.smul_apply, ← map_smul]
-      funext w
-      have hl : w.1.length = u.word.length + v.length :=
-        w.2.trans (by simp [Free.of, Obj.whisker, strands, Rel.width])
-      rw [map_apply, map_apply, map_smul]
-      simp only [Diagram.layers_whisker, Diagram.layers_comp, Diagram.layers_layer, dcup, dcap,
-        lay, List.map_cons, List.map_nil, List.cons_append, List.nil_append, evalLayers_cons,
-        evalLayers_nil, LinearMap.comp_apply, LinearMap.id_apply, Layer.whisker, op_cup, op_cap,
-        List.length_append, List.length_replicate, add_zero]
-      erw [Diagram.layers_id]
-      rw [List.map_nil, evalLayers_nil, LinearMap.id_apply, loop_op _ (by omega)]
-      rfl
-    all_goals
-      funext w
-      have hl : w.1.length = u.word.length + 1 + v.length :=
-        w.2.trans (by simp [Free.of, Obj.whisker, strands, Rel.width]; omega)
-      rw [map_apply, map_apply]
-      simp only [Diagram.layers_whisker, Diagram.layers_comp, Diagram.layers_layer, dcup, dcap,
-        lay, List.map_cons, List.map_nil, List.cons_append, List.nil_append, evalLayers_cons,
-        evalLayers_nil, LinearMap.comp_apply, LinearMap.id_apply, Layer.whisker, op_cup, op_cap,
-        List.length_append, List.length_replicate, add_zero]
-      erw [Diagram.layers_id]
-      rw [List.map_nil, evalLayers_nil, LinearMap.id_apply]
+theorem respects : (pres R (-2)).Respects (interp R).functor := by
+  refine (loc R).respects_of _ (fun r u v _ => ?_)
+    fun x hx u v _ => (loc R).evalW_interchange_eq_zero (fun s l m r g g' => ?_) x hx u v
+  · cases r <;> simp only [pres, relation, evalW_sub, evalW_smul, evalW_of, sub_eq_zero] <;>
+    refine LinearMap.ext fun f => funext fun w => ?_ <;>
+    have hl := w.2 <;>
+    simp only [loc_κ, Obj.whisker_word, List.length_append, pres, strands, Rel.width,
+      List.length_replicate, add_zero] at hl <;>
+    simp only [Diagram.layers_comp, Diagram.layers_layer, Diagram.layers_id, dcup, dcap, lay,
+      List.map_cons, List.map_nil, List.cons_append, List.nil_append, opList_cons, opList_nil,
+      LinearMap.id_comp, LinearMap.smul_apply, LinearMap.comp_apply, LinearMap.id_apply,
+      Pi.smul_apply, loc_res, res_apply, loc_op, loc_ext, Layer.whisker, op_cup, op_cap,
+      List.length_append, List.length_replicate, add_zero, smul_eq_mul]
+    · exact loop_op _ (by omega)
     · exact zigzagA_op _ (by omega)
     · exact zigzagB_op _ (by omega)
-  interchange x hx u v hw := by
-    have hs : ((x.sign : ℤ) : R) = 1 := by simp [InterchangeData.sign, sig]
-    simp only [InterchangeData.rel, LinDiagram.whisker_sub, LinDiagram.whisker_smul,
-      LinDiagram.whisker_of, Functor.map_sub, Functor.map_smul, freeLift_map_of, hs, one_smul,
-      sub_eq_zero]
-    apply ModuleCat.hom_ext
+  · have hs : (((⟨s, g, m, g'⟩ : InterchangeData sig).sign : ℤ) : R) = 1 := by
+      simp [InterchangeData.sign, sig]
+    rw [hs, one_smul]
     refine LinearMap.ext fun f => funext fun w => ?_
-    rw [map_apply, map_apply]
-    obtain ⟨s, g, mid, h⟩ := x
     have hl := w.2
-    simp only [Free.of, InterchangeData.cod, Obj.whisker] at hl
-    cases g <;> cases h <;>
-    simp only [sig_dom_cup, sig_cod_cup, sig_dom_cap, sig_cod_cap, List.length_append,
+    cases g <;> cases g' <;>
+    simp only [loc_κ, List.length_append, sig_dom_cup, sig_cod_cup, sig_dom_cap, sig_cod_cap,
       List.length_nil, List.length_cons] at hl <;>
-    simp only [InterchangeData.ghDiagram, InterchangeData.hgDiagram, Diagram.layers_mk,
-      Diagram.layers_whisker, InterchangeData.gh₁, InterchangeData.gh₂, InterchangeData.hg₁,
-      InterchangeData.hg₂, List.map_cons, List.map_nil, evalLayers_cons, evalLayers_nil,
-      LinearMap.comp_apply, LinearMap.id_apply, Layer.whisker, sig_dom_cup, sig_cod_cup,
-      sig_dom_cap, sig_cod_cap, op_cup, op_cap,
-      List.length_append, List.length_nil, List.length_cons, List.nil_append, List.append_nil]
-    all_goals rw [show u.word.length + (0 + 1 + 1 + mid.length) = u.word.length + 2 + mid.length by
-      omega]
+    simp only [LinearMap.comp_apply, loc_res, res_apply, loc_op, loc_ext, op_cup, op_cap,
+      List.length_append, sig_dom_cup, sig_cod_cup, sig_dom_cap, sig_cod_cap, List.length_nil,
+      List.length_cons, List.nil_append]
+    all_goals rw [show l.length + (0 + 1 + 1 + m.length) = l.length + 2 + m.length by omega]
     · exact cup_cup_op _ (by omega)
     · exact cup_cap_op _ (by omega)
     · exact cap_cup_op _ (by omega)
