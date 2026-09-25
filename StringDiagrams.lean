@@ -5,6 +5,7 @@ import StringDiagrams.Interpretation
 import StringDiagrams.Whisker
 import StringDiagrams.Generation
 import StringDiagrams.Interchange
+import StringDiagrams.Grading
 import StringDiagrams.DSL.Basic
 import StringDiagrams.Render.SVG
 import StringDiagrams.Render.TikZ
@@ -16,6 +17,7 @@ import StringDiagrams.Examples.NilHecke.Relations
 import StringDiagrams.Examples.NilHecke.Dots
 import StringDiagrams.Examples.NilHecke.LongestElement
 import StringDiagrams.Tactic.WordRw
+import StringDiagrams.Examples.Grading
 
 /-!
 # StringDiagrams
