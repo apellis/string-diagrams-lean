@@ -317,7 +317,7 @@ instance : Preadditive (CategoryTheory.Quotient P.homRel) := CategoryTheory.Quot
 
 instance : (CategoryTheory.Quotient.functor P.homRel).Additive := CategoryTheory.Quotient.functor_additive P.homRel P.homRel_add
 
-instance : Linear R (CategoryTheory.Quotient P.homRel) := CategoryTheory.Quotient.linear R P.homRel P.homRel_smul
+instance instLinear : Linear R (CategoryTheory.Quotient P.homRel) := CategoryTheory.Quotient.linear R P.homRel P.homRel_smul
 
 /-- The object of the presented category given by an object of the free 2-category. -/
 def obj (a : Obj S) : P.Presented := ⟨Free.of R a⟩

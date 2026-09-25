@@ -100,7 +100,6 @@ variable (R : Type w) [CommRing R] {D : Type w₁} [Category.{w₂} D] [Preaddit
 open Preadditive Linear
 
 /-- The `R`-linear extension of a functor out of the free 2-category. -/
-@[simps]
 def freeLift (F : Obj S ⥤ D) : Free R (Obj S) ⥤ D where
   obj a := F.obj a
   map {_ _} f := f.sum fun f' r => r • F.map f'
@@ -133,20 +132,31 @@ def freeLift (F : Obj S ⥤ D) : Free R (Obj S) ⥤ D where
 
 variable {R}
 
+@[simp] theorem freeLift_obj (F : Obj S ⥤ D) (a : Free R (Obj S)) :
+    (freeLift R F).obj a = F.obj a := rfl
+
+/-- The linear extension on morphisms, as a finite sum (not a simp lemma: prefer the linear
+evaluation lemmas `freeLift_map_of`, `Functor.map_add`, `Functor.map_smul`, …). -/
+theorem freeLift_map (F : Obj S ⥤ D) {a b : Free R (Obj S)} (f : a ⟶ b) :
+    (freeLift R F).map f = f.sum fun f' r => r • F.map f' := rfl
+
 theorem freeLift_map_single (F : Obj S ⥤ D) {a b : Obj S} (f : a ⟶ b) (r : R) :
-    (freeLift R F).map (Finsupp.single f r : LinDiagram R a b) = r • F.map f := by simp
+    (freeLift R F).map (Finsupp.single f r : LinDiagram R a b) = r • F.map f := by
+  rw [freeLift_map]
+  exact Finsupp.sum_single_index (zero_smul _ _)
 
 @[simp] theorem freeLift_map_of (F : Obj S ⥤ D) {a b : Obj S} (f : a ⟶ b) :
-    (freeLift R F).map (LinDiagram.of f : LinDiagram R a b) = F.map f := by simp
+    (freeLift R F).map (LinDiagram.of f : LinDiagram R a b) = F.map f := by
+  rw [freeLift_map_single, one_smul]
 
 instance freeLift_additive (F : Obj S ⥤ D) : (freeLift R F).Additive where
   map_add {X Y} f g := by
-    dsimp
+    simp only [freeLift_map]
     rw [Finsupp.sum_add_index'] <;> simp [add_smul]
 
 instance freeLift_linear (F : Obj S ⥤ D) : (freeLift R F).Linear R where
   map_smul {X Y} f r := by
-    dsimp
+    simp only [freeLift_map]
     rw [Finsupp.sum_smul_index] <;> simp [Finsupp.smul_sum, mul_smul]
 
 namespace Presentation
