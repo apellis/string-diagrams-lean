@@ -7,10 +7,12 @@ import StringDiagrams.Generation
 import StringDiagrams.Interchange
 import StringDiagrams.Grading
 import StringDiagrams.Monoidal
+import StringDiagrams.Derivation
 import StringDiagrams.DSL.Basic
 import StringDiagrams.Render.SVG
 import StringDiagrams.Render.TikZ
 import StringDiagrams.Examples.Exterior
+import StringDiagrams.Examples.Derivation
 import StringDiagrams.Examples.TemperleyLieb
 import StringDiagrams.Examples.TemperleyLieb.FarCommutativity
 import StringDiagrams.Examples.TemperleyLieb.Representation
