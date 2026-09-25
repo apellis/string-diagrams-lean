@@ -4,6 +4,7 @@ import StringDiagrams.Presentation
 import StringDiagrams.Interpretation
 import StringDiagrams.Whisker
 import StringDiagrams.Generation
+import StringDiagrams.Interchange
 import StringDiagrams.DSL.Basic
 import StringDiagrams.Render.SVG
 import StringDiagrams.Render.TikZ
