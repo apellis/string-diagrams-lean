@@ -6,7 +6,7 @@ import StringDiagrams.Render.TikZ
 
 Three small signatures exercise the notation of `StringDiagrams.DSL` and the renderers:
 
-* `nilHecke`: one colour, a dot and a crossing (monoidal; width shorthand `3 | …`);
+* `dotCross`: one colour, a dot and a crossing (monoidal; width shorthand `3 | …`);
 * `klr`: two colours `i`, `j` with a dot `x` on either colour and crossings `psi` of any
   two colours, with generator names resolved from the strands they act on;
 * `cupCap`: two regions `λ`, `μ`, strands `E : λ → μ` and `F : μ → λ`, cups and caps
@@ -21,41 +21,41 @@ namespace StringDiagrams.Examples.RenderDemo
 
 open CategoryTheory StringDiagrams DSL Render
 
-/-! ## The nilHecke signature -/
+/-! ## Dots and crossings on one colour -/
 
-/-- Generators of the nilHecke signature. -/
-inductive NHGen
+/-- Generators: a dot and a crossing. -/
+inductive DCGen
   | dot
   | crossing
   deriving DecidableEq, Repr
 
-/-- The nilHecke signature: one colour, a dot and a crossing. -/
-def nilHecke : Signature.{0, 0, 0} where
+/-- One colour, a dot and a crossing. -/
+def dotCross : Signature.{0, 0, 0} where
   Region := PUnit
   Colour := PUnit
   colourSrc _ := ⟨⟩
   colourTgt _ := ⟨⟩
-  Gen := NHGen
+  Gen := DCGen
   dom | .dot => [⟨⟩] | .crossing => [⟨⟩, ⟨⟩]
   cod | .dot => [⟨⟩] | .crossing => [⟨⟩, ⟨⟩]
   left _ := ⟨⟩
   right _ := ⟨⟩
 
-instance : DecidableEq nilHecke.Region := inferInstanceAs (DecidableEq PUnit)
-instance : DecidableEq nilHecke.Colour := inferInstanceAs (DecidableEq PUnit)
-instance : DecidableEq nilHecke.Gen := inferInstanceAs (DecidableEq NHGen)
+instance : DecidableEq dotCross.Region := inferInstanceAs (DecidableEq PUnit)
+instance : DecidableEq dotCross.Colour := inferInstanceAs (DecidableEq PUnit)
+instance : DecidableEq dotCross.Gen := inferInstanceAs (DecidableEq DCGen)
 
-instance : DSLNames nilHecke where
+instance : DSLNames dotCross where
   regionName _ := ""
   regionOfName? n := if n = "" then some ⟨⟩ else none
   colourName _ := "s"
   colourOfName? n := if n = "s" then some ⟨⟩ else none
   genName | .dot => "x" | .crossing => "psi"
   genOfName? n _ _ :=
-    if n = "x" then some NHGen.dot else if n = "psi" then some NHGen.crossing else none
+    if n = "x" then some DCGen.dot else if n = "psi" then some DCGen.crossing else none
   soleColour? := some ⟨⟩
 
-instance : LawfulDSLNames nilHecke where
+instance : LawfulDSLNames dotCross where
   regionOfName_regionName _ := rfl
   regionName_valid _ := Or.inl rfl
   colourOfName_colourName _ := rfl
@@ -64,7 +64,7 @@ instance : LawfulDSLNames nilHecke where
   genName_valid g := by cases g <;> rfl
   soleColour_eq _ _ := rfl
 
-instance : DrawStyle nilHecke where
+instance : DrawStyle dotCross where
   glyph | .dot => .dot | .crossing => .crossing
 
 /-! ## A two-colour KLR-type signature -/
@@ -250,22 +250,22 @@ def roundTripsStr (S : Signature.{0, 0, 0}) [DSLNames S] [DecidableEq S.Region]
   | .ok (a, ls) => roundTrips a ls
   | .error _ => false
 
--- nilHecke: width shorthand, canonical spacing, and the bracketed form.
-#guard reprint nilHecke "3 | x@0 ; psi@1 ; psi@0" == "3 | x@0 ; psi@1 ; psi@0"
-#guard reprint nilHecke "3|x@0;psi@1;psi@0" == "3 | x@0 ; psi@1 ; psi@0"
-#guard reprint nilHecke "  [s s s]  |  x @ 0 ;psi@ 1  " == "3 | x@0 ; psi@1"
-#guard reprint nilHecke "2" == "2"
-#guard reprint nilHecke "0" == "0"
-#guard reprint nilHecke "{} 2 | psi@0" == "2 | psi@0"
-#guard reprint nilHecke "12 | psi@10 ; x@11" == "12 | psi@10 ; x@11"
-#guard roundTripsStr nilHecke "4 | x@0 ; psi@1 ; psi@2 ; x@3 ; psi@0"
-#guard wellTyped nilHecke "4 | x@0 ; psi@1 ; psi@2 ; x@3 ; psi@0"
-#guard parseFails nilHecke "2 | psi@1"      -- the crossing does not fit
-#guard parseFails nilHecke "2 | chi@0"      -- unknown generator
-#guard parseFails nilHecke "2 | x@0 ;"      -- trailing separator
-#guard parseFails nilHecke "2 | x0"         -- missing '@'
-#guard parseFails nilHecke "2 x@0"          -- missing '|'
-#guard parseFails nilHecke "[s t]"          -- unknown colour
+-- dotCross: width shorthand, canonical spacing, and the bracketed form.
+#guard reprint dotCross "3 | x@0 ; psi@1 ; psi@0" == "3 | x@0 ; psi@1 ; psi@0"
+#guard reprint dotCross "3|x@0;psi@1;psi@0" == "3 | x@0 ; psi@1 ; psi@0"
+#guard reprint dotCross "  [s s s]  |  x @ 0 ;psi@ 1  " == "3 | x@0 ; psi@1"
+#guard reprint dotCross "2" == "2"
+#guard reprint dotCross "0" == "0"
+#guard reprint dotCross "{} 2 | psi@0" == "2 | psi@0"
+#guard reprint dotCross "12 | psi@10 ; x@11" == "12 | psi@10 ; x@11"
+#guard roundTripsStr dotCross "4 | x@0 ; psi@1 ; psi@2 ; x@3 ; psi@0"
+#guard wellTyped dotCross "4 | x@0 ; psi@1 ; psi@2 ; x@3 ; psi@0"
+#guard parseFails dotCross "2 | psi@1"      -- the crossing does not fit
+#guard parseFails dotCross "2 | chi@0"      -- unknown generator
+#guard parseFails dotCross "2 | x@0 ;"      -- trailing separator
+#guard parseFails dotCross "2 | x0"         -- missing '@'
+#guard parseFails dotCross "2 x@0"          -- missing '|'
+#guard parseFails dotCross "[s t]"          -- unknown colour
 
 -- KLR: colour names and generator names resolved from the strands they act on.
 #guard reprint klr "[i i j] | x@0 ; psi@1 ; psi@0" == "[i i j] | x@0 ; psi@1 ; psi@0"
@@ -332,8 +332,8 @@ def tikzHead (S : Signature.{0, 0, 0}) [DSLNames S] [DrawStyle S] [DecidableEq S
   | .ok t => (t.splitOn "\n").headD ""
   | .error e => e
 
-#guard svgRoundTrips nilHecke "3 | x@0 ; psi@1 ; psi@0"
-#guard svgRoundTrips nilHecke "0"
+#guard svgRoundTrips dotCross "3 | x@0 ; psi@1 ; psi@0"
+#guard svgRoundTrips dotCross "0"
 #guard svgRoundTrips klr "[i i j] | x@0 ; psi@1 ; psi@0"
 #guard svgRoundTrips klr "[j i j i] | psi@2 ; psi@1 ; x@3 ; psi@0 ; psi@2"
 #guard svgRoundTrips cupCap "{λ} [] | cup@0 ; cap@0"
@@ -347,7 +347,7 @@ def tikzHead (S : Signature.{0, 0, 0}) [DSLNames S] [DrawStyle S] [DecidableEq S
 #guard xmlUnescape "&amp;lt;&foo;&" == "&lt;&foo;&"
 #guard fmtHundredths 1250 == "12.5" && fmtHundredths (-5) == "-0.05" && fmtHundredths 300 == "3"
 -- the bounding box: three columns plus margins, three slabs plus margins
-#guard (match parse (S := nilHecke) "3 | x@0 ; psi@1 ; psi@0" with
+#guard (match parse (S := dotCross) "3 | x@0 ; psi@1 ; psi@0" with
     | .ok (a, ls) => let p := layout a ls; decide (p.lo = ⟨0, -35⟩ ∧ p.hi = ⟨400, 335⟩)
     | .error _ => false)
 -- a cup widens the picture of the slab: the strand to its right moves over
@@ -357,8 +357,8 @@ def tikzHead (S : Signature.{0, 0, 0}) [DSLNames S] [DrawStyle S] [DecidableEq S
 
 /-- Diagrams drawn by `scripts/render_examples.lean`: file name and drawings. -/
 def gallery : List (String × Except String String × Except String String) :=
-  [("nilhecke", svgOf nilHecke "3 | x@0 ; psi@1 ; psi@0 ; x@2",
-      tikzOf nilHecke "3 | x@0 ; psi@1 ; psi@0 ; x@2"),
+  [("dotcross", svgOf dotCross "3 | x@0 ; psi@1 ; psi@0 ; x@2",
+      tikzOf dotCross "3 | x@0 ; psi@1 ; psi@0 ; x@2"),
    ("klr", svgOf klr "[i i j] | x@0 ; psi@1 ; psi@0",
       tikzOf klr "[i i j] | x@0 ; psi@1 ; psi@0"),
    ("zigzag", svgOf cupCap "{λ} [E] | cup@1 ; cap@0",
@@ -371,7 +371,7 @@ def gallery : List (String × Except String String × Except String String) :=
 #guard gallery.all fun (_, s, t) => s.isOk && t.isOk
 
 -- The general round trip applies to all three signatures.
-example {a b : Obj nilHecke} (f : a ⟶ b) : parseHom a b (printHom f) = .ok f :=
+example {a b : Obj dotCross} (f : a ⟶ b) : parseHom a b (printHom f) = .ok f :=
   parseHom_printHom f
 example {a b : Obj klr} (f : a ⟶ b) : parseHom a b (printHom f) = .ok f := parseHom_printHom f
 example {a b : Obj cupCap} (f : a ⟶ b) : parseHom a b (printHom f) = .ok f :=

@@ -15,20 +15,15 @@ import StringDiagrams.DSL.Basic
 import StringDiagrams.Render.SVG
 import StringDiagrams.Render.TikZ
 import StringDiagrams.Examples.Exterior
+import StringDiagrams.Examples.FreeDots
+import StringDiagrams.Examples.FreeDots.Representation
 import StringDiagrams.Examples.Derivation
 import StringDiagrams.Examples.TemperleyLieb
 import StringDiagrams.Examples.TemperleyLieb.FarCommutativity
 import StringDiagrams.Examples.TemperleyLieb.Representation
-import StringDiagrams.Examples.NilHecke.DividedDifference
-import StringDiagrams.Examples.NilHecke.Basic
-import StringDiagrams.Examples.NilHecke.Relations
-import StringDiagrams.Examples.NilHecke.Dots
-import StringDiagrams.Examples.NilHecke.LongestElement
 import StringDiagrams.Tactic.WordRw
 import StringDiagrams.Examples.Grading
-import StringDiagrams.Examples.NilHecke.PolyRep
 import StringDiagrams.Examples.TemperleyLiebMonoidal
-import StringDiagrams.Examples.NilHecke.Monoidal
 import StringDiagrams.Examples.WeightedBubbles
 
 /-!

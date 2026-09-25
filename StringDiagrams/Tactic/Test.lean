@@ -1,11 +1,15 @@
 import StringDiagrams.Tactic.WordRw
-import StringDiagrams.Examples.NilHecke.Relations
+import StringDiagrams.Examples.TemperleyLieb.FarCommutativity
+import StringDiagrams.Examples.FreeDots
+import StringDiagrams.Examples.Exterior
 
 /-!
 # Tests for the word rewriting tactics
 
 Examples for `word_rw`, `word_norm`, `word_comm` and `word_comm_nf`, over an arbitrary ring and
-in the nilHecke endomorphism rings `End (NH.obj R n)` at symbolic width.
+in endomorphism rings of example categories at symbolic width and position: the
+Temperley–Lieb generators `e δ m i`, free commuting dots `FreeDots.x R n i`, and anticommuting
+odd dots `Exterior.x R n i`.
 -/
 
 namespace StringDiagrams.WordRw.Test
@@ -104,42 +108,103 @@ example (f : ℕ → A) (h : ∀ i j, i + 1 < j → f i * f j = f j * f i)
 
 end Generic
 
-section NilHecke
+section TemperleyLieb
 
-open CategoryTheory NilHecke
+open CategoryTheory TemperleyLieb
+
+variable {R : Type*} [CommRing R] (δ : R)
+
+/-- `e_i e_{i+1} e_i e_i = δ e_i`; the side condition `i + 1 ≤ m` is discharged by `omega`. -/
+example {m i : ℕ} (h : i + 2 ≤ m) :
+    e δ m i * e δ m (i + 1) * e δ m i * e δ m i = δ • e δ m i := by
+  word_rw [e_mul_e_succ_mul_e δ, e_mul_self]
+
+/-- A rewrite in the middle of a word, inside a linear combination. -/
+example {m i : ℕ} (h : i + 1 ≤ m) (a b : End ((pres R δ).obj (strands (m + 2)))) :
+    a * e δ m (i + 1) * e δ m i * e δ m (i + 1) * b + a =
+      a * e δ m (i + 1) * b + a := by
+  word_rw [e_succ_mul_e_mul_e_succ δ]
+
+/-- Far commutativity, with the side conditions `i + 2 ≤ j` discharged by `omega`. -/
+example {m i : ℕ} :
+    e δ m i * e δ m (i + 3) * e δ m (i + 1) * e δ m (i + 5) =
+      e δ m (i + 3) * e δ m (i + 5) * e δ m i * e δ m (i + 1) := by
+  word_comm [e_mul_e_comm δ]
+
+/-- Far commutativity at symbolic distance, using a hypothesis from the context. -/
+example {m i j : ℕ} (hij : i + 2 ≤ j) :
+    e δ m j * e δ m i + e δ m i = e δ m i + e δ m i * e δ m j := by
+  word_comm [e_mul_e_comm δ]
+
+set_option linter.unusedVariables false in
+/-- Neighbouring generators do not commute. -/
+example {m i : ℕ} : True := by
+  fail_if_success
+    have : e δ m i * e δ m (i + 1) = e δ m (i + 1) * e δ m i := by
+      word_comm [e_mul_e_comm δ]
+  trivial
+
+/-- Commutation followed by a rewrite: `e_i e_{i+2} e_i = δ e_{i+2} e_i`. -/
+example (m i : ℕ) :
+    e δ m i * e δ m (i + 2) * e δ m i = δ • (e δ m (i + 2) * e δ m i) := by
+  word_rw [(show e δ m i * e δ m (i + 2) * e δ m i = e δ m (i + 2) * e δ m i * e δ m i by
+    word_comm [e_mul_e_comm δ]), e_mul_self]
+
+/-- Rewriting a hypothesis. -/
+example {m i : ℕ} (h : i + 1 ≤ m) (a : End ((pres R δ).obj (strands (m + 2))))
+    (ha : a = e δ m i * e δ m (i + 1) * e δ m i * e δ m (i + 1)) :
+    a = e δ m i * e δ m (i + 1) := by
+  word_rw [e_mul_e_succ_mul_e δ] at ha
+  exact ha
+
+end TemperleyLieb
+
+section FreeDots
+
+open CategoryTheory FreeDots
 
 variable (R : Type*) [CommRing R]
 
-/-- `ψ_i x_i ψ_i = ψ_i`. -/
-example {n i : ℕ} (h : i + 1 < n) : ψ R n i * x R n i * ψ R n i = ψ R n i := by
-  have hs : ψ R n i * x R n i = x R n (i + 1) * ψ R n i + 1 :=
-    sub_eq_iff_eq_add'.mp (ψ_mul_x_sub_x_mul_ψ R h)
-  word_rw [hs, ψ_mul_ψ]
+/-- Commuting dots are sorted, with the side conditions `i ≠ j` discharged by `omega`. -/
+example (n k : ℕ) :
+    x R n k * x R n (k + 2) * x R n (k + 1) = x R n (k + 1) * x R n (k + 2) * x R n k := by
+  word_comm [x_mul_x_comm R]
 
-/-- A braid move followed by a double crossing. -/
-example (n i : ℕ) (a : End (NH.obj R n)) :
-    a * ψ R n i * ψ R n (i + 1) * ψ R n i * ψ R n (i + 1) = 0 := by
-  word_rw [ψ_braid, ψ_mul_ψ]
-
-/-- Far commutativity, with side conditions discharged by `omega`. -/
-example {n i : ℕ} :
-    x R n (i + 3) * ψ R n i * x R n i * ψ R n (i + 2) =
-      ψ R n i * x R n i * x R n (i + 3) * ψ R n (i + 2) := by
-  word_comm [x_mul_ψ_comm R, ψ_mul_ψ_comm R, x_mul_x_comm R]
+/-- Symbolic positions, using a hypothesis from the context. -/
+example {n k l : ℕ} (hkl : k < l) (a : End (FD.obj R n)) :
+    x R n k * x R n l * x R n k * a = x R n k * x R n k * x R n l * a := by
+  word_comm [x_mul_x_comm R]
 
 set_option linter.unusedVariables false in
-/-- `x_{i+3}` and `ψ_{i+2}` do not commute. -/
-example {n i : ℕ} : True := by
+/-- Without a hypothesis, dots at unrelated symbolic positions do not commute. -/
+example {n k l : ℕ} : True := by
   fail_if_success
-    have : x R n (i + 3) * ψ R n (i + 2) = ψ R n (i + 2) * x R n (i + 3) := by
-      word_comm [x_mul_ψ_comm R, ψ_mul_ψ_comm R, x_mul_x_comm R]
+    have : x R n k * x R n l = x R n l * x R n k := by word_comm [x_mul_x_comm R]
   trivial
 
-/-- Commutation followed by a rewrite: `ψ_i ψ_{i+2} ψ_i = 0`. -/
-example (n i : ℕ) : ψ R n i * ψ R n (i + 2) * ψ R n i = 0 := by
-  word_rw [(show ψ R n i * ψ R n (i + 2) * ψ R n i = ψ R n (i + 2) * ψ R n i * ψ R n i by
-    word_comm [ψ_mul_ψ_comm R]), ψ_mul_ψ]
+example {n k : ℕ} (H : x R n (k + 1) * x R n k * x R n (k + 1) = 0) :
+    x R n k * x R n (k + 1) * x R n (k + 1) = 0 := by
+  word_comm_nf [x_mul_x_comm R] at H ⊢
+  exact H
 
-end NilHecke
+end FreeDots
+
+section Exterior
+
+open CategoryTheory Exterior
+
+variable (R : Type*) [CommRing R]
+
+/-- Anticommutation (side condition `k < k + 1` by `omega`) followed by `x² = 0`. -/
+example (n k : ℕ) : x R n k * x R n (k + 1) * x R n k = 0 := by
+  word_rw [x_mul_x_anticomm R, x_mul_x_self]
+
+/-- A signed rewrite inside a linear combination. -/
+example (n k : ℕ) (a : End ((pres R).obj (strands n))) :
+    a * x R n k * x R n (k + 3) + a = 2 • a - a * x R n (k + 3) * x R n k - a := by
+  word_rw [x_mul_x_anticomm R]
+  abel
+
+end Exterior
 
 end StringDiagrams.WordRw.Test

@@ -28,7 +28,7 @@ can be absorbed by `subst`.
 Three common shapes are covered:
 
 * a single module for all objects (`LocalInterpretation.uniform`, `ι = Unit`,
-  `ext = res = id`);
+  `ext = res = id`), as for the polynomial representation of free commuting dots;
 * width-dependent modules embedded in a big module of functions, as for the
   Temperley–Lieb representation on functions of words, where `ext` is extension by zero and
   `res` is restriction;
