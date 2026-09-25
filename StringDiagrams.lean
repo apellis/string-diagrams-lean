@@ -31,6 +31,9 @@ import StringDiagrams.Examples.TemperleyLiebMonoidal
 import StringDiagrams.Examples.NilHecke.Monoidal
 import StringDiagrams.Examples.WeightedBubbles
 import StringDiagrams.Biadjunction.Basic
+import StringDiagrams.Biadjunction.Conjugate
+import StringDiagrams.Biadjunction.Cyclic
+import StringDiagrams.Biadjunction.Linear
 
 /-!
 # StringDiagrams
