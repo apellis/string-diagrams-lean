@@ -1,4 +1,5 @@
-import StringDiagrams.DSL.Basic
+import StringDiagrams.Render.SVG
+import StringDiagrams.Render.TikZ
 
 /-!
 # Examples for the diagram notation and the renderer
@@ -12,12 +13,13 @@ Three small signatures exercise the notation of `StringDiagrams.DSL` and the ren
   (generators with empty bottom or top boundary), a dot on `E`, and a generic generator
   `phi : E F E ⇒ E` drawn as a labelled box.
 
-The checks below are `#guard`s evaluated at compile time; nothing is written to disk.
+The checks below are `#guard`s evaluated at compile time; nothing is written to disk. The
+script `scripts/render_examples.lean` writes the drawings of `gallery` to `out/`.
 -/
 
 namespace StringDiagrams.Examples.RenderDemo
 
-open CategoryTheory StringDiagrams DSL
+open CategoryTheory StringDiagrams DSL Render
 
 /-! ## The nilHecke signature -/
 
@@ -61,6 +63,9 @@ instance : LawfulDSLNames nilHecke where
   genOfName_genName g _ := by cases g <;> rfl
   genName_valid g := by cases g <;> rfl
   soleColour_eq _ _ := rfl
+
+instance : DrawStyle nilHecke where
+  glyph | .dot => .dot | .crossing => .crossing
 
 /-! ## A two-colour KLR-type signature -/
 
@@ -113,6 +118,11 @@ instance : LawfulDSLNames klr where
   genOfName_genName g rest := by cases g <;> cases rest <;> rfl
   genName_valid g := by cases g <;> rfl
   soleColour_eq h := nomatch h
+
+instance : DrawStyle klr where
+  glyph | .x _ => .dot | .psi _ _ => .crossing
+  strandColour | .i => ⟨31, 119, 180⟩ | .j => ⟨214, 39, 40⟩
+  strandLabel | .i => "i" | .j => "j"
 
 /-! ## A signature with regions, cups and caps -/
 
@@ -197,6 +207,19 @@ instance : LawfulDSLNames cupCap where
   genName_valid g := by cases g <;> rfl
   soleColour_eq h := nomatch h
 
+instance : DrawStyle cupCap where
+  glyph
+    | .cupEF | .cupFE => .cup
+    | .capEF | .capFE => .cap
+    | .dotE => .dot
+    | .phi => .box "φ"
+  strandColour | .E => ⟨31, 119, 180⟩ | .F => ⟨44, 160, 44⟩
+  regionLabel | .lam => "λ" | .mu => "μ"
+  strandLabel | .E => "E" | .F => "F"
+  texText s :=
+    if s = "λ" then "$\\lambda$" else if s = "μ" then "$\\mu$"
+    else if s = "φ" then "$\\varphi$" else texEscape s
+
 /-! ## Notation checks -/
 
 /-- Parse and print again (the identity on canonical strings). -/
@@ -277,6 +300,75 @@ def roundTripsStr (S : Signature.{0, 0, 0}) [DSLNames S] [DecidableEq S.Region]
 #guard parseFails cupCap "[E]"                -- a region label is required
 #guard parseFails cupCap "{ν} [E]"            -- unknown region
 #guard parseFails cupCap "{λ} [E E] | cap@0"  -- `E E` is not the bottom of a cap
+
+/-! ## Rendering checks -/
+
+/-- The SVG drawing of a diagram given in the notation (or the parse error). -/
+def svgOf (S : Signature.{0, 0, 0}) [DSLNames S] [DrawStyle S] [DecidableEq S.Colour]
+    (s : String) : Except String String :=
+  (parse (S := S) s).map fun (a, ls) => renderSVG a ls
+
+/-- The TikZ drawing of a diagram given in the notation (or the parse error). -/
+def tikzOf (S : Signature.{0, 0, 0}) [DSLNames S] [DrawStyle S] [DecidableEq S.Colour]
+    (s : String) : Except String String :=
+  (parse (S := S) s).map fun (a, ls) => renderTikZ a ls
+
+/-- Whether the notation embedded in the SVG drawing of a diagram is its printed form, and
+parsing it back returns the diagram. -/
+def svgRoundTrips (S : Signature.{0, 0, 0}) [DSLNames S] [DrawStyle S] [DecidableEq S.Region]
+    [DecidableEq S.Colour] [DecidableEq S.Gen] (s : String) : Bool :=
+  match parse (S := S) s with
+  | .ok (a, ls) =>
+    extractDSL (renderSVG a ls) == some (print a ls) &&
+      match parseSVG (S := S) (renderSVG a ls) with
+      | .ok (a', ls') => decide (a' = a ∧ ls' = ls)
+      | .error _ => false
+  | .error _ => false
+
+/-- The first line of the TikZ drawing of a diagram. -/
+def tikzHead (S : Signature.{0, 0, 0}) [DSLNames S] [DrawStyle S] [DecidableEq S.Colour]
+    (s : String) : String :=
+  match tikzOf S s with
+  | .ok t => (t.splitOn "\n").headD ""
+  | .error e => e
+
+#guard svgRoundTrips nilHecke "3 | x@0 ; psi@1 ; psi@0"
+#guard svgRoundTrips nilHecke "0"
+#guard svgRoundTrips klr "[i i j] | x@0 ; psi@1 ; psi@0"
+#guard svgRoundTrips klr "[j i j i] | psi@2 ; psi@1 ; x@3 ; psi@0 ; psi@2"
+#guard svgRoundTrips cupCap "{λ} [] | cup@0 ; cap@0"
+#guard svgRoundTrips cupCap "{λ} [E] | cup@1 ; cap@0"
+#guard svgRoundTrips cupCap "{μ} [F] | cup@1 ; x@1 ; cap@0"
+#guard svgRoundTrips cupCap "{λ} [E F E] | phi@0 ; cup@1 ; x@0 ; cap@1"
+#guard tikzHead klr "[i i j] | x@0 ; psi@1 ; psi@0" == "% [i i j] | x@0 ; psi@1 ; psi@0"
+#guard tikzHead cupCap "{λ} [E] | cup@1 ; cap@0" == "% {λ} [E] | cup@1 ; cap@0"
+-- region labels and the metadata are XML-escaped in the SVG text
+#guard xmlEscape "a<b & \"c\"" == "a&lt;b &amp; &quot;c&quot;"
+#guard xmlUnescape "&amp;lt;&foo;&" == "&lt;&foo;&"
+#guard fmtHundredths 1250 == "12.5" && fmtHundredths (-5) == "-0.05" && fmtHundredths 300 == "3"
+-- the bounding box: three columns plus margins, three slabs plus margins
+#guard (match parse (S := nilHecke) "3 | x@0 ; psi@1 ; psi@0" with
+    | .ok (a, ls) => let p := layout a ls; decide (p.lo = ⟨0, -35⟩ ∧ p.hi = ⟨400, 335⟩)
+    | .error _ => false)
+-- a cup widens the picture of the slab: the strand to its right moves over
+#guard (match parse (S := cupCap) "{λ} [E] | cup@0" with
+    | .ok (a, ls) => decide ((layout a ls).hi.x = 400)
+    | .error _ => false)
+
+/-- Diagrams drawn by `scripts/render_examples.lean`: file name and drawings. -/
+def gallery : List (String × Except String String × Except String String) :=
+  [("nilhecke", svgOf nilHecke "3 | x@0 ; psi@1 ; psi@0 ; x@2",
+      tikzOf nilHecke "3 | x@0 ; psi@1 ; psi@0 ; x@2"),
+   ("klr", svgOf klr "[i i j] | x@0 ; psi@1 ; psi@0",
+      tikzOf klr "[i i j] | x@0 ; psi@1 ; psi@0"),
+   ("zigzag", svgOf cupCap "{λ} [E] | cup@1 ; cap@0",
+      tikzOf cupCap "{λ} [E] | cup@1 ; cap@0"),
+   ("bubble", svgOf cupCap "{μ} [F] | cup@1 ; x@1 ; cap@0 ; cup@0 ; cap@0",
+      tikzOf cupCap "{μ} [F] | cup@1 ; x@1 ; cap@0 ; cup@0 ; cap@0"),
+   ("box", svgOf cupCap "{λ} [E F E] | phi@0 ; cup@1 ; x@0 ; cap@1",
+      tikzOf cupCap "{λ} [E F E] | phi@0 ; cup@1 ; x@0 ; cap@1")]
+
+#guard gallery.all fun (_, s, t) => s.isOk && t.isOk
 
 -- The general round trip applies to all three signatures.
 example {a b : Obj nilHecke} (f : a ⟶ b) : parseHom a b (printHom f) = .ok f :=

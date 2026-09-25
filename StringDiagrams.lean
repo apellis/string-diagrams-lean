@@ -2,6 +2,8 @@ import StringDiagrams.Signature
 import StringDiagrams.Syntax
 import StringDiagrams.Presentation
 import StringDiagrams.DSL.Basic
+import StringDiagrams.Render.SVG
+import StringDiagrams.Render.TikZ
 
 /-!
 # StringDiagrams
