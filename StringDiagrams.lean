@@ -20,6 +20,7 @@ import StringDiagrams.Examples.NilHecke.Dots
 import StringDiagrams.Examples.NilHecke.LongestElement
 import StringDiagrams.Tactic.WordRw
 import StringDiagrams.Examples.Grading
+import StringDiagrams.Examples.NilHecke.PolyRep
 
 /-!
 # StringDiagrams
