@@ -44,7 +44,10 @@ These apply both to the crossings `ψ R n` (`ψw₀`) and to the divided differe
 
 * `ψw₀_mul_ψ`, `ψ_mul_ψw₀`: `ψw₀ R n m * ψ R n i = 0 = ψ R n i * ψw₀ R n m` for `i + 1 < m`
   (for all `n`).
-* `ψw₀_succ`, `ψw₀_eq_rev`: the two factorizations of `ψw₀`.
+* `ψw₀_succ`, `ψw₀_eq_rev`: the second factorization and the reversed word.
+* `ψw₀_succ_eq_mul_shift`, `ψw₀_succ_eq_shift_mul`: the mirror factorizations
+  `ψw₀ (m+1) = (ψ_{m-1} ⋯ ψ_0) * shift (ψw₀ m) = shift (ψw₀ m) * (ψ_0 ⋯ ψ_{m-1})`, where `shift`
+  moves the longest crossing to the strands `1, …, m`.
 * `divDiffW₀_xδ`: `∂_{w₀} (X 0 ^ (m-1) * X 1 ^ (m-2) * ⋯ * X (m-2)) = 1`.
 * `ψw₀_mul_mul_ψw₀_of_slide`: if `d : MvPolynomial ℕ R → End (NH.obj R n)` satisfies the
   polynomial slide `ψ i * d f = d (swapVars i f) * ψ i + d (divDiff i f)` for `i + 1 < m`, then
@@ -222,6 +225,55 @@ theorem longest_eq_longestRev (m : ℕ) : longest s m = longestRev s m := by
   | zero => rfl
   | succ m ih => rw [longest_succ hs, longestRev_succ, ih]
 
+/-- The shifted family `i ↦ s (i + 1)` (the same generators on the strands `1, 2, …`) also
+satisfies the nil-Coxeter relations. -/
+theorem Rels.shift : Rels (fun i => s (i + 1)) where
+  sq i := hs.sq (i + 1)
+  braid i := hs.braid (i + 1)
+  comm i j h := hs.comm (i + 1) (j + 1) (by omega)
+
+omit hs in
+theorem down_succ_eq_shift (k : ℕ) : down s (k + 1) = down (fun i => s (i + 1)) k * s 0 := by
+  induction k with
+  | zero => simp [down_succ]
+  | succ k ih => rw [down_succ, ih, down_succ, mul_assoc]
+
+omit hs in
+theorem up_succ_eq_shift (k : ℕ) : up s (k + 1) = s 0 * up (fun i => s (i + 1)) k := by
+  induction k with
+  | zero => simp [up_succ]
+  | succ k ih => rw [up_succ, ih, up_succ, mul_assoc]
+
+theorem down_shift_mul_up {k M : ℕ} (h : k + 1 ≤ M) :
+    down (fun i => s (i + 1)) k * up s M = up s M * down s k := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    rw [down_succ, mul_assoc, ih (by omega), ← mul_assoc, succ_mul_up hs (by omega), mul_assoc,
+      down_succ]
+
+/-- Mirror factorization: `longest s (m+1) = shift (longest s m) * (s 0 ⋯ s (m-1))`, where
+`shift` raises every index by one. -/
+theorem longest_succ_eq_shift_mul (m : ℕ) :
+    longest s (m + 1) = longest (fun i => s (i + 1)) m * up s m := by
+  induction m with
+  | zero => simp [longest_succ']
+  | succ m ih =>
+    calc longest s (m + 2) = longest s (m + 1) * (s m * down s m) := rfl
+      _ = longest (fun i => s (i + 1)) m * (up s (m + 1) * down s m) := by
+          rw [ih, up_succ]; simp only [mul_assoc]
+      _ = longest (fun i => s (i + 1)) (m + 1) * up s (m + 1) := by
+          rw [← down_shift_mul_up hs le_rfl, longest_succ', mul_assoc]
+
+/-- Mirror factorization: `longest s (m+1) = (s (m-1) ⋯ s 0) * shift (longest s m)`. -/
+theorem longest_succ_eq_mul_shift (m : ℕ) :
+    longest s (m + 1) = down s m * longest (fun i => s (i + 1)) m := by
+  induction m with
+  | zero => simp [longest_succ']
+  | succ m ih =>
+    rw [longest_succ hs, ih, ← mul_assoc, ← down_shift_mul_up hs le_rfl, up_succ_eq_shift,
+      ← mul_assoc, ← down_succ_eq_shift, longest_succ hs.shift, mul_assoc]
+
 theorem longest_mul_eq_zero {m i : ℕ} (h : i + 1 < m) : longest s m * s i = 0 := by
   induction m generalizing i with
   | zero => omega
@@ -276,6 +328,18 @@ theorem ψw₀_succ (n m : ℕ) : ψw₀ R n (m + 1) = up (ψ R n) m * ψw₀ R 
 `(0 1 ⋯ m-2) ⋯ (0 1)(0)`. -/
 theorem ψw₀_eq_rev (n m : ℕ) : ψw₀ R n m = longestRev (ψ R n) m :=
   longest_eq_longestRev (ψ_rels R n) m
+
+/-- Mirror factorization: `ψ_{w₀}` for `m + 1` strands is `ψ_{m-1} ⋯ ψ_1 ψ_0` times `ψ_{w₀}` for
+the `m` strands `1, …, m`. -/
+theorem ψw₀_succ_eq_mul_shift (n m : ℕ) :
+    ψw₀ R n (m + 1) = down (ψ R n) m * longest (fun i => ψ R n (i + 1)) m :=
+  longest_succ_eq_mul_shift (ψ_rels R n) m
+
+/-- Mirror factorization: `ψ_{w₀}` for `m + 1` strands is `ψ_{w₀}` for the `m` strands
+`1, …, m` times `ψ_0 ψ_1 ⋯ ψ_{m-1}`. -/
+theorem ψw₀_succ_eq_shift_mul (n m : ℕ) :
+    ψw₀ R n (m + 1) = longest (fun i => ψ R n (i + 1)) m * up (ψ R n) m :=
+  longest_succ_eq_shift_mul (ψ_rels R n) m
 
 theorem ψw₀_mul_ψ {n m i : ℕ} (h : i + 1 < m) : ψw₀ R n m * ψ R n i = 0 :=
   longest_mul_eq_zero (ψ_rels R n) h
