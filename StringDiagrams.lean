@@ -5,6 +5,7 @@ import StringDiagrams.Interpretation
 import StringDiagrams.Whisker
 import StringDiagrams.Generation
 import StringDiagrams.Interchange
+import StringDiagrams.Grading
 import StringDiagrams.DSL.Basic
 import StringDiagrams.Render.SVG
 import StringDiagrams.Render.TikZ
@@ -13,6 +14,7 @@ import StringDiagrams.Examples.TemperleyLieb
 import StringDiagrams.Examples.NilHecke.DividedDifference
 import StringDiagrams.Examples.NilHecke.Basic
 import StringDiagrams.Examples.NilHecke.Relations
+import StringDiagrams.Examples.Grading
 
 /-!
 # StringDiagrams
