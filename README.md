@@ -19,6 +19,10 @@ A Lean 4 library for diagrammatic reasoning: typed diagram syntax, presentations
 
 `StringDiagrams.Examples.Exterior`: a single odd dot with `dot ≫ dot = 0`; distinct dots anticommute by the super interchange law alone (`x_mul_x_anticomm`).
 
+### Example: Temperley–Lieb
+
+`StringDiagrams.Examples.TemperleyLieb`: one self-dual colour with a cup and a cap, the two zigzag relations and the loop relation `cap ∘ cup = δ`. For every width, `e_i = cup_i ∘ cap_i` satisfies `e_i² = δ e_i` and `e_i e_{i±1} e_i = e_i` (`e_mul_self`, `e_mul_e_succ_mul_e`, `e_succ_mul_e_mul_e_succ`).
+
 ### Example: nilHecke algebras
 
 Source: M. Khovanov, A. D. Lauda, *A diagrammatic approach to categorification of quantum groups I*, [arXiv:0803.4121v2](https://arxiv.org/abs/0803.4121v2), §2.2, Example 3 (p. 10). Strands and variables are numbered from `0` here (the paper's `x_a`, `∂_a` are `x n (a-1)`, `ψ n (a-1)`).
