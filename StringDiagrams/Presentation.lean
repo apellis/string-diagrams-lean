@@ -79,6 +79,18 @@ def whisker (f : LinDiagram R a b) (u : Obj S) (v : List S.Colour)
       Finsupp.single (Diagram.whisker f u v hw) r :=
   Finsupp.mapDomain_single
 
+@[simp] theorem whisker_of (f : a ⟶ b) (u : Obj S) (v : List S.Colour) (hw : a.WhiskerOK u v) :
+    whisker (of f : LinDiagram R a b) u v hw = of (Diagram.whisker f u v hw) :=
+  Finsupp.mapDomain_single
+
+theorem whisker_sub (f g : LinDiagram R a b) (u : Obj S) (v : List S.Colour)
+    (hw : a.WhiskerOK u v) : whisker (f - g) u v hw = whisker f u v hw - whisker g u v hw :=
+  (Finsupp.lmapDomain R R _).map_sub f g
+
+theorem whisker_neg (f : LinDiagram R a b) (u : Obj S) (v : List S.Colour)
+    (hw : a.WhiskerOK u v) : whisker (-f) u v hw = -whisker f u v hw :=
+  (Finsupp.lmapDomain R R _).map_neg f
+
 theorem whisker_add (f g : LinDiagram R a b) (u : Obj S) (v : List S.Colour)
     (hw : a.WhiskerOK u v) : whisker (f + g) u v hw = whisker f u v hw + whisker g u v hw :=
   Finsupp.mapDomain_add
@@ -86,6 +98,38 @@ theorem whisker_add (f g : LinDiagram R a b) (u : Obj S) (v : List S.Colour)
 theorem whisker_smul (r : R) (f : LinDiagram R a b) (u : Obj S) (v : List S.Colour)
     (hw : a.WhiskerOK u v) : whisker (r • f) u v hw = r • whisker f u v hw :=
   Finsupp.mapDomain_smul _ _
+
+/-- Retype a linear combination of diagrams along equalities of its boundary objects. -/
+def cast {a' b' : Obj S} (f : LinDiagram R a b) (ha : a = a') (hb : b = b') :
+    LinDiagram R a' b' :=
+  Finsupp.mapDomain (fun d => Diagram.cast d ha hb) f
+
+@[simp] theorem cast_single {a' b' : Obj S} (f : a ⟶ b) (r : R) (ha : a = a') (hb : b = b') :
+    cast (Finsupp.single f r : LinDiagram R a b) ha hb = Finsupp.single (Diagram.cast f ha hb) r :=
+  Finsupp.mapDomain_single
+
+@[simp] theorem cast_of {a' b' : Obj S} (f : a ⟶ b) (ha : a = a') (hb : b = b') :
+    cast (of f : LinDiagram R a b) ha hb = of (Diagram.cast f ha hb) :=
+  Finsupp.mapDomain_single
+
+@[simp] theorem cast_add {a' b' : Obj S} (f g : LinDiagram R a b) (ha : a = a') (hb : b = b') :
+    cast (f + g) ha hb = cast f ha hb + cast g ha hb :=
+  Finsupp.mapDomain_add
+
+@[simp] theorem cast_sub {a' b' : Obj S} (f g : LinDiagram R a b) (ha : a = a') (hb : b = b') :
+    cast (f - g) ha hb = cast f ha hb - cast g ha hb :=
+  (Finsupp.lmapDomain R R _).map_sub f g
+
+@[simp] theorem cast_neg {a' b' : Obj S} (f : LinDiagram R a b) (ha : a = a') (hb : b = b') :
+    cast (-f) ha hb = -cast f ha hb :=
+  (Finsupp.lmapDomain R R _).map_neg f
+
+@[simp] theorem cast_smul {a' b' : Obj S} (r : R) (f : LinDiagram R a b) (ha : a = a')
+    (hb : b = b') : cast (r • f) ha hb = r • cast f ha hb :=
+  Finsupp.mapDomain_smul _ _
+
+@[simp] theorem cast_rfl (f : LinDiagram R a b) : cast f rfl rfl = f := by
+  simp only [cast, Diagram.cast_rfl]; exact Finsupp.mapDomain_id
 
 end LinDiagram
 
@@ -281,6 +325,8 @@ def obj (a : Obj S) : P.Presented := ⟨Free.of R a⟩
 /-- The quotient functor from linear combinations of diagrams. -/
 def linFunctor : Free R (Obj S) ⥤ P.Presented := CategoryTheory.Quotient.functor P.homRel
 
+instance : P.linFunctor.Full := inferInstanceAs (CategoryTheory.Quotient.functor P.homRel).Full
+
 instance : P.linFunctor.Additive := inferInstanceAs (CategoryTheory.Quotient.functor P.homRel).Additive
 
 instance : P.linFunctor.Linear R := CategoryTheory.Quotient.linear_functor R P.homRel P.homRel_smul
@@ -341,12 +387,42 @@ theorem lin_rel (i : P.Rel) (u : Obj S) (v : List S.Colour) (hw : (P.dom i).Whis
   rw [← P.lin_zero, lin_eq_iff, sub_zero]
   exact P.whisker_rel_mem_ideal (.user i) u v hw
 
+/-- Every whiskered relation holds in the presented category, typed along equalities of
+objects. This is the form used to transport a relation to a symbolic position. -/
+theorem lin_rel_cast (i : P.Rel) (u : Obj S) (v : List S.Colour) (hw : (P.dom i).WhiskerOK u v)
+    {a b : Obj S} (ha : (P.dom i).whisker u v = a) (hb : (P.cod i).whisker u v = b) :
+    P.lin (LinDiagram.cast (LinDiagram.whisker (P.rel i) u v hw) ha hb) = 0 := by
+  subst ha hb; rw [LinDiagram.cast_rfl]; exact P.lin_rel i u v hw
+
+@[simp] theorem lin_of {a b : Obj S} (f : a ⟶ b) : P.lin (LinDiagram.of f) = P.diag f := rfl
+
 /-- Every whiskered instance of the interchange law holds in the presented category. -/
 theorem lin_interchange (x : InterchangeData S) (hx : x.Valid) (u : Obj S) (v : List S.Colour)
     (hw : x.dom.WhiskerOK u v) :
     P.lin (LinDiagram.whisker (InterchangeData.rel R hx) u v hw) = 0 := by
   rw [← P.lin_zero, lin_eq_iff, sub_zero]
   exact P.whisker_rel_mem_ideal (.interchange x hx) u v hw
+
+/-- Every whiskered instance of the interchange law holds in the presented category, typed
+along equalities of objects. -/
+theorem lin_interchange_cast (x : InterchangeData S) (hx : x.Valid) (u : Obj S)
+    (v : List S.Colour) (hw : x.dom.WhiskerOK u v) {a b : Obj S} (ha : x.dom.whisker u v = a)
+    (hb : x.cod.whisker u v = b) :
+    P.lin (LinDiagram.cast (LinDiagram.whisker (InterchangeData.rel R hx) u v hw) ha hb) = 0 := by
+  subst ha hb; rw [LinDiagram.cast_rfl]; exact P.lin_interchange x hx u v hw
+
+/-- The interchange law at a whiskered, retyped position, in terms of diagrams. -/
+theorem diag_interchange (x : InterchangeData S) (hx : x.Valid) (u : Obj S)
+    (v : List S.Colour) (hw : x.dom.WhiskerOK u v) {a b : Obj S} (ha : x.dom.whisker u v = a)
+    (hb : x.cod.whisker u v = b) :
+    P.diag (Diagram.cast (Diagram.whisker (InterchangeData.ghDiagram hx) u v hw) ha hb) =
+      ((x.sign : ℤ) : R) •
+        P.diag (Diagram.cast (Diagram.whisker (InterchangeData.hgDiagram hx) u v hw) ha hb) := by
+  have := P.lin_interchange_cast x hx u v hw ha hb
+  rw [InterchangeData.rel, LinDiagram.whisker_sub, LinDiagram.whisker_smul, LinDiagram.cast_sub,
+    LinDiagram.cast_smul, LinDiagram.whisker_of, LinDiagram.whisker_of, LinDiagram.cast_of,
+    LinDiagram.cast_of, lin_sub, lin_smul, lin_of, lin_of, sub_eq_zero] at this
+  exact this
 
 end Presentation
 

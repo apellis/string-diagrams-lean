@@ -126,6 +126,19 @@ def layer (L : Layer S) (hv : L.Valid) (ha : L.dom = a) (hb : L.cod = b) : a ⟶
 @[simp] theorem layers_layer (L : Layer S) (hv : L.Valid) (ha : L.dom = a) (hb : L.cod = b) :
     layers (layer L hv ha hb) = [L] := rfl
 
+/-- Retype a diagram along equalities of its boundary objects; the layers are unchanged. -/
+def cast {a' b' : Obj S} (f : a ⟶ b) (ha : a = a') (hb : b = b') : a' ⟶ b' :=
+  mk (layers f) (ha ▸ hb ▸ chain f)
+
+@[simp] theorem layers_cast {a' b' : Obj S} (f : a ⟶ b) (ha : a = a') (hb : b = b') :
+    layers (cast f ha hb) = layers f := rfl
+
+theorem cast_eq {a' b' : Obj S} (f : a ⟶ b) (ha : a = a') (hb : b = b') :
+    cast f ha hb = eqToHom ha.symm ≫ f ≫ eqToHom hb := by
+  ext; simp
+
+@[simp] theorem cast_rfl (f : a ⟶ b) : cast f rfl rfl = f := rfl
+
 /-- Whiskering `u ⊗ f ⊗ v` of a diagram. -/
 def whisker (f : a ⟶ b) (u : Obj S) (v : List S.Colour) (hw : a.WhiskerOK u v) :
     a.whisker u v ⟶ b.whisker u v :=
