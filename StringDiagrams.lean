@@ -5,6 +5,7 @@ import StringDiagrams.Interpretation
 import StringDiagrams.Examples.NilHecke.DividedDifference
 import StringDiagrams.Examples.NilHecke.Basic
 import StringDiagrams.Examples.NilHecke.Relations
+import StringDiagrams.Examples.NilHecke.LongestElement
 
 /-!
 # StringDiagrams
