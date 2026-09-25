@@ -8,6 +8,8 @@ import StringDiagrams.Interchange
 import StringDiagrams.Grading
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
+import StringDiagrams.Horizontal
+import StringDiagrams.Bicategory
 import StringDiagrams.DSL.Basic
 import StringDiagrams.Render.SVG
 import StringDiagrams.Render.TikZ
@@ -26,6 +28,7 @@ import StringDiagrams.Examples.Grading
 import StringDiagrams.Examples.NilHecke.PolyRep
 import StringDiagrams.Examples.TemperleyLiebMonoidal
 import StringDiagrams.Examples.NilHecke.Monoidal
+import StringDiagrams.Examples.WeightedBubbles
 
 /-!
 # StringDiagrams
