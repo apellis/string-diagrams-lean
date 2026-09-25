@@ -12,6 +12,10 @@ strands satisfy the Temperley–Lieb relations `e_i² = δ e_i` (`e_mul_self`) a
 `e_i e_{i+1} e_i = e_i`, `e_{i+1} e_i e_{i+1} = e_{i+1}` (`e_mul_e_succ_mul_e`,
 `e_succ_mul_e_mul_e_succ`), derived from the zigzag and loop relations transported to
 symbolic positions.
+
+Far commutativity is proved in `StringDiagrams.Examples.TemperleyLieb.FarCommutativity`, and a
+representation on `(R²)^{⊗n}` showing that the generators are non-zero in
+`StringDiagrams.Examples.TemperleyLieb.Representation`.
 -/
 
 noncomputable section

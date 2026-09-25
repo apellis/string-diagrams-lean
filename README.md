@@ -25,6 +25,11 @@ A Lean 4 library for diagrammatic reasoning: typed diagram syntax, presentations
 
 `StringDiagrams.Examples.TemperleyLieb`: one self-dual colour with a cup and a cap, the two zigzag relations and the loop relation `cap ∘ cup = δ`. For every width, `e_i = cup_i ∘ cap_i` satisfies `e_i² = δ e_i` and `e_i e_{i±1} e_i = e_i` (`e_mul_self`, `e_mul_e_succ_mul_e`, `e_succ_mul_e_mul_e_succ`).
 
+| Module | Contents |
+| --- | --- |
+| `StringDiagrams.Examples.TemperleyLieb.FarCommutativity` | Interchange of cups and caps at symbolic positions and widths (`cap_cap_interchange`, `cup_cup_interchange`, `cap_cup_interchange`, `cup_cap_interchange`); far commutativity `e_i e_j = e_j e_i` for `i + 2 ≤ j` in every width (`e_mul_e_comm`, `e_mul_e_comm_of_far`). |
+| `StringDiagrams.Examples.TemperleyLieb.Representation` | The representation of `pres R (-2)` on `(R²)^{⊗n}` over any commutative ring (`Rep.rep`), with cup `e₀ ⊗ e₁ − e₁ ⊗ e₀` and the inverse pairing as cap; soundness via `Presentation.lift` (`Rep.respects`); non-vacuity `e (-2) m i ≠ 0` for `i ≤ m` over a nontrivial ring (`Rep.e_ne_zero`). |
+
 ### Example: nilHecke algebras
 
 Source: M. Khovanov, A. D. Lauda, *A diagrammatic approach to categorification of quantum groups I*, [arXiv:0803.4121v2](https://arxiv.org/abs/0803.4121v2), §2.2, Example 3 (p. 10). Strands and variables are numbered from `0` here (the paper's `x_a`, `∂_a` are `x n (a-1)`, `ψ n (a-1)`).
