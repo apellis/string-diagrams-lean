@@ -1,5 +1,6 @@
 import StringDiagrams.Examples.NilHecke.Relations
 import StringDiagrams.Examples.NilHecke.DividedDifference
+import StringDiagrams.LocalInterpretation
 
 /-!
 # The polynomial representation of the nilHecke category
@@ -33,11 +34,15 @@ lifting is needed.
 
 ## Main declarations
 
-* `NilHecke.polyInterp R`: the interpretation of the free 2-category in `ModuleCat R` by
-  layer images, and `NilHecke.polyFunctor R` the resulting functor; its value on a diagram is
-  the composite of the operators of its layers (`polyFunctor_map_hom`).
+* `NilHecke.polyLocal R`: the representation as an interpretation by local operators
+  (`StringDiagrams.LocalInterpretation.uniform`, a single module for all objects);
+  `NilHecke.polyInterp R` the resulting interpretation of the free 2-category in
+  `ModuleCat R` and `NilHecke.polyFunctor R` the functor; its value on a diagram is the
+  composite of the operators of its layers (`polyFunctor_map_hom`).
 * `NilHecke.polyFunctor_respects`: soundness hypotheses, i.e. every whiskered defining
-  relation and every whiskered instance of the interchange law holds.
+  relation and every whiskered instance of the interchange law holds; each reduces to an
+  identity of operators by linear evaluation (`LocalInterpretation.evalW`), and interchange to
+  the commutation of generators at disjoint positions (`genOp_comm`).
 * `NilHecke.polyRep R : NH R ⥤ ModuleCat R`, an `R`-linear functor, with
   `polyRep_map_x` and `polyRep_map_ψ` computing the images of dots and crossings.
 * `NilHecke.x_ne_zero`, `NilHecke.ψ_ne_zero`: over a nontrivial ring, dots and crossings are
@@ -95,11 +100,20 @@ theorem genOp_comm (g h : Gen) {i j : ℕ} (hij : i + g.arity ≤ j) :
 /-- The polynomial ring `MvPolynomial ℕ R` as an object of `ModuleCat R`. -/
 abbrev polyModule : ModuleCat.{u} R := ModuleCat.of R (MvPolynomial ℕ R)
 
+/-- The polynomial interpretation as an interpretation by local operators, with a single
+module for all objects. -/
+def polyLocal :
+    LocalInterpretation sig R (MvPolynomial ℕ R) (fun _ : Unit => MvPolynomial ℕ R) :=
+  LocalInterpretation.uniform (layerOp R)
+
+theorem polyLocal_opList (ls : List (Layer sig)) : (polyLocal R).opList ls = layersOp R ls := by
+  induction ls with
+  | nil => rfl
+  | cons L ls ih => rw [LocalInterpretation.opList_cons, ih]; rfl
+
 /-- The interpretation of the free 2-category on the nilHecke signature: every object goes
 to `MvPolynomial ℕ R`, every layer to the operator of its generator at its position. -/
-def polyInterp : Interpretation sig (ModuleCat.{u} R) where
-  obj _ := polyModule R
-  layer L _ := ModuleCat.ofHom (layerOp R L)
+def polyInterp : Interpretation sig (ModuleCat.{u} R) := (polyLocal R).interp
 
 /-- The functor from the free 2-category determined by `polyInterp`. -/
 def polyFunctor : Obj sig ⥤ ModuleCat.{u} R := (polyInterp R).functor
@@ -113,14 +127,9 @@ theorem polyInterp_eqToHom {a b : Obj sig}
 /-- The image of a chain of layers is the composite of the operators of its layers. -/
 theorem polyInterp_mapChain_hom {a b : Obj sig} (ls : List (Layer sig)) (h : Chain a ls b) :
     ((polyInterp R).mapChain a ls b h).hom = layersOp R ls := by
-  induction ls generalizing a with
-  | nil =>
-    simp only [Interpretation.mapChain, polyInterp_eqToHom, layersOp_nil]
-    rfl
-  | cons L ls ih =>
-    simp only [Interpretation.mapChain, polyInterp_eqToHom, Category.id_comp,
-      ModuleCat.hom_comp, ih, layersOp_cons]
-    rfl
+  show ((polyLocal R).interp.mapChain a ls b h).hom = _
+  rw [(polyLocal R).interp_mapChain_hom, polyLocal_opList]
+  rfl
 
 /-- The image of a diagram is the composite of the operators of its layers. -/
 theorem polyFunctor_map_hom {a b : Obj sig} (f : a ⟶ b) :
@@ -136,82 +145,61 @@ section Respects
 
 variable {R}
 
-open LinDiagram
+open LinDiagram LocalInterpretation
 
 private theorem layerOp_whisker (L : Layer sig) (u : Obj sig) (v : List sig.Colour) :
     layerOp R (L.whisker u v) = genOp R L.gen (u.word.length + L.left.length) := by
   simp [layerOp, Layer.whisker]
 
-private theorem polyFunctor_map_whisker_hom {a b : Obj sig} (f : a ⟶ b) (u : Obj sig)
-    (v : List sig.Colour) (hw : a.WhiskerOK u v) :
-    ((polyFunctor R).map (Diagram.whisker f u v hw)).hom =
-      layersOp R ((Diagram.layers f).map (·.whisker u v)) := by
-  rw [polyFunctor_map_hom, Diagram.layers_whisker]
+/-- A whiskered linear combination of diagrams is killed as soon as its evaluation is. -/
+private theorem polyFunctor_map_whisker_eq_zero {a b : Obj sig} {u : Obj sig}
+    {v : List sig.Colour} {X : LinDiagram R a b} (hw : a.WhiskerOK u v)
+    (h : (polyLocal R).evalW () () u v X = 0) :
+    (freeLift R (polyFunctor R)).map (whisker X u v hw) = 0 :=
+  (polyLocal R).freeLift_map_whisker_eq_zero rfl rfl hw h
+
+private theorem polyLocal_evalW_of {a b : Obj sig} (u : Obj sig) (v : List sig.Colour)
+    (d : a ⟶ b) : (polyLocal R).evalW () () u v (of d : LinDiagram R a b) =
+      layersOp R ((Diagram.layers d).map (·.whisker u v)) :=
+  (uniform_evalW_of (layerOp R) () () u v d).trans (polyLocal_opList R _)
+
+/-- Evaluation of a whiskered relation as a combination of composites of operators. -/
+local macro "eval_relation" : tactic => `(tactic| simp only [relation, evalW_sub,
+  polyLocal_evalW_of, Diagram.layers_comp, Diagram.layers_id, layers_dlay, List.cons_append,
+  List.nil_append, List.map_cons, List.map_nil, layersOp_cons, layersOp_nil, LinearMap.id_comp,
+  layerOp_whisker, lay, List.length_replicate, add_zero, genOp_cross, genOp_dot, sub_eq_zero])
 
 theorem polyFunctor_rel_crossSq (u : Obj sig) (v : List sig.Colour)
     (hw : (strands 2).WhiskerOK u v) :
-    (freeLift R (polyFunctor R)).map (whisker (relation R .crossSq) u v hw) = 0 := by
-  apply ModuleCat.hom_ext
-  rw [ModuleCat.hom_zero]
-  simp only [relation, whisker_of, freeLift_map_of, polyFunctor_map_whisker_hom,
-    Diagram.layers_comp, layers_dlay, List.cons_append, List.nil_append, List.map_cons,
-    List.map_nil, layersOp_cons, layersOp_nil, layerOp_whisker, LinearMap.id_comp]
-  simp only [lay, List.length_replicate, add_zero]
-  exact divDiff_divDiff (R := R) u.word.length
+    (freeLift R (polyFunctor R)).map (whisker (relation R .crossSq) u v hw) = 0 :=
+  polyFunctor_map_whisker_eq_zero hw (by eval_relation; exact divDiff_divDiff u.word.length)
 
 theorem polyFunctor_rel_braid (u : Obj sig) (v : List sig.Colour)
     (hw : (strands 3).WhiskerOK u v) :
-    (freeLift R (polyFunctor R)).map (whisker (relation R .braid) u v hw) = 0 := by
-  apply ModuleCat.hom_ext
-  rw [ModuleCat.hom_zero]
-  simp only [relation, whisker_of, whisker_sub, Functor.map_sub, ModuleCat.hom_sub,
-    freeLift_map_of, polyFunctor_map_whisker_hom, Diagram.layers_comp, layers_dlay,
-    List.cons_append, List.nil_append, List.map_cons, List.map_nil, layersOp_cons,
-    layersOp_nil, layerOp_whisker, LinearMap.id_comp, sub_eq_zero]
-  simp only [lay, List.length_replicate, add_zero, genOp_cross]
-  refine LinearMap.ext fun f => ?_
-  simp only [LinearMap.comp_apply]
-  exact divDiff_braid_apply u.word.length f
+    (freeLift R (polyFunctor R)).map (whisker (relation R .braid) u v hw) = 0 :=
+  polyFunctor_map_whisker_eq_zero hw
+    (by eval_relation; exact LinearMap.ext (divDiff_braid_apply u.word.length))
 
 theorem polyFunctor_rel_slideA (u : Obj sig) (v : List sig.Colour)
     (hw : (strands 2).WhiskerOK u v) :
-    (freeLift R (polyFunctor R)).map (whisker (relation R .slideA) u v hw) = 0 := by
-  apply ModuleCat.hom_ext
-  rw [ModuleCat.hom_zero]
-  simp only [relation, whisker_of, whisker_sub, Functor.map_sub, ModuleCat.hom_sub,
-    freeLift_map_of, polyFunctor_map_whisker_hom, Diagram.layers_comp, layers_dlay,
-    List.cons_append, List.nil_append, List.map_cons, List.map_nil, layersOp_cons,
-    layersOp_nil, layerOp_whisker, LinearMap.id_comp, Diagram.layers_id, sub_eq_zero]
-  simp only [lay, List.length_replicate, add_zero, genOp_cross, genOp_dot]
-  exact mulX_divDiff_sub (R := R) u.word.length
+    (freeLift R (polyFunctor R)).map (whisker (relation R .slideA) u v hw) = 0 :=
+  polyFunctor_map_whisker_eq_zero hw (by eval_relation; exact mulX_divDiff_sub u.word.length)
 
 theorem polyFunctor_rel_slideB (u : Obj sig) (v : List sig.Colour)
     (hw : (strands 2).WhiskerOK u v) :
-    (freeLift R (polyFunctor R)).map (whisker (relation R .slideB) u v hw) = 0 := by
-  apply ModuleCat.hom_ext
-  rw [ModuleCat.hom_zero]
-  simp only [relation, whisker_of, whisker_sub, Functor.map_sub, ModuleCat.hom_sub,
-    freeLift_map_of, polyFunctor_map_whisker_hom, Diagram.layers_comp, layers_dlay,
-    List.cons_append, List.nil_append, List.map_cons, List.map_nil, layersOp_cons,
-    layersOp_nil, layerOp_whisker, LinearMap.id_comp, Diagram.layers_id, sub_eq_zero]
-  simp only [lay, List.length_replicate, add_zero, genOp_cross, genOp_dot]
-  exact divDiff_mulX_sub (R := R) u.word.length
+    (freeLift R (polyFunctor R)).map (whisker (relation R .slideB) u v hw) = 0 :=
+  polyFunctor_map_whisker_eq_zero hw (by eval_relation; exact divDiff_mulX_sub u.word.length)
 
 theorem polyFunctor_interchange (x : InterchangeData sig) (hx : x.Valid) (u : Obj sig)
     (v : List sig.Colour) (hw : x.dom.WhiskerOK u v) :
     (freeLift R (polyFunctor R)).map (whisker (InterchangeData.rel R hx) u v hw) = 0 := by
-  have hs : ((x.sign : ℤ) : R) = 1 := by simp [InterchangeData.sign, sig]
-  apply ModuleCat.hom_ext
-  rw [ModuleCat.hom_zero]
-  simp only [InterchangeData.rel, whisker_sub, whisker_smul, whisker_of, hs, one_smul,
-    Functor.map_sub, ModuleCat.hom_sub, freeLift_map_of, polyFunctor_map_whisker_hom,
-    InterchangeData.ghDiagram, InterchangeData.hgDiagram, Diagram.layers_mk, List.map_cons,
-    List.map_nil, layersOp_cons, layersOp_nil, layerOp_whisker, LinearMap.id_comp, sub_eq_zero]
-  simp only [InterchangeData.gh₁, InterchangeData.gh₂, InterchangeData.hg₁,
-    InterchangeData.hg₂, List.length_nil, add_zero]
-  have hc : (sig.cod x.g ++ x.mid).length = (sig.dom x.g ++ x.mid).length := by simp [sig]
-  rw [hc]
-  exact genOp_comm R x.g x.h (by simp [sig])
+  refine polyFunctor_map_whisker_eq_zero hw ((polyLocal R).evalW_interchange_eq_zero_of_comm
+    (fun s l m r g g' => ?_) x hx u v)
+  have hs : (((⟨s, g, m, g'⟩ : InterchangeData sig).sign : ℤ) : R) = 1 := by
+    simp [InterchangeData.sign, sig]
+  have hc : (sig.cod g).length = (sig.dom g).length := rfl
+  simp only [polyLocal, uniform_op, layerOp, List.length_append, hs, one_smul, hc]
+  exact genOp_comm R g g' (by simp [sig])
 
 /-- `polyFunctor` respects the nilHecke presentation: every whiskered defining relation and
 every whiskered instance of the interchange law is sent to zero. -/

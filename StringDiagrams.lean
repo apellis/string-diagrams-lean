@@ -8,6 +8,7 @@ import StringDiagrams.Interchange
 import StringDiagrams.Grading
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
+import StringDiagrams.LocalInterpretation
 import StringDiagrams.DSL.Basic
 import StringDiagrams.Render.SVG
 import StringDiagrams.Render.TikZ
