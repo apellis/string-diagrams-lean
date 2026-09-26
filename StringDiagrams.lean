@@ -82,6 +82,7 @@ import StringDiagrams.Tactic.WordRw
 import StringDiagrams.Examples.Grading
 import StringDiagrams.Examples.TemperleyLiebMonoidal
 import StringDiagrams.Examples.WeightedBubbles
+import StringDiagrams.Examples.QPiCompat
 import StringDiagrams.Biadjunction.Basic
 import StringDiagrams.Biadjunction.Conjugate
 import StringDiagrams.Biadjunction.Cyclic
