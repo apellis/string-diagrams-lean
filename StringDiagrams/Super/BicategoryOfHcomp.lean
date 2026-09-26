@@ -22,7 +22,7 @@ variable {B : Type u} [CategoryStruct.{v} B] [∀ a b : B, Category.{w} (a ⟶ b
 /-- A bicategory structure from a horizontal composition of 2-morphisms, functorial in both
 variables, with associator and unitors natural with respect to it, satisfying the pentagon and
 triangle identities. -/
-def ofHcomp
+abbrev ofHcomp
     (hcomp : ∀ {a b c : B} {f g : a ⟶ b} {h i : b ⟶ c}, (f ⟶ g) → (h ⟶ i) → (f ≫ h ⟶ g ≫ i))
     (associator : ∀ {a b c d : B} (f : a ⟶ b) (g : b ⟶ c) (h : c ⟶ d),
       (f ≫ g) ≫ h ≅ f ≫ g ≫ h)
@@ -82,3 +82,47 @@ def ofHcomp
 end Bicategory
 
 end CategoryTheory
+
+namespace StringDiagrams
+
+open CategoryTheory Bicategory
+
+universe w v u
+
+variable {B : Type u} [Bicategory.{w, v} B]
+
+/-- The horizontal composite of 2-morphisms in a bicategory, `η ▷ h ≫ g ◁ θ : f ≫ h ⟶ g ≫ i`. -/
+abbrev hcomp₂ {a b c : B} {f g : a ⟶ b} {h i : b ⟶ c} (η : f ⟶ g) (θ : h ⟶ i) :
+    f ≫ h ⟶ g ≫ i :=
+  η ▷ h ≫ g ◁ θ
+
+theorem hcomp₂_id_id {a b c : B} (f : a ⟶ b) (h : b ⟶ c) : hcomp₂ (𝟙 f) (𝟙 h) = 𝟙 (f ≫ h) := by
+  simp [hcomp₂]
+
+theorem hcomp₂_comp {a b c : B} {f g k : a ⟶ b} {h i l : b ⟶ c} (η : f ⟶ g) (η' : g ⟶ k)
+    (θ : h ⟶ i) (θ' : i ⟶ l) : hcomp₂ (η ≫ η') (θ ≫ θ') = hcomp₂ η θ ≫ hcomp₂ η' θ' := by
+  simp only [hcomp₂, comp_whiskerRight, Bicategory.whiskerLeft_comp, Category.assoc]
+  rw [whisker_exchange_assoc]
+
+/-- The naturality of the associator with respect to horizontal composition. -/
+theorem hcomp₂_hcomp₂_associator {a b c d : B} {f f' : a ⟶ b} {g g' : b ⟶ c} {h h' : c ⟶ d}
+    (η : f ⟶ f') (θ : g ⟶ g') (ι : h ⟶ h') :
+    hcomp₂ (hcomp₂ η θ) ι ≫ (α_ f' g' h').hom = (α_ f g h).hom ≫ hcomp₂ η (hcomp₂ θ ι) := by
+  simp only [hcomp₂, comp_whiskerRight, Bicategory.whiskerLeft_comp, Category.assoc]
+  rw [associator_naturality_right, associator_naturality_middle_assoc,
+    associator_naturality_left_assoc]
+
+theorem hcomp₂_hcomp₂_associator_inv {a b c d : B} {f f' : a ⟶ b} {g g' : b ⟶ c} {h h' : c ⟶ d}
+    (η : f ⟶ f') (θ : g ⟶ g') (ι : h ⟶ h') :
+    hcomp₂ η (hcomp₂ θ ι) ≫ (α_ f' g' h').inv = (α_ f g h).inv ≫ hcomp₂ (hcomp₂ η θ) ι := by
+  rw [Iso.comp_inv_eq, Category.assoc, hcomp₂_hcomp₂_associator, Iso.inv_hom_id_assoc]
+
+theorem hcomp₂_id_left {a b c : B} (f : a ⟶ b) {h i : b ⟶ c} (θ : h ⟶ i) :
+    hcomp₂ (𝟙 f) θ = f ◁ θ := by
+  simp [hcomp₂]
+
+theorem hcomp₂_id_right {a b c : B} {f g : a ⟶ b} (η : f ⟶ g) (h : b ⟶ c) :
+    hcomp₂ η (𝟙 h) = η ▷ h := by
+  simp [hcomp₂]
+
+end StringDiagrams

@@ -66,27 +66,6 @@ theorem id_eq (a : MatBicat B) : 𝟙 a = single (𝟙 a.obj) := rfl
 @[simp] theorem comp_X {a b c : MatBicat B} (M : a ⟶ b) (N : b ⟶ c) (x : M.ι × N.ι) :
     (M ≫ N).X x = M.X x.1 ≫ N.X x.2 := rfl
 
-/-- The horizontal composite of 2-morphisms in `B`, `η ▷ h ≫ g ◁ θ : f ≫ h ⟶ g ≫ i`. -/
-abbrev hcomp₂ {a b c : B} {f g : a ⟶ b} {h i : b ⟶ c} (η : f ⟶ g) (θ : h ⟶ i) :
-    f ≫ h ⟶ g ≫ i :=
-  η ▷ h ≫ g ◁ θ
-
-theorem hcomp₂_id_id {a b c : B} (f : a ⟶ b) (h : b ⟶ c) : hcomp₂ (𝟙 f) (𝟙 h) = 𝟙 (f ≫ h) := by
-  simp [hcomp₂]
-
-theorem hcomp₂_comp {a b c : B} {f g k : a ⟶ b} {h i l : b ⟶ c} (η : f ⟶ g) (η' : g ⟶ k)
-    (θ : h ⟶ i) (θ' : i ⟶ l) : hcomp₂ (η ≫ η') (θ ≫ θ') = hcomp₂ η θ ≫ hcomp₂ η' θ' := by
-  simp only [hcomp₂, comp_whiskerRight, Bicategory.whiskerLeft_comp, Category.assoc]
-  rw [whisker_exchange_assoc]
-
-/-- The naturality of the associator with respect to horizontal composition, in `B`. -/
-theorem hcomp₂_hcomp₂_associator {a b c d : B} {f f' : a ⟶ b} {g g' : b ⟶ c} {h h' : c ⟶ d}
-    (η : f ⟶ f') (θ : g ⟶ g') (ι : h ⟶ h') :
-    hcomp₂ (hcomp₂ η θ) ι ≫ (α_ f' g' h').hom = (α_ f g h).hom ≫ hcomp₂ η (hcomp₂ θ ι) := by
-  simp only [hcomp₂, comp_whiskerRight, Bicategory.whiskerLeft_comp, Category.assoc]
-  rw [associator_naturality_right, associator_naturality_middle_assoc,
-    associator_naturality_left_assoc]
-
 end Basic
 
 section Preadditive
@@ -405,9 +384,11 @@ theorem rightUnitor_hom_eq (M : a ⟶ b) :
 theorem rightUnitor_inv_eq (M : a ⟶ b) :
     (ρ_ M).inv = permMat (Equiv.prodPUnit M.ι).symm fun i => (ρ_ (M.X i)).inv := rfl
 
+omit [PreadditiveBicategory B] in
 theorem id₂_eq (M : a ⟶ b) : 𝟙 M = permMat (Equiv.refl M.ι) (fun i => 𝟙 (M.X i)) :=
   id_eq_permMat' M
 
+omit [PreadditiveBicategory B] in
 /-- A permutation matrix with entries `-φ i`. -/
 theorem neg_permMat {ι κ : Type} [Fintype ι] [Fintype κ] {X : ι → (a.obj ⟶ b.obj)}
     {Y : κ → (a.obj ⟶ b.obj)} (e : ι ≃ κ) (φ : ∀ i, X i ⟶ Y (e i)) :
