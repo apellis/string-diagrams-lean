@@ -291,6 +291,20 @@ theorem map_congr {Φ Ψ : ShiftFunctor R d d'} (hF : Φ.F = Ψ.F)
         simpa using hγ X
       rfl
 
+/-- `Orbit.map Φ` on the morphisms of degree zero coming from `S` (`Orbit.ι_comp_map`,
+componentwise). -/
+theorem map_ι_map (Φ : ShiftFunctor R d d') {X Y : S} (g : X ⟶ Y) :
+    (map Φ).map ((ι d).map g) = (ι d').map (Φ.F.map g) := by
+  have := CategoryTheory.Functor.congr_hom (ι_comp_map Φ) g
+  simpa only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp] using this
+
+/-- The naturality of `Orbit.mapNat`, componentwise. -/
+theorem map_map_comp_ι_map {Φ Ψ : ShiftFunctor R d d'} (x : Φ.F ⟶ Ψ.F)
+    (hx : ∀ X, Φ.γ.hom.app X ≫ x.app (d.Q.obj X) = d'.Q.map (x.app X) ≫ Ψ.γ.hom.app X)
+    {X Y : Orbit d} (z : X ⟶ Y) :
+    (map Φ).map z ≫ (ι d').map (x.app Y.obj) = (ι d').map (x.app X.obj) ≫ (map Ψ).map z :=
+  (mapNat x hx).naturality z
+
 /-! ## The isomorphisms `σ` -/
 
 /-- `Orbit.map Φ` carries `σ_X` to `σ_{F X}`, up to `γ`. -/
