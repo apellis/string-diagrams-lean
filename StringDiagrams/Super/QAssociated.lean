@@ -311,6 +311,105 @@ theorem τ_succ (i : ℤ) (X : Associated R (GUnderlying R B)) :
     erw [CategoryTheory.Functor.map_id, Category.id_comp]
     rcases n with _ | n <;> rfl
 
+theorem τNat_hom_mem (n : ℕ) (X : Associated R (GUnderlying R B)) :
+    (τNat R B n X).hom ∈ parity (R := R) _ _ 0 ∧ (τNat R B n X).hom ∈ degree (R := R) _ _ (-n) := by
+  induction n with
+  | zero => exact ⟨id_mem _, id_mem_degree _⟩
+  | succ n ih =>
+    refine ⟨by simpa using comp_mem (σ_hom_mem (R := R) _) ih.1, ?_⟩
+    have := comp_mem_degree (σ_hom_mem_degree (R := R) _) ih.2
+    rwa [show (-1 + -(n : ℤ)) = -((n + 1 : ℕ) : ℤ) by push_cast; ring] at this
+
+theorem τNeg_hom_mem (n : ℕ) (X : Associated R (GUnderlying R B)) :
+    (τNeg R B n X).hom ∈ parity (R := R) _ _ 0 ∧
+      (τNeg R B n X).hom ∈ degree (R := R) _ _ ((n : ℤ) + 1) := by
+  induction n with
+  | zero =>
+    show (σ (R := R) _).inv ≫ (TbF R B).map ((dB R B).e.counitIso.hom.app X) ∈ _ ∧
+      (σ (R := R) _).inv ≫ (TbF R B).map ((dB R B).e.counitIso.hom.app X) ∈ _
+    refine ⟨?_, ?_⟩
+    · have := comp_mem (σ_inv_mem (R := R) (bobj ((dB R B).Qi.obj X)))
+        (map_mem (TbF R B) ((dB R B).counit_mem X))
+      simpa using this
+    · have := comp_mem_degree (σ_inv_mem_degree (R := R) (bobj ((dB R B).Qi.obj X)))
+        (TbF_map_mem_degree (R := R) (B := B) ((dB R B).e.counitIso.hom.app X))
+      simpa using this
+  | succ n ih =>
+    show (σ (R := R) _).inv ≫ (TbF R B).map ((dB R B).e.counitIso.hom.app _) ≫ (τNeg R B n X).hom ∈ _ ∧
+      (σ (R := R) _).inv ≫ (TbF R B).map ((dB R B).e.counitIso.hom.app _) ≫ (τNeg R B n X).hom ∈ _
+    refine ⟨?_, ?_⟩
+    · have := comp_mem (σ_inv_mem (R := R) (bobj ((dB R B).Qi.obj (((dB R B).powNeg (n + 1)).obj X))))
+        (comp_mem (map_mem (TbF R B) ((dB R B).counit_mem (((dB R B).powNeg (n + 1)).obj X))) ih.1)
+      simpa using this
+    · have := comp_mem_degree
+        (σ_inv_mem_degree (R := R) (bobj ((dB R B).Qi.obj (((dB R B).powNeg (n + 1)).obj X))))
+        (comp_mem_degree (TbF_map_mem_degree (R := R) (B := B)
+          ((dB R B).e.counitIso.hom.app (((dB R B).powNeg (n + 1)).obj X))) ih.2)
+      rwa [show (1 + (0 + ((n : ℤ) + 1))) = ((n + 1 : ℕ) : ℤ) + 1 by push_cast; ring] at this
+
+/-- `τ_i` is even of degree `-i`. -/
+theorem τ_hom_mem (i : ℤ) (X : Associated R (GUnderlying R B)) :
+    (τ R B i X).hom ∈ parity (R := R) _ _ 0 ∧ (τ R B i X).hom ∈ degree (R := R) _ _ (-i) := by
+  rcases i with n | n
+  · exact τNat_hom_mem n X
+  · refine ⟨(τNeg_hom_mem n X).1, ?_⟩
+    have := (τNeg_hom_mem n X).2
+    rwa [show ((n : ℤ) + 1) = -Int.negSucc n by rw [Int.neg_negSucc]; push_cast; ring] at this
+
+theorem τ_inv_mem (i : ℤ) (X : Associated R (GUnderlying R B)) :
+    (τ R B i X).inv ∈ parity (R := R) _ _ 0 ∧ (τ R B i X).inv ∈ degree (R := R) _ _ i := by
+  refine ⟨inv_mem _ (τ_hom_mem i X).1, ?_⟩
+  simpa using inv_mem_degree _ (τ_hom_mem i X).2
+
+theorem τ_succ_inv (i : ℤ) (X : Associated R (GUnderlying R B)) :
+    (τ R B (i + 1) X).inv = (τ R B i X).inv ≫ (σ (R := R) (bobj (((dB R B).pow i).obj X))).inv ≫
+      (TbF R B).map (((dB R B).succ i).hom.app X) := by
+  rw [← cancel_epi (τ R B (i + 1) X).hom, Iso.hom_inv_id, τ_succ]
+  simp only [Category.assoc, Iso.hom_inv_id_assoc]
+  rw [← Functor.map_comp, Iso.inv_hom_id_app]
+  exact ((TbF R B).map_id _).symm
+
+variable {X Y : Associated R (GUnderlying R B)}
+
+/-- The morphism `τ_j ∘ T(f_{i,j}) ∘ τ_i⁻¹ : X → Y` of `B` given by an entry of a family. -/
+def val (f : (dB R B).FamAll X Y) (i j : ℤ) : bobj X ⟶ bobj Y :=
+  (τ R B i X).inv ≫ (TbF R B).map (f i j) ≫ (τ R B j Y).hom
+
+/-- All entries of a compatible family give the same morphism of `B`. -/
+theorem val_succ {m : ℤ} {f : (dB R B).FamAll X Y} (hf : f ∈ (dB R B).Fam R m X Y) (i j : ℤ) :
+    val f (i + 1) (j + 1) = val f i j := by
+  rw [val, val, τ_succ_inv, τ_succ, Fam.compat hf]
+  simp only [Category.assoc, Functor.map_comp]
+  rw [← Functor.map_comp_assoc (TbF R B) (((dB R B).succ i).hom.app X), Iso.hom_inv_id_app]
+  erw [CategoryTheory.Functor.map_id, Category.id_comp]
+  rw [← Functor.map_comp_assoc (TbF R B) (((dB R B).succ j).hom.app Y), Iso.hom_inv_id_app]
+  erw [CategoryTheory.Functor.map_id, Category.id_comp]
+  erw [TbF_map_Qhat]
+  rw [QPiSupercategory.Q_map_eq]
+  simp
+
+theorem val_eq {m : ℤ} {f : (dB R B).FamAll X Y} (hf : f ∈ (dB R B).Fam R m X Y) {i j : ℤ}
+    (h : i - j = m) : val f i j = val f 0 (-m) := by
+  have key : ∀ k : ℤ, val f (0 + k) (-m + k) = val f 0 (-m) := by
+    intro k
+    induction k using Int.induction_on with
+    | hz => simp
+    | hp k ih => rw [← ih, ← add_assoc, ← add_assoc, val_succ hf]
+    | hn k ih =>
+      rw [← ih, show (0 : ℤ) + -(k : ℤ) = 0 + (-(k : ℤ) - 1) + 1 by ring,
+        show -m + -(k : ℤ) = -m + (-(k : ℤ) - 1) + 1 by ring, val_succ hf]
+  rw [← key i, show 0 + i = i by ring, show -m + i = j by omega]
+
+theorem val_zero {m : ℤ} (f : (dB R B).FamAll X Y) :
+    val f 0 (-m) = (TbF R B).map (f 0 (-m)) ≫ (τ R B (-m) Y).hom := by
+  rw [val, τ_zero]; simp
+
+theorem val_famComp (m : ℤ) {Z : Associated R (GUnderlying R B)} (f : (dB R B).FamAll X Y)
+    (g : (dB R B).FamAll Y Z) (i k : ℤ) :
+    val ((dB R B).famComp m f g) i k = val f i (i - m) ≫ val g (i - m) k := by
+  rw [val, val, val, famComp, Functor.map_comp]
+  simp only [Category.assoc, Iso.hom_inv_id_assoc]
+
 end T
 
 end QAssociated
