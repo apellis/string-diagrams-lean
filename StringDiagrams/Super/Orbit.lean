@@ -737,6 +737,88 @@ theorem mem_degree_iff {X Y : Orbit d} {n : ℤ} {f : X ⟶ Y} :
 theorem lof_mem_degree {X Y : Orbit d} {n : ℤ} (g : d.Fam R n X.obj Y.obj) :
     (d.lof n X.obj Y.obj g : X ⟶ Y) ∈ GradedSupercategory.degree (R := R) X Y n := ⟨g, rfl⟩
 
+/-! ## The inclusion of `S` in degree zero -/
+
+variable (d) in
+/-- The inclusion `ι : S ⥤ Orbit d`, `g ↦ (Qⁱ g)ᵢ` in degree `0`. -/
+@[simps obj]
+def ι : S ⥤ Orbit d where
+  obj X := ⟨X⟩
+  map {X Y} g := d.lof 0 X Y (d.mapFam g)
+  map_id X := by
+    show d.lof 0 X X _ = d.lof 0 X X _
+    congr 1
+    refine Subtype.ext (FamAll.ext fun i j => ?_)
+    simp [mapFam, diagFam, idFam]
+  map_comp {X Y Z} f g := by
+    show d.lof 0 X Z _ = d.compL X Y Z (d.lof 0 X Y _) (d.lof 0 Y Z _)
+    rw [compL_lof_lof]
+    refine d.lof_congr (add_zero 0).symm ?_
+    rw [famCompₗ_apply]
+    simp only [mapFam]
+    rw [famComp_diagFam]
+    simp
+
+theorem ι_map (d : ShiftData R S) {X Y : S} (g : X ⟶ Y) :
+    ((ι d).map g : (⟨X⟩ : Orbit d) ⟶ ⟨Y⟩) = d.lof 0 X Y (d.mapFam g) := rfl
+
+instance : (ι d).Additive where
+  map_add {X Y f g} := by
+    show d.lof 0 X Y _ = d.lof 0 X Y _ + d.lof 0 X Y _
+    rw [← map_add]; congr 1
+    exact Subtype.ext (FamAll.ext fun i j => by
+      simp only [mapFam, diagFam, Functor.map_add, Submodule.coe_add, FamAll.add_apply]
+      split_ifs <;> simp [Preadditive.add_comp])
+
+instance : (ι d).Linear R where
+  map_smul {X Y} f r := by
+    show d.lof 0 X Y _ = r • d.lof 0 X Y _
+    rw [← map_smul]; congr 1
+    exact Subtype.ext (FamAll.ext fun i j => by
+      simp only [mapFam, diagFam, Functor.map_smul, Submodule.coe_smul, FamAll.smul_apply]
+      split_ifs <;> simp)
+
+instance : IsSuperfunctor R (ι d) where
+  map_mem {X Y p f} hf m i j := by
+    show (d.component m X Y (d.lof 0 X Y (d.mapFam f))).1 i j ∈ _
+    by_cases h : m = 0
+    · subst h
+      simp only [component_lof_self, mapFam, diagFam]
+      split_ifs with hij
+      · subst hij; simpa using map_mem (d.pow i) hf
+      · exact Submodule.zero_mem _
+    · rw [d.component_lof_of_ne _ (Ne.symm h)]; exact Submodule.zero_mem _
+
+theorem ι_map_mem_degree {X Y : S} (g : X ⟶ Y) :
+    (ι d).map g ∈ GradedSupercategory.degree (R := R) ((ι d).obj X) ((ι d).obj Y) 0 :=
+  ⟨_, rfl⟩
+
+/-! ## The Π-structure -/
+
+section Pi
+
+variable [PiSupercategory R S]
+
+/-- The odd isomorphisms `ζ_X : Π X ≅ X` of `S`, in degree `0`. -/
+def ζIso (X : Orbit d) : (⟨(PiSupercategory.pi (R := R)).obj X.obj⟩ : Orbit d) ≅ X :=
+  (ι d).mapIso (PiSupercategory.ζ (R := R) X.obj)
+
+theorem ζIso_hom_mem (X : Orbit d) :
+    (ζIso X).hom ∈ parity (R := R) (⟨(PiSupercategory.pi (R := R)).obj X.obj⟩ : Orbit d) X 1 :=
+  map_mem (ι d) (PiSupercategory.ζ_hom_mem X.obj)
+
+/-- The orbit supercategory of a Π-supercategory is a Π-supercategory, with `Π` and `ζ`
+induced from `S`. -/
+instance instPiSupercategory : PiSupercategory R (Orbit d) :=
+  PiSupercategory.ofIso (fun X => ⟨(PiSupercategory.pi (R := R)).obj X.obj⟩) ζIso ζIso_hom_mem
+
+theorem ζ_eq (X : Orbit d) : PiSupercategory.ζ (R := R) X = ζIso X := rfl
+
+@[simp] theorem pi_obj (X : Orbit d) :
+    (PiSupercategory.pi (R := R)).obj X = ⟨(PiSupercategory.pi (R := R)).obj X.obj⟩ := rfl
+
+end Pi
+
 end Orbit
 
 
