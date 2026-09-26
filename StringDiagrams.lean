@@ -26,6 +26,8 @@ import StringDiagrams.Super.QEnvelope
 import StringDiagrams.Super.QPiCategory
 import StringDiagrams.Super.Orbit
 import StringDiagrams.Super.QAssociated
+import StringDiagrams.Super.OrbitFunctorial
+import StringDiagrams.Super.OrbitLift
 import StringDiagrams.Super.GSKar
 import StringDiagrams.Super.BicategoryOfHcomp
 import StringDiagrams.Super.MatBicategory
@@ -59,6 +61,9 @@ import StringDiagrams.Super.QTwoEnvelopeUniversal
 import StringDiagrams.Super.GradedTwoEnvelopeUniversal
 import StringDiagrams.Super.UnitQPiEnvelope
 import StringDiagrams.Super.QPiTwoCategory
+import StringDiagrams.Super.OrbitTwo
+import StringDiagrams.Super.QAssociatedTwo
+import StringDiagrams.Super.QAssociatedTwoT
 import StringDiagrams.Super.DrinfeldCenter
 import StringDiagrams.Super.TwoFunctorComp
 import StringDiagrams.Super.TwoHom
