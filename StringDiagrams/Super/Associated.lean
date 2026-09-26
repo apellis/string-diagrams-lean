@@ -43,8 +43,10 @@ of Theorem 1.9 is unaffected; only the explicit inverse and the identities `E₁
   superfunctor `F̂ : Â ⥤ B̂`, with `D₁(G F) = D₁ G ∘ D₁ F` and `D₁(I) = I` (`map_comp`,
   `map_id`); naturality of `T`: `F ∘ T_A = T_B ∘ (F̲)^` (`T_naturality`).
 
-The 2-categorical strengthening (Theorem 5.3: Π-natural transformations and even supernatural
-transformations) is not formalized here.
+On 2-morphisms, `D₁` sends a Π-natural transformation to an even supernatural transformation
+(`isSupernatural_mapNatTrans`, (5.3)); `E₁` on 2-morphisms is `Underlying.isPiNatural`. The
+remaining content of Theorem 5.3 (that `T` is a Π-2-natural isomorphism `D₁ ∘ E₁ ≅ I`) is not
+formalized here.
 -/
 
 noncomputable section
@@ -433,6 +435,26 @@ theorem map_comp {F : C ⥤ D} [F.Additive] {G : D ⥤ E} [G.Additive] (hF : PiF
     (hG : PiFunctor R G) : map (hF.comp hG) = map hF ⋙ map hG :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by
     ext <;> simp
+
+/-- **Brundan–Ellis, (5.3).** `D₁` on 2-morphisms: a Π-natural transformation `y : F ⟶ G`
+gives the even supernatural transformation `ŷ_λ := y_λ` between `F̂` and `Ĝ`. -/
+theorem isSupernatural_mapNatTrans {F G : C ⥤ D} [F.Additive] [F.Linear R] [G.Additive]
+    [G.Linear R] {hF : PiFunctor R F} {hG : PiFunctor R G} {y : F ⟶ G}
+    (hy : PiFunctor.IsPiNatural R hF hG y) :
+    IsSupernatural R 0 (F := map hF) (G := map hG) fun X => homMk (y.app X.obj) 0 := by
+  refine isSupernatural_of_natTrans (F := map hF) (G := map hG)
+    ({ app := fun X : Associated R C => homMk (Y := (map hG).obj X) (y.app X.obj) 0
+       naturality := fun X Y f => ?_ } : map hF ⟶ map hG) (fun X => mem_parity_zero.2 rfl)
+  have h : hF.β.inv.app Y.obj ≫ (PiCategory.pi (R := R)).map (y.app Y.obj) =
+      y.app ((PiCategory.pi (R := R)).obj Y.obj) ≫ hG.β.inv.app Y.obj := by
+    rw [← cancel_epi (hF.β.hom.app Y.obj), Iso.hom_inv_id_app_assoc, reassoc_of% (hy Y.obj),
+      Iso.hom_inv_id_app]
+    exact (Category.comp_id _).symm
+  ext
+  · simp [y.naturality]
+  · simp only [comp_snd, map_map, homMk_fst, homMk_snd, Category.assoc, Functor.map_zero,
+      Limits.comp_zero, zero_add, add_zero, Limits.zero_comp]
+    rw [h, ← Category.assoc, ← Category.assoc, y.naturality]
 
 end Map
 

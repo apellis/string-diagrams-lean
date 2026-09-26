@@ -15,12 +15,12 @@ In the whiskering presentation of `StringDiagrams.MonoidalSupercategory`, this a
 `Πᵃ λ ◁ g_c^d = (-1)^{a|g_c^d|} (λ ◁ g)_{a+c}^{a+d}` and
 `f_a^b ▷ Πᶜ μ = (-1)^{|f|c} (f ▷ μ)_{a+c}^{b+c}` (`toHom_whiskerLeft_of_mem`,
 `toHom_whiskerRight_of_mem`), and the paper's formula for the tensor product is
-`superTensorHom_ofHom`.
+`toHom_superTensorHom`.
 
 ## Main statements
 
 * `Envelope.instMonoidalCategoryStruct`, `Envelope.monoidalSupercategory`: Definition 1.16.
-* `Envelope.superTensorHom_ofHom`: the sign formula of Definition 1.16 for the paper's tensor
+* `Envelope.toHom_superTensorHom`: the sign formula of Definition 1.16 for the paper's tensor
   product `superTensorHom`.
 * `Envelope.piUnit`, `Envelope.ζUnit`: the object `π := Π¹ 1` and the odd isomorphism
   `ζ := (1_1)_1^0 : π ≅ 1` (Definition 1.16), making `A_π` a monoidal Π-supercategory in the
@@ -305,7 +305,8 @@ supercategory. -/
 instance monoidalSupercategory : MonoidalSupercategory R (Envelope R C) where
   tensorHom_def _ _ := rfl
   whiskerLeft_id X Y := by
-    apply hom_ext; rw [toHom_whiskerLeft, twist_id]; exact MonoidalSupercategory.whiskerLeft_id (R := R) _ _
+    apply hom_ext; rw [toHom_whiskerLeft, twist_id]
+    exact MonoidalSupercategory.whiskerLeft_id (R := R) _ _
   id_whiskerRight X Y := by
     apply hom_ext; rw [toHom_whiskerRight, toHom_id, twist_id]
     exact MonoidalSupercategory.id_whiskerRight (R := R) _ _

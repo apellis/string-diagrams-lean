@@ -27,10 +27,11 @@ isomorphism `ζ : π ≅ 1` (`StringDiagrams.MonoidalPiSupercategory`). We prove
 * it is a Π-supercategory with `Π := π ⊗ -` and `ζ_λ := l_λ ∘ (ζ ⊗ 1_λ)`
   (`MonoidalPiSupercategory.toPiSupercategory`);
 * the even isomorphisms `β_λ := (1_λ ⊗ ζ⁻¹) ∘ r_λ⁻¹ ∘ l_λ ∘ (ζ ⊗ 1_λ) : π ⊗ λ ≅ λ ⊗ π` are
-  natural (`β_naturality`), satisfy (1.6) (`leftUnitor_β`) and (1.7) (`β_tensor`), so that
+  natural (`β_naturality`), satisfy (1.6) (`β_unit`) and (1.7) (`β_tensor`), so that
   `(π, β)` is an object of the Drinfeld center of `A̲` (`MonoidalPiSupercategory.halfBraiding`),
   and `β_π = -1` (`β_pi`);
-* the even isomorphism `ξ := (l_1 = r_1) ∘ (ζ ⊗ ζ) : π ⊗ π ≅ 1` satisfies (1.8) (`ξ_comm`).
+* the even isomorphism `ξ := (l_1 = r_1) ∘ (ζ ⊗ ζ) : π ⊗ π ≅ 1` (`ξ_hom_eq`) satisfies (1.8)
+  (`ξ_comm`).
 
 ## Monoidal Π-categories (Definition 1.14)
 
@@ -38,7 +39,16 @@ isomorphism `ζ : π ≅ 1` (`StringDiagrams.MonoidalPiSupercategory`). We prove
 center (Mathlib's `HalfBraiding`) with `β_π = -1` and an isomorphism `ξ : π ⊗ π ≅ 1`
 satisfying (1.8). The underlying monoidal category of a monoidal Π-supercategory is a monoidal
 Π-category (`MonoidalPiSupercategory.toMonoidalPiCategory`): the object part of the functor (2)
-of (1.9).
+of (1.9). A monoidal superfunctor `F` between monoidal Π-supercategories gives a monoidal
+Π-functor between the underlying monoidal Π-categories, with `j := (F ζ_A)⁻¹ ∘ i ∘ ζ_B`
+(`MonoidalSuperfunctor.toMonoidalPiFunctor`): the functor (2) on morphisms.
+
+## Not formalized
+
+Theorem 1.15 (the monoidal analogue of Theorem 1.9): neither the universal property of the
+monoidal Π-envelope (extension of monoidal superfunctors along `J`) nor the inverse functor
+`Π-Mon → Π-SMon` (a monoidal structure on the associated Π-supercategory of a monoidal
+Π-category) is formalized here.
 
 The Π-envelope of a monoidal supercategory is a monoidal Π-supercategory
 (`Envelope.instMonoidalPiSupercategory`, Definition 1.16).
@@ -334,7 +344,8 @@ theorem ζR_inv_associator (X Y : C) :
 theorem ζR_inv_whiskerRight_associator_ζL (X Y : C) :
     (ζR (R := R) X).inv ▷ Y ≫ (α_ X 𝛑 Y).hom ≫ X ◁ (ζL (R := R) Y).hom = 𝟙 _ := by
   simp only [ζR, ζL]
-  rw [MonoidalSupercategory.comp_whiskerRight (R := R), MonoidalSupercategory.whiskerLeft_comp (R := R),
+  rw [MonoidalSupercategory.comp_whiskerRight (R := R),
+    MonoidalSupercategory.whiskerLeft_comp (R := R),
     Category.assoc, ← Category.assoc ((X ◁ (𝛇).inv) ▷ Y),
     MonoidalSupercategory.associator_naturality_middle R, Category.assoc,
     ← Category.assoc (X ◁ (𝛇).inv ▷ Y), ← MonoidalSupercategory.whiskerLeft_comp (R := R),
@@ -357,7 +368,8 @@ theorem β_tensor (X Y : C) :
 /-- `ζL_π = -ζR_π`. -/
 theorem ζL_pi : (ζL (R := R) 𝛑).hom = -(ζR (R := R) 𝛑).hom := by
   rw [← cancel_mono (𝛇).hom]
-  have h := MonoidalSupercategory.super_interchange (ζ_hom_mem (R := R) (C := C)) (ζ_hom_mem (R := R) (C := C))
+  have h := MonoidalSupercategory.super_interchange (ζ_hom_mem (R := R) (C := C))
+    (ζ_hom_mem (R := R) (C := C))
   rw [koszulSign_one_one, neg_one_smul] at h
   simp only [ζL, ζR, Category.assoc, Preadditive.neg_comp]
   rw [← MonoidalSupercategory.leftUnitor_naturality (R := R), ← Category.assoc, h,
