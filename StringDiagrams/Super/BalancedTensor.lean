@@ -96,6 +96,20 @@ theorem algProj_add_algProj (b : B) : algProj ℬ 0 b + algProj ℬ 1 b = b :=
   proj_add_proj (R := k) (C := SuperalgebraCat ℬ) (X := SuperalgebraCat.star ℬ)
     (Y := SuperalgebraCat.star ℬ) b
 
+theorem algProj_of_mem {p : ZMod 2} {b : B} (hb : b ∈ ℬ p) : algProj ℬ p b = b :=
+  proj_of_mem (R := k) (C := SuperalgebraCat ℬ) (X := SuperalgebraCat.star ℬ)
+    (Y := SuperalgebraCat.star ℬ) hb
+
+theorem algProj_of_mem_ne {p q : ZMod 2} {b : B} (hb : b ∈ ℬ q) (h : q ≠ p) : algProj ℬ p b = 0 :=
+  proj_of_mem_ne (R := k) (C := SuperalgebraCat ℬ) (X := SuperalgebraCat.star ℬ)
+    (Y := SuperalgebraCat.star ℬ) hb h
+
+/-- Induction on the elements of a superalgebra via homogeneous elements. -/
+theorem alg_induction_on {P : B → Prop} (b : B) (zero : P 0)
+    (hom : ∀ (p : ZMod 2) (b : B), b ∈ ℬ p → P b) (add : ∀ b b', P b → P b' → P (b + b')) : P b :=
+  Supercategory.induction_on (R := k) (C := SuperalgebraCat ℬ) (X := SuperalgebraCat.star ℬ)
+    (Y := SuperalgebraCat.star ℬ) (P := P) b zero hom add
+
 end AlgProj
 
 variable {A : Type v} [Ring A] [Algebra k A] {B : Type v'} [Ring B] [Algebra k B]
