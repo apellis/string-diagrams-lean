@@ -170,6 +170,137 @@ instance gradedTwoSupercategory [TwoSupercategory R B] [GradedTwoSupercategory R
 
 end TwoEnvelope
 
+/-! ## The `(Q, Π)`-envelope -/
+
+/-- **Definition 6.10.** The `(Q, Π)`-envelope `𝔄_{q,π}` of a graded 2-supercategory: the
+Π-envelope (Definition 4.4) of the `Q`-envelope. Its morphism supercategories are the
+`(Q, Π)`-envelopes `QPiEnvelope R (λ ⟶ μ)` of Definition 6.8. -/
+abbrev QPiTwoEnvelope (R : Type w₁) (B : Type u) := TwoEnvelope R (QTwoEnvelope R B)
+
+namespace QPiTwoEnvelope
+
+variable {R : Type w₁} [CommRing R] {B : Type u} [BicategoryStruct.{w, v} B]
+  [∀ a b : B, Preadditive (a ⟶ b)] [∀ a b : B, Linear R (a ⟶ b)]
+  [∀ a b : B, Supercategory R (a ⟶ b)] [∀ a b : B, GradedSupercategory R (a ⟶ b)]
+  [TwoSupercategory R B] [GradedTwoSupercategory R B]
+
+example : TwoSupercategory R (QPiTwoEnvelope R B) := inferInstance
+example : GradedTwoSupercategory R (QPiTwoEnvelope R B) := inferInstance
+
+omit [(a b : B) → GradedSupercategory R (a ⟶ b)] [TwoSupercategory R B]
+  [GradedTwoSupercategory R B] in
+/-- The morphism supercategories of `𝔄_{q,π}` are the `(Q, Π)`-envelopes of those of `𝔄`. -/
+theorem hom_eq (a b : QPiTwoEnvelope R B) : (a ⟶ b) = QPiEnvelope R (a.as.as ⟶ b.as.as) := rfl
+
+/-- The 1-morphism `q_λ = Q¹Π⁰1_λ`. -/
+def q (a : QPiTwoEnvelope R B) : a ⟶ a := ⟨0, ⟨1, 𝟙 a.as.as⟩⟩
+
+/-- The 1-morphism `q_λ⁻¹ = Q⁻¹Π⁰1_λ`. -/
+def qinv (a : QPiTwoEnvelope R B) : a ⟶ a := ⟨0, ⟨-1, 𝟙 a.as.as⟩⟩
+
+/-- `σ_λ : q_λ ⇒ 1_λ`, induced by `1_{1_λ}`. -/
+def σ (a : QPiTwoEnvelope R B) : q a ≅ 𝟙 a :=
+  Envelope.isoOfIso (QEnvelope.isoOfIso (Iso.refl (𝟙 a.as.as)))
+
+/-- `σ̄_λ : q_λ⁻¹ ⇒ 1_λ`, induced by `1_{1_λ}`. -/
+def σbar (a : QPiTwoEnvelope R B) : qinv a ≅ 𝟙 a :=
+  Envelope.isoOfIso (QEnvelope.isoOfIso (Iso.refl (𝟙 a.as.as)))
+
+omit [(a b : B) → GradedSupercategory R (a ⟶ b)] [TwoSupercategory R B]
+  [GradedTwoSupercategory R B] in
+theorem idIso_hom_mem {a : QPiTwoEnvelope R B} {f : a ⟶ a} (hf : f.par = 0) (hobj : f.obj.obj = 𝟙 a.as.as)
+    (e : f.obj.obj ≅ 𝟙 a.as.as) (he : e = eqToIso hobj) :
+    (Envelope.isoOfIso (QEnvelope.isoOfIso e) : f ≅ 𝟙 a).hom ∈ parity (R := R) f (𝟙 a) 0 := by
+  obtain ⟨p, ⟨m, x⟩⟩ := f
+  simp only at hf hobj
+  subst hf hobj he
+  show 𝟙 _ ∈ parity (R := R) (C := a.as.as ⟶ a.as.as) _ _ (0 + (0 + 0))
+  simpa using id_mem (R := R) (𝟙 a.as.as)
+
+/-- **Definition 6.10.** The `(Q, Π)`-envelope is a graded `(Q, Π)`-2-supercategory:
+`π_λ = Q⁰Π¹1_λ` (Definition 4.4), `q_λ = Q¹Π⁰1_λ`, `q_λ⁻¹ = Q⁻¹Π⁰1_λ`, and `ζ_λ`, `σ_λ`, `σ̄_λ`
+induced by `1_{1_λ}`, which are odd, even and even of degrees `0`, `-1` and `1`. -/
+instance instQPiTwoSupercategory : QPiTwoSupercategory R (QPiTwoEnvelope R B) where
+  ζ_hom_mem_degree a := by
+    show 𝟙 (𝟙 a.as.as) ∈ degree (R := R) _ _ (0 + (0 - 0))
+    simpa using id_mem_degree (R := R) (𝟙 a.as.as)
+  q := q
+  qinv := qinv
+  σ := σ
+  σbar := σbar
+  σ_hom_mem a := idIso_hom_mem rfl rfl _ rfl
+  σ_hom_mem_degree a := by
+    show 𝟙 (𝟙 a.as.as) ∈ degree (R := R) _ _ (-1 + (1 - 0))
+    simpa using id_mem_degree (R := R) (𝟙 a.as.as)
+  σbar_hom_mem a := idIso_hom_mem rfl rfl _ rfl
+  σbar_hom_mem_degree a := by
+    show 𝟙 (𝟙 a.as.as) ∈ degree (R := R) _ _ (1 + (-1 - 0))
+    simpa using id_mem_degree (R := R) (𝟙 a.as.as)
+
+/-- The morphism of `𝔄` underlying a 2-morphism `x^{n,b}_{m,a}` of `𝔄_{q,π}`. -/
+abbrev toHom {a b : QPiTwoEnvelope R B} {f g : a ⟶ b} (x : f ⟶ g) : f.obj.obj ⟶ g.obj.obj :=
+  QEnvelope.toHom (Envelope.toHom x)
+
+omit [(a b : B) → GradedSupercategory R (a ⟶ b)] [GradedTwoSupercategory R B] in
+/-- **Definition 6.10**, horizontal composition:
+`y^{l,d}_{n,b} x^{k,c}_{m,a} = (-1)^{b|x| + |y|c + bc + ab} (yx)^{k+l,c+d}_{m+n,a+b}`
+(with 1-morphisms composed in diagrammatic order, `x : Q^mΠ^aF ⇒ Q^kΠ^cH`,
+`y : Q^nΠ^bG ⇒ Q^lΠ^dK`, and `|x|`, `|y|` the parities in `𝔄`). The degrees add
+(`GradedTwoSupercategory.hcomp_mem_degree`). -/
+theorem toHom_hcomp {a b c : QPiTwoEnvelope R B} {f h : a ⟶ b} {g k : b ⟶ c} {x : f ⟶ h}
+    {y : g ⟶ k} {px py : ZMod 2} (hx : toHom x ∈ parity (R := R) f.obj.obj h.obj.obj px)
+    (hy : toHom y ∈ parity (R := R) g.obj.obj k.obj.obj py) :
+    toHom (hcomp x y) =
+      sign R (g.par * px + py * h.par + g.par * h.par + f.par * g.par) • hcomp (toHom x) (toHom y) :=
+  congrArg QEnvelope.toHom (TwoEnvelope.toHom_hcomp (R := R) (B := QTwoEnvelope R B) hx hy)
+
+omit [TwoSupercategory R B] [GradedTwoSupercategory R B] in
+/-- The 2-morphism `x^{n,b}_{m,a}` has degree `deg x + n - m`. -/
+theorem ofHom_mem_degree {a b : QPiTwoEnvelope R B} {f g : a ⟶ b} {x : f.obj.obj ⟶ g.obj.obj}
+    {d : ℤ} (hx : x ∈ degree (R := R) _ _ d) :
+    (Envelope.ofHom (QEnvelope.ofHom x) : f ⟶ g) ∈ degree (R := R) f g (d + g.obj.shift - f.obj.shift) :=
+  QPiEnvelope.ofHom_mem_degree (R := R) (X := f) (Y := g) hx
+
+/-! ### `(Q, Π)`-completeness -/
+
+/-- The condition after Definition 6.10: every object `λ` has 1-morphisms `q^±_λ, π_λ` with
+homogeneous 2-isomorphisms `q^±_λ ⇒ 1_λ` even of degrees `∓1` and `π_λ ⇒ 1_λ` odd of degree
+`0`. -/
+def QPiComplete2 : Prop :=
+  ∀ a : B, (∃ (f : a ⟶ a) (e : f ≅ 𝟙 a), e.hom ∈ parity (R := R) f (𝟙 a) 0 ∧
+      e.hom ∈ degree (R := R) f (𝟙 a) 1) ∧
+    (∃ (f : a ⟶ a) (e : f ≅ 𝟙 a), e.hom ∈ parity (R := R) f (𝟙 a) 0 ∧
+      e.hom ∈ degree (R := R) f (𝟙 a) (-1)) ∧
+    (∃ (f : a ⟶ a) (e : f ≅ 𝟙 a), e.hom ∈ parity (R := R) f (𝟙 a) 1 ∧
+      e.hom ∈ degree (R := R) f (𝟙 a) 0)
+
+/-- `𝔄` is `(Q, Π)`-complete if and only if all its morphism supercategories are. -/
+theorem qpiComplete2_iff : QPiComplete2 (R := R) (B := B) ↔
+    ∀ a b : B, QPiEnvelope.QPiComplete R (a ⟶ b) := by
+  constructor
+  · intro h a b F
+    have key : ∀ (p : ZMod 2) (n : ℤ), (∃ (f : a ⟶ a) (e : f ≅ 𝟙 a),
+        e.hom ∈ parity (R := R) f (𝟙 a) p ∧ e.hom ∈ degree (R := R) f (𝟙 a) n) →
+        ∃ (Y : a ⟶ b) (e : Y ≅ F), e.hom ∈ parity (R := R) Y F p ∧
+          e.hom ∈ degree (R := R) Y F n := by
+      rintro p n ⟨f, e, he, he'⟩
+      refine ⟨f ≫ F, whiskerRightIso (R := R) e F ≪≫ leftUnitor F, ?_, ?_⟩
+      · simpa using comp_mem (whiskerRight_mem F he) (leftUnitor_hom_mem (R := R) F)
+      · simpa using comp_mem_degree (GradedTwoSupercategory.whiskerRight_mem_degree F he')
+          (GradedTwoSupercategory.leftUnitor_hom_mem_degree (R := R) F)
+    exact ⟨key 0 1 (h a).1, key 0 (-1) (h a).2.1, key 1 0 (h a).2.2⟩
+  · intro h a
+    exact ⟨(h a a (𝟙 a)).1, (h a a (𝟙 a)).2.1, (h a a (𝟙 a)).2.2⟩
+
+/-- The components `QPiEnvelope.J : (λ ⟶ μ) → (λ ⟶ μ)_{q,π}` of `𝕁 : 𝔄 → 𝔄_{q,π}` are graded
+superequivalences if and only if `𝔄` is `(Q, Π)`-complete. -/
+theorem J_gradedEvenlyDense_iff :
+    (∀ a b : B, GradedEvenlyDense R (QPiEnvelope.J R (a ⟶ b))) ↔ QPiComplete2 (R := R) (B := B) := by
+  rw [qpiComplete2_iff]
+  exact forall_congr' fun a => forall_congr' fun b => QPiEnvelope.J_gradedEvenlyDense_iff
+
+end QPiTwoEnvelope
+
 end StringDiagrams
 
 end
