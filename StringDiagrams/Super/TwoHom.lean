@@ -74,7 +74,7 @@ theorem toOplaxTrans_id : toOplaxTrans (id F) = 𝟙 F.toOplax := rfl
 /-- A modification of the associated oplax transformations (whose components are even) as a
 supermodification. -/
 @[simps]
-def homOfModification {θ θ' : TwoNatTrans F G}
+def homOfOplaxModification {θ θ' : TwoNatTrans F G}
     (Γ : Oplax.Modification θ.toOplaxTrans θ'.toOplaxTrans) : θ ⟶ θ' where
   app a := (Γ.app ⟨a⟩).1
   naturality f := (congrArg Subtype.val (Γ.naturality (Underlying2.hom1 f))).symm
@@ -82,10 +82,10 @@ def homOfModification {θ θ' : TwoNatTrans F G}
 /-- An isomorphism of the associated oplax transformations as an (even) isomorphism of
 2-natural transformations. -/
 @[simps]
-def isoOfModificationIso {θ θ' : TwoNatTrans F G} (e : θ.toOplaxTrans ≅ θ'.toOplaxTrans) :
+def isoOfOplaxModificationIso {θ θ' : TwoNatTrans F G} (e : θ.toOplaxTrans ≅ θ'.toOplaxTrans) :
     θ ≅ θ' where
-  hom := homOfModification e.hom
-  inv := homOfModification e.inv
+  hom := homOfOplaxModification e.hom
+  inv := homOfOplaxModification e.inv
   hom_inv_id := hom_ext fun a =>
     congrArg (fun Γ => Subtype.val (Oplax.Modification.app Γ ⟨a⟩)) e.hom_inv_id
   inv_hom_id := hom_ext fun a =>
@@ -140,16 +140,16 @@ def whiskerRight {θ θ' : TwoNatTrans F G} (α : θ ⟶ θ') (ψ : TwoNatTrans 
 /-- The associator of `𝔥𝔬𝔪(𝔄, 𝔅)`, with components the associators of `𝔅`. -/
 def associator (θ : TwoNatTrans F G) (ψ : TwoNatTrans G H) (φ : TwoNatTrans H I) :
     vcomp (vcomp θ ψ) φ ≅ vcomp θ (vcomp ψ φ) :=
-  isoOfModificationIso (θ := vcomp (vcomp θ ψ) φ) (θ' := vcomp θ (vcomp ψ φ))
+  isoOfOplaxModificationIso (θ := vcomp (vcomp θ ψ) φ) (θ' := vcomp θ (vcomp ψ φ))
     (Bicategory.associator θ.toOplaxTrans ψ.toOplaxTrans φ.toOplaxTrans)
 
 /-- The left unitor of `𝔥𝔬𝔪(𝔄, 𝔅)`, with components the left unitors of `𝔅`. -/
 def leftUnitor (θ : TwoNatTrans F G) : vcomp (id F) θ ≅ θ :=
-  isoOfModificationIso (θ := vcomp (id F) θ) (θ' := θ) (Bicategory.leftUnitor θ.toOplaxTrans)
+  isoOfOplaxModificationIso (θ := vcomp (id F) θ) (θ' := θ) (Bicategory.leftUnitor θ.toOplaxTrans)
 
 /-- The right unitor of `𝔥𝔬𝔪(𝔄, 𝔅)`, with components the right unitors of `𝔅`. -/
 def rightUnitor (θ : TwoNatTrans F G) : vcomp θ (id G) ≅ θ :=
-  isoOfModificationIso (θ := vcomp θ (id G)) (θ' := θ) (Bicategory.rightUnitor θ.toOplaxTrans)
+  isoOfOplaxModificationIso (θ := vcomp θ (id G)) (θ' := θ) (Bicategory.rightUnitor θ.toOplaxTrans)
 
 @[simp] theorem associator_hom_app (θ : TwoNatTrans F G) (ψ : TwoNatTrans G H)
     (φ : TwoNatTrans H I) (a : B) :
