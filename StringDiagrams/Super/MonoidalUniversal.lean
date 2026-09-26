@@ -13,8 +13,10 @@ Let `A` be a monoidal supercategory and `B` a monoidal Π-supercategory, viewed 
 Π-supercategory with `Π = π ⊗ -` (`MonoidalPiSupercategory.toPiSupercategory`).
 
 * A monoidal superfunctor `F : A → B` extends to a monoidal superfunctor `F̃ : A_π → B`
-  (`Envelope.extendMonoidal`) with `F̃ J = F` as monoidal superfunctors
-  (`Envelope.monoidalJ_comp_extendMonoidal`). The underlying superfunctor is `Envelope.extend`
+  (`Envelope.extendMonoidal`) with `F̃ J = F` as monoidal superfunctors (`J_comp_extend` on the
+  underlying superfunctors and `Envelope.extendMonoidal_μIso_J`,
+  `Envelope.extendMonoidal_εIso` on the coherence maps). The underlying superfunctor is
+  `Envelope.extend`
   (Lemma 4.2(i)); the coherence map is
   `c̃_{Πᵃλ, Πᵇμ} = (ζᵃ_{Fλ} ⊗ ζᵇ_{Fμ}) ≫ c_{λ,μ} ≫ (ζ^{a+b}_{F(λ⊗μ)})⁻¹` (`extendμ`), where
   `⊗` is Mathlib's `tensorHom` (`f ▷ _ ≫ _ ◁ g`), and `ĩ = i`.
@@ -24,9 +26,10 @@ Let `A` be a monoidal supercategory and `B` a monoidal Π-supercategory, viewed 
 * Restriction along `J` is a bijection from monoidal natural transformations `F̃ ⇒ G̃` to
   monoidal natural transformations `F ⇒ G` (`Envelope.restrictMonoidal_bijective`), and the
   extension respects identities and composition.
-* Every monoidal superfunctor `H : A_π → B` is isomorphic, by an even monoidal natural
-  isomorphism, to the extension of its restriction `H J`
-  (`Envelope.extendRestrictMonoidalIso`).
+* Every monoidal superfunctor `H : A_π → B` (with restriction `H J`,
+  `Envelope.restrictMonoidal`) is isomorphic, by mutually inverse even monoidal natural
+  transformations, to the extension of its restriction (`Envelope.extendRestrictMonoidalHom`,
+  `Envelope.extendRestrictMonoidalInv`, `Envelope.extendRestrictMonoidal_hom_inv`).
 
 Together these say that `F ↦ F̃`, `x ↦ x̃` is an equivalence from the category of monoidal
 superfunctors `A → νB` and monoidal natural transformations to that of monoidal superfunctors

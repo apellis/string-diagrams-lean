@@ -36,12 +36,12 @@ The units are `𝟙_λ = Π⁰ 𝟙_λ`, and the Π-structure is `π_λ := Π¹ 
 
 * `TwoEnvelope R B`, with its `BicategoryStruct` and hom-category instances, and
   `TwoEnvelope.twoSupercategory`: **Definition 4.4** and **Lemma 4.5** (the compositions (4.3)
-  and (4.4) satisfy the super interchange law, `TwoEnvelope.super_interchange'`, in the
-  paper's formulation `TwoEnvelope.toHom_super_interchange`).
+  and (4.4) satisfy the super interchange law, in the paper's formulation
+  `TwoEnvelope.toHom_super_interchange`).
 * `TwoEnvelope.toHom_hcomp`: the sign formula (4.4).
 * `TwoEnvelope.π`, `TwoEnvelope.ζ`, `TwoEnvelope.ζ_hom_mem`, `TwoEnvelope.toHom_ξ`: the
   Π-structure of Definition 4.4.
-* `TwoEnvelope.toHom_associator_sign`: the two expressions for `(z_c^f y_b^e) x_a^d` and
+* `TwoEnvelope.associator_sign_eq`: the two expressions for `(z_c^f y_b^e) x_a^d` and
   `z_c^f (y_b^e x_a^d)` displayed in Definition 4.4 carry the same sign.
 * `TwoEnvelope.PiComplete`, `TwoEnvelope.superequivalenceJ_iff` (**Lemma 4.6**): the canonical
   `𝕁 : 𝔄 → 𝔄_π` (identity on objects, `Envelope.J` on each morphism supercategory) induces

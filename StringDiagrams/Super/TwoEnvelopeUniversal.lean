@@ -10,7 +10,7 @@ Lemma 4.7 and Theorem 4.9.
 
 Let `𝔄` be a 2-supercategory and `𝔅` a 2-supercategory whose morphism supercategories carry
 Π-supercategory structures (for a Π-2-supercategory `(𝔅, π, ζ)` these are `Π = π_μ -` with
-`ζ_F = ζ_μ F`; see `TwoEnvelope.homPi`). All constructions below only use the Π-supercategory
+`ζ_F = ζ_μ F`; see `PiTwoSupercategory.homPi`). All constructions below only use the Π-supercategory
 structures of the morphism supercategories of `𝔅`, so they are stated in this generality.
 
 ## Lemma 4.7(i)
@@ -26,7 +26,7 @@ are `ĩ = i` and
 (`TwoEnvelope.extendComp`, with the horizontal composite `ζᵇ ζᵃ` of the paper written
 `hcomp ζᵃ ζᵇ` in the diagrammatic order). For a Π-2-supercategory this is the paper's
 `c̃ = m_{b,a} c_{G,F} ∘ π^b(β^a)⁻¹_{ℝG}(ℝF)`, with `m_{1,1} = -ξ` (see
-`TwoEnvelope.extendComp_eq_paper`). The naturality of `c̃` is `extendComp_naturality_left`,
+`StringDiagrams.Super.TwoEnvelopePi`). The naturality of `c̃` is `extendComp_naturality_left`,
 `extendComp_naturality_right`; the coherence axioms of Definition 2.2(ii), which the paper
 leaves to the reader, are proved by the argument behind the uniqueness in Lemma 4.2(ii): both
 sides are natural in each 1-morphism with respect to the 2-isomorphisms
