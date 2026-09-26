@@ -76,6 +76,7 @@ import StringDiagrams.Biadjunction.PivotalInclusion
 import StringDiagrams.Examples.TwoStrandGenerator
 import StringDiagrams.Examples.OddTemperleyLieb.Basic
 import StringDiagrams.Examples.OddTemperleyLieb.Representation
+import StringDiagrams.Examples.OddTemperleyLieb.MonoidalRep
 import StringDiagrams.Examples.OddTemperleyLieb.QuantumIntegers
 import StringDiagrams.Examples.OddTemperleyLieb.Dyck
 import StringDiagrams.Examples.OddTemperleyLieb.Words
@@ -91,6 +92,7 @@ import StringDiagrams.Examples.OddTemperleyLieb.SKar
 import StringDiagrams.Examples.OddTemperleyLieb.KZero
 import StringDiagrams.Examples.OddTemperleyLieb.KZeroRing
 import StringDiagrams.Examples.OddTemperleyLieb.KZeroIso
+import StringDiagrams.Examples.OddTemperleyLieb.KZeroPoly
 
 /-!
 # StringDiagrams

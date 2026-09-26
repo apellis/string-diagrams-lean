@@ -9,12 +9,13 @@ Theorem A.3 (the ring structure).
 
 In `Zπ[x, x⁻¹]` (`LZ`), `[n + 1]_{x,π} = x^n + π x^{n-2} + ⋯ + π^n x^{-n}` (`brk`). The elements
 `π^b [n + 1]_{x,π}` (`genL (n, b)`, `n ∈ ℕ`, `b ∈ ℤ/2`) are linearly independent over `ℤ`
-(`linearIndependent_genL`), and their `ℤ`-span is a subring (`spanSubring`), by (1.11).
+(`linearIndependent_genL`).
 
 **Theorem A.3 (the Grothendieck ring).** `K₀ToLZ : K₀(SKar(STL(δ))) →+* Zπ[x, x⁻¹]` sends the class
 of `P n b = (f_n)^b_b` to `π^b [n + 1]_{x,π}` (`K₀ToLZ_classJw`); it is injective
 (`K₀ToLZ_injective`) with image the `ℤ`-span of these elements, giving the ring isomorphism
-`K₀Equiv : K₀(SKar(STL(δ))) ≃+* spanSubring` which maps the basis of classes of the indecomposable
+`K₀Equiv : K₀(SKar(STL(δ))) ≃+* (K₀ToLZ q hq).range` (a subring whose underlying set is the
+`ℤ`-span of the elements `π^b [n + 1]_{x,π}`, `range_K₀ToLZ`) which maps the basis of classes of the indecomposable
 objects `P n b` (`basisK₀`) to the basis `{[n+1]_{x,π}, π [n+1]_{x,π}}`, i.e. an isomorphism of
 based rings.
 -/

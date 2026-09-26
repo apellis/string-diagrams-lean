@@ -34,7 +34,7 @@ These Koszul signs make generators at disjoint positions anticommute, as require
 interchange law (`cup_cup_op`, `cup_cap_op`, `cap_cup_op`, `cap_cap_op`).
 
 The structure of `rep q` as a monoidal superfunctor into the monoidal supercategory of
-superspaces is packaged separately.
+superspaces is in `StringDiagrams.Examples.OddTemperleyLieb.MonoidalRep` (`Rep.repSMonoidal`).
 -/
 
 noncomputable section
