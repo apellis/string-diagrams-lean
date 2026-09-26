@@ -28,9 +28,9 @@ category.
   equivalent to the category of finitely generated projective `A`-supermodules and even
   homomorphisms.
 
-The identification of `K₀(SKar(A))` with the split Grothendieck group of `A` (the last sentence
-of Example 1.17(i)) is not formalized: the full subcategory of finitely generated projective
-supermodules is not given its additive structure here.
+The identification of `K₀(SKar(A))` with the split Grothendieck group of the finitely generated
+projective supermodules (the last sentence of Example 1.17(i)) is in
+`StringDiagrams.Super.SKarSuperalgebraK0`.
 -/
 
 noncomputable section

@@ -65,6 +65,7 @@ import StringDiagrams.Super.SKarSuperalgebra
 import StringDiagrams.Super.SKarMonoidalPi
 import StringDiagrams.Super.Semisimple
 import StringDiagrams.Super.SKarUnitAbelian
+import StringDiagrams.Super.SKarSuperalgebraK0
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
