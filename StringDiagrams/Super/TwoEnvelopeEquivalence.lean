@@ -18,7 +18,8 @@ supermodifications: their vertical composites (`TwoNatTrans.vcomp`) are isomorph
 Theorem 4.9 in the non-strict setting (where composition of 2-natural transformations is
 associative and unital only up to such isomorphisms).
 
-We also record `ℝ = ℝ̃ 𝕁` as an equality of 2-superfunctors (`TwoEnvelope.twoJ_comp_extend`,
+The extension of 2-natural transformations is functorial (`TwoEnvelope.extendTwoNatTrans_id`,
+`TwoEnvelope.extendTwoNatTrans_vcomp`). We also record `ℝ = ℝ̃ 𝕁` as an equality of 2-superfunctors (`TwoEnvelope.twoJ_comp_extend`,
 Lemma 4.7(i)) and that the restriction `TwoEnvelope.restrict 𝕋` is the composite `𝕋 ∘ 𝕁`
 (`TwoEnvelope.restrict_eq_comp`).
 -/
@@ -202,6 +203,35 @@ theorem restrict_eq_comp : restrict T = (twoJ R B).comp T := by
     show (T.mapId ⟨a⟩).hom = (T.mapId ⟨a⟩).hom ≫ T.map₂ (𝟙 (𝟙 (⟨a⟩ : TwoEnvelope R B)))
     rw [T.map₂_id]
     erw [Category.comp_id]
+
+section Functoriality
+
+variable {F G H : TwoSuperfunctor R B C}
+
+/-- **Theorem 4.9**, functoriality: `1̃ = 1`. -/
+theorem extendTwoNatTrans_id : extendTwoNatTrans (TwoNatTrans.id F) = TwoNatTrans.id (extend F) := by
+  rw [← extendTwoNatTrans_restrictTwoNatTrans (TwoNatTrans.id (extend F))]
+  congr 1
+
+/-- **Theorem 4.9**, functoriality: `(X', x') ∘ (X, x)` extends to `(X̃', x̃') ∘ (X̃, x̃)`. -/
+theorem extendTwoNatTrans_vcomp (θ : TwoNatTrans F G) (θ' : TwoNatTrans G H) :
+    extendTwoNatTrans (TwoNatTrans.vcomp θ θ') =
+      TwoNatTrans.vcomp (extendTwoNatTrans θ) (extendTwoNatTrans θ') := by
+  rw [← extendTwoNatTrans_restrictTwoNatTrans
+    (TwoNatTrans.vcomp (extendTwoNatTrans θ) (extendTwoNatTrans θ'))]
+  congr 1
+  refine twoNatTrans_ext rfl fun {a b} f => heq_of_eq ?_
+  rw [restrictTwoNatTrans_x, TwoNatTrans.vcomp_x, TwoNatTrans.vcomp_x]
+  have h₁ : (extendTwoNatTrans θ).x
+      ((Envelope.J R (a ⟶ b)).obj f : (⟨a⟩ : TwoEnvelope R B) ⟶ ⟨b⟩) = θ.x f :=
+    extendX_J (a := (⟨a⟩ : TwoEnvelope R B)) (b := ⟨b⟩) θ f
+  have h₂ : (extendTwoNatTrans θ').x
+      ((Envelope.J R (a ⟶ b)).obj f : (⟨a⟩ : TwoEnvelope R B) ⟶ ⟨b⟩) = θ'.x f :=
+    extendX_J (a := (⟨a⟩ : TwoEnvelope R B)) (b := ⟨b⟩) θ' f
+  rw [h₁, h₂]
+  rfl
+
+end Functoriality
 
 end TwoEnvelope
 
