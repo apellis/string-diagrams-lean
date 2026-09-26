@@ -50,7 +50,7 @@ namespace StringDiagrams
 
 open CategoryTheory MonoidalCategory Supercategory
 
-universe w w₁ w₂
+universe w w₁ w₂ w₃ w₄
 
 /-! ## The underlying monoidal category -/
 
@@ -457,6 +457,215 @@ theorem ξ_comm (X : C) :
   simp only [Preadditive.neg_comp, Category.assoc]
 
 end MonoidalPiSupercategory
+
+/-! ## Monoidal Π-categories (Definition 1.14) -/
+
+section MonoidalPiCategory
+
+open Functor.LaxMonoidal
+
+/-- A monoidal Π-category (Brundan–Ellis, Definition 1.14(i)): an `R`-linear monoidal category
+with an object `(π, β)` of its Drinfeld center (a half-braiding `β : π ⊗ - ≅ - ⊗ π`, i.e.
+(1.7) and naturality) with `β_π = -1`, and an isomorphism `ξ : π ⊗ π ≅ 1` satisfying (1.8). -/
+class MonoidalPiCategory (R : Type w) [CommRing R] (D : Type w₁) [Category.{w₂} D]
+    [Preadditive D] [Linear R D] [MonoidalCategory D] [MonoidalPreadditive D]
+    [MonoidalLinear R D] where
+  /-- The object `π`. -/
+  pi : D
+  /-- The half-braiding `β`. -/
+  β : HalfBraiding pi
+  β_pi : (β.β pi).hom = -𝟙 (pi ⊗ pi)
+  /-- The isomorphism `ξ : π ⊗ π ≅ 1`. -/
+  ξ : pi ⊗ pi ≅ 𝟙_ D
+  /-- (1.8). -/
+  ξ_comm : ∀ X : D, ξ.hom ▷ X ≫ (λ_ X).hom ≫ (ρ_ X).inv ≫ X ◁ ξ.inv =
+    (α_ pi pi X).hom ≫ pi ◁ (β.β X).hom ≫ (α_ pi X pi).inv ≫ (β.β X).hom ▷ pi ≫
+      (α_ X pi pi).hom
+
+variable {R : Type w} [CommRing R] {D : Type w₁} [Category.{w₂} D] [Preadditive D]
+  [Linear R D] [MonoidalCategory D] [MonoidalPreadditive D] [MonoidalLinear R D]
+  {E : Type w₃} [Category.{w₄} E] [Preadditive E] [Linear R E] [MonoidalCategory E]
+  [MonoidalPreadditive E] [MonoidalLinear R E] [MonoidalPiCategory R D] [MonoidalPiCategory R E]
+
+variable (R) in
+/-- A monoidal Π-functor (Brundan–Ellis, Definition 1.14(ii)): a monoidal functor `F` with an
+isomorphism `j : π_E ≅ F π_D` compatible with the `β`s and the `ξ`s. -/
+structure MonoidalPiFunctor (F : D ⥤ E) [F.Monoidal] where
+  /-- The coherence map `j`. -/
+  j : MonoidalPiCategory.pi (R := R) (D := E) ≅ F.obj (MonoidalPiCategory.pi (R := R) (D := D))
+  β_comm : ∀ X : D, j.hom ▷ F.obj X ≫ μ F _ X ≫
+      F.map ((MonoidalPiCategory.β (R := R) (D := D)).β X).hom =
+    ((MonoidalPiCategory.β (R := R) (D := E)).β (F.obj X)).hom ≫ F.obj X ◁ j.hom ≫ μ F X _
+  ξ_comm : (MonoidalPiCategory.ξ (R := R) (D := E)).hom ≫ ε F =
+    (j.hom ⊗ j.hom) ≫ μ F _ _ ≫ F.map (MonoidalPiCategory.ξ (R := R) (D := D)).hom
+
+/-- A monoidal Π-natural transformation (Brundan–Ellis, Definition 1.14(iii)): a monoidal
+natural transformation `x` with `x_π ∘ j_F = j_G`. -/
+def MonoidalPiFunctor.IsPiNatural {F G : D ⥤ E} [F.Monoidal] [G.Monoidal]
+    (hF : MonoidalPiFunctor R F) (hG : MonoidalPiFunctor R G) (x : F ⟶ G)
+    [NatTrans.IsMonoidal x] : Prop :=
+  hF.j.hom ≫ x.app (MonoidalPiCategory.pi (R := R) (D := D)) = hG.j.hom
+
+end MonoidalPiCategory
+
+/-! ## The underlying monoidal Π-category of a monoidal Π-supercategory -/
+
+namespace MonoidalPiSupercategory
+
+variable {R : Type w} [CommRing R] {C : Type w₁} [Category.{w₂} C] [Preadditive C] [Linear R C]
+  [Supercategory R C] [MonoidalCategoryStruct C] [MonoidalSupercategory R C]
+  [MonoidalPiSupercategory R C]
+
+local notation "𝛑" => MonoidalPiSupercategory.pi (R := R) (C := C)
+
+/-- **(1.7).** `(π, β)` is an object of the Drinfeld center of the underlying monoidal
+category. -/
+def halfBraiding : HalfBraiding (C := Underlying R C) ⟨𝛑⟩ where
+  β U := Underlying.isoMk (β (R := R) U.obj) (β_hom_mem U.obj)
+  monoidal U U' := Subtype.ext (by
+    have h := β_tensor (R := R) U.obj U'.obj
+    change (β (R := R) (U.obj ⊗ U'.obj)).hom = (α_ 𝛑 U.obj U'.obj).inv ≫
+      (β (R := R) U.obj).hom ▷ U'.obj ≫ (α_ U.obj 𝛑 U'.obj).hom ≫
+        U.obj ◁ (β (R := R) U'.obj).hom ≫ (α_ U.obj U'.obj 𝛑).inv
+    rw [← cancel_epi (α_ 𝛑 U.obj U'.obj).hom, ← cancel_mono (α_ U.obj U'.obj 𝛑).hom]
+    simp only [Category.assoc, Iso.hom_inv_id_assoc, Iso.inv_hom_id, Category.comp_id]
+    exact h)
+  naturality f := Subtype.ext (β_naturality f.1)
+
+/-- **Brundan–Ellis, (1.9), functor (2) on objects.** The underlying monoidal category of a
+monoidal Π-supercategory is a monoidal Π-category, with `β` and `ξ := ζ ⊗ ζ`. -/
+instance toMonoidalPiCategory : MonoidalPiCategory R (Underlying R C) where
+  pi := ⟨𝛑⟩
+  β := halfBraiding
+  β_pi := Subtype.ext (β_pi (R := R))
+  ξ := Underlying.isoMk (ξ (R := R) (C := C)) ξ_hom_mem
+  ξ_comm X := Subtype.ext (ξ_comm (R := R) X.obj)
+
+end MonoidalPiSupercategory
+
+/-! ## Monoidal superfunctors give monoidal Π-functors -/
+
+namespace MonoidalSuperfunctor
+
+variable {R : Type w} [CommRing R] {C : Type w₁} [Category.{w₂} C] [Preadditive C] [Linear R C]
+  [Supercategory R C] [MonoidalCategoryStruct C] [MonoidalSupercategory R C]
+  [MonoidalPiSupercategory R C]
+  {D : Type w₃} [Category.{w₄} D] [Preadditive D] [Linear R D] [Supercategory R D]
+  [MonoidalCategoryStruct D] [MonoidalSupercategory R D] [MonoidalPiSupercategory R D]
+  {F : C ⥤ D} [F.Additive] [F.Linear R] [IsSuperfunctor R F] (hF : MonoidalSuperfunctor R F)
+
+/-- The underlying functor of a monoidal superfunctor is monoidal. -/
+def underlyingCoreMonoidal : (Underlying.map (R := R) F).CoreMonoidal where
+  εIso := Underlying.isoMk hF.εIso hF.ε_mem
+  μIso X Y := Underlying.isoMk (hF.μIso X.obj Y.obj) (hF.μ_mem _ _)
+  μIso_hom_natural_left f X' := Subtype.ext (hF.μ_natural_left f.1 X'.obj)
+  μIso_hom_natural_right X' f := Subtype.ext (hF.μ_natural_right X'.obj f.1)
+  associativity X Y Z := Subtype.ext (hF.associativity X.obj Y.obj Z.obj)
+  left_unitality X := Subtype.ext (hF.left_unitality X.obj)
+  right_unitality X := Subtype.ext (hF.right_unitality X.obj)
+
+local notation "𝛑C" => MonoidalPiSupercategory.pi (R := R) (C := C)
+local notation "𝛑D" => MonoidalPiSupercategory.pi (R := R) (C := D)
+local notation "𝛇C" => MonoidalPiSupercategory.ζ (R := R) (C := C)
+local notation "𝛇D" => MonoidalPiSupercategory.ζ (R := R) (C := D)
+
+/-- The coherence map `j := (F ζ_A)⁻¹ ∘ i ∘ ζ_B : π_B ≅ F π_A`. -/
+def jIso : 𝛑D ≅ F.obj 𝛑C := 𝛇D ≪≫ hF.εIso ≪≫ F.mapIso (𝛇C).symm
+
+omit [MonoidalSupercategory R C] [MonoidalSupercategory R D] in
+theorem jIso_hom : (jIso hF).hom = (𝛇D).hom ≫ hF.εIso.hom ≫ F.map (𝛇C).inv := rfl
+
+omit [MonoidalSupercategory R C] [MonoidalSupercategory R D] in
+theorem jIso_hom_mem : (jIso hF).hom ∈ parity (R := R) 𝛑D (F.obj 𝛑C) 0 := by
+  have := comp_mem (comp_mem (MonoidalPiSupercategory.ζ_hom_mem (R := R) (C := D)) hF.ε_mem)
+    (Supercategory.map_mem F (MonoidalPiSupercategory.ζ_inv_mem (R := R) (C := C)))
+  simpa using this
+
+omit [MonoidalSupercategory R C] [MonoidalSupercategory R D] in
+theorem jIso_hom_comp_map_ζ : (jIso hF).hom ≫ F.map (𝛇C).hom = (𝛇D).hom ≫ hF.εIso.hom := by
+  rw [jIso_hom, Category.assoc, Category.assoc, ← F.map_comp, Iso.inv_hom_id, F.map_id,
+    Category.comp_id]
+
+theorem β_comm_left (X : C) :
+    (jIso hF).hom ▷ F.obj X ≫ (hF.μIso 𝛑C X).hom ≫
+        F.map (MonoidalPiSupercategory.β (R := R) X).hom =
+      (𝛇D).hom ▷ F.obj X ≫ (λ_ (F.obj X)).hom ≫ F.map (ρ_ X).inv ≫ F.map (X ◁ (𝛇C).inv) := by
+  rw [MonoidalPiSupercategory.β_hom, F.map_comp, F.map_comp, F.map_comp,
+    ← reassoc_of% (hF.μ_natural_left (𝛇C).hom X), ← Category.assoc,
+    ← MonoidalSupercategory.comp_whiskerRight (R := R), jIso_hom_comp_map_ζ,
+    MonoidalSupercategory.comp_whiskerRight (R := R), Category.assoc,
+    reassoc_of% (hF.left_unitality X).symm]
+
+omit [MonoidalSupercategory R C] in
+theorem β_comm_right (X : C) :
+    (MonoidalPiSupercategory.β (R := R) (F.obj X)).hom ≫ F.obj X ◁ (jIso hF).hom ≫
+        (hF.μIso X 𝛑C).hom =
+      (𝛇D).hom ▷ F.obj X ≫ (λ_ (F.obj X)).hom ≫ F.map (ρ_ X).inv ≫ F.map (X ◁ (𝛇C).inv) := by
+  rw [MonoidalPiSupercategory.β_hom]
+  simp only [Category.assoc]
+  congr 2
+  rw [jIso_hom, MonoidalSupercategory.whiskerLeft_comp (R := R),
+    MonoidalSupercategory.whiskerLeft_comp (R := R), Category.assoc,
+    ← reassoc_of% (MonoidalSupercategory.whiskerLeft_comp (R := R) (F.obj X) (𝛇D).inv (𝛇D).hom),
+    Iso.inv_hom_id, MonoidalSupercategory.whiskerLeft_id (R := R), Category.id_comp]
+  simp only [Category.assoc]
+  rw [hF.μ_natural_right, ← Category.assoc, ← Category.assoc]
+  congr 1
+  rw [Category.assoc, Iso.inv_comp_eq, hF.right_unitality X, Category.assoc, Category.assoc,
+    ← F.map_comp, Iso.hom_inv_id, F.map_id, Category.comp_id]
+
+theorem ξ_comm_aux :
+    (MonoidalPiSupercategory.ξ (R := R) (C := D)).hom ≫ hF.εIso.hom =
+      ((jIso hF).hom ▷ 𝛑D ≫ F.obj 𝛑C ◁ (jIso hF).hom) ≫ (hF.μIso 𝛑C 𝛑C).hom ≫
+        F.map (MonoidalPiSupercategory.ξ (R := R) (C := C)).hom := by
+  rw [MonoidalPiSupercategory.ξ_hom, MonoidalPiSupercategory.ξ_hom]
+  simp only [MonoidalPiSupercategory.ζR, F.map_comp, Category.assoc]
+  rw [← reassoc_of% (hF.μ_natural_right 𝛑C (𝛇C).hom), ← reassoc_of%
+    (MonoidalSupercategory.whiskerLeft_comp (R := R) (F.obj 𝛑C) (jIso hF).hom (F.map (𝛇C).hom)),
+    jIso_hom_comp_map_ζ, MonoidalSupercategory.whiskerLeft_comp (R := R), Category.assoc,
+    ← reassoc_of% (hF.right_unitality 𝛑C),
+    reassoc_of% (MonoidalSupercategory.interchange_of_even_left (jIso_hom_mem hF)
+      (MonoidalPiSupercategory.ζ_hom_mem (R := R) (C := D))),
+    reassoc_of% (MonoidalSupercategory.rightUnitor_naturality (R := R) (jIso hF).hom),
+    jIso_hom_comp_map_ζ hF]
+
+/-- **Brundan–Ellis, (1.9), functor (2) on morphisms.** A monoidal superfunctor between monoidal
+Π-supercategories gives a monoidal Π-functor between the underlying monoidal Π-categories, with
+`j := (F ζ_A)⁻¹ ∘ i ∘ ζ_B`. -/
+def toMonoidalPiFunctor :
+    letI := (underlyingCoreMonoidal hF).toMonoidal
+    MonoidalPiFunctor R (Underlying.map (R := R) F) :=
+  letI := (underlyingCoreMonoidal hF).toMonoidal
+  { j := Underlying.isoMk (jIso hF) (jIso_hom_mem hF)
+    β_comm := fun X => Subtype.ext (by
+      change (jIso hF).hom ▷ F.obj X.obj ≫ (hF.μIso 𝛑C X.obj).hom ≫
+          F.map (MonoidalPiSupercategory.β (R := R) X.obj).hom =
+        (MonoidalPiSupercategory.β (R := R) (F.obj X.obj)).hom ≫ F.obj X.obj ◁ (jIso hF).hom ≫
+          (hF.μIso X.obj 𝛑C).hom
+      rw [β_comm_left, β_comm_right])
+    ξ_comm := Subtype.ext (by
+      change (MonoidalPiSupercategory.ξ (R := R) (C := D)).hom ≫ hF.εIso.hom =
+        ((jIso hF).hom ⊗ (jIso hF).hom) ≫ (hF.μIso 𝛑C 𝛑C).hom ≫
+          F.map (MonoidalPiSupercategory.ξ (R := R) (C := C)).hom
+      rw [MonoidalSupercategory.tensorHom_def (R := R), ξ_comm_aux]) }
+
+end MonoidalSuperfunctor
+
+/-! ## The monoidal Π-envelope -/
+
+namespace Envelope
+
+variable {R : Type w} [CommRing R] {C : Type w₁} [Category.{w₂} C] [Preadditive C] [Linear R C]
+  [Supercategory R C] [MonoidalCategoryStruct C] [MonoidalSupercategory R C]
+
+/-- **Definition 1.16.** The Π-envelope of a monoidal supercategory is a monoidal
+Π-supercategory with `π := Π¹ 1` and `ζ := (1_1)_1^0`. -/
+instance instMonoidalPiSupercategory : MonoidalPiSupercategory R (Envelope R C) where
+  pi := piUnit R C
+  ζ := ζUnit
+  ζ_hom_mem := ζUnit_hom_mem
+
+end Envelope
 
 end StringDiagrams
 
