@@ -14,10 +14,23 @@ Definition 6.12 and the strict 2-functor `𝔼` of (6.3).
   `β_Q : ΠQ ≅ QΠ` on `Q` (the condition `ξQξ⁻¹ = β_QΠ ∘ Πβ_Q` is the axiom of
   `StringDiagrams.PiFunctor`).
 * A `(Q, Π)`-functor (`StringDiagrams.QPiFunctor`, Definition 6.12(ii)) is a Π-functor
-  `(F, β_F)` with a natural isomorphism `γ_F : Q'F ≅ FQ`. The identity, `Π` (with
-  `β_Π = -1`, `γ_Π = β_Q⁻¹`) and `Q` (with `β_Q`, `γ_Q = 1`) are `(Q, Π)`-functors
-  (`QPiFunctor.id`, `QPiFunctor.pi`, `QPiFunctor.Q`), and they compose (`QPiFunctor.comp`).
-* A `(Q, Π)`-natural transformation (`QPiFunctor.IsQPiNatural`, Definition 6.12(iii)).
+  `(F, β_F)` with a natural isomorphism `γ_F : Q'F ≅ FQ` which is Π-natural, i.e.
+  `γ_F Π ∘ Q'β_F ∘ β_{Q'} F = F β_Q ∘ β_F Q ∘ Π'γ_F` (`QPiFunctorData.IsCompatible`). The
+  printed Definition 6.12(ii) consists of the data `(F, β_F, γ_F)` alone
+  (`StringDiagrams.QPiFunctorData`) and omits this compatibility; it is needed for
+  Theorem 6.13, it holds for every `(Q, Π)`-functor coming from a graded superfunctor
+  (`QPiSupercategory.β_γ_compat`), and it is invariant under `(Q, Π)`-natural isomorphism
+  (`QPiFunctorData.IsCompatible.of_iso`), but it does not follow from the printed axioms:
+  `StringDiagrams.Examples.QPiCompat` exhibits data satisfying the printed definition which is
+  not compatible, hence not isomorphic to `𝔼(F)` for any graded superfunctor `F`, so that with
+  the printed definition `𝔼` is not essentially surjective on 1-morphisms and Theorem 6.13
+  fails. We therefore adopt the definition with the compatibility as an axiom; see the
+  erratum in `README.md`. The identity, `Π` (with `β_Π = -1`, `γ_Π = β_Q⁻¹`) and `Q` (with
+  `β_Q`, `γ_Q = 1`) are `(Q, Π)`-functors (`QPiFunctor.id`, `QPiFunctor.pi`, `QPiFunctor.Q`),
+  and they compose (`QPiFunctor.comp`, which includes the proof that the compatibility is
+  preserved by composition).
+* A `(Q, Π)`-natural transformation (`QPiFunctorData.IsQPiNatural`, `QPiFunctor.IsQPiNatural`,
+  Definition 6.12(iii)).
 * The strict 2-functor `𝔼 : (Q,Π)-GSCat → (Q,Π)-Cat` of (6.3): the underlying category
   `GUnderlying R A` (even morphisms of degree zero) of a graded `(Q, Π)`-supercategory is a
   `(Q, Π)`-category (instance `GradedSupercategory.GUnderlying.instQPiCategory`), with
@@ -106,65 +119,37 @@ variable {R} {C : Type w₁} [Category.{w₂} C] [Preadditive C] [Linear R C] [Q
   {E : Type w₅} [Category.{w₆} E] [Preadditive E] [Linear R E] [QPiCategory R E]
 
 variable (R) in
-/-- A `(Q, Π)`-functor (Brundan–Ellis, Definition 6.12(ii)): a Π-functor `(F, β_F)` with a
-natural isomorphism `γ_F : Q'F ≅ FQ`. -/
-structure QPiFunctor (F : C ⥤ D) extends PiFunctor R F where
+/-- The data of a `(Q, Π)`-functor as printed in Brundan–Ellis, Definition 6.12(ii): a
+Π-functor `(F, β_F)` with a natural isomorphism `γ_F : Q'F ≅ FQ`. The printed definition
+imposes no further axiom; the definition adopted here (`StringDiagrams.QPiFunctor`) also
+requires `γ_F` to be Π-natural (`QPiFunctorData.IsCompatible`), which the printed definition
+does not imply (`StringDiagrams.Examples.QPiCompat`). -/
+structure QPiFunctorData (F : C ⥤ D) extends PiFunctor R F where
   /-- The isomorphism `γ_F : Q'F ≅ FQ`. -/
   γ : F ⋙ QPiCategory.Q (R := R) ≅ QPiCategory.Q (R := R) ⋙ F
 
-namespace QPiFunctor
-
-variable (R C) in
-/-- **Definition 6.12(ii).** The identity functor, with `β_I = 1` and `γ_I = 1`. -/
-@[simps!]
-def id : QPiFunctor R (𝟭 C) where
-  toPiFunctor := PiFunctor.id R C
-  γ := Iso.refl _
-
-variable (R C) in
-/-- **Definition 6.12(ii).** `Π`, with `β_Π = -1` and `γ_Π = β_Q⁻¹`. -/
-@[simps!]
-def pi : QPiFunctor R (PiCategory.pi (R := R) (C := C)) where
-  toPiFunctor := PiFunctor.pi
-  γ := (QPiCategory.Q_pi (R := R) (C := C)).β.symm
-
-variable (R C) in
-/-- **Definition 6.12(ii).** `Q`, with `β_Q` and `γ_Q = 1`. -/
-def Q : QPiFunctor R (QPiCategory.Q (R := R) (C := C)) where
-  toPiFunctor := QPiCategory.Q_pi
-  γ := Iso.refl _
-
-/-- The composite of `(Q, Π)`-functors, with `β_{GF} = Gβ_F ∘ β_G F` and
-`γ_{GF} = Gγ_F ∘ γ_G F`. -/
-@[simps!]
-def comp {F : C ⥤ D} {G : D ⥤ E} (hF : QPiFunctor R F) (hG : QPiFunctor R G) :
-    QPiFunctor R (F ⋙ G) where
-  toPiFunctor := hF.toPiFunctor.comp hG.toPiFunctor
-  γ := NatIso.ofComponents (fun X => hG.γ.app (F.obj X) ≪≫ G.mapIso (hF.γ.app X)) (fun f => by
-    have n1 := hF.γ.hom.naturality f
-    have n2 := hG.γ.hom.naturality (F.map f)
-    simp only [Functor.comp_obj, Functor.comp_map] at n1 n2 ⊢
-    simp only [Iso.trans_hom, Iso.app_hom, Functor.mapIso_hom, Category.assoc]
-    rw [reassoc_of% n2, ← G.map_comp, ← G.map_comp, n1])
+namespace QPiFunctorData
 
 variable (R) in
-/-- A `(Q, Π)`-natural transformation (Brundan–Ellis, Definition 6.12(iii)):
-`xΠ ∘ β_F = β_G ∘ Π'x` and `xQ ∘ γ_F = γ_G ∘ Q'x`. -/
-def IsQPiNatural {F G : C ⥤ D} (hF : QPiFunctor R F) (hG : QPiFunctor R G) (x : F ⟶ G) : Prop :=
+/-- A `(Q, Π)`-natural transformation between the data of two `(Q, Π)`-functors
+(Brundan–Ellis, Definition 6.12(iii)): `xΠ ∘ β_F = β_G ∘ Π'x` and `xQ ∘ γ_F = γ_G ∘ Q'x`. -/
+def IsQPiNatural {F G : C ⥤ D} (hF : QPiFunctorData R F) (hG : QPiFunctorData R G) (x : F ⟶ G) :
+    Prop :=
   PiFunctor.IsPiNatural R hF.toPiFunctor hG.toPiFunctor x ∧
     ∀ X : C, hF.γ.hom.app X ≫ x.app ((QPiCategory.Q (R := R)).obj X) =
       (QPiCategory.Q (R := R)).map (x.app X) ≫ hG.γ.hom.app X
 
 variable (R) in
-/-- The compatibility of `γ_F` with `β` (needed for Theorem 6.13, see the erratum in
-`StringDiagrams.Super.QAssociated`): `γ_F` is a Π-natural transformation between the
+/-- The compatibility of `γ_F` with `β`: `γ_F` is a Π-natural transformation between the
 Π-functors `Q' F` and `F Q`, i.e. `γ_F Π ∘ Q' β_F ∘ β_{Q'} F = F β_Q ∘ β_F Q ∘ Π' γ_F` in
-`Hom(Π' Q' F, F Q Π)`. -/
-def IsCompatible {F : C ⥤ D} (hF : QPiFunctor R F) : Prop :=
+`Hom(Π' Q' F, F Q Π)`. This is the axiom added to the printed Definition 6.12(ii) in
+`StringDiagrams.QPiFunctor`; it is needed for Theorem 6.13 (see the erratum in
+`StringDiagrams.Super.QAssociated`). -/
+def IsCompatible {F : C ⥤ D} (hF : QPiFunctorData R F) : Prop :=
   PiFunctor.IsPiNatural R (hF.toPiFunctor.comp (QPiCategory.Q_pi (R := R) (C := D)))
     ((QPiCategory.Q_pi (R := R) (C := C)).comp hF.toPiFunctor) hF.γ.hom
 
-theorem IsCompatible.iff {F : C ⥤ D} (hF : QPiFunctor R F) :
+theorem IsCompatible.iff {F : C ⥤ D} (hF : QPiFunctorData R F) :
     hF.IsCompatible R ↔ ∀ X : C,
       (QPiCategory.Q_pi (R := R) (C := D)).β.hom.app (F.obj X) ≫
         (QPiCategory.Q (R := R)).map (hF.β.hom.app X) ≫
@@ -176,7 +161,7 @@ theorem IsCompatible.iff {F : C ⥤ D} (hF : QPiFunctor R F) :
     Functor.mapIso_hom, Category.assoc]
 
 /-- Compatibility is invariant under `(Q, Π)`-natural isomorphisms. -/
-theorem IsCompatible.of_iso {F G : C ⥤ D} {hF : QPiFunctor R F} {hG : QPiFunctor R G}
+theorem IsCompatible.of_iso {F G : C ⥤ D} {hF : QPiFunctorData R F} {hG : QPiFunctorData R G}
     (x : F ≅ G) (hx : IsQPiNatural R hF hG x.hom) (hc : hG.IsCompatible R) :
     hF.IsCompatible R := by
   rw [IsCompatible.iff] at hc ⊢
@@ -193,6 +178,89 @@ theorem IsCompatible.of_iso {F G : C ⥤ D} {hF : QPiFunctor R F} {hG : QPiFunct
   rw [h1, ← Functor.map_comp_assoc, h2, Functor.map_comp_assoc, ← reassoc_of% n1, hc X, n2,
     reassoc_of% h3, ← Functor.map_comp_assoc (PiCategory.pi (R := R)) (hF.γ.hom.app X), h4,
     Functor.map_comp_assoc]
+
+end QPiFunctorData
+
+variable (R) in
+/-- A `(Q, Π)`-functor (Brundan–Ellis, Definition 6.12(ii), with the compatibility axiom
+added): a Π-functor `(F, β_F)` with a natural isomorphism `γ_F : Q'F ≅ FQ` which is
+Π-natural, i.e. `γ_F Π ∘ Q' β_F ∘ β_{Q'} F = F β_Q ∘ β_F Q ∘ Π' γ_F`
+(`QPiFunctorData.IsCompatible`). The printed definition omits the last axiom; see the
+module docstring. -/
+structure QPiFunctor (F : C ⥤ D) extends QPiFunctorData R F where
+  /-- The compatibility of `γ_F` with `β`. -/
+  isCompatible : toQPiFunctorData.IsCompatible R
+
+namespace QPiFunctor
+
+variable (R C) in
+/-- **Definition 6.12(ii).** The identity functor, with `β_I = 1` and `γ_I = 1`. -/
+@[simps!]
+def id : QPiFunctor R (𝟭 C) where
+  toPiFunctor := PiFunctor.id R C
+  γ := Iso.refl _
+  isCompatible := by
+    rw [QPiFunctorData.IsCompatible.iff]
+    intro X
+    simp
+
+variable (R C) in
+/-- **Definition 6.12(ii).** `Π`, with `β_Π = -1` and `γ_Π = β_Q⁻¹`. -/
+@[simps!]
+def pi : QPiFunctor R (PiCategory.pi (R := R) (C := C)) where
+  toPiFunctor := PiFunctor.pi
+  γ := (QPiCategory.Q_pi (R := R) (C := C)).β.symm
+  isCompatible := by
+    rw [QPiFunctorData.IsCompatible.iff]
+    intro X
+    simp only [PiFunctor.pi_β, NatIso.ofComponents_hom_app, Iso.symm_hom, Functor.map_neg,
+      Functor.comp_obj, CategoryTheory.Functor.map_id, Preadditive.neg_comp,
+      Preadditive.comp_neg, Category.id_comp, Iso.hom_inv_id_app]
+    rw [← Functor.map_comp, Iso.inv_hom_id_app]
+    simp
+
+variable (R C) in
+/-- **Definition 6.12(ii).** `Q`, with `β_Q` and `γ_Q = 1`. -/
+def Q : QPiFunctor R (QPiCategory.Q (R := R) (C := C)) where
+  toPiFunctor := QPiCategory.Q_pi
+  γ := Iso.refl _
+  isCompatible := by
+    rw [QPiFunctorData.IsCompatible.iff]
+    intro X
+    simp
+
+/-- The composite of `(Q, Π)`-functors, with `β_{GF} = Gβ_F ∘ β_G F` and
+`γ_{GF} = Gγ_F ∘ γ_G F`; the compatibility of `γ_{GF}` follows from those of `γ_F` and `γ_G`. -/
+@[simps!]
+def comp {F : C ⥤ D} {G : D ⥤ E} (hF : QPiFunctor R F) (hG : QPiFunctor R G) :
+    QPiFunctor R (F ⋙ G) where
+  toPiFunctor := hF.toPiFunctor.comp hG.toPiFunctor
+  γ := NatIso.ofComponents (fun X => hG.γ.app (F.obj X) ≪≫ G.mapIso (hF.γ.app X)) (fun f => by
+    have n1 := hF.γ.hom.naturality f
+    have n2 := hG.γ.hom.naturality (F.map f)
+    simp only [Functor.comp_obj, Functor.comp_map] at n1 n2 ⊢
+    simp only [Iso.trans_hom, Iso.app_hom, Functor.mapIso_hom, Category.assoc]
+    rw [reassoc_of% n2, ← G.map_comp, ← G.map_comp, n1])
+  isCompatible := by
+    rw [QPiFunctorData.IsCompatible.iff]
+    intro X
+    have cF := (QPiFunctorData.IsCompatible.iff hF.toQPiFunctorData).1 hF.isCompatible X
+    have cG := (QPiFunctorData.IsCompatible.iff hG.toQPiFunctorData).1 hG.isCompatible (F.obj X)
+    have nγ := hG.γ.hom.naturality (hF.β.hom.app X)
+    have nβ := hG.β.hom.naturality (hF.γ.hom.app X)
+    simp only [Functor.comp_obj, Functor.comp_map] at nγ nβ
+    simp only [PiFunctor.comp_β, NatIso.ofComponents_hom_app, Iso.trans_hom, Iso.app_hom,
+      Functor.mapIso_hom, Functor.comp_obj, Functor.comp_map, Functor.map_comp, Category.assoc]
+    rw [reassoc_of% nγ, reassoc_of% cG, reassoc_of% nβ]
+    simp only [← Functor.map_comp]
+    rw [cF]
+
+variable (R) in
+/-- A `(Q, Π)`-natural transformation (Brundan–Ellis, Definition 6.12(iii)):
+`xΠ ∘ β_F = β_G ∘ Π'x` and `xQ ∘ γ_F = γ_G ∘ Q'x`. -/
+abbrev IsQPiNatural {F G : C ⥤ D} (hF : QPiFunctor R F) (hG : QPiFunctor R G) (x : F ⟶ G) :
+    Prop :=
+  QPiFunctorData.IsQPiNatural R hF.toQPiFunctorData hG.toQPiFunctorData x
 
 theorem isQPiNatural_id {F : C ⥤ D} (hF : QPiFunctor R F) : IsQPiNatural R hF hF (𝟙 F) :=
   ⟨PiFunctor.isPiNatural_id hF.toPiFunctor, fun X => by simp⟩
@@ -333,6 +401,11 @@ def qpiFunctor (F : A ⥤ B) [F.Additive] [F.Linear R] [IsGradedSuperfunctor R F
     QPiFunctor R (map R F) where
   toPiFunctor := Underlying.piFunctor (R := R) (DegreeZero.map (R := R) F)
   γ := γU F
+  isCompatible := by
+    rw [QPiFunctorData.IsCompatible.iff]
+    intro X
+    apply Underlying.hom_ext; apply DegreeZero.hom_ext
+    exact QPiSupercategory.β_γ_compat F X.obj.obj
 
 @[simp] theorem qpiFunctor_β_hom_app_val (F : A ⥤ B) [F.Additive] [F.Linear R]
     [IsGradedSuperfunctor R F] (X : GUnderlying R A) :
@@ -368,14 +441,11 @@ theorem isQPiNatural {F G : A ⥤ B} [F.Additive] [F.Linear R] [IsGradedSuperfun
     fun X => Underlying.hom_ext (DegreeZero.hom_ext
       (γ_naturality_supernatural F G hx.toIsSupernatural X.obj.obj).symm)⟩
 
-/-- The `(Q, Π)`-functors in the image of `𝔼` satisfy the compatibility
-`QPiFunctor.IsCompatible` (from `QPiSupercategory.β_γ_compat`). -/
+/-- The compatibility of `γ_F` with `β` for the `(Q, Π)`-functors in the image of `𝔼`, which
+comes from `QPiSupercategory.β_γ_compat`. -/
 theorem qpiFunctor_isCompatible (F : A ⥤ B) [F.Additive] [F.Linear R] [IsGradedSuperfunctor R F] :
-    (qpiFunctor (R := R) F).IsCompatible R := by
-  rw [QPiFunctor.IsCompatible.iff]
-  intro X
-  apply Underlying.hom_ext; apply DegreeZero.hom_ext
-  exact QPiSupercategory.β_γ_compat F X.obj.obj
+    (qpiFunctor (R := R) F).IsCompatible R :=
+  (qpiFunctor (R := R) F).isCompatible
 
 omit [QPiSupercategory R A] [QPiSupercategory R B] [QPiSupercategory R B'] in
 /-- **(6.3)**, `𝔼` is a strict 2-functor: it preserves composition of 1-morphisms. -/

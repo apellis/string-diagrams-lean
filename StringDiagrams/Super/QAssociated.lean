@@ -30,22 +30,25 @@ shift `(QV)ₙ = Vₙ₋₁`), the morphisms `λ → μ` of degree `m` must corr
 must have degree `-1`. (With the printed convention there is no degree `-1` isomorphism
 `Qλ → λ` in general.) Our orbit supercategory uses the corrected convention.
 
-## A missing axiom in Definition 6.12(ii)
+## The compatibility axiom of Definition 6.12(ii)
 
 The construction of `𝔻` on 1-morphisms needs the isomorphism `γ_F : Q'F ≅ FQ` of a
 `(Q, Π)`-functor to be compatible with `β`:
 `γ_F Π ∘ Q' β_F ∘ β_{Q'} F = F β_Q ∘ β_F Q ∘ Π' γ_F` in `Hom(Π'Q'F, FQΠ)`, i.e. `γ_F` must be a
 Π-natural transformation between the Π-functors `Q'F` and `FQ`
-(`QPiFunctor.IsCompatible`). Otherwise `F̂` does not commute with the odd morphisms, which
-involve `β_{Qⁿ}`. This condition is not among the axioms of Definition 6.12(ii), but it holds
-for all `(Q, Π)`-functors in the image of `𝔼` (`GradedSupercategory.GUnderlying.qpiFunctor_isCompatible`,
-from `QPiSupercategory.β_γ_compat`) and it is invariant under `(Q, Π)`-natural isomorphism. So
-with Definition 6.12(ii) as printed, `𝔼` is not essentially surjective on 1-morphisms as soon
-as some `(Q, Π)`-category admits a natural automorphism `α` of `Q` with `αΠ ∘ β_Q ≠ β_Q ∘ Πα`
-(then `(I, β = 1, γ = α)` is a `(Q, Π)`-functor which is not compatible; an explicit example is
-`StringDiagrams.Examples.QPiCompat`). Theorem 6.13 holds
-after adding the compatibility to Definition 6.12(ii); we formalize `𝔻` on compatible
-`(Q, Π)`-functors.
+(`QPiFunctorData.IsCompatible`). Otherwise `F̂` does not commute with the odd morphisms, which
+involve `β_{Qⁿ}`. This condition is not among the axioms of Definition 6.12(ii) as printed
+(a Π-functor `(F, β_F)` with a natural isomorphism `γ_F`, formalized as
+`StringDiagrams.QPiFunctorData`), and it does not follow from them: as soon as some
+`(Q, Π)`-category admits a natural automorphism `α` of `Q` with `αΠ ∘ β_Q ≠ β_Q ∘ Πα`, the
+triple `(I, β = 1, γ = α)` satisfies the printed axioms but is not compatible; an explicit
+example is `StringDiagrams.Examples.QPiCompat`. The compatibility holds for all
+`(Q, Π)`-functors in the image of `𝔼` (`QPiSupercategory.β_γ_compat`) and is invariant under
+`(Q, Π)`-natural isomorphism, so with the printed definition `𝔼` is not essentially surjective
+on 1-morphisms and Theorem 6.13 fails.
+
+The definition adopted here (`StringDiagrams.QPiFunctor`) includes the compatibility as an
+axiom; with it Theorem 6.13 holds, and `𝔻` is defined on all `(Q, Π)`-functors.
 
 ## Main definitions and statements
 
@@ -55,10 +58,10 @@ after adding the compatibility to Definition 6.12(ii); we formalize `𝔻` on co
   underlying category of `QAssociated R A` (`unit_comp_counit`, `counit_comp_unit`), which
   commute strictly with `Π`, `Q` and `ξ`; `QAssociated.unitQPiFunctor` is the resulting
   `(Q, Π)`-functor with `β = 1` and `γ = 1` (`𝔼 ∘ 𝔻 = I` on objects).
-* `QAssociated.map hF hc` (`𝔻` on a compatible `(Q, Π)`-functor): a graded superfunctor,
+* `QAssociated.map hF` (`𝔻` on a `(Q, Π)`-functor): a graded superfunctor,
   with `unit ⋙ 𝔼(𝔻 F) = F ⋙ unit` (`unit_comp_map`, `𝔼 ∘ 𝔻 = I` on 1-morphisms).
-* `QAssociated.mapNat hcF hcG hx` (`𝔻` on a `(Q, Π)`-natural transformation `x` between
-  compatible `(Q, Π)`-functors): `x̂_λ = ι(x_λ, 0)`, even of degree zero
+* `QAssociated.mapNat hx` (`𝔻` on a `(Q, Π)`-natural transformation `x` between
+  `(Q, Π)`-functors): `x̂_λ = ι(x_λ, 0)`, even of degree zero
   (`isGradedSupernatural_mapNat`), preserving identities and vertical composition (`mapNat_id`,
   `mapNat_comp`), with `𝔼(𝔻 x) = x` under `unit` (`unit_map_app_mapNat`). The underlying
   construction for orbit supercategories is `Orbit.mapNat` (using
@@ -237,6 +240,18 @@ theorem ξ_unit (X : A) :
   exact (ξ_hom_eq (d := shiftData R A) (⟨X⟩ : Associated R A)).trans
     (congrArg (ι (shiftData R A)).map (Associated.ξ_hom (R := R) (C := A) ⟨X⟩))
 
+/-- `unit` carries `β_Q` to `β_Q`. -/
+theorem β_Q_unit (X : A) :
+    (QPiCategory.Q_pi (R := R) (C := GUnderlying R (QAssociated R A))).β.hom.app ((unit R A).obj X) =
+      (unit R A).map ((QPiCategory.Q_pi (R := R) (C := A)).β.hom.app X) := by
+  apply Underlying.hom_ext; apply DegreeZero.hom_ext
+  rw [GUnderlying.β_Q_hom_app_val, unit_map_val, PiSupercategory.β_hom]
+  simp only [Orbit.ζ_eq, Orbit.ζIso, Functor.mapIso_hom, Functor.mapIso_inv]
+  erw [Q_map_ι]
+  rw [← Functor.map_comp]
+  congr 1
+  exact Associated.β_map (hF := QPiCategory.Q_pi (R := R) (C := A)) (⟨X⟩ : Associated R A)
+
 variable (R A) in
 /-- **`𝔼 ∘ 𝔻 = I`**: the identification `unit` is a `(Q, Π)`-functor with `β = 1` and
 `γ = 1`. -/
@@ -256,6 +271,12 @@ def unitQPiFunctor : QPiFunctor R (unit R A) where
     simp only [Functor.comp_obj, Functor.comp_map, Iso.refl_hom, Category.comp_id,
       Category.id_comp]
     exact unit_map_Q f
+  isCompatible := by
+    rw [QPiFunctorData.IsCompatible.iff]
+    intro X
+    simp only [NatIso.ofComponents_hom_app, Iso.refl_hom, Functor.comp_obj,
+      CategoryTheory.Functor.map_id, Category.id_comp, Category.comp_id]
+    exact β_Q_unit X
 
 @[simp] theorem unitQPiFunctor_β_hom_app (X : A) :
     (unitQPiFunctor R A).β.hom.app X = 𝟙 _ := rfl
@@ -263,21 +284,20 @@ def unitQPiFunctor : QPiFunctor R (unit R A) where
 @[simp] theorem unitQPiFunctor_γ_hom_app (X : A) :
     (unitQPiFunctor R A).γ.hom.app X = 𝟙 _ := rfl
 
-/-! ## `𝔻` on compatible `(Q, Π)`-functors -/
+/-! ## `𝔻` on `(Q, Π)`-functors -/
 
 section Map
 
 variable {A' : Type w₃} [Category.{w₄} A'] [Preadditive A'] [Linear R A'] [QPiCategory R A']
 
-theorem compat_inv {F : A ⥤ A'} [F.Additive] (hF : QPiFunctor R F) (hc : hF.IsCompatible R)
-    (Y : A) :
+theorem compat_inv {F : A ⥤ A'} [F.Additive] (hF : QPiFunctor R F) (Y : A) :
     (QPiCategory.Q (R := R)).map (hF.β.inv.app Y) ≫
         (QPiCategory.Q_pi (R := R) (C := A')).β.inv.app (F.obj Y) ≫
           (PiCategory.pi (R := R)).map (hF.γ.hom.app Y) =
       hF.γ.hom.app ((PiCategory.pi (R := R)).obj Y) ≫
         F.map ((QPiCategory.Q_pi (R := R) (C := A)).β.inv.app Y) ≫
           hF.β.inv.app ((QPiCategory.Q (R := R)).obj Y) := by
-  have h := (QPiFunctor.IsCompatible.iff hF).1 hc Y
+  have h := (QPiFunctorData.IsCompatible.iff hF.toQPiFunctorData).1 hF.isCompatible Y
   rw [← cancel_epi ((QPiCategory.Q_pi (R := R) (C := A')).β.hom.app (F.obj Y) ≫
     (QPiCategory.Q (R := R)).map (hF.β.hom.app Y))]
   simp only [Category.assoc]
@@ -286,8 +306,8 @@ theorem compat_inv {F : A ⥤ A'} [F.Additive] (hF : QPiFunctor R F) (hc : hF.Is
   simp
 
 /-- The even isomorphism `γ̂_F : Q̂' F̂ ≅ F̂ Q̂` of the associated Π-supercategories, for a
-compatible `(Q, Π)`-functor. -/
-def γhat {F : A ⥤ A'} [F.Additive] (hF : QPiFunctor R F) (hc : hF.IsCompatible R) :
+`(Q, Π)`-functor; the naturality uses the compatibility of `γ_F` with `β`. -/
+def γhat {F : A ⥤ A'} [F.Additive] (hF : QPiFunctor R F) :
     Associated.map hF.toPiFunctor ⋙ Qhat R A' ≅ Qhat R A ⋙ Associated.map hF.toPiFunctor :=
   NatIso.ofComponents (fun X =>
     { hom := homMk (X := ⟨(QPiCategory.Q (R := R)).obj (F.obj X.obj)⟩)
@@ -306,49 +326,48 @@ def γhat {F : A ⥤ A'} [F.Additive] (hF : QPiFunctor R F) (hc : hF.IsCompatibl
         have n := hF.γ.hom.naturality f.2
         simp only [Functor.comp_obj, Functor.comp_map] at n
         rw [Limits.zero_comp, add_zero]
-        erw [compat_inv hF hc Y.obj]
+        erw [compat_inv hF Y.obj]
         rw [reassoc_of% n]
         rfl)
 
 variable (R) in
-/-- The morphism of shift data induced by a compatible `(Q, Π)`-functor. -/
-def shiftFunctor {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F)
-    (hc : hF.IsCompatible R) : ShiftFunctor R (shiftData R A) (shiftData R A') where
+/-- The morphism of shift data induced by a `(Q, Π)`-functor. -/
+def shiftFunctor {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F) :
+    ShiftFunctor R (shiftData R A) (shiftData R A') where
   F := Associated.map hF.toPiFunctor
-  γ := γhat hF hc
+  γ := γhat hF
   γ_mem _ := Associated.mem_parity_zero.2 rfl
 
-/-- **`𝔻` on 1-morphisms.** The graded superfunctor `F̂ : Â → Â'` induced by a compatible
+/-- **`𝔻` on 1-morphisms.** The graded superfunctor `F̂ : Â → Â'` induced by a
 `(Q, Π)`-functor. -/
-abbrev map {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F) (hc : hF.IsCompatible R) :
+abbrev map {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F) :
     QAssociated R A ⥤ QAssociated R A' :=
-  Orbit.map (shiftFunctor R hF hc)
+  Orbit.map (shiftFunctor R hF)
 
-example {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F) (hc : hF.IsCompatible R) :
-    IsGradedSuperfunctor R (map hF hc) := inferInstance
+example {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F) :
+    IsGradedSuperfunctor R (map hF) := inferInstance
 
 /-- **`𝔼 ∘ 𝔻 = I` on 1-morphisms**: under the identifications `unit`, `𝔼(𝔻 F) = F`. -/
-theorem unit_comp_map {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F)
-    (hc : hF.IsCompatible R) : unit R A ⋙ GUnderlying.map R (map hF hc) = F ⋙ unit R A' :=
+theorem unit_comp_map {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F) :
+    unit R A ⋙ GUnderlying.map R (map hF) = F ⋙ unit R A' :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by
     simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp]
     apply Underlying.hom_ext; apply DegreeZero.hom_ext
-    show (Orbit.map (shiftFunctor R hF hc)).map ((ι (shiftData R A)).map (homMk f 0)) =
+    show (Orbit.map (shiftFunctor R hF)).map ((ι (shiftData R A)).map (homMk f 0)) =
       (ι (shiftData R A')).map (homMk (F.map f) 0)
-    have := CategoryTheory.Functor.congr_hom (Orbit.ι_comp_map (shiftFunctor R hF hc))
+    have := CategoryTheory.Functor.congr_hom (Orbit.ι_comp_map (shiftFunctor R hF))
       (homMk (X := ⟨X⟩) (Y := ⟨Y⟩) f 0)
     simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp] at this
     rw [this]
     congr 1
     exact hom_ext rfl (by simp [shiftFunctor])
 
-/-- **`𝔻` on 2-morphisms.** A `(Q, Π)`-natural transformation `x : F ⟶ G` between compatible
+/-- **`𝔻` on 2-morphisms.** A `(Q, Π)`-natural transformation `x : F ⟶ G` between
 `(Q, Π)`-functors gives the natural transformation `x̂_λ := ι(x_λ, 0)` between `𝔻 F` and `𝔻 G`. -/
 def mapNat {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive] [G.Linear R]
-    {hF : QPiFunctor R F} {hG : QPiFunctor R G} (hcF : hF.IsCompatible R)
-    (hcG : hG.IsCompatible R) {x : F ⟶ G} (hx : QPiFunctor.IsQPiNatural R hF hG x) :
-    map hF hcF ⟶ map hG hcG :=
-  Orbit.mapNat (Φ := shiftFunctor R hF hcF) (Ψ := shiftFunctor R hG hcG)
+    {hF : QPiFunctor R F} {hG : QPiFunctor R G} {x : F ⟶ G}
+    (hx : QPiFunctor.IsQPiNatural R hF hG x) : map hF ⟶ map hG :=
+  Orbit.mapNat (Φ := shiftFunctor R hF) (Ψ := shiftFunctor R hG)
     (Associated.mapNatTrans hx.1) fun X => by
       change _ = (Qhat R A').map _ ≫ _
       apply hom_ext
@@ -359,24 +378,22 @@ def mapNat {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive] [G.Linear R]
       · simp [shiftFunctor, γhat]
 
 theorem mapNat_app {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive] [G.Linear R]
-    {hF : QPiFunctor R F} {hG : QPiFunctor R G} (hcF : hF.IsCompatible R)
-    (hcG : hG.IsCompatible R) {x : F ⟶ G} (hx : QPiFunctor.IsQPiNatural R hF hG x)
-    (X : QAssociated R A) :
-    (mapNat hcF hcG hx).app X =
+    {hF : QPiFunctor R F} {hG : QPiFunctor R G} {x : F ⟶ G}
+    (hx : QPiFunctor.IsQPiNatural R hF hG x) (X : QAssociated R A) :
+    (mapNat hx).app X =
       (ι (shiftData R A')).map (homMk (X := ⟨F.obj X.obj.obj⟩) (Y := ⟨G.obj X.obj.obj⟩)
         (x.app X.obj.obj) 0) := rfl
 
 /-- `𝔻 x` is even of degree zero. -/
 theorem isGradedSupernatural_mapNat {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive]
-    [G.Linear R] {hF : QPiFunctor R F} {hG : QPiFunctor R G} (hcF : hF.IsCompatible R)
-    (hcG : hG.IsCompatible R) {x : F ⟶ G} (hx : QPiFunctor.IsQPiNatural R hF hG x) :
-    IsGradedSupernatural R 0 0 (F := map hF hcF) (G := map hG hcG) (mapNat hcF hcG hx).app :=
+    [G.Linear R] {hF : QPiFunctor R F} {hG : QPiFunctor R G} {x : F ⟶ G}
+    (hx : QPiFunctor.IsQPiNatural R hF hG x) :
+    IsGradedSupernatural R 0 0 (F := map hF) (G := map hG) (mapNat hx).app :=
   Orbit.isGradedSupernatural_mapNat _ _ fun _ => Associated.mem_parity_zero.2 rfl
 
 /-- `𝔻` preserves identity 2-morphisms. -/
-theorem mapNat_id {F : A ⥤ A'} [F.Additive] [F.Linear R] {hF : QPiFunctor R F}
-    (hcF : hF.IsCompatible R) :
-    mapNat hcF hcF (QPiFunctor.isQPiNatural_id hF) = 𝟙 (map hF hcF) := by
+theorem mapNat_id {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F) :
+    mapNat (QPiFunctor.isQPiNatural_id hF) = 𝟙 (map hF) := by
   ext X
   rw [mapNat_app, NatTrans.id_app]
   refine Eq.trans ?_ ((ι (shiftData R A')).map_id (⟨F.obj X.obj.obj⟩ : Associated R A'))
@@ -385,9 +402,9 @@ theorem mapNat_id {F : A ⥤ A'} [F.Additive] [F.Linear R] {hF : QPiFunctor R F}
 /-- `𝔻` preserves vertical composition of 2-morphisms. -/
 theorem mapNat_comp {F G H : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive] [G.Linear R]
     [H.Additive] [H.Linear R] {hF : QPiFunctor R F} {hG : QPiFunctor R G} {hH : QPiFunctor R H}
-    (hcF : hF.IsCompatible R) (hcG : hG.IsCompatible R) (hcH : hH.IsCompatible R) {x : F ⟶ G}
-    {y : G ⟶ H} (hx : QPiFunctor.IsQPiNatural R hF hG x) (hy : QPiFunctor.IsQPiNatural R hG hH y) :
-    mapNat hcF hcH (hx.comp hy) = mapNat hcF hcG hx ≫ mapNat hcG hcH hy := by
+    {x : F ⟶ G} {y : G ⟶ H} (hx : QPiFunctor.IsQPiNatural R hF hG x)
+    (hy : QPiFunctor.IsQPiNatural R hG hH y) :
+    mapNat (hx.comp hy) = mapNat hx ≫ mapNat hy := by
   ext X
   simp only [mapNat_app, NatTrans.comp_app]
   erw [← (ι (shiftData R A')).map_comp]
@@ -396,9 +413,9 @@ theorem mapNat_comp {F G H : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive] [G
 
 /-- **`𝔼 ∘ 𝔻 = I` on 2-morphisms**: under the identifications `unit`, `𝔼(𝔻 x) = x`. -/
 theorem unit_map_app_mapNat {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive] [G.Linear R]
-    {hF : QPiFunctor R F} {hG : QPiFunctor R G} (hcF : hF.IsCompatible R)
-    (hcG : hG.IsCompatible R) {x : F ⟶ G} (hx : QPiFunctor.IsQPiNatural R hF hG x) (X : A) :
-    ((unit R A').map (x.app X)).1.1 = (mapNat hcF hcG hx).app ((unit R A).obj X).obj.obj := rfl
+    {hF : QPiFunctor R F} {hG : QPiFunctor R G} {x : F ⟶ G}
+    (hx : QPiFunctor.IsQPiNatural R hF hG x) (X : A) :
+    ((unit R A').map (x.app X)).1.1 = (mapNat hx).app ((unit R A).obj X).obj.obj := rfl
 
 end Map
 
@@ -842,11 +859,11 @@ variable {B' : Type w₃} [Category.{w₄} B'] [Preadditive B'] [Linear R B'] [S
 
 /-- `𝔻(𝔼 F)`. -/
 abbrev DEmap : QAssociated R (GUnderlying R B) ⥤ QAssociated R (GUnderlying R B') :=
-  map (GUnderlying.qpiFunctor (R := R) F) (GUnderlying.qpiFunctor_isCompatible F)
+  map (GUnderlying.qpiFunctor (R := R) F)
 
 /-- The morphism of shift data underlying `𝔻(𝔼 F)`. -/
 abbrev DEΦ : ShiftFunctor R (dB R B) (dB R B') :=
-  shiftFunctor R (GUnderlying.qpiFunctor (R := R) F) (GUnderlying.qpiFunctor_isCompatible F)
+  shiftFunctor R (GUnderlying.qpiFunctor (R := R) F)
 
 theorem TbF_map_F {Z W : Associated R (GUnderlying R B)} (f : Z ⟶ W) :
     (TbF R B').map ((DEΦ F).F.map f) = F.map ((TbF R B).map f) := by
@@ -944,8 +961,7 @@ degree zero, `T_{B'} ∘ 𝔻(𝔼 x) = x T_B`. -/
 theorem T_map_mapNat_app {G : B ⥤ B'} [G.Additive] [G.Linear R] [IsGradedSuperfunctor R G]
     {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsGradedSupernatural R 0 0 x)
     (X : QAssociated R (GUnderlying R B)) :
-    (T R B').map ((mapNat (GUnderlying.qpiFunctor_isCompatible F)
-      (GUnderlying.qpiFunctor_isCompatible G) (GUnderlying.isQPiNatural hx)).app X) =
+    (T R B').map ((mapNat (GUnderlying.isQPiNatural hx)).app X) =
       x ((T R B).obj X) := by
   rw [mapNat_app, T_map_ι]
   show ((Associated.T R (DegreeZero R B')).map (Associated.homMk _ 0)).1 = _

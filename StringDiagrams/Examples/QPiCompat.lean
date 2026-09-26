@@ -3,18 +3,20 @@ import StringDiagrams.Super.QEnvelope
 import Mathlib.Algebra.Category.ModuleCat.Basic
 
 /-!
-# A `(Q, Π)`-functor which is not compatible
+# The data of a `(Q, Π)`-functor which is not compatible
 
 Brundan–Ellis, *Monoidal supercategories*, arXiv:1603.05928v3, Definition 6.12(ii) and
 Theorem 6.13: an example showing that the compatibility of `γ_F` with `β`
-(`QPiFunctor.IsCompatible`) does not follow from the axioms of Definition 6.12(ii), and hence
-that the 2-functor `𝔼` of (6.3) is not essentially surjective on 1-morphisms when
-`(Q, Π)`-functors are as in the printed Definition 6.12(ii).
+(`QPiFunctorData.IsCompatible`) does not follow from the axioms of Definition 6.12(ii) as
+printed (`StringDiagrams.QPiFunctorData`: a Π-functor `(F, β_F)` with a natural isomorphism
+`γ_F : Q'F ≅ FQ`), and hence that the 2-functor `𝔼` of (6.3) is not essentially surjective on
+1-morphisms for the printed definition. This is why the definition of a `(Q, Π)`-functor
+adopted in `StringDiagrams.QPiFunctor` includes the compatibility as an axiom.
 
 Let `B` be the `(Q, Π)`-envelope (Definition 6.8) of the category of `R`-modules, graded
 trivially (all morphisms even of degree zero), and `A = 𝔼(B)` its underlying
 `(Q, Π)`-category. The natural automorphism `α` of `Q` acting on `Q^m Π^a M` by `(-1)^a` makes
-`(I, β = 1, γ = α)` a `(Q, Π)`-functor `A → A` in the sense of Definition 6.12(ii)
+`(I, β = 1, γ = α)` a `(Q, Π)`-functor `A → A` in the sense of the printed Definition 6.12(ii)
 (`QPiCompat.twisted`). If `2 ≠ 0` in `R`, it is not compatible
 (`QPiCompat.twisted_not_isCompatible`), so it is not isomorphic, by a `(Q, Π)`-natural
 isomorphism, to `𝔼(F)` for any graded superfunctor `F : B → B`
@@ -123,8 +125,9 @@ def α : QPiCategory.Q (R := R) (C := A R) ≅ QPiCategory.Q (R := R) :=
       · rw [map_eq_zero_of_par_ne f h]; simp)
 
 variable (R) in
-/-- The `(Q, Π)`-functor `(I, β = 1, γ = α)` (Definition 6.12(ii)). -/
-def twisted : QPiFunctor R (𝟭 (A R)) where
+/-- The data `(I, β = 1, γ = α)` of a `(Q, Π)`-functor in the sense of the printed
+Definition 6.12(ii). -/
+def twisted : QPiFunctorData R (𝟭 (A R)) where
   toPiFunctor := PiFunctor.id R (A R)
   γ := Functor.leftUnitor _ ≪≫ α ≪≫ (Functor.rightUnitor _).symm
 
@@ -143,11 +146,12 @@ theorem two_smul_id_ne_zero (h2 : (2 : R) ≠ 0) (a : ZMod 2) (m : ℤ) :
   change (2 : R) • (1 : R) = 0 at h''
   exact h2 (by simpa using h'')
 
-/-- **The compatibility is not automatic**: if `2 ≠ 0` in `R`, the `(Q, Π)`-functor
-`(I, 1, α)` is not compatible. -/
+/-- **The compatibility is not automatic**: if `2 ≠ 0` in `R`, the data `(I, 1, α)` is not
+compatible, so it is not the data of a `(Q, Π)`-functor in the adopted sense
+(`StringDiagrams.QPiFunctor`). -/
 theorem twisted_not_isCompatible (h2 : (2 : R) ≠ 0) : ¬ (twisted R).IsCompatible R := by
   intro hc
-  rw [QPiFunctor.IsCompatible.iff] at hc
+  rw [QPiFunctorData.IsCompatible.iff] at hc
   have h := hc X₀
   simp only [twisted, PiFunctor.id_β, Iso.refl_hom, NatTrans.id_app, Iso.trans_hom,
     NatTrans.comp_app, Functor.leftUnitor_hom_app, Functor.rightUnitor_inv_app,
@@ -164,14 +168,15 @@ theorem twisted_not_isCompatible (h2 : (2 : R) ≠ 0) : ¬ (twisted R).IsCompati
     simpa using this
   exact two_smul_id_ne_zero h2 _ _ h4
 
-/-- **Theorem 6.13 fails for the printed Definition 6.12(ii)**: if `2 ≠ 0` in `R`, the
-`(Q, Π)`-functor `(I, 1, α)` of `A = 𝔼(B)` is not isomorphic, by a `(Q, Π)`-natural isomorphism,
-to `𝔼(F)` for any graded superfunctor `F : B → B`. -/
+/-- **Theorem 6.13 fails for the printed Definition 6.12(ii)**: if `2 ≠ 0` in `R`, the data
+`(I, 1, α)` of `A = 𝔼(B)` is not isomorphic, by a `(Q, Π)`-natural isomorphism, to `𝔼(F)` for
+any graded superfunctor `F : B → B`. -/
 theorem twisted_not_iso_image (h2 : (2 : R) ≠ 0) (F : B R ⥤ B R) [F.Additive] [F.Linear R]
     [IsGradedSuperfunctor R F] (x : 𝟭 (A R) ≅ GUnderlying.map R F) :
-    ¬ QPiFunctor.IsQPiNatural R (twisted R) (GUnderlying.qpiFunctor (R := R) F) x.hom :=
+    ¬ QPiFunctorData.IsQPiNatural R (twisted R)
+      (GUnderlying.qpiFunctor (R := R) F).toQPiFunctorData x.hom :=
   fun hx => twisted_not_isCompatible h2
-    (QPiFunctor.IsCompatible.of_iso x hx (GUnderlying.qpiFunctor_isCompatible F))
+    (QPiFunctorData.IsCompatible.of_iso x hx (GUnderlying.qpiFunctor (R := R) F).isCompatible)
 
 end QPiCompat
 
