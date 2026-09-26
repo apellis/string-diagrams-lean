@@ -1285,6 +1285,47 @@ theorem mapL_lof {m : ℤ} {X Y : S} (f : d.Fam R m X Y) :
   erw [DirectSum.toModule_lof]
   rfl
 
+/-- A natural transformation `x : F ⟶ G` compatible with `γ` (`γ_F ≫ x Q = Q' x ≫ γ_G`) is
+compatible with all the `Γⁱ`, `i ∈ ℤ`. -/
+theorem Γ_hom_app_comp_app {Ψ : ShiftFunctor R d d'} (x : Φ.F ⟶ Ψ.F)
+    (hx : ∀ X, Φ.γ.hom.app X ≫ x.app (d.Q.obj X) = d'.Q.map (x.app X) ≫ Ψ.γ.hom.app X)
+    (i : ℤ) (X : S) :
+    (Φ.Γ i).hom.app X ≫ x.app ((d.pow i).obj X) = (d'.pow i).map (x.app X) ≫ (Ψ.Γ i).hom.app X := by
+  let P : ℤ → Prop := fun i =>
+    (Φ.Γ i).hom.app X ≫ x.app ((d.pow i).obj X) = (d'.pow i).map (x.app X) ≫ (Ψ.Γ i).hom.app X
+  have step : ∀ i : ℤ, P (i + 1) ↔ P i := by
+    intro i
+    have e1 : (Φ.Γ (i + 1)).hom.app X ≫ x.app ((d.pow (i + 1)).obj X) =
+        (d'.succ i).inv.app (Φ.F.obj X) ≫
+          d'.Q.map ((Φ.Γ i).hom.app X ≫ x.app ((d.pow i).obj X)) ≫
+            Ψ.γ.hom.app ((d.pow i).obj X) ≫ Ψ.F.map ((d.succ i).hom.app X) := by
+      rw [Γ_succ_hom_app]
+      simp only [Category.assoc, CategoryTheory.Functor.map_comp]
+      have n := x.naturality ((d.succ i).hom.app X)
+      rw [n]
+      erw [reassoc_of% (hx ((d.pow i).obj X))]
+    have e2 : (d'.pow (i + 1)).map (x.app X) ≫ (Ψ.Γ (i + 1)).hom.app X =
+        (d'.succ i).inv.app (Φ.F.obj X) ≫
+          d'.Q.map ((d'.pow i).map (x.app X) ≫ (Ψ.Γ i).hom.app X) ≫
+            Ψ.γ.hom.app ((d.pow i).obj X) ≫ Ψ.F.map ((d.succ i).hom.app X) := by
+      rw [Γ_succ_hom_app, CategoryTheory.Functor.map_comp, Category.assoc]
+      have n := (d'.succ i).inv.naturality (x.app X)
+      simp only [Functor.comp_obj, Functor.comp_map] at n
+      rw [reassoc_of% n]
+    show _ = _ ↔ _ = _
+    rw [e1, e2, cancel_epi, cancel_mono]
+    exact ⟨fun h => d'.Q.map_injective h, fun h => by rw [h]⟩
+  have h0 : P 0 := by
+    show (Φ.Γ 0).hom.app X ≫ x.app X = x.app X ≫ (Ψ.Γ 0).hom.app X
+    show (𝟙 _ ≫ 𝟙 _) ≫ x.app X = x.app X ≫ (𝟙 _ ≫ 𝟙 _)
+    simp
+  have key : P i := by
+    induction i using Int.induction_on with
+    | hz => exact h0
+    | hp k ih => exact (step k).2 ih
+    | hn k ih => exact (step (-(k : ℤ) - 1)).1 (by rw [show -(k : ℤ) - 1 + 1 = -k by ring]; exact ih)
+  exact key
+
 end ShiftFunctor
 
 namespace Orbit
@@ -1360,6 +1401,50 @@ theorem ι_comp_map (Φ : ShiftFunctor R d d') : ι d ⋙ map Φ = Φ.F ⋙ ι d
     rw [mapL_lof]
     congr 1
     exact Subtype.ext (Φ.famMap_mapFam g)
+
+/-- A natural transformation `x : F ⟶ G` of the underlying superfunctors, compatible with `γ`,
+induces the natural transformation `ι x : F̃ ⟶ G̃` of the induced superfunctors. -/
+@[simps]
+def mapNat {Φ Ψ : ShiftFunctor R d d'} (x : Φ.F ⟶ Ψ.F)
+    (hx : ∀ X, Φ.γ.hom.app X ≫ x.app (d.Q.obj X) = d'.Q.map (x.app X) ≫ Ψ.γ.hom.app X) :
+    map Φ ⟶ map Ψ where
+  app X := (ι d').map (x.app X.obj)
+  naturality {X Y} f := by
+    show d'.compL _ _ _ (Φ.mapL X.obj Y.obj f) (d'.lof 0 _ _ (d'.mapFam (x.app Y.obj))) =
+      d'.compL _ _ _ (d'.lof 0 _ _ (d'.mapFam (x.app X.obj))) (Ψ.mapL X.obj Y.obj f)
+    induction f using Hom.induction_on with
+    | zero => simp
+    | add f f' hf hf' => simp only [map_add, LinearMap.add_apply, hf, hf']
+    | lof m f =>
+      rw [mapL_lof, mapL_lof, compL_lof_lof, compL_lof_lof]
+      refine d'.lof_congr (by ring) (FamAll.ext fun i k => ?_)
+      show famComp d' m (Φ.famMap f.1) (d'.mapFam (x.app Y.obj)).1 i k =
+        famComp d' 0 (d'.mapFam (x.app X.obj)).1 (Ψ.famMap f.1) i k
+      simp only [famComp, mapFam]
+      rw [show i - 0 = i by ring, diagFam_self]
+      by_cases h : i - m = k
+      · subst h
+        rw [diagFam_self, famMap, famMap, Category.assoc, Category.assoc]
+        have c1 := Φ.Γ_hom_app_comp_app x hx (i - m) Y.obj
+        have c2 := Φ.Γ_hom_app_comp_app x hx i X.obj
+        have c3 : (Φ.Γ (i - m)).inv.app Y.obj ≫ (d'.pow (i - m)).map (x.app Y.obj) =
+            x.app ((d.pow (i - m)).obj Y.obj) ≫ (Ψ.Γ (i - m)).inv.app Y.obj := by
+          rw [← cancel_mono ((Ψ.Γ (i - m)).hom.app Y.obj), Category.assoc, ← c1,
+            Iso.inv_hom_id_app_assoc, Category.assoc, Iso.inv_hom_id_app]
+          exact (Category.comp_id _).symm
+        rw [c3, ← Category.assoc (Φ.F.map _), x.naturality, Category.assoc,
+          ← Category.assoc ((Φ.Γ i).hom.app _), c2, Category.assoc]
+      · have h1 : Ψ.famMap f.1 i k = 0 := by rw [famMap, Fam.eq_zero f.2 (by omega)]; simp
+        rw [h1, Limits.comp_zero]
+        simp [diagFam, h]
+
+/-- For `x` even, `ι x` is an even graded supernatural transformation of degree zero. -/
+theorem isGradedSupernatural_mapNat {Φ Ψ : ShiftFunctor R d d'} (x : Φ.F ⟶ Ψ.F)
+    (hx : ∀ X, Φ.γ.hom.app X ≫ x.app (d.Q.obj X) = d'.Q.map (x.app X) ≫ Ψ.γ.hom.app X)
+    (hp : ∀ X, x.app X ∈ parity (R := R) (Φ.F.obj X) (Ψ.F.obj X) 0) :
+    IsGradedSupernatural R 0 0 (F := map Φ) (G := map Ψ) (mapNat x hx).app where
+  toIsSupernatural := isSupernatural_of_natTrans (mapNat x hx) fun X => map_mem (ι d') (hp X.obj)
+  mem_degree X := ι_map_mem_degree (x.app X.obj)
 
 end Orbit
 

@@ -29,9 +29,11 @@ literally the `(Q, Π)`-envelopes `QPiEnvelope R (λ ⟶ μ)` of Definition 6.8.
   `q_λ = Q¹Π⁰1_λ`, `q_λ⁻¹ = Q⁻¹Π⁰1_λ`, `π_λ = Q⁰Π¹1_λ` and `σ_λ`, `σ̄_λ`, `ζ_λ` induced by
   `1_{1_λ}`.
 * `QPiTwoEnvelope.toHom_hcomp`: the sign formula for horizontal composition of Definition 6.10.
-* `QPiTwoEnvelope.J_gradedSuperequivalence_iff`: the canonical `𝕁 : 𝔄 → 𝔄_{q,π}` is a graded
-  superequivalence on all morphism supercategories if and only if they are all
-  `(Q, Π)`-complete (the 2-categorical analogue of Lemma 4.1, stated after Definition 6.10).
+* `QPiTwoEnvelope.QPiComplete2`, `QPiTwoEnvelope.qpiComplete2_iff`,
+  `QPiTwoEnvelope.J_gradedEvenlyDense_iff`: the canonical `𝕁 : 𝔄 → 𝔄_{q,π}` is graded evenly
+  dense (hence, being full and faithful, a graded superequivalence) on all morphism
+  supercategories if and only if `𝔄` is `(Q, Π)`-complete in the sense stated after
+  Definition 6.10, if and only if all its morphism supercategories are `(Q, Π)`-complete.
 -/
 
 noncomputable section

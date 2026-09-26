@@ -1,6 +1,6 @@
 import StringDiagrams.Super.Orbit
 import StringDiagrams.Super.QPiCategory
-import StringDiagrams.Super.Associated
+import StringDiagrams.Super.AssociatedFunctorial
 
 /-!
 # The graded (Q, Π)-supercategory associated to a (Q, Π)-category
@@ -42,7 +42,8 @@ for all `(Q, Π)`-functors in the image of `𝔼` (`GradedSupercategory.GUnderly
 from `QPiSupercategory.β_γ_compat`) and it is invariant under `(Q, Π)`-natural isomorphism. So
 with Definition 6.12(ii) as printed, `𝔼` is not essentially surjective on 1-morphisms as soon
 as some `(Q, Π)`-category admits a natural automorphism `α` of `Q` with `αΠ ∘ β_Q ≠ β_Q ∘ Πα`
-(then `(I, β = 1, γ = α)` is a `(Q, Π)`-functor which is not compatible). Theorem 6.13 holds
+(then `(I, β = 1, γ = α)` is a `(Q, Π)`-functor which is not compatible; an explicit example is
+`StringDiagrams.Examples.QPiCompat`). Theorem 6.13 holds
 after adding the compatibility to Definition 6.12(ii); we formalize `𝔻` on compatible
 `(Q, Π)`-functors.
 
@@ -56,11 +57,21 @@ after adding the compatibility to Definition 6.12(ii); we formalize `𝔻` on co
   `(Q, Π)`-functor with `β = 1` and `γ = 1` (`𝔼 ∘ 𝔻 = I` on objects).
 * `QAssociated.map hF hc` (`𝔻` on a compatible `(Q, Π)`-functor): a graded superfunctor,
   with `unit ⋙ 𝔼(𝔻 F) = F ⋙ unit` (`unit_comp_map`, `𝔼 ∘ 𝔻 = I` on 1-morphisms).
+* `QAssociated.mapNat hcF hcG hx` (`𝔻` on a `(Q, Π)`-natural transformation `x` between
+  compatible `(Q, Π)`-functors): `x̂_λ = ι(x_λ, 0)`, even of degree zero
+  (`isGradedSupernatural_mapNat`), preserving identities and vertical composition (`mapNat_id`,
+  `mapNat_comp`), with `𝔼(𝔻 x) = x` under `unit` (`unit_map_app_mapNat`). The underlying
+  construction for orbit supercategories is `Orbit.mapNat` (using
+  `ShiftFunctor.Γ_hom_app_comp_app`).
 * `QAssociated.T` (`𝔻 ∘ 𝔼 ≅ I`): for a graded `(Q, Π)`-supercategory `B`, the graded
   superfunctor `T_B : 𝔻(𝔼 B) ⥤ B`, an isomorphism of categories with inverse `Tinv`
   (`T_comp_Tinv`, `Tinv_comp_T`) which preserves `Π`, `Q` on objects and carries `ζ` to `ζ`
   and `σ` to `σ` (`T_map_ζ`, `T_map_σ`), natural in `B`: `𝔻(𝔼 F) ⋙ T_{B'} = T_B ⋙ F`
-  (`T_naturality`).
+  (`T_naturality`), also on 2-morphisms: `T_{B'} ∘ 𝔻(𝔼 x) = x T_B` (`T_map_mapNat_app`).
+
+The horizontal composition of 2-morphisms, and the packaging of `𝔻`, `𝔼` and `T` as strict
+2-functors and a 2-natural isomorphism, are not formalized; the statements above are their
+content on objects, 1-morphisms and 2-morphisms.
 -/
 
 noncomputable section
@@ -330,6 +341,64 @@ theorem unit_comp_map {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor 
     rw [this]
     congr 1
     exact hom_ext rfl (by simp [shiftFunctor])
+
+/-- **`𝔻` on 2-morphisms.** A `(Q, Π)`-natural transformation `x : F ⟶ G` between compatible
+`(Q, Π)`-functors gives the natural transformation `x̂_λ := ι(x_λ, 0)` between `𝔻 F` and `𝔻 G`. -/
+def mapNat {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive] [G.Linear R]
+    {hF : QPiFunctor R F} {hG : QPiFunctor R G} (hcF : hF.IsCompatible R)
+    (hcG : hG.IsCompatible R) {x : F ⟶ G} (hx : QPiFunctor.IsQPiNatural R hF hG x) :
+    map hF hcF ⟶ map hG hcG :=
+  Orbit.mapNat (Φ := shiftFunctor R hF hcF) (Ψ := shiftFunctor R hG hcG)
+    (Associated.mapNatTrans hx.1) fun X => by
+      change _ = (Qhat R A').map _ ≫ _
+      apply hom_ext
+      · simp only [shiftFunctor, γhat, NatIso.ofComponents_hom_app, comp_fst, homMk_fst,
+          homMk_snd, Associated.mapNatTrans_app, Associated.map_map, Limits.comp_zero,
+          Limits.zero_comp, sub_zero, Functor.map_zero]
+        exact hx.2 X.obj
+      · simp [shiftFunctor, γhat]
+
+theorem mapNat_app {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive] [G.Linear R]
+    {hF : QPiFunctor R F} {hG : QPiFunctor R G} (hcF : hF.IsCompatible R)
+    (hcG : hG.IsCompatible R) {x : F ⟶ G} (hx : QPiFunctor.IsQPiNatural R hF hG x)
+    (X : QAssociated R A) :
+    (mapNat hcF hcG hx).app X =
+      (ι (shiftData R A')).map (homMk (X := ⟨F.obj X.obj.obj⟩) (Y := ⟨G.obj X.obj.obj⟩)
+        (x.app X.obj.obj) 0) := rfl
+
+/-- `𝔻 x` is even of degree zero. -/
+theorem isGradedSupernatural_mapNat {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive]
+    [G.Linear R] {hF : QPiFunctor R F} {hG : QPiFunctor R G} (hcF : hF.IsCompatible R)
+    (hcG : hG.IsCompatible R) {x : F ⟶ G} (hx : QPiFunctor.IsQPiNatural R hF hG x) :
+    IsGradedSupernatural R 0 0 (F := map hF hcF) (G := map hG hcG) (mapNat hcF hcG hx).app :=
+  Orbit.isGradedSupernatural_mapNat _ _ fun _ => Associated.mem_parity_zero.2 rfl
+
+/-- `𝔻` preserves identity 2-morphisms. -/
+theorem mapNat_id {F : A ⥤ A'} [F.Additive] [F.Linear R] {hF : QPiFunctor R F}
+    (hcF : hF.IsCompatible R) :
+    mapNat hcF hcF (QPiFunctor.isQPiNatural_id hF) = 𝟙 (map hF hcF) := by
+  ext X
+  rw [mapNat_app, NatTrans.id_app]
+  refine Eq.trans ?_ ((ι (shiftData R A')).map_id (⟨F.obj X.obj.obj⟩ : Associated R A'))
+  congr 1
+
+/-- `𝔻` preserves vertical composition of 2-morphisms. -/
+theorem mapNat_comp {F G H : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive] [G.Linear R]
+    [H.Additive] [H.Linear R] {hF : QPiFunctor R F} {hG : QPiFunctor R G} {hH : QPiFunctor R H}
+    (hcF : hF.IsCompatible R) (hcG : hG.IsCompatible R) (hcH : hH.IsCompatible R) {x : F ⟶ G}
+    {y : G ⟶ H} (hx : QPiFunctor.IsQPiNatural R hF hG x) (hy : QPiFunctor.IsQPiNatural R hG hH y) :
+    mapNat hcF hcH (hx.comp hy) = mapNat hcF hcG hx ≫ mapNat hcG hcH hy := by
+  ext X
+  simp only [mapNat_app, NatTrans.comp_app]
+  erw [← (ι (shiftData R A')).map_comp]
+  congr 1
+  exact hom_ext (by simp) (by simp)
+
+/-- **`𝔼 ∘ 𝔻 = I` on 2-morphisms**: under the identifications `unit`, `𝔼(𝔻 x) = x`. -/
+theorem unit_map_app_mapNat {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive] [G.Linear R]
+    {hF : QPiFunctor R F} {hG : QPiFunctor R G} (hcF : hF.IsCompatible R)
+    (hcG : hG.IsCompatible R) {x : F ⟶ G} (hx : QPiFunctor.IsQPiNatural R hF hG x) (X : A) :
+    ((unit R A').map (x.app X)).1.1 = (mapNat hcF hcG hx).app ((unit R A).obj X).obj.obj := rfl
 
 end Map
 
@@ -869,6 +938,20 @@ theorem T_naturality : DEmap F ⋙ T R B' = T R B ⋙ F :=
         Category.assoc]
       congr 1
       exact TbF_Γ_inv_τ F (-m) Y.obj
+
+/-- **Naturality of `T` in 2-morphisms**: for an even supernatural transformation `x : F ⇒ G` of
+degree zero, `T_{B'} ∘ 𝔻(𝔼 x) = x T_B`. -/
+theorem T_map_mapNat_app {G : B ⥤ B'} [G.Additive] [G.Linear R] [IsGradedSuperfunctor R G]
+    {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsGradedSupernatural R 0 0 x)
+    (X : QAssociated R (GUnderlying R B)) :
+    (T R B').map ((mapNat (GUnderlying.qpiFunctor_isCompatible F)
+      (GUnderlying.qpiFunctor_isCompatible G) (GUnderlying.isQPiNatural hx)).app X) =
+      x ((T R B).obj X) := by
+  rw [mapNat_app, T_map_ι]
+  show ((Associated.T R (DegreeZero R B')).map (Associated.homMk _ 0)).1 = _
+  simp only [Associated.T_map, Associated.homMk_fst, Associated.homMk_snd]
+  simp
+  rfl
 
 end Naturality
 
