@@ -72,9 +72,15 @@ axiom; with it Theorem 6.13 holds, and `𝔻` is defined on all `(Q, Π)`-functo
   and `σ` to `σ` (`T_map_ζ`, `T_map_σ`), natural in `B`: `𝔻(𝔼 F) ⋙ T_{B'} = T_B ⋙ F`
   (`T_naturality`), also on 2-morphisms: `T_{B'} ∘ 𝔻(𝔼 x) = x T_B` (`T_map_mapNat_app`).
 
-The horizontal composition of 2-morphisms, and the packaging of `𝔻`, `𝔼` and `T` as strict
-2-functors and a 2-natural isomorphism, are not formalized; the statements above are their
-content on objects, 1-morphisms and 2-morphisms.
+* `𝔻` is a strict 2-functor: it preserves identities and composition of `(Q, Π)`-functors
+  (`map_id`, `map_comp`), identities and vertical composition of `(Q, Π)`-natural
+  transformations (`mapNat_id`, `mapNat_comp`), and whiskering (`isQPiNatural_whiskerLeft`,
+  `isQPiNatural_whiskerRight`, `mapNat_whiskerLeft_app`, `mapNat_whiskerRight_app`), hence
+  horizontal composition of 2-morphisms (a composite of whiskerings).
+
+The 2-categories `(Q, Π)-ℭ𝔄𝔗` and `(Q, Π)-𝔊𝔖ℭ𝔄𝔗` are not constructed as Lean bicategories, so
+`𝔻`, `𝔼` and `T` are not packaged as bundled strict 2-functors and a 2-natural isomorphism; the
+statements above are their content on objects, 1-morphisms and 2-morphisms.
 -/
 
 noncomputable section

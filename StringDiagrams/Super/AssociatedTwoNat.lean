@@ -18,11 +18,17 @@ Theorem 5.5.
   (`StringDiagrams.Super.AssociatedTwoT`, `StringDiagrams.Super.AssociatedTwoMap`) this is the
   content of Theorem 5.5 on objects, 1-morphisms and 2-morphisms.
 
+* **Theorem 5.5, functoriality on 2-morphisms**: `𝔼₂` preserves identities and vertical
+  composition of 2-natural transformations (`TwoNatTrans.toOplaxTrans_id`,
+  `TwoNatTrans.toOplaxTrans_vcomp` in `StringDiagrams.Super.TwoHom`); Π-2-natural transformations are closed under identities and
+  vertical composition (`PiTwoFunctor.isPiTwoNatural_id`, `PiTwoFunctor.IsPiTwoNatural.vcomp`),
+  and `𝔻₂` preserves them (`PiTwoFunctor.mapTwoNat_id`, `PiTwoFunctor.mapTwoNat_vcomp`).
+
 ## Not formalized
 
-The strict 2-categories `Π-2-𝔖ℭ𝔄𝔗` and `Π-2-ℭ𝔄𝔗` themselves (composition of Π-2-functors and of
-(Π-)2-natural transformations, and the 2-functoriality of `𝔼₂` and `𝔻₂` with respect to it) are
-not constructed, so Theorem 5.5 is not stated as a 2-equivalence of Lean bicategories.
+The strict 2-category `Π-2-ℭ𝔄𝔗` itself (composition of Π-2-functors and whiskering of
+Π-2-natural transformations by Π-2-functors) is not constructed, so Theorem 5.5 is not stated as
+a 2-equivalence of Lean bicategories.
 Corollary 5.6 (a 2-superequivalence between the 2-supercategories `Π-2-𝔖ℭ𝔄𝔗` and
 `D₂(Π-2-ℭ𝔄𝔗)`) and Remark 5.7 (a 3-equivalence, stated without proof in the paper) are not
 formalized.
@@ -211,23 +217,6 @@ theorem ext_of_eq {θ θ' : TwoNatTrans F G} (hX : θ.X = θ'.X)
   congr
   funext a b f
   exact hx f
-
-theorem toOplaxTrans_ofOplaxTrans (η : F.toOplax ⟶ G.toOplax)
-    (nat : ∀ {a b : A} {f g : a ⟶ b} (ε : f ⟶ g),
-      BicategoryStruct.whiskerRight (F.map₂ ε) (η.app ⟨b⟩).obj ≫
-          (η.naturality (Underlying2.hom1 g)).1 =
-        (η.naturality (Underlying2.hom1 f)).1 ≫
-          BicategoryStruct.whiskerLeft (η.app ⟨a⟩).obj (G.map₂ ε)) :
-    (ofOplaxTrans η nat).toOplaxTrans = η := by
-  obtain ⟨app, naturality, _, _, _⟩ := η
-  rfl
-
-/-- **Theorem 5.5, `𝔼₂` preserves identities.** -/
-theorem toOplaxTrans_id : (TwoNatTrans.id F).toOplaxTrans = 𝟙 F.toOplax := rfl
-
-/-- **Theorem 5.5, `𝔼₂` preserves vertical composition.** -/
-theorem toOplaxTrans_vcomp (θ : TwoNatTrans F G) (θ' : TwoNatTrans G H) :
-    (θ.vcomp θ').toOplaxTrans = θ.toOplaxTrans ≫ θ'.toOplaxTrans := rfl
 
 end TwoNatTrans
 

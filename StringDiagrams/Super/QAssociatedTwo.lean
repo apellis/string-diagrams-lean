@@ -21,9 +21,8 @@ discussion after Definition 6.14: for a `(Q, Π)`-2-category `𝔄` there is an 
   Theorem 6.13), in the form of `q_μ`-compatible families.
 * **`𝔼 ∘ 𝔻 = 𝕀` on objects**: the identification `QAssociated2.unit : 𝔄 → (𝔄̂)̲` (the identity
   on objects and 1-morphisms, and `x ↦ (x, 0)` in degree zero on 2-morphisms) is a strict
-  pseudofunctor, bijective on 2-morphisms (`QAssociated2.unit_map₂_bijective`), and carries
-  `π`, `q`, `q⁻¹`, `β`, `ξ` and `γ` of `𝔄` to those of `(𝔄̂)̲` (`QAssociated2.unitPiTwoFunctor`,
-  `QAssociated2.unit_γ`).
+  pseudofunctor, bijective on 2-morphisms (`QAssociated2.unit_map₂_bijective`).
+* `𝔻 ∘ 𝔼 ≅ 𝕀` on objects is `StringDiagrams.Super.QAssociatedTwoT`.
 -/
 
 noncomputable section
