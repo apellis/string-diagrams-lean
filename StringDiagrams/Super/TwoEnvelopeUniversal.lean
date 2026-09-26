@@ -37,9 +37,9 @@ are the axioms for `ℝ`. `ℝ = ℝ̃ 𝕁` holds on objects, 1- and 2-morphism
 ## Lemma 4.7(ii)
 
 A 2-natural transformation `(X, x) : ℝ ⇒ 𝕊` extends to `(X̃, x̃) : ℝ̃ ⇒ 𝕊̃` with `X̃ = X` and
-(4.6) `x̃_{ΠᵃF} = (ζᵃ_{𝕊F} X_λ)⁻¹ ∘ x_F ∘ (X_μ ζᵃ_{ℝF})` (`TwoEnvelope.extendNatTrans`), and
+(4.6) `x̃_{ΠᵃF} = (ζᵃ_{𝕊F} X_λ)⁻¹ ∘ x_F ∘ (X_μ ζᵃ_{ℝF})` (`TwoEnvelope.extendTwoNatTrans`), and
 it is the unique 2-natural transformation `ℝ̃ ⇒ 𝕊̃` with `X̃ = X` restricting to `x` along `𝕁`
-(`TwoEnvelope.extendNatTrans_unique`).
+(`TwoEnvelope.extendTwoNatTrans_unique`).
 -/
 
 noncomputable section
@@ -498,6 +498,253 @@ def extend : TwoSuperfunctor R (TwoEnvelope R B) C where
   map₂_associator f g h := assocL_eq_assocR F f g h
   map₂_leftUnitor f := extend_leftUnitor F f
   map₂_rightUnitor f := extend_rightUnitor F f
+
+@[simp] theorem extend_obj (a : TwoEnvelope R B) : (extend F).obj a = F.obj a.as := rfl
+
+theorem extend_map (f : a ⟶ b) : (extend F).map f = (F̃ a b).obj f := rfl
+
+theorem extend_map₂ {f g : a ⟶ b} (η : f ⟶ g) : (extend F).map₂ η = (F̃ a b).map η := rfl
+
+/-- `ℝ = ℝ̃ 𝕁` on 1-morphisms. -/
+theorem extend_map_J (f : a.as ⟶ b.as) :
+    (extend F).map ((J R _).obj f : a ⟶ b) = F.map f := rfl
+
+/-- `ℝ = ℝ̃ 𝕁` on 2-morphisms. -/
+theorem extend_map₂_J {f g : a.as ⟶ b.as} (η : f ⟶ g) :
+    (extend F).map₂ ((J R (a.as ⟶ b.as)).map η : ((J R _).obj f : a ⟶ b) ⟶ (J R _).obj g) =
+      F.map₂ η :=
+  extendFunctor_map_J F _
+
+/-- `ℝ = ℝ̃ 𝕁` on the coherence maps `i`. -/
+theorem extend_mapId (a : TwoEnvelope R B) : (extend F).mapId a = F.mapId a.as := rfl
+
+end TwoEnvelope
+
+/-! ## Lemma 4.7(ii): extension of 2-natural transformations -/
+
+namespace TwoEnvelope
+
+open Envelope
+
+variable {R : Type w} [CommRing R]
+  {B : Type u₁} [BicategoryStruct.{w₁, v₁} B]
+  [∀ a b : B, Preadditive (a ⟶ b)] [∀ a b : B, Linear R (a ⟶ b)]
+  [∀ a b : B, Supercategory R (a ⟶ b)] [TwoSupercategory R B]
+  {C : Type u₂} [BicategoryStruct.{w₂, v₂} C]
+  [∀ a b : C, Preadditive (a ⟶ b)] [∀ a b : C, Linear R (a ⟶ b)]
+  [∀ a b : C, Supercategory R (a ⟶ b)] [TwoSupercategory R C]
+  [∀ a b : C, PiSupercategory R (a ⟶ b)]
+  {F G : TwoSuperfunctor R B C}
+
+local notation "F̃" => extendFunctor F
+local notation "G̃" => extendFunctor G
+
+variable {a b c : TwoEnvelope R B}
+
+/-- Formula (4.6): `x̃_{ΠᵃF} = (ζᵃ_{𝕊F} X_λ)⁻¹ ∘ x_F ∘ (X_μ ζᵃ_{ℝF})`, in the diagrammatic
+order `ζᵃ ▷ X_μ ≫ x_F ≫ X_λ ◁ (ζᵃ)⁻¹`. -/
+def extendX (θ : TwoNatTrans F G) (f : a ⟶ b) :
+    (F̃ a b).obj f ≫ θ.X b.as ⟶ θ.X a.as ≫ (G̃ a b).obj f :=
+  (ζF F f).hom ▷ θ.X b.as ≫ θ.x f.obj ≫ θ.X a.as ◁ (ζF G f).inv
+
+omit [TwoSupercategory R B] in
+theorem extendX_mem (θ : TwoNatTrans F G) (f : a ⟶ b) :
+    extendX θ f ∈ parity (R := R) _ _ 0 := by
+  have := comp_mem (whiskerRight_mem (θ.X b.as) (ζF_hom_mem F f))
+    (comp_mem (θ.x_mem f.obj) (whiskerLeft_mem (θ.X a.as) (ζF_inv_mem G f)))
+  rwa [zero_add, zmod2_add_self] at this
+
+omit [TwoSupercategory R B] in
+theorem extendX_naturality (θ : TwoNatTrans F G) {f g : a ⟶ b} (η : f ⟶ g) :
+    (F̃ a b).map η ▷ θ.X b.as ≫ extendX θ g = extendX θ f ≫ θ.X a.as ◁ (G̃ a b).map η := by
+  simp only [extendX, extendFunctor_map, comp_whiskerRight (R := R), whiskerLeft_comp (R := R),
+    Category.assoc, inv_hom_whiskerRight'_assoc R, whiskerLeft_inv_hom'_assoc R]
+  rw [reassoc_of% (θ.naturality (toHom η))]
+
+omit [TwoSupercategory R B] in
+theorem extendX_J (θ : TwoNatTrans F G) (f : a.as ⟶ b.as) :
+    extendX θ ((J R _).obj f : a ⟶ b) = θ.x f := by
+  show 𝟙 (F.map f) ▷ θ.X b.as ≫ θ.x f ≫ θ.X a.as ◁ 𝟙 (G.map f) = _
+  rw [id_whiskerRight (R := R), whiskerLeft_id (R := R), Category.id_comp, Category.comp_id]
+
+omit [TwoSupercategory R B] in
+theorem extendX_J_comp (θ : TwoNatTrans F G) (f : a.as ⟶ b.as) (g : b.as ⟶ c.as) :
+    extendX θ (((J R _).obj f : a ⟶ b) ≫ ((J R _).obj g : b ⟶ c)) = θ.x (f ≫ g) := by
+  show 𝟙 (F.map (f ≫ g)) ▷ θ.X c.as ≫ θ.x (f ≫ g) ≫ θ.X a.as ◁ 𝟙 (G.map (f ≫ g)) = _
+  rw [id_whiskerRight (R := R), whiskerLeft_id (R := R), Category.id_comp, Category.comp_id]
+
+section Comp
+
+variable (θ : TwoNatTrans F G)
+
+/-- The left-hand side of the first coherence diagram of Definition 2.2(iii) for `(X̃, x̃)`. -/
+def compL (f : a ⟶ b) (g : b ⟶ c) :
+    ((F̃ a b).obj f ≫ (F̃ b c).obj g) ≫ θ.X c.as ⟶ θ.X a.as ≫ (G̃ a c).obj (f ≫ g) :=
+  (extendComp F f g).hom ▷ θ.X c.as ≫ extendX θ (f ≫ g)
+
+/-- The right-hand side of the first coherence diagram of Definition 2.2(iii) for
+`(X̃, x̃)`. -/
+def compR (f : a ⟶ b) (g : b ⟶ c) :
+    ((F̃ a b).obj f ≫ (F̃ b c).obj g) ≫ θ.X c.as ⟶ θ.X a.as ≫ (G̃ a c).obj (f ≫ g) :=
+  (associator ((F̃ a b).obj f) ((F̃ b c).obj g) (θ.X c.as)).hom ≫
+    (F̃ a b).obj f ◁ extendX θ g ≫ (associator ((F̃ a b).obj f) (θ.X b.as) ((G̃ b c).obj g)).inv ≫
+      extendX θ f ▷ (G̃ b c).obj g ≫
+        (associator (θ.X a.as) ((G̃ a b).obj f) ((G̃ b c).obj g)).hom ≫
+          θ.X a.as ◁ (extendComp G f g).hom
+
+theorem compL_nat₁ {f f' : a ⟶ b} (u : f ⟶ f') (g : b ⟶ c) :
+    ((F̃ a b).map u ▷ (F̃ b c).obj g) ▷ θ.X c.as ≫ compL θ f' g =
+      compL θ f g ≫ θ.X a.as ◁ (G̃ a c).map (u ▷ g) := by
+  simp only [compL]
+  rw [comp_whiskerRight_comp R, extendComp_naturality_left, ← comp_whiskerRight_comp R,
+    extendX_naturality]
+  simp only [Category.assoc]
+
+theorem compR_nat₁ {f f' : a ⟶ b} (u : f ⟶ f') (g : b ⟶ c) :
+    ((F̃ a b).map u ▷ (F̃ b c).obj g) ▷ θ.X c.as ≫ compR θ f' g =
+      compR θ f g ≫ θ.X a.as ◁ (G̃ a c).map (u ▷ g) := by
+  simp only [compR]
+  rw [associator_naturality_left_assoc R,
+    reassoc_of% (interchange_even_right R ((F̃ a b).map u) (extendX_mem θ g)),
+    associator_inv_naturality_left_assoc R, comp_whiskerRight_comp R, extendX_naturality,
+    ← comp_whiskerRight_comp R, associator_naturality_middle_assoc R,
+    ← whiskerLeft_comp (R := R), extendComp_naturality_left, whiskerLeft_comp (R := R)]
+  simp only [Category.assoc]
+
+theorem compL_nat₂ (f : a ⟶ b) {g g' : b ⟶ c} (v : g ⟶ g') :
+    ((F̃ a b).obj f ◁ (F̃ b c).map v) ▷ θ.X c.as ≫ compL θ f g' =
+      compL θ f g ≫ θ.X a.as ◁ (G̃ a c).map (f ◁ v) := by
+  simp only [compL]
+  rw [comp_whiskerRight_comp R, extendComp_naturality_right, ← comp_whiskerRight_comp R,
+    extendX_naturality]
+  simp only [Category.assoc]
+
+theorem compR_nat₂ (f : a ⟶ b) {g g' : b ⟶ c} (v : g ⟶ g') :
+    ((F̃ a b).obj f ◁ (F̃ b c).map v) ▷ θ.X c.as ≫ compR θ f g' =
+      compR θ f g ≫ θ.X a.as ◁ (G̃ a c).map (f ◁ v) := by
+  simp only [compR]
+  rw [associator_naturality_middle_assoc R, whiskerLeft_comp_comp R, extendX_naturality,
+    ← whiskerLeft_comp_comp R, associator_inv_naturality_right_assoc R,
+    ← reassoc_of% (interchange_even_left R (extendX_mem θ f) ((G̃ b c).map v)),
+    associator_naturality_right_assoc R, ← whiskerLeft_comp (R := R),
+    extendComp_naturality_right, whiskerLeft_comp (R := R)]
+  simp only [Category.assoc]
+
+theorem compL_eq_compR (f : a ⟶ b) (g : b ⟶ c) : compL θ f g = compR θ f g := by
+  have e₁ : Epi (((F̃ a b).map (shiftIso f).hom ▷ (F̃ b c).obj g) ▷ θ.X c.as) :=
+    (inferInstance : Epi (whiskerRightIso (R := R) (whiskerRightIso (R := R)
+      ((F̃ a b).mapIso (shiftIso f)) _) _).hom)
+  refine eq_of_conj_hom _ e₁ _ (compL_nat₁ θ (shiftIso f).hom g)
+    (compR_nat₁ θ (shiftIso f).hom g) ?_
+  have e₂ : Epi (((F̃ a b).obj ((J R _).obj f.obj) ◁ (F̃ b c).map (shiftIso g).hom) ▷
+      θ.X c.as) :=
+    (inferInstance : Epi (whiskerRightIso (R := R) (whiskerLeftIso (R := R) _
+      ((F̃ b c).mapIso (shiftIso g))) _).hom)
+  refine eq_of_conj_hom _ e₂ _ (compL_nat₂ θ _ (shiftIso g).hom)
+    (compR_nat₂ θ _ (shiftIso g).hom) ?_
+  simp only [compL, compR]
+  rw [extendComp_J, extendComp_J, extendX_J, extendX_J, extendX_J_comp]
+  exact θ.x_comp f.obj g.obj
+
+end Comp
+
+/-- **Lemma 4.7(ii).** The extension `(X̃, x̃) : ℝ̃ ⇒ 𝕊̃` of a 2-natural transformation
+`(X, x) : ℝ ⇒ 𝕊`: `X̃_λ = X_λ` and `x̃` given by (4.6) (`extendX`). -/
+def extendTwoNatTrans (θ : TwoNatTrans F G) : TwoNatTrans (extend F) (extend G) where
+  X a := θ.X a.as
+  x f := extendX θ f
+  x_mem f := extendX_mem θ f
+  naturality η := extendX_naturality θ η
+  x_comp f g := compL_eq_compR θ f g
+  x_id a := by
+    have e : extendX θ (𝟙 a) = θ.x (𝟙 a.as) := extendX_J θ (𝟙 a.as)
+    show _ ≫ _ ≫ _ ≫ extendX θ (𝟙 a) = _
+    rw [e]
+    exact θ.x_id a.as
+
+@[simp] theorem extendTwoNatTrans_X (θ : TwoNatTrans F G) (a : TwoEnvelope R B) :
+    (extendTwoNatTrans θ).X a = θ.X a.as := rfl
+
+theorem extendTwoNatTrans_x (θ : TwoNatTrans F G) (f : a ⟶ b) :
+    (extendTwoNatTrans θ).x f = extendX θ f := rfl
+
+/-- `x = x̃ 𝕁`. -/
+theorem extendTwoNatTrans_x_J (θ : TwoNatTrans F G) (f : a.as ⟶ b.as) :
+    (extendTwoNatTrans θ).x ((J R _).obj f : a ⟶ b) = θ.x f :=
+  extendX_J θ f
+
+omit [TwoSupercategory R B] [TwoSupercategory R C] [∀ a b : C, PiSupercategory R (a ⟶ b)] in
+/-- Two 2-natural transformations with the same 1-morphisms and the same 2-morphisms are
+equal. -/
+theorem twoNatTrans_ext {F' G' : TwoSuperfunctor R B C} {θ θ' : TwoNatTrans F' G'}
+    (hX : θ.X = θ'.X) (hx : ∀ {a b : B} (f : a ⟶ b), HEq (θ.x f) (θ'.x f)) : θ = θ' := by
+  obtain ⟨X, x, _, _, _, _⟩ := θ
+  obtain ⟨X', x', _, _, _, _⟩ := θ'
+  dsimp only at hX hx
+  subst hX
+  have : @x = @x' := by
+    funext a b f
+    exact eq_of_heq (hx f)
+  subst this
+  rfl
+
+/-- The restriction `(Y, y𝕁) : ℝ ⇒ 𝕊` of a 2-natural transformation `(Y, y) : ℝ̃ ⇒ 𝕊̃`. -/
+def restrictTwoNatTrans (ψ : TwoNatTrans (extend F) (extend G)) : TwoNatTrans F G where
+  X a := ψ.X ⟨a⟩
+  x {a b} f := ψ.x ((J R (a ⟶ b)).obj f : (⟨a⟩ : TwoEnvelope R B) ⟶ ⟨b⟩)
+  x_mem {a b} f := ψ.x_mem ((J R (a ⟶ b)).obj f : (⟨a⟩ : TwoEnvelope R B) ⟶ ⟨b⟩)
+  naturality {a b f g} η := by
+    have := ψ.naturality ((J R (a ⟶ b)).map η : ((J R (a ⟶ b)).obj f : (⟨a⟩ : TwoEnvelope R B) ⟶ ⟨b⟩) ⟶ _)
+    rwa [extend_map₂_J, extend_map₂_J] at this
+  x_comp {a b c} f g := by
+    have := ψ.x_comp ((J R (a ⟶ b)).obj f : (⟨a⟩ : TwoEnvelope R B) ⟶ ⟨b⟩)
+      ((J R (b ⟶ c)).obj g : (⟨b⟩ : TwoEnvelope R B) ⟶ ⟨c⟩)
+    erw [extendComp_J, extendComp_J] at this
+    exact this
+  x_id a := ψ.x_id ⟨a⟩
+
+@[simp] theorem restrictTwoNatTrans_X (ψ : TwoNatTrans (extend F) (extend G)) (a : B) :
+    (restrictTwoNatTrans ψ).X a = ψ.X ⟨a⟩ := rfl
+
+theorem restrictTwoNatTrans_x (ψ : TwoNatTrans (extend F) (extend G)) {a b : B} (f : a ⟶ b) :
+    (restrictTwoNatTrans ψ).x f =
+      ψ.x ((J R (a ⟶ b)).obj f : (⟨a⟩ : TwoEnvelope R B) ⟶ ⟨b⟩) := rfl
+
+/-- `(X̃, x̃)` restricts to `(X, x)`. -/
+theorem restrictTwoNatTrans_extendTwoNatTrans (θ : TwoNatTrans F G) :
+    restrictTwoNatTrans (extendTwoNatTrans θ) = θ :=
+  twoNatTrans_ext rfl fun {a b} f =>
+    heq_of_eq (extendX_J (a := (⟨a⟩ : TwoEnvelope R B)) (b := ⟨b⟩) θ f)
+
+/-- A 2-natural transformation `ℝ̃ ⇒ 𝕊̃` is the extension of its restriction. -/
+theorem extendTwoNatTrans_restrictTwoNatTrans (ψ : TwoNatTrans (extend F) (extend G)) :
+    extendTwoNatTrans (restrictTwoNatTrans ψ) = ψ := by
+  refine twoNatTrans_ext rfl fun {a b} f => heq_of_eq ?_
+  have h := ψ.naturality (shiftIso f).inv
+  have e₁ : (extend F).map₂ (shiftIso f).inv = (ζF F f).hom := by
+    show (ζF F f).hom ≫ F.map₂ (𝟙 f.obj) ≫ 𝟙 _ = _
+    rw [F.map₂_id, Category.comp_id, Category.comp_id]
+  have e₂ : (extend G).map₂ (shiftIso f).inv = (ζF G f).hom := by
+    show (ζF G f).hom ≫ G.map₂ (𝟙 f.obj) ≫ 𝟙 _ = _
+    rw [G.map₂_id, Category.comp_id, Category.comp_id]
+  rw [e₁, e₂] at h
+  show (ζF F f).hom ▷ ψ.X b ≫ ψ.x ((J R _).obj f.obj) ≫ ψ.X a ◁ (ζF G f).inv = ψ.x f
+  rw [reassoc_of% h, whiskerLeft_hom_inv' R, Category.comp_id]
+
+/-- **Lemma 4.7(ii), uniqueness.** `(X̃, x̃)` is the unique 2-natural transformation
+`ℝ̃ ⇒ 𝕊̃` with `X̃_λ = X_λ` and `x = x̃ 𝕁`. -/
+theorem extendTwoNatTrans_unique (θ : TwoNatTrans F G) (ψ : TwoNatTrans (extend F) (extend G))
+    (h : restrictTwoNatTrans ψ = θ) : ψ = extendTwoNatTrans θ := by
+  rw [← h, extendTwoNatTrans_restrictTwoNatTrans]
+
+/-- **Theorem 4.9**, full faithfulness on 2-natural transformations: `(X, x) ↦ (X̃, x̃)` is a
+bijection from 2-natural transformations `ℝ ⇒ 𝕊` to 2-natural transformations `ℝ̃ ⇒ 𝕊̃`, with
+inverse the restriction along `𝕁`. -/
+def extendTwoNatTransEquiv : TwoNatTrans F G ≃ TwoNatTrans (extend F) (extend G) where
+  toFun := extendTwoNatTrans
+  invFun := restrictTwoNatTrans
+  left_inv := restrictTwoNatTrans_extendTwoNatTrans
+  right_inv := extendTwoNatTrans_restrictTwoNatTrans
 
 end TwoEnvelope
 
