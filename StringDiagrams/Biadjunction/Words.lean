@@ -48,6 +48,12 @@ namespace Signature.ColourDuality
 
 variable (D : S.ColourDuality)
 
+@[simp] theorem colourSrc_dual (c : S.Colour) : S.colourSrc (D.dual c) = S.colourTgt c :=
+  D.src_dual c
+
+@[simp] theorem colourTgt_dual (c : S.Colour) : S.colourTgt (D.dual c) = S.colourSrc c :=
+  D.tgt_dual c
+
 /-- The dual `w* = c_k* ⋯ c_1*` of a word `w = c_1 ⋯ c_k`. -/
 def dualWord : List S.Colour → List S.Colour
   | [] => []

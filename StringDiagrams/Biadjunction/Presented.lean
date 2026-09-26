@@ -280,6 +280,45 @@ theorem biadjW_cons_left_counit (c : S.Colour) (w : List S.Colour) {l m : P.Bica
     Bicategory.Adjunction.comp_counit, Bicategory.Adjunction.compCounit]
   rfl
 
+theorem _root_.StringDiagrams.Biadjunction.congr_right_unit {B : Type*} [Bicategory B] {a b : B}
+    {f f' : a ⟶ b} {g g' : b ⟶ a} (Q : f ⊣⊢ g) (hf : f = f') (hg : g = g') :
+    (Q.congr hf hg).right.unit = Q.right.unit ≫ eqToHom (by rw [hf, hg]) := by
+  subst hf hg; simp
+
+theorem _root_.StringDiagrams.Biadjunction.congr_right_counit {B : Type*} [Bicategory B] {a b : B}
+    {f f' : a ⟶ b} {g g' : b ⟶ a} (Q : f ⊣⊢ g) (hf : f = f') (hg : g = g') :
+    (Q.congr hf hg).right.counit = eqToHom (by rw [hf, hg]) ≫ Q.right.counit := by
+  subst hf hg; simp
+
+/-- The unit of the adjunction `x* ⊣ x` of the biadjunction of a word `c w` is nested: the unit
+of `w* ⊣ w`, then the cup of `c* ⊣ c` inserted between `w*` and `w`. -/
+theorem biadjW_cons_right_unit (c : S.Colour) (w : List S.Colour) {l m : P.Bicat} (x : l ⟶ m)
+    (hx : x.obj.word = c :: w) :
+    (biadjW B (c :: w) x hx).right.unit =
+      ((biadj B (P.tailHom x c w hx)).right.unit ⊗≫
+        P.dualHom D (P.tailHom x c w hx) ◁ (B (P.headHom x c w hx) c rfl).right.unit ▷
+          P.tailHom x c w hx ⊗≫ 𝟙 _) ≫
+        eqToHom (show (P.dualHom D (P.tailHom x c w hx) ≫ P.dualHom D (P.headHom x c w hx)) ≫
+            (P.headHom x c w hx ≫ P.tailHom x c w hx) = P.dualHom D x ≫ x by
+          rw [P.headHom_comp_tailHom, P.dualHom_tail_comp_head]) := by
+  simp only [biadjW, Biadjunction.congr_right_unit, Biadjunction.comp_right,
+    Bicategory.Adjunction.comp_unit, Bicategory.Adjunction.compUnit]
+  rfl
+
+/-- The counit of the adjunction `x* ⊣ x` of the biadjunction of a word `c w` is nested: the
+counit of `w* ⊣ w` inserted between `c` and `c*`, then the cap of `c* ⊣ c`. -/
+theorem biadjW_cons_right_counit (c : S.Colour) (w : List S.Colour) {l m : P.Bicat} (x : l ⟶ m)
+    (hx : x.obj.word = c :: w) :
+    (biadjW B (c :: w) x hx).right.counit =
+      eqToHom (show x ≫ P.dualHom D x = (P.headHom x c w hx ≫ P.tailHom x c w hx) ≫
+          (P.dualHom D (P.tailHom x c w hx) ≫ P.dualHom D (P.headHom x c w hx)) by
+        rw [P.headHom_comp_tailHom, P.dualHom_tail_comp_head]) ≫
+      (𝟙 _ ⊗≫ P.headHom x c w hx ◁ (biadj B (P.tailHom x c w hx)).right.counit ▷
+          P.dualHom D (P.headHom x c w hx) ⊗≫ (B (P.headHom x c w hx) c rfl).right.counit) := by
+  simp only [biadjW, Biadjunction.congr_right_counit, Biadjunction.comp_right,
+    Bicategory.Adjunction.comp_counit, Bicategory.Adjunction.compCounit]
+  rfl
+
 theorem isCyclic_biadj_comp_symm {l m n : P.Bicat} (x : l ⟶ m) (y : m ⟶ n) :
     Biadjunction.IsCyclic (biadj B (x ≫ y)) ((biadj B x).comp (biadj B y)) (𝟙 _) := by
   simpa using (isCyclic_biadj_comp B x y).inv
