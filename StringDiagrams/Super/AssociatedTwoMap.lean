@@ -1,12 +1,26 @@
 import StringDiagrams.Super.AssociatedTwoT
 
 /-!
-# `D₂` on Π-2-functors
+# `D₂` on Π-2-functors, and Lemma 5.4 on morphisms
 
-Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v3, (5.5): a
-Π-2-functor `ℝ : 𝔄 → 𝔅` induces a 2-superfunctor `ℝ̂ : 𝔄̂ → 𝔅̂`, equal to `ℝ` on objects and
-1-morphisms, with `ℝ̂ x̂ = ℝ x` on even and `ℝ̂ x̂ = j⁻¹(ℝG) ∘ c⁻¹ ∘ ℝx` on odd 2-morphisms, and
-with the coherence maps of `ℝ`.
+Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v3, (5.5) and
+Lemma 5.4.
+
+* A Π-2-functor `(ℝ, j)` (`StringDiagrams.PiTwoFunctor`) gives Π-functors between the hom
+  Π-categories, with `β = c ∘ (ℝG) j` (`PiTwoFunctor.homPi`; the Π-functor axiom is the second
+  axiom of Definition 5.2(ii)), and its coherence maps `c` are Π-natural in each variable
+  (`PiTwoFunctor.mapCompRight_isPiNatural`, and `PiTwoFunctor.mapCompLeft_isPiNatural`, which
+  uses the first axiom of Definition 5.2(ii)).
+* `D₂ ℝ = ℝ̂ : 𝔄̂ → 𝔅̂` (`PiTwoFunctor.mapTwo`): `ℝ` on objects and 1-morphisms, `D₁` of the hom
+  Π-functors on 2-morphisms (`ℝ̂ x̂ = ℝ x` for even `x̂`, `j⁻¹(ℝG) ∘ c⁻¹ ∘ ℝx` for odd `x̂`), and
+  the coherence maps of `ℝ` viewed as even 2-isomorphisms. That `c` is supernatural is the
+  Π-naturality above.
+* **Lemma 5.4, `E₂ ∘ D₂ = I` on morphisms**: the coherence map `ĵ = (ℝ̂ζ)⁻¹ ∘ i ∘ ζ` of `E₂ ℝ̂` is
+  `j` (`PiTwoFunctor.jIso_mapTwo_hom`).
+* **Lemma 5.4, naturality of `𝕋`**: for a 2-superfunctor `ℝ : 𝔄 → 𝔄'` of Π-2-supercategories,
+  `𝕋_{𝔄'} ∘ (E₂ ℝ)^ = ℝ ∘ 𝕋_𝔄` on 2-morphisms (`Associated2.T_map₂_mapTwo`, using
+  `ℝ(ζ_μ F) = ζ_{ℝμ}(ℝF) ∘ (ℝF) j⁻¹ ∘ c⁻¹`, `Associated2.map₂_ζG`) and on the coherence maps
+  (`Associated2.T_map₂_mapTwo_mapComp`, `Associated2.T_map₂_mapTwo_mapId`).
 -/
 
 noncomputable section

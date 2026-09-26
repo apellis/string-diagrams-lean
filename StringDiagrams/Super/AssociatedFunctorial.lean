@@ -29,6 +29,10 @@ Theorem 5.3 directly:
 * `T` is a Π-2-natural isomorphism with identity components `t_F` (`T_naturality`): it is
   natural in 2-morphisms, `x T_A = T_B (x̲)^` (`T_map_mapNatTrans`), and satisfies the coherence
   axiom of Definition 5.2(iii), i.e. `β_{T_A} = 1` (`β_T`).
+
+Together with Lemma 5.1 (`StringDiagrams.Super.Associated`) this is the content of the second
+bullet of Theorem 1.9 (the functor (2) of (1.5) is an equivalence) and of its 2-categorical
+strengthening, Theorem 5.3.
 -/
 
 noncomputable section

@@ -1,9 +1,28 @@
 import StringDiagrams.Super.AssociatedTwo
 
 /-!
-# Lemma 5.4: `D₂ ∘ E₂ ≅ I`
+# Lemma 5.4
 
-Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v3, Lemma 5.4.
+Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v3, Lemma 5.4:
+the functors `D₂ : Π-2-Cat → Π-2-SCat` and `E₂ : Π-2-SCat → Π-2-Cat` are mutually inverse
+equivalences. As for Lemma 5.1, the categories `Π-2-Cat` and `Π-2-SCat` are not constructed; the
+content is stated on objects and morphisms.
+
+* `E₂ ∘ D₂ = I` on objects: the identification `Associated2.unit : 𝔄 → E₂(𝔄̂)`, the identity on
+  objects and 1-morphisms and `x ↦ (x, 0)` on 2-morphisms, is a strict pseudofunctor, bijective
+  on 2-morphisms (`Associated2.unit_map₂_bijective`), and a Π-2-functor with `j = 1`
+  (`Associated2.unitPiTwoFunctor`, from `β_hom_eq` and `ξ_hom_eq`).
+* `D₂ ∘ E₂ ≅ I` on objects: for a Π-2-supercategory `𝔄`, the 2-superfunctor
+  `𝕋_𝔄 : (E₂ 𝔄)^ → 𝔄` (`Associated2.T`), the identity on objects and 1-morphisms,
+  `x̂ ↦ x₀ + ζ_μ G ∘ x₁` on 2-morphisms, with identity coherence maps. It is bijective on
+  2-morphisms (`Associated2.T_map₂_bijective`) and carries `ζ` to `ζ` (`Associated2.T_map₂_ζ`).
+  That `𝕋_𝔄` respects vertical composition uses `ξ_G = -ζ_μ G ∘ ζ_μ G π_μ`
+  (`Associated2.ξHom_val`) and hence the corrected sign of the vertical composition of odd
+  2-morphisms; that it respects horizontal composition (whiskering) uses
+  `ζ_ν G ∘ β_G⁻¹ = G ζ_μ` (`Associated2.βR_inv_ζG`).
+
+`E₂ ∘ D₂ = I` and the naturality of `𝕋` on morphisms are in
+`StringDiagrams.Super.AssociatedTwoMap`.
 -/
 
 noncomputable section

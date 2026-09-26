@@ -2,10 +2,40 @@ import StringDiagrams.Super.PiTwoCategory
 import StringDiagrams.Super.MonoidalAssociated
 
 /-!
-# The Π-2-supercategory associated to a Π-2-category, and Lemma 5.4
+# The Π-2-supercategory associated to a Π-2-category (the functor `D₂` on objects)
 
-Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v3, (5.5),
-Lemma 5.4, (5.6) and Theorem 5.5.
+Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v3, (5.5).
+
+Let `(𝔄, π, β, ξ)` be a Π-2-category (`StringDiagrams.PiTwoCategory`, Definition 5.2(i)). Its
+hom categories are Π-categories (`PiTwoCategory.homPiCategory`), and the associated
+2-supercategory `𝔄̂` (`StringDiagrams.Associated2 R 𝔄`) has:
+
+* the objects and 1-morphisms of `𝔄`, and the associated supercategories
+  `ℋom_𝔄(λ, μ)^` (`StringDiagrams.Associated`) as morphism supercategories: an even 2-morphism
+  `F ⇒ G` is a 2-morphism `F ⇒ G` of `𝔄`, an odd one is a 2-morphism `F ⇒ π_μ G`;
+* horizontal composition with a 1-morphism given by `D₁` of the Π-functors `F ≫ -`
+  (`PiTwoCategory.precompPi`, `β = a`) and `- ≫ H` (`PiTwoCategory.postcompPi`,
+  `β = a⁻¹ ∘ (F β_H) ∘ a`; the Π-functor axiom is the last axiom of Definition 5.2(i));
+* the coherence maps of `𝔄`, viewed as even 2-isomorphisms.
+
+The axioms of a 2-supercategory (`Associated2.twoSupercategory`) reduce, via the Π-naturality of
+the coherence maps (`Associated2.lNat_isPiNatural`, …, which use (i) and (ii) of
+Definition 5.2(i)), to the functoriality of `D₁` and the super interchange law
+(`Associated2.super_interchange'`, which uses `β_π = -1`). `𝔄̂` is a Π-2-supercategory with
+`π̂ = π` and `ζ_λ = λ⁻¹_{π_λ}` viewed as an odd 2-morphism `π_λ ⇒ 1_λ`
+(`Associated2.instPiTwoSupercategory`), and the `β` and `ξ` of Lemma 3.2 for `𝔄̂` are those of `𝔄`
+(`Associated2.β_hom_eq`, `Associated2.ξ_hom_eq`; part of `E₂ ∘ D₂ = I` in Lemma 5.4).
+
+## Sign corrections
+
+As in `StringDiagrams.Super.Associated` (the erratum to Lemma 5.1), the vertical composite of two
+odd 2-morphisms `x̂ : F ⇒ G`, `ŷ : G ⇒ H` is `-ξ_μ H ∘ π_μ y ∘ x` (`Associated2.comp₂_fst`), not
+`ξ_μ H ∘ π_μ y ∘ x` as used in the proof of Lemma 5.4. Correspondingly, the horizontal composite
+of two odd 2-morphisms is `+ξ_ν KH ∘ π_ν (β_{ν,μ})⁻¹_K H ∘ yx` (`Associated2.hcomp_odd_odd`),
+not `-ξ_ν KH ∘ π_ν (β_{ν,μ})⁻¹_K H ∘ yx` as printed in (5.5). Both printed signs are those of
+the construction applied to `(𝔄, π, β, -ξ)`, which is again a Π-2-category; with them, the
+isomorphism `ξ̂ = ζ̂ζ̂` of `𝔄̂` would be `-ξ` rather than `ξ`, and `𝕋_𝔄` of Lemma 5.4 would
+not be a 2-superfunctor.
 -/
 
 noncomputable section
