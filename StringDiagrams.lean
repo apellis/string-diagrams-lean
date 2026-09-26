@@ -43,6 +43,9 @@ import StringDiagrams.Biadjunction.Presented
 import StringDiagrams.Biadjunction.PivotalExtension
 import StringDiagrams.Examples.WalkingBiadjunction
 import StringDiagrams.Examples.OddBrauer
+import StringDiagrams.Biadjunction.NestedCups
+import StringDiagrams.Biadjunction.PivotalInclusion
+import StringDiagrams.Examples.TwoStrandGenerator
 
 /-!
 # StringDiagrams
