@@ -20,6 +20,8 @@ import StringDiagrams.Super.Underlying
 import StringDiagrams.Super.Associated
 import StringDiagrams.Super.MonoidalEnvelope
 import StringDiagrams.Super.MonoidalPi
+import StringDiagrams.Super.FunctorCategory
+import StringDiagrams.Super.SCat
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
