@@ -1164,6 +1164,64 @@ def Γ : ∀ i : ℤ, Φ.F ⋙ d'.pow i ≅ d.pow i ⋙ Φ.F
   | Int.ofNat n => Φ.ΓNat n
   | Int.negSucc n => Φ.ΓNeg n
 
+theorem Γ_negSucc (n : ℕ) : Φ.Γ (Int.negSucc n) = Φ.ΓNegAux n (Φ.Γ (Int.negSucc n + 1)) := by
+  rcases n with _ | n <;> rfl
+
+/-- The recursion (the paper's definition of `γ_F^n`):
+`Γⁱ⁺¹ = F(Q Qⁱ ≅ Qⁱ⁺¹) ∘ γ_{Qⁱ} ∘ Q' Γⁱ ∘ (Q' Q'ⁱ ≅ Q'ⁱ⁺¹)⁻¹`. -/
+theorem Γ_succ_hom_app (i : ℤ) (X : S) :
+    (Φ.Γ (i + 1)).hom.app X = (d'.succ i).inv.app (Φ.F.obj X) ≫ d'.Q.map ((Φ.Γ i).hom.app X) ≫
+      Φ.γ.hom.app ((d.pow i).obj X) ≫ Φ.F.map ((d.succ i).hom.app X) := by
+  rcases i with n | n
+  · show (Φ.ΓNat (n + 1)).hom.app X = 𝟙 _ ≫ d'.Q.map ((Φ.ΓNat n).hom.app X) ≫ _ ≫ Φ.F.map (𝟙 _)
+    rw [ΓNat_succ_hom_app, Category.id_comp, CategoryTheory.Functor.map_id, Category.comp_id]
+    rfl
+  · rw [Γ_negSucc]
+    simp only [ΓNegAux, NatIso.ofComponents_hom_app, Functor.preimageIso_hom, Functor.map_preimage,
+      Iso.trans_hom, Iso.app_hom, Functor.mapIso_hom, Iso.symm_hom, Iso.app_inv, Category.assoc,
+      Iso.inv_hom_id_app_assoc, Iso.inv_hom_id_app, Category.comp_id]
+    rw [← Φ.F.map_comp, Iso.inv_hom_id_app]
+    erw [CategoryTheory.Functor.map_id, Category.comp_id]
+
+theorem Γ_succ_inv_app (i : ℤ) (X : S) :
+    (Φ.Γ (i + 1)).inv.app X = Φ.F.map ((d.succ i).inv.app X) ≫ Φ.γ.inv.app ((d.pow i).obj X) ≫
+      d'.Q.map ((Φ.Γ i).inv.app X) ≫ (d'.succ i).hom.app (Φ.F.obj X) := by
+  rw [← cancel_epi ((Φ.Γ (i + 1)).hom.app X), Iso.hom_inv_id_app, Γ_succ_hom_app]
+  simp only [Category.assoc]
+  rw [← Φ.F.map_comp_assoc, Iso.hom_inv_id_app]
+  erw [CategoryTheory.Functor.map_id, Category.id_comp]
+  rw [Iso.hom_inv_id_app_assoc, ← d'.Q.map_comp_assoc, Iso.hom_inv_id_app]
+  erw [CategoryTheory.Functor.map_id, Category.id_comp, Iso.inv_hom_id_app]
+  rfl
+
+theorem ΓNat_hom_mem (n : ℕ) (X : S) : (Φ.ΓNat n).hom.app X ∈ parity (R := R) _ _ 0 := by
+  induction n with
+  | zero => show 𝟙 _ ≫ 𝟙 _ ∈ _; simpa using id_mem (R := R) (Φ.F.obj X)
+  | succ n ih =>
+    rw [ΓNat_succ_hom_app]
+    simpa using comp_mem (map_mem d'.Q ih) (Φ.γ_mem _)
+
+theorem Γ_hom_mem (i : ℤ) (X : S) : (Φ.Γ i).hom.app X ∈ parity (R := R) _ _ 0 := by
+  have step : ∀ (n : ℕ), (Φ.Γ (Int.negSucc n + 1)).hom.app X ∈ parity (R := R) _ _ 0 →
+      (Φ.Γ (Int.negSucc n)).hom.app X ∈ parity (R := R) _ _ 0 := by
+    intro n h
+    rw [Γ_negSucc]
+    apply mem_of_map_mem d'.Q
+    simp only [ΓNegAux, NatIso.ofComponents_hom_app, Functor.preimageIso_hom, Functor.map_preimage,
+      Iso.trans_hom, Iso.app_hom, Functor.mapIso_hom, Iso.symm_hom, Iso.app_inv]
+    have := comp_mem (d'.succ_hom_mem (Int.negSucc n) (Φ.F.obj X)) (comp_mem h
+      (comp_mem (map_mem Φ.F (d.succ_inv_mem (Int.negSucc n) X))
+        (inv_mem (Φ.γ.app _) (Φ.γ_mem ((d.pow (Int.negSucc n)).obj X)))))
+    simpa using this
+  rcases i with n | n
+  · exact Φ.ΓNat_hom_mem n X
+  · induction n with
+    | zero => exact step 0 (Φ.ΓNat_hom_mem 0 X)
+    | succ n ih => exact step (n + 1) ih
+
+theorem Γ_inv_mem (i : ℤ) (X : S) : (Φ.Γ i).inv.app X ∈ parity (R := R) _ _ 0 :=
+  inv_mem ((Φ.Γ i).app X) (Φ.Γ_hom_mem i X)
+
 end ShiftFunctor
 
 end StringDiagrams
