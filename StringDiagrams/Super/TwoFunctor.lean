@@ -43,12 +43,12 @@ of 2-morphisms of parity `p`, and every supermodification is uniquely `α = α�
 The composite of 2-superfunctors and the identity and vertical composite of 2-natural
 transformations are in `StringDiagrams.Super.TwoFunctorComp`.
 
-## Not formalized
+## Elsewhere
 
-The category `2-𝔖ℭ𝔞𝔱` and the 2-category `2-𝔖ℭ𝔄𝔗` (associativity and unit laws for these
-composites), the 2-supercategory `𝔥𝔬𝔪(𝔄, 𝔅)` and the 3-supercategory of 2-supercategories
-mentioned in Definition 2.2 (whose details the paper omits), 2-superequivalences of
-2-supercategories and the coherence theorem for 2-supercategories are not formalized.
+The category `2-𝔖ℭ𝔞𝔱` is in `StringDiagrams.Super.TwoSCat`, the 2-supercategory `𝔥𝔬𝔪(𝔄, 𝔅)`
+and 2-superequivalences of 2-supercategories in `StringDiagrams.Super.TwoHom`. The
+3-supercategory of 2-supercategories mentioned in Definition 2.2 (whose details the paper
+omits) and the coherence theorem for 2-supercategories are not formalized.
 -/
 
 noncomputable section
