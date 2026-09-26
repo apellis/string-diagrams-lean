@@ -36,7 +36,8 @@ identities (for `𝔖ℭ𝔞𝔱` definitionally), and the statements reduce to 
   `ξ_μ F ξ_λ⁻¹ = β_F π_λ ∘ π_μ β_F` (`ξ_comm`).
 
 That `(π, β)` is an object of the Drinfeld center (Definition 2.3) is
-`PiTwoSupercategory.centerObj` in `StringDiagrams.Super.TwoFunctor`.
+`PiTwoSupercategory.centerObj` in `StringDiagrams.Super.DrinfeldCenter`, where `ζ` and `ξ`
+also become isomorphisms `(π, β) ≅ 1` and `(π, β) ⊗ (π, β) ≅ 1` of the Drinfeld center.
 
 ## Π-𝔖ℭ𝔞𝔱
 

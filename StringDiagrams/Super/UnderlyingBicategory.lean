@@ -84,6 +84,13 @@ variable {a b c d : Underlying2 R B}
 
 @[simp] theorem comp_obj (f : a ⟶ b) (g : b ⟶ c) : (f ≫ g).obj = f.obj ≫ g.obj := rfl
 
+@[simp] theorem comp₂_val {f g h : a ⟶ b} (η : f ⟶ g) (θ : g ⟶ h) : (η ≫ θ).1 = η.1 ≫ θ.1 :=
+  rfl
+
+@[simp] theorem id₂_val (f : a ⟶ b) : (𝟙 f : f ⟶ f).1 = 𝟙 f.obj := rfl
+
+@[simp] theorem hom1_obj {a b : B} (f : a ⟶ b) : (hom1 (R := R) f).obj = f := rfl
+
 @[simp] theorem whiskerLeft_val (f : a ⟶ b) {g h : b ⟶ c} (η : g ⟶ h) :
     (Bicategory.whiskerLeft f η).1 = f.obj ◁ η.1 := rfl
 
