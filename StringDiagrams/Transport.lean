@@ -92,6 +92,14 @@ theorem castHom_injective (ha : a = a') (hb : b = b') : Function.Injective (P.ca
     P.castHom ha hb f = P.castHom ha hb g ↔ f = g :=
   (P.castHom_injective ha hb).eq_iff
 
+/-- Whiskering commutes with retyping. -/
+theorem whisk_castHom (ha : a = a') (hb : b = b') (f : P.obj a ⟶ P.obj b) (u : Obj S)
+    (v : List S.Colour) :
+    P.whisk (P.castHom ha hb f) u v =
+      P.castHom (congrArg (Obj.whisker · u v) ha) (congrArg (Obj.whisker · u v) hb)
+        (P.whisk f u v) := by
+  subst ha hb; simp
+
 /-- Retyping as an `R`-linear equivalence of Hom modules. -/
 def castLinearEquiv (ha : a = a') (hb : b = b') :
     (P.obj a ⟶ P.obj b) ≃ₗ[R] (P.obj a' ⟶ P.obj b') where
