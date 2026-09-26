@@ -498,6 +498,162 @@ instance : IsGradedSuperfunctor R (T R B) where
     rw [T_map_lof]
     simpa using val_mem_degree (f := f.1) 0 (-n)
 
+/-! ### `T_B` is an isomorphism -/
+
+theorem dproj_TL (n : ℤ) (x : (dB R B).Hom X Y) :
+    dproj R n (TL R B X Y x) = val ((dB R B).component n X Y x).1 0 (-n) := by
+  induction x using Hom.induction_on with
+  | zero => simp [val]
+  | add x y hx hy =>
+    rw [map_add, map_add, hx, hy, map_add]
+    simp only [val, Submodule.coe_add, FamAll.add_apply, Functor.map_add, Preadditive.add_comp,
+      Preadditive.comp_add]
+  | lof m f =>
+    rw [TL_lof]
+    by_cases h : m = n
+    · subst h
+      rw [component_lof_self, dproj_of_mem]
+      simpa using val_mem_degree (f := f.1) 0 (-m)
+    · rw [(dB R B).component_lof_of_ne _ h, dproj_of_mem_ne (by simpa using val_mem_degree (f := f.1) 0 (-m)) h]
+      simp [val]
+
+theorem TL_injective : Function.Injective (TL R B X Y) := by
+  rw [← LinearMap.ker_eq_bot, Submodule.eq_bot_iff]
+  intro x hx
+  refine Hom.ext fun n => ?_
+  rw [map_zero]
+  have h0 : val ((dB R B).component n X Y x).1 0 (-n) = 0 := by
+    rw [← dproj_TL, LinearMap.mem_ker.1 hx, map_zero]
+  rw [val_zero] at h0
+  have h1 : (TbF R B).map (((dB R B).component n X Y x).1 0 (-n)) = (TbF R B).map 0 := by
+    rw [Functor.map_zero]
+    exact (cancel_mono (τ R B (-n) Y).hom).1 (by rw [h0, Limits.zero_comp])
+  exact Subtype.ext (Fam.eq_of_entry ((dB R B).component n X Y x).2 (Submodule.zero_mem _)
+    (i₀ := 0) (j₀ := -n) (by ring) (TbF_map_injective h1))
+
+/-- The preimage under `T` of a morphism of `B` of degree `0`. -/
+def TbPre {Z W : Associated R (GUnderlying R B)} (h : bobj Z ⟶ bobj W)
+    (hh : h ∈ degree (R := R) (bobj Z) (bobj W) 0) : Z ⟶ W :=
+  (Associated.Tinv R (DegreeZero R B)).map (⟨h, hh⟩ : (⟨bobj Z⟩ : DegreeZero R B) ⟶ ⟨bobj W⟩)
+
+theorem TbF_map_TbPre {Z W : Associated R (GUnderlying R B)} (h : bobj Z ⟶ bobj W)
+    (hh : h ∈ degree (R := R) (bobj Z) (bobj W) 0) : (TbF R B).map (TbPre h hh) = h :=
+  congrArg Subtype.val (Associated.T_map_Tinv_map (R := R) (A := DegreeZero R B)
+    (⟨h, hh⟩ : (⟨bobj Z⟩ : DegreeZero R B) ⟶ ⟨bobj W⟩))
+
+theorem conj_mem_degree {n : ℤ} {g : bobj X ⟶ bobj Y} (hg : g ∈ degree (R := R) _ _ n) {i j : ℤ}
+    (h : i - j = n) :
+    (τ R B i X).hom ≫ g ≫ (τ R B j Y).inv ∈ degree (R := R) (bobj (((dB R B).pow i).obj X))
+      (bobj (((dB R B).pow j).obj Y)) 0 := by
+  have := comp_mem_degree (comp_mem_degree (τ_hom_mem i X).2 hg) (τ_inv_mem j Y).2
+  rw [show -i + n + j = 0 by omega, Category.assoc] at this
+  exact this
+
+/-- The family of a morphism of `B` of degree `n`: `f_{i,j} = T⁻¹(τ_j⁻¹ ∘ g ∘ τ_i)`. -/
+def famOf {n : ℤ} (g : bobj X ⟶ bobj Y) (hg : g ∈ degree (R := R) _ _ n) : (dB R B).FamAll X Y :=
+  fun i j => if h : i - j = n then TbPre _ (conj_mem_degree hg h) else 0
+
+theorem TbF_famOf {n : ℤ} (g : bobj X ⟶ bobj Y) (hg : g ∈ degree (R := R) _ _ n) {i j : ℤ}
+    (h : i - j = n) : (TbF R B).map (famOf g hg i j) = (τ R B i X).hom ≫ g ≫ (τ R B j Y).inv := by
+  rw [famOf, dif_pos h, TbF_map_TbPre]
+
+theorem famOf_mem {n : ℤ} (g : bobj X ⟶ bobj Y) (hg : g ∈ degree (R := R) _ _ n) :
+    famOf g hg ∈ (dB R B).Fam R n X Y := by
+  refine ⟨fun i j h => by rw [famOf, dif_neg h], fun i j => ?_⟩
+  by_cases h : i - j = n
+  · apply TbF_map_injective
+    rw [TbF_famOf g hg (by omega), Functor.map_comp, Functor.map_comp]
+    erw [TbF_map_Qhat]
+    rw [TbF_famOf g hg h, τ_succ, τ_succ_inv, QPiSupercategory.Q_map_eq]
+    simp only [Category.assoc, Iso.inv_hom_id_assoc, ← Functor.map_comp, Iso.inv_hom_id_app]
+  · rw [famOf, famOf, dif_neg (by omega), dif_neg h]; simp
+
+theorem TL_famOf {n : ℤ} (g : bobj X ⟶ bobj Y) (hg : g ∈ degree (R := R) _ _ n) :
+    TL R B X Y ((dB R B).lof n X Y ⟨famOf g hg, famOf_mem g hg⟩) = g := by
+  rw [TL_lof, val, TbF_famOf g hg (by ring), τ_zero]
+  simp
+
+theorem TL_surjective : Function.Surjective (TL R B X Y) := by
+  rw [← LinearMap.range_eq_top, eq_top_iff]
+  rintro g -
+  refine induction_on_degree (R := R) g (Submodule.zero_mem _) (fun n g hg => ⟨_, TL_famOf g hg⟩)
+    (fun g h hg hh => Submodule.add_mem _ hg hh)
+
+instance : (T R B).Faithful where
+  map_injective h := TL_injective h
+
+instance : (T R B).Full where
+  map_surjective g := TL_surjective g
+
+variable (R B) in
+/-- The inverse of `T_B`. -/
+@[simps obj]
+def Tinv : B ⥤ QAssociated R (GUnderlying R B) where
+  obj b := ⟨⟨⟨⟨b⟩⟩⟩⟩
+  map {b b'} g := (T R B).preimage
+    (show (T R B).obj ⟨⟨⟨⟨b⟩⟩⟩⟩ ⟶ (T R B).obj ⟨⟨⟨⟨b'⟩⟩⟩⟩ from g)
+  map_id b := (T R B).map_injective (by simp; rfl)
+  map_comp f g := (T R B).map_injective (by simp)
+
+theorem T_map_Tinv_map {b b' : B} (g : b ⟶ b') : (T R B).map ((Tinv R B).map g) = g :=
+  (T R B).map_preimage (show (T R B).obj ⟨⟨⟨⟨b⟩⟩⟩⟩ ⟶ (T R B).obj ⟨⟨⟨⟨b'⟩⟩⟩⟩ from g)
+
+/-- **`𝔻 ∘ 𝔼 ≅ I`.** `T_B` is an isomorphism of categories. -/
+theorem Tinv_comp_T : Tinv R B ⋙ T R B = 𝟭 B :=
+  CategoryTheory.Functor.ext (fun _ => rfl) fun b b' g => by simpa using T_map_Tinv_map g
+
+theorem T_comp_Tinv : T R B ⋙ Tinv R B = 𝟭 _ :=
+  CategoryTheory.Functor.ext (fun _ => rfl) fun X Y x =>
+    (T R B).map_injective (by simpa using T_map_Tinv_map ((T R B).map x))
+
+instance : (Tinv R B).Additive where
+  map_add := (T R B).map_injective (by simp [T_map_Tinv_map])
+
+instance : (Tinv R B).Linear R where
+  map_smul _ _ := (T R B).map_injective (by simp [T_map_Tinv_map])
+
+instance : IsGradedSuperfunctor R (Tinv R B) where
+  map_mem hg := mem_of_map_mem (T R B) (by rw [T_map_Tinv_map]; exact hg)
+  map_mem_degree hg := mem_degree_of_map_mem (T R B) (by rw [T_map_Tinv_map]; exact hg)
+
+/-! ### `T_B` preserves `Π`, `ζ`, `Q` and `σ` -/
+
+theorem T_obj (X : QAssociated R (GUnderlying R B)) : (T R B).obj X = X.obj.obj.obj.obj := rfl
+
+theorem T_obj_pi (X : QAssociated R (GUnderlying R B)) :
+    (T R B).obj ((PiSupercategory.pi (R := R)).obj X) =
+      (PiSupercategory.pi (R := R)).obj ((T R B).obj X) := rfl
+
+theorem T_obj_Q (X : QAssociated R (GUnderlying R B)) :
+    (T R B).obj ((QPiSupercategory.Q (R := R)).obj X) =
+      (QPiSupercategory.Q (R := R)).obj ((T R B).obj X) := rfl
+
+theorem T_map_ι {Z W : Associated R (GUnderlying R B)} (f : Z ⟶ W) :
+    (T R B).map ((ι (dB R B)).map f) = (TbF R B).map f := by
+  rw [ι_map]
+  refine (T_map_lof (X := (⟨Z⟩ : QAssociated R _)) (Y := ⟨W⟩) _).trans ?_
+  rw [neg_zero, val, τ_zero, τ_zero]
+  simp [mapFam, diagFam_self]
+
+/-- `T_B` carries `ζ` to `ζ`. -/
+theorem T_map_ζ (X : QAssociated R (GUnderlying R B)) :
+    (T R B).map (PiSupercategory.ζ (R := R) X).hom = (PiSupercategory.ζ (R := R) ((T R B).obj X)).hom := by
+  rw [ζ_eq, ζIso, Functor.mapIso_hom]
+  erw [T_map_ι]
+  exact congrArg Subtype.val (Associated.T_map_ζ (R := R) (A := DegreeZero R B) X.obj)
+
+/-- `T_B` carries `σ` to `σ`. -/
+theorem T_map_σ (X : QAssociated R (GUnderlying R B)) :
+    (T R B).map (QPiSupercategory.σ (R := R) X).hom = (σ (R := R) ((T R B).obj X)).hom := by
+  rw [σ_eq]
+  show (T R B).map ((dB R B).lof (-1) _ _ _) = _
+  rw [T_map_lof, neg_neg, val, τ_zero]
+  show 𝟙 _ ≫ (TbF R B).map ((dB R B).famσ X.obj 0 (0 + 1)) ≫ (τ R B 1 X.obj).hom = _
+  rw [famσ_succ, comm_zero_hom_app]
+  erw [CategoryTheory.Functor.map_id, Category.id_comp, Category.id_comp]
+  show (σ (R := R) _).hom ≫ 𝟙 _ = _
+  rw [Category.comp_id]; rfl
+
 end T
 
 end QAssociated

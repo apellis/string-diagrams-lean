@@ -169,6 +169,10 @@ def comm : ∀ i : ℤ, d.Q ⋙ d.pow i ≅ d.pow (i + 1)
   | Int.negSucc 0 => d.commNeg 0
   | Int.negSucc (n + 1) => d.commNeg (n + 1)
 
+theorem comm_zero_hom_app (X : S) : (d.comm 0).hom.app X = 𝟙 (d.Q.obj X) := by
+  show 𝟙 _ ≫ 𝟙 _ = _
+  exact Category.id_comp _
+
 theorem commNat_hom_mem (n : ℕ) (X : S) :
     (d.commNat n).hom.app X ∈ parity (R := R) ((d.powNat n).obj (d.Q.obj X)) ((d.powNat (n + 1)).obj X) 0 := by
   induction n with
