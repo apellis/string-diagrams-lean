@@ -239,6 +239,235 @@ theorem comm_succ (i : ℤ) (X : S) :
       symm
       exact (Iso.inv_comp_eq (d.e.counitIso.app _)).2 (d.e.counitIso.hom.naturality _)
 
+/-! ## Compatible families -/
+
+/-- All families of morphisms `Qⁱ X ⟶ Qʲ Y`. -/
+def FamAll (X Y : S) := ∀ i j : ℤ, (d.pow i).obj X ⟶ (d.pow j).obj Y
+
+instance (X Y : S) : CoeFun (d.FamAll X Y) fun _ => ∀ i j : ℤ, (d.pow i).obj X ⟶ (d.pow j).obj Y :=
+  ⟨fun f => f⟩
+
+instance (X Y : S) : AddCommGroup (d.FamAll X Y) :=
+  inferInstanceAs (AddCommGroup (∀ i j : ℤ, (d.pow i).obj X ⟶ (d.pow j).obj Y))
+
+instance (X Y : S) : Module R (d.FamAll X Y) :=
+  inferInstanceAs (Module R (∀ i j : ℤ, (d.pow i).obj X ⟶ (d.pow j).obj Y))
+
+variable {d}
+
+@[simp] theorem FamAll.add_apply {X Y : S} (f g : d.FamAll X Y) (i j : ℤ) :
+    (f + g) i j = f i j + g i j := rfl
+
+@[simp] theorem FamAll.smul_apply {X Y : S} (r : R) (f : d.FamAll X Y) (i j : ℤ) :
+    (r • f) i j = r • f i j := rfl
+
+@[simp] theorem FamAll.zero_apply {X Y : S} (i j : ℤ) : (0 : d.FamAll X Y) i j = 0 := rfl
+
+@[simp] theorem FamAll.neg_apply {X Y : S} (f : d.FamAll X Y) (i j : ℤ) : (-f) i j = -f i j :=
+  rfl
+
+@[ext] theorem FamAll.ext {X Y : S} {f g : d.FamAll X Y} (h : ∀ i j, f i j = g i j) : f = g :=
+  funext fun i => funext fun j => h i j
+
+variable (d)
+
+/-- A family is compatible with `Q`: `f_{i+1,j+1} = Q f_{i,j}` up to the isomorphisms
+`Q Qⁱ ≅ Qⁱ⁺¹`. -/
+def IsCompat {X Y : S} (f : d.FamAll X Y) : Prop :=
+  ∀ i j, f (i + 1) (j + 1) = (d.succ i).inv.app X ≫ d.Q.map (f i j) ≫ (d.succ j).hom.app Y
+
+variable (R) in
+/-- The compatible families of degree `m`: those supported on `i - j = m`. -/
+def Fam (m : ℤ) (X Y : S) : Submodule R (d.FamAll X Y) where
+  carrier := {f | (∀ i j, i - j ≠ m → f i j = 0) ∧ d.IsCompat f}
+  add_mem' := by
+    rintro f g ⟨hf0, hf⟩ ⟨hg0, hg⟩
+    refine ⟨fun i j h => by simp [hf0 i j h, hg0 i j h], fun i j => ?_⟩
+    simp only [FamAll.add_apply, hf i j, hg i j, Functor.map_add, Preadditive.add_comp,
+      Preadditive.comp_add]
+  zero_mem' := ⟨fun _ _ _ => rfl, fun i j => by simp⟩
+  smul_mem' := by
+    rintro r f ⟨hf0, hf⟩
+    refine ⟨fun i j h => by simp [hf0 i j h], fun i j => ?_⟩
+    simp only [FamAll.smul_apply, hf i j, Functor.map_smul, Linear.smul_comp, Linear.comp_smul]
+
+variable {d}
+
+theorem Fam.eq_zero {m : ℤ} {X Y : S} {f : d.FamAll X Y} (hf : f ∈ d.Fam R m X Y) {i j : ℤ}
+    (h : i - j ≠ m) : f i j = 0 := hf.1 i j h
+
+theorem Fam.compat {m : ℤ} {X Y : S} {f : d.FamAll X Y} (hf : f ∈ d.Fam R m X Y) (i j : ℤ) :
+    f (i + 1) (j + 1) = (d.succ i).inv.app X ≫ d.Q.map (f i j) ≫ (d.succ j).hom.app Y :=
+  hf.2 i j
+
+variable (d)
+
+/-- The composite of a family of degree `m` with a family: `(g ∘ f)_{i,k} = g_{i-m,k} ∘ f_{i,i-m}`. -/
+def famComp (m : ℤ) {X Y Z : S} (f : d.FamAll X Y) (g : d.FamAll Y Z) : d.FamAll X Z :=
+  fun i k => f i (i - m) ≫ g (i - m) k
+
+variable {d}
+
+theorem famComp_mem {m n : ℤ} {X Y Z : S} {f : d.FamAll X Y} {g : d.FamAll Y Z}
+    (hf : f ∈ d.Fam R m X Y) (hg : g ∈ d.Fam R n Y Z) : d.famComp m f g ∈ d.Fam R (m + n) X Z := by
+  refine ⟨fun i k h => ?_, fun i k => ?_⟩
+  · rw [famComp, Fam.eq_zero hg (by omega), Limits.comp_zero]
+  · simp only [famComp]
+    rw [show i + 1 - m = i - m + 1 by ring, Fam.compat hf, Fam.compat hg]
+    simp [Category.assoc]
+
+variable (d)
+
+/-- The identity family: `1_{i,i} = 1`. -/
+def idFam (X : S) : d.FamAll X X :=
+  fun i j => if h : i = j then eqToHom (congrArg (fun k => (d.pow k).obj X) h) else 0
+
+theorem idFam_self (X : S) (i : ℤ) : d.idFam X i i = 𝟙 _ := by simp [idFam]
+
+theorem idFam_mem (X : S) : d.idFam X ∈ d.Fam R 0 X X := by
+  refine ⟨fun i j h => ?_, fun i j => ?_⟩
+  · rw [idFam, dif_neg (by omega)]
+  · by_cases h : i = j
+    · subst h; simp [idFam_self]
+    · rw [idFam, idFam, dif_neg h, dif_neg (by omega)]; simp
+
+theorem famComp_idFam_left {X Y : S} (f : d.FamAll X Y) : d.famComp 0 (d.idFam X) f = f := by
+  ext i k
+  simp only [famComp]
+  rw [show i - 0 = i by ring, idFam_self, Category.id_comp]
+
+theorem famComp_idFam_right {m : ℤ} {X Y : S} {f : d.FamAll X Y} (hf : f ∈ d.Fam R m X Y) :
+    d.famComp m f (d.idFam Y) = f := by
+  ext i k
+  simp only [famComp, idFam]
+  by_cases h : i - m = k
+  · subst h; simp
+  · rw [dif_neg h, Limits.comp_zero, Fam.eq_zero hf (by omega)]
+
+theorem famComp_assoc (m n : ℤ) {W X Y Z : S} (f : d.FamAll W X) (g : d.FamAll X Y)
+    (h : d.FamAll Y Z) :
+    d.famComp (m + n) (d.famComp m f g) h = d.famComp m f (d.famComp n g h) := by
+  ext i l
+  simp only [famComp]
+  rw [show i - (m + n) = i - m - n by ring, Category.assoc]
+
+/-! ## Morphisms of the orbit supercategory -/
+
+/-- The composite as a bilinear map on families of degrees `m` and `n`. -/
+def famCompₗ (m n : ℤ) (X Y Z : S) :
+    d.Fam R m X Y →ₗ[R] d.Fam R n Y Z →ₗ[R] d.Fam R (m + n) X Z :=
+  LinearMap.mk₂ R (fun (f : d.Fam R m X Y) (g : d.Fam R n Y Z) =>
+      (⟨d.famComp m f.1 g.1, famComp_mem f.2 g.2⟩ : d.Fam R (m + n) X Z))
+    (fun f f' g => Subtype.ext (FamAll.ext fun i k => by
+      simp [famComp, Preadditive.add_comp]))
+    (fun r f g => Subtype.ext (FamAll.ext fun i k => by simp [famComp]))
+    (fun f g g' => Subtype.ext (FamAll.ext fun i k => by
+      simp [famComp, Preadditive.comp_add]))
+    (fun r f g => Subtype.ext (FamAll.ext fun i k => by simp [famComp]))
+
+@[simp] theorem famCompₗ_apply (m n : ℤ) {X Y Z : S} (f : d.Fam R m X Y) (g : d.Fam R n Y Z) :
+    ((d.famCompₗ m n X Y Z f g : d.Fam R (m + n) X Z) : d.FamAll X Z) = d.famComp m f.1 g.1 := rfl
+
+/-- The morphisms `X → Y` of the orbit supercategory: `⨁ₘ` compatible families of degree `m`. -/
+def Hom (X Y : S) : Type _ := DirectSum ℤ fun m => d.Fam R m X Y
+
+instance (m : ℤ) (X Y : S) : AddCommGroup (d.Fam R m X Y) := Submodule.addCommGroup _
+
+instance (m : ℤ) (X Y : S) : Module R (d.Fam R m X Y) := Submodule.module _
+
+instance (X Y : S) : AddCommGroup (d.Hom X Y) :=
+  inferInstanceAs (AddCommGroup (DirectSum ℤ fun m => d.Fam R m X Y))
+
+instance (X Y : S) : Module R (d.Hom X Y) :=
+  inferInstanceAs (Module R (DirectSum ℤ fun m => d.Fam R m X Y))
+
+/-- The inclusion of the families of degree `m`. -/
+def lof (m : ℤ) (X Y : S) : d.Fam R m X Y →ₗ[R] d.Hom X Y :=
+  DirectSum.lof R ℤ (fun m => d.Fam R m X Y) m
+
+/-- The degree-`m` component of a morphism. -/
+def component (m : ℤ) (X Y : S) : d.Hom X Y →ₗ[R] d.Fam R m X Y :=
+  DirectSum.component R ℤ (fun m => d.Fam R m X Y) m
+
+@[simp] theorem component_lof_self (m : ℤ) {X Y : S} (f : d.Fam R m X Y) :
+    d.component m X Y (d.lof m X Y f) = f :=
+  DirectSum.component.lof_self (M := fun m => d.Fam R m X Y) R m f
+
+theorem component_lof_of_ne {m n : ℤ} {X Y : S} (f : d.Fam R m X Y) (h : m ≠ n) :
+    d.component n X Y (d.lof m X Y f) = 0 :=
+  (DirectSum.component.of (M := fun m => d.Fam R m X Y) R n m f).trans (dif_neg h)
+
+@[ext] theorem Hom.ext {X Y : S} {x y : d.Hom X Y}
+    (h : ∀ m, d.component m X Y x = d.component m X Y y) : x = y :=
+  DirectSum.ext (β := fun m => d.Fam R m X Y) h
+
+@[elab_as_elim]
+theorem Hom.induction_on {X Y : S} {motive : d.Hom X Y → Prop} (x : d.Hom X Y) (zero : motive 0)
+    (lof : ∀ m f, motive (d.lof m X Y f)) (add : ∀ x y, motive x → motive y → motive (x + y)) :
+    motive x :=
+  DirectSum.induction_on (β := fun m => d.Fam R m X Y) x zero
+    (fun m f => by
+      have h := lof m f
+      rw [ShiftData.lof] at h
+      exact h) add
+
+/-- Linear maps out of `Hom X Y` agree if they agree on homogeneous families. -/
+theorem Hom.linearMap_ext {X Y : S} {N : Type*} [AddCommGroup N] [Module R N]
+    {φ ψ : d.Hom X Y →ₗ[R] N} (h : ∀ m f, φ (d.lof m X Y f) = ψ (d.lof m X Y f)) : φ = ψ :=
+  DirectSum.linearMap_ext R fun m => LinearMap.ext fun f => h m f
+
+theorem lof_congr {X Y : S} {i j : ℤ} (h : i = j) {a : d.Fam R i X Y} {b : d.Fam R j X Y}
+    (hab : (a : d.FamAll X Y) = b) : d.lof i X Y a = d.lof j X Y b := by
+  subst h; congr 1; exact Subtype.ext hab
+
+/-- Composition of morphisms, bilinearly extended from `famComp`. -/
+def compL (X Y Z : S) : d.Hom X Y →ₗ[R] d.Hom Y Z →ₗ[R] d.Hom X Z :=
+  DirectSum.toModule R ℤ (d.Hom Y Z →ₗ[R] d.Hom X Z) fun m =>
+    LinearMap.flip (DirectSum.toModule R ℤ (d.Fam R m X Y →ₗ[R] d.Hom X Z) fun n =>
+      ((d.famCompₗ m n X Y Z).flip).compr₂ (d.lof (m + n) X Z))
+
+theorem compL_lof_lof {m n : ℤ} {X Y Z : S} (f : d.Fam R m X Y) (g : d.Fam R n Y Z) :
+    d.compL X Y Z (d.lof m X Y f) (d.lof n Y Z g) = d.lof (m + n) X Z (d.famCompₗ m n X Y Z f g) := by
+  simp only [compL, lof]
+  erw [DirectSum.toModule_lof, LinearMap.flip_apply, DirectSum.toModule_lof]
+  rfl
+
+/-- The identity morphism. -/
+def idHom (X : S) : d.Hom X X := d.lof 0 X X ⟨d.idFam X, d.idFam_mem X⟩
+
+theorem id_compL {X Y : S} (x : d.Hom X Y) : d.compL X X Y (d.idHom X) x = x := by
+  induction x using Hom.induction_on with
+  | zero => simp
+  | lof m f =>
+    rw [idHom, compL_lof_lof]
+    exact d.lof_congr (zero_add m) (by simp [famComp_idFam_left])
+  | add x y hx hy => rw [map_add, hx, hy]
+
+theorem compL_id {X Y : S} (x : d.Hom X Y) : d.compL X Y Y x (d.idHom Y) = x := by
+  induction x using Hom.induction_on with
+  | zero => simp
+  | lof m f =>
+    rw [idHom, compL_lof_lof]
+    exact d.lof_congr (add_zero m) (by simp [famComp_idFam_right d f.2])
+  | add x y hx hy => rw [map_add, LinearMap.add_apply, hx, hy]
+
+theorem compL_assoc {W X Y Z : S} (x : d.Hom W X) (y : d.Hom X Y) (z : d.Hom Y Z) :
+    d.compL W Y Z (d.compL W X Y x y) z = d.compL W X Z x (d.compL X Y Z y z) := by
+  induction x using Hom.induction_on with
+  | zero => simp
+  | add x x' hx hx' => simp only [map_add, LinearMap.add_apply, hx, hx']
+  | lof m f =>
+    induction y using Hom.induction_on with
+    | zero => simp
+    | add y y' hy hy' => simp only [map_add, LinearMap.add_apply, hy, hy']
+    | lof n g =>
+      induction z using Hom.induction_on with
+      | zero => simp
+      | add z z' hz hz' => simp only [map_add, hz, hz']
+      | lof p h =>
+        simp only [compL_lof_lof]
+        exact d.lof_congr (add_assoc m n p) (by simp [famComp_assoc])
+
 end ShiftData
 
 end StringDiagrams
