@@ -1009,6 +1009,7 @@ theorem xcompR_nat₂ {a b c : TwoEnvelope R B} (f : a ⟶ b) {g g' : b ⟶ c} (
     G'.mapComp_naturality_right, whiskerLeft_comp (R := R)]
   simp only [Category.assoc]
 
+omit [TwoSupercategory R B] [∀ a b : C, PiSupercategory R (a ⟶ b)] in
 include x_mem nat in
 /-- The first coherence diagram of Definition 2.2(iii) holds for a natural family of even
 2-morphisms between 2-superfunctors out of `𝔄_π` as soon as it holds for 1-morphisms `Π⁰F`,
