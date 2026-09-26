@@ -82,6 +82,13 @@ import StringDiagrams.Super.GSVec
 import StringDiagrams.Super.GSVecMonoidal
 import StringDiagrams.Super.GSCat
 import StringDiagrams.Super.GSMod
+import StringDiagrams.Super.SVecQuotient
+import StringDiagrams.Super.BalancedTensor
+import StringDiagrams.Super.BimoduleMonoidal
+import StringDiagrams.Super.SBim
+import StringDiagrams.Super.SuperOpposite
+import StringDiagrams.Super.BoxProduct
+import StringDiagrams.Super.BimoduleFunctor
 import StringDiagrams.Super.KaroubiMonoidal
 import StringDiagrams.Super.SKarMonoidal
 import StringDiagrams.Super.EndMonoidal
