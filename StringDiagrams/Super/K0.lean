@@ -36,7 +36,7 @@ namespace StringDiagrams
 
 open CategoryTheory Limits
 
-universe w v u v' u'
+universe w v u v' u' v''
 
 variable (C : Type u) [Category.{v} C] [Preadditive C] [HasBinaryBiproducts C]
 
@@ -143,7 +143,7 @@ theorem exists_eq_mk_sub_mk [HasZeroObject C] (x : K₀ C) : ∃ X Y : C, x = mk
 section Map
 
 variable {D : Type u'} [Category.{v'} D] [Preadditive D] [HasBinaryBiproducts D]
-  {E : Type w} [Category.{v'} E] [Preadditive E] [HasBinaryBiproducts E]
+  {E : Type w} [Category.{v''} E] [Preadditive E] [HasBinaryBiproducts E]
 
 /-- An additive functor preserves binary biproducts. -/
 @[simps]
@@ -176,6 +176,22 @@ theorem map_comp (F : C ⥤ D) [F.Additive] (G : D ⥤ E) [G.Additive] :
 /-- Isomorphic additive functors induce the same homomorphism. -/
 theorem map_eq_of_iso {F G : C ⥤ D} [F.Additive] [G.Additive] (e : F ≅ G) : map F = map G :=
   hom_ext fun X => by rw [map_mk, map_mk, mk_eq_mk_of_iso (e.app X)]
+
+/-- An additive equivalence of categories induces an isomorphism of split Grothendieck groups. -/
+def mapEquiv (e : C ≌ D) [e.functor.Additive] : K₀ C ≃+ K₀ D where
+  toFun := map e.functor
+  invFun := map e.inverse
+  left_inv x := by
+    rw [← AddMonoidHom.comp_apply, ← map_comp, map_eq_of_iso e.unitIso.symm, map_id,
+      AddMonoidHom.id_apply]
+  right_inv x := by
+    rw [← AddMonoidHom.comp_apply, ← map_comp, map_eq_of_iso e.counitIso, map_id,
+      AddMonoidHom.id_apply]
+  map_add' := map_add (map e.functor)
+
+@[simp] theorem mapEquiv_mk (e : C ≌ D) [e.functor.Additive] (X : C) :
+    mapEquiv e (mk X) = mk (e.functor.obj X) :=
+  map_mk _ _
 
 end Map
 
