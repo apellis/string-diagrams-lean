@@ -560,6 +560,28 @@ theorem lift_lin {a b : Obj S} (f : LinDiagram R a b) :
     (lift P W hadm hrel hint i).map (P.lin f) = (freeLift R ((φ i).toPresented Q χ)).map f :=
   P.lift_lin _ f
 
+/-- The induced functors commute with whiskering: whiskering by `u` and `v` in `P` becomes
+whiskering by `W.left i a u v` and `W.right i a u v` in `Q`. -/
+theorem lift_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) {u : Obj S} {v : List S.Colour}
+    (ha : W.Admissible a) (hw : a.WhiskerOK u v) (hb : Nonempty (a ⟶ b)) :
+    (lift P W hadm hrel hint i).map (P.whisk f u v) =
+      eqToHom (congrArg Q.obj (W.obj_whisker ha hw ⟨𝟙 a⟩).symm) ≫
+        Q.whisk ((lift P W hadm hrel hint (W.idx i a u v)).map f) (W.left i a u v)
+          (W.right i a u v) ≫
+        eqToHom (congrArg Q.obj (W.obj_whisker ha hw hb)) := by
+  obtain ⟨f, rfl⟩ := P.lin_surjective f
+  rw [Presentation.whisk_lin, LinDiagram.whisk_of_ok _ hw, lift_lin, lift_lin]
+  exact freeLift_map_mapDomain (F := (φ (W.idx i a u v)).toPresented Q χ)
+    (G := (φ i).toPresented Q χ) (fun d => Diagram.whisker d u v hw)
+    { toFun := fun x => eqToHom (congrArg Q.obj (W.obj_whisker ha hw ⟨𝟙 a⟩).symm) ≫
+        Q.whisk x (W.left i a u v) (W.right i a u v) ≫
+          eqToHom (congrArg Q.obj (W.obj_whisker ha hw hb))
+      map_add' := fun x y => by
+        simp only [Q.whisk_add, Preadditive.add_comp, Preadditive.comp_add]
+      map_smul' := fun r x => by
+        simp only [Q.whisk_smul, Linear.smul_comp, Linear.comp_smul, RingHom.id_apply] }
+    (fun d => W.toPresented_map_whisker Q χ d u v ha hw) f
+
 end Lift
 
 /-! ### The interchange law -/

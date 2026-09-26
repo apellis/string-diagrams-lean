@@ -357,6 +357,16 @@ theorem lift_lin {a b : Obj S} (f : LinDiagram R a b) :
     (φ.lift P hodd hrel).map (P.lin f) = (freeLift R (φ.toOpLayerMap.toPresented Q χ)).map f :=
   OpLayerMap.lift_lin _ _ _ _ _ f
 
+/-- A reflection in a horizontal axis commutes with whiskering in the presented categories. -/
+theorem lift_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) {u : Obj S} {v : List S.Colour}
+    (hw : a.WhiskerOK u v) (hb : Nonempty (a ⟶ b)) :
+    ((φ.lift P hodd hrel).map (P.whisk f u v)).unop =
+      eqToHom (congrArg Q.obj (φ.obj_whisker b u v)) ≫
+        Q.whisk ((φ.lift P hodd hrel).map f).unop (φ.obj u) (v.map φ.colour) ≫
+          eqToHom (congrArg Q.obj (φ.obj_whisker a u v)).symm :=
+  OpLayerMap.lift_whisk (P := P) φ.whiskerData (fun _ => trivial) (fun _ => hrel)
+    (fun _ _ hx => φ.toPresented_interchange Q χ hodd hx) () f trivial hw hb
+
 end SigFlip
 
 /-! ## Reflections in a vertical axis -/
@@ -606,8 +616,215 @@ theorem lift_lin {a b : Obj S} (f : LinDiagram R a b) :
     (φ.lift P hodd hwf hrel).map (P.lin f) = (freeLift R (φ.toLayerMap.toPresented Q χ)).map f :=
   LayerMap.lift_lin _ _ _ _ _ f
 
+/-- **A reflection in a vertical axis reverses the order of 1-morphisms**: whiskering by `u` on
+the left and `v` on the right becomes whiskering by the reflection of `v` on the left and the
+reflection of `u` on the right. -/
+theorem lift_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) {u : Obj S} {v : List S.Colour}
+    (ha : a.WF) (hw : a.WhiskerOK u v) (hb : Nonempty (a ⟶ b)) :
+    (φ.lift P hodd hwf hrel).map (P.whisk f u v) =
+      eqToHom (congrArg Q.obj (φ.whiskerData.obj_whisker (i := ()) ha hw ⟨𝟙 a⟩).symm) ≫
+        Q.whisk ((φ.lift P hodd hwf hrel).map f) (φ.leftObj a v) (φ.word u.word) ≫
+          eqToHom (congrArg Q.obj (φ.whiskerData.obj_whisker (i := ()) ha hw hb)) :=
+  LayerMap.lift_whisk (P := P) φ.whiskerData hwf (fun _ => hrel)
+    (fun _ _ hx => φ.toPresented_interchange Q χ hodd hx) () f ha hw hb
+
 end SigMirror
 
+/-! ## Horizontal composition and Koszul signs -/
+
+theorem Diagram.oddCountList_map {S' : Signature.{u₀', u₁', u₂'}} (f : Layer S → Layer S')
+    (ls : List (Layer S)) (h : ∀ L ∈ ls, S'.odd (f L).gen = S.odd L.gen) :
+    Diagram.oddCountList (ls.map f) = Diagram.oddCountList ls := by
+  simp only [Diagram.oddCountList, List.filter_map, List.length_map]
+  congr 1
+  exact List.filter_congr fun L hL => by simp [h L hL]
+
+theorem Diagram.oddCountList_reverse (ls : List (Layer S)) :
+    Diagram.oddCountList ls.reverse = Diagram.oddCountList ls := by
+  simp [Diagram.oddCountList, List.filter_reverse]
+
+namespace Presentation
+
+variable {R : Type w} [CommRing R] (P : Presentation.{w, v} S R)
+
+/-- The interchange law for arbitrary diagrams and general regions, read from right to left. -/
+theorem diag_interchange_of_composable_symm {a a' b b' : Obj S} (f : a ⟶ a') (g : b ⟶ b')
+    (h : a.Composable b) (h₁ : a'.Composable b) (h₂ : a.Composable b') :
+    P.diag (Diagram.lwhisker a g h ≫ Diagram.rwhisker f b' h₂) =
+      ((-1 : ℤ) ^ (Diagram.oddCount f * Diagram.oddCount g)) •
+        P.diag (Diagram.rwhisker f b h ≫ Diagram.lwhisker a' g h₁) := by
+  rw [P.diag_interchange_of_composable' f g h h₁ h₂, smul_smul, ← pow_add, ← two_mul,
+    pow_mul, neg_one_sq, one_pow, one_smul]
+
+end Presentation
+
+namespace ColourMap
+
+variable (κ : ColourMap S S')
+
+theorem obj_tensor (a b : Obj S) : κ.obj (a.tensor b) = (κ.obj a).tensor (κ.obj b) := by
+  simp [obj, Obj.tensor]
+
+theorem composable {a b : Obj S} (h : a.Composable b) : (κ.obj a).Composable (κ.obj b) :=
+  ⟨κ.ok_map h.left_wf, by rw [obj_endR, h.endR_eq]; rfl, κ.ok_map h.right_wf⟩
+
+end ColourMap
+
+namespace SigMap
+
+variable (φ : SigMap S S')
+
+theorem map_rwhisker {a a' : Obj S} (f : a ⟶ a') (b : Obj S) (h : a.Composable b) :
+    φ.toLayerMap.map (Diagram.rwhisker f b h) =
+      Diagram.cast (Diagram.rwhisker (φ.toLayerMap.map f) (φ.obj b) (φ.composable h))
+        (φ.obj_tensor a b).symm (φ.obj_tensor a' b).symm :=
+  Diagram.ext (by simp [layer, Layer.wr, ColourMap.obj, Function.comp_def])
+
+theorem map_lwhisker (a : Obj S) {b b' : Obj S} (g : b ⟶ b') (h : a.Composable b) :
+    φ.toLayerMap.map (Diagram.lwhisker a g h) =
+      Diagram.cast (Diagram.lwhisker (φ.obj a) (φ.toLayerMap.map g) (φ.composable h))
+        (φ.obj_tensor a b).symm (φ.obj_tensor a b').symm :=
+  Diagram.ext (by simp [layer, Layer.wl, ColourMap.obj, Function.comp_def])
+
+/-- A map of signatures commutes with horizontal composition `f ⊗ g = (f ⊗ 1) ≫ (1 ⊗ g)`. -/
+theorem map_tensor {a a' b b' : Obj S} (f : a ⟶ a') (g : b ⟶ b') (h : a.Composable b) :
+    φ.toLayerMap.map (Diagram.rwhisker f b h ≫ Diagram.lwhisker a' g (h.map_left f)) =
+      Diagram.cast (Diagram.rwhisker (φ.toLayerMap.map f) (φ.obj b) (φ.composable h) ≫
+          Diagram.lwhisker (φ.obj a') (φ.toLayerMap.map g) (φ.composable (h.map_left f)))
+        (φ.obj_tensor a b).symm (φ.obj_tensor a' b').symm :=
+  Diagram.ext (by simp [layer, Layer.wl, Layer.wr, ColourMap.obj, Function.comp_def])
+
+end SigMap
+
+namespace SigFlip
+
+variable (φ : SigFlip S S')
+
+theorem map_rwhisker {a a' : Obj S} (f : a ⟶ a') (b : Obj S) (h : a.Composable b) :
+    φ.toOpLayerMap.map (Diagram.rwhisker f b h) =
+      Diagram.cast (Diagram.rwhisker (φ.toOpLayerMap.map f) (φ.obj b)
+          (φ.composable (h.map_left f)))
+        (φ.obj_tensor a' b).symm (φ.obj_tensor a b).symm :=
+  Diagram.ext (by simp [layer, Layer.wr, ColourMap.obj, Function.comp_def, List.map_reverse])
+
+theorem map_lwhisker (a : Obj S) {b b' : Obj S} (g : b ⟶ b') (h : a.Composable b) :
+    φ.toOpLayerMap.map (Diagram.lwhisker a g h) =
+      Diagram.cast (Diagram.lwhisker (φ.obj a) (φ.toOpLayerMap.map g)
+          (φ.composable (h.map_right g)))
+        (φ.obj_tensor a b').symm (φ.obj_tensor a b).symm :=
+  Diagram.ext (by simp [layer, Layer.wl, ColourMap.obj, Function.comp_def, List.map_reverse])
+
+theorem oddCount_map (hodd : ∀ g, S'.odd (φ.gen g) = S.odd g) {a b : Obj S} (d : a ⟶ b) :
+    Diagram.oddCount (φ.toOpLayerMap.map d) = Diagram.oddCount d := by
+  simp only [Diagram.oddCount, OpLayerMap.layers_map, Diagram.oddCountList_reverse]
+  exact Diagram.oddCountList_map _ _ fun L _ => hodd L.gen
+
+variable {R : Type w} [CommRing R] (Q : Presentation.{w, v'} S' R)
+
+/-- **Koszul signs for reflections in a horizontal axis.** For `f : a ⟶ a'`, `g : b ⟶ b'` with
+`a` composable with `b`, the reflection of `f ⊗ g = (f ⊗ 1) ≫ (1 ⊗ g)` is
+`(-1)^{|f||g|} ψ f ⊗ ψ g` in the presented category, where `ψ f : ψ a' ⟶ ψ a` and
+`ψ g : ψ b' ⟶ ψ b` are the reflections. -/
+theorem diag_map_tensor (hodd : ∀ g, S'.odd (φ.gen g) = S.odd g) {a a' b b' : Obj S}
+    (f : a ⟶ a') (g : b ⟶ b') (h : a.Composable b) :
+    Q.diag (φ.toOpLayerMap.map (Diagram.rwhisker f b h ≫ Diagram.lwhisker a' g (h.map_left f))) =
+      ((-1 : ℤ) ^ (Diagram.oddCount f * Diagram.oddCount g)) •
+        (eqToHom (congrArg Q.obj (φ.obj_tensor a' b')) ≫
+          Q.diag (Diagram.rwhisker (φ.toOpLayerMap.map f) (φ.obj b')
+              (φ.composable ((h.map_left f).map_right g)) ≫
+            Diagram.lwhisker (φ.obj a) (φ.toOpLayerMap.map g) (φ.composable (h.map_right g))) ≫
+          eqToHom (congrArg Q.obj (φ.obj_tensor a b)).symm) := by
+  have key := Q.diag_interchange_of_composable_symm (φ.toOpLayerMap.map f)
+    (φ.toOpLayerMap.map g) (φ.composable ((h.map_left f).map_right g))
+    (φ.composable (h.map_right g)) (φ.composable (h.map_left f))
+  rw [φ.oddCount_map hodd, φ.oddCount_map hodd] at key
+  simp only [toOpLayerMap_obj] at key
+  rw [OpLayerMap.map_comp, φ.map_rwhisker, φ.map_lwhisker, Q.diag_comp, Q.diag_cast,
+    Q.diag_cast]
+  simp only [Category.assoc, eqToHom_trans_assoc, eqToHom_refl, Category.id_comp]
+  rw [← Category.assoc (Q.diag _) (Q.diag _), ← Q.diag_comp, key, Linear.smul_comp,
+    Linear.comp_smul]
+
+end SigFlip
+
+namespace MirrorColourMap
+
+variable (κ : MirrorColourMap S S')
+
+theorem obj_tensor {a b : Obj S} (h : a.Composable b) :
+    κ.obj (a.tensor b) = (κ.obj b).tensor (κ.obj a) := by
+  refine Obj.ext ?_ ?_
+  · show κ.region (S.endR a.start (a.word ++ b.word)) = κ.region b.endR
+    rw [Signature.endR_append]
+    exact congrArg (fun r => κ.region (S.endR r b.word)) h.endR_eq
+  · simp [obj, Obj.tensor, word_append]
+
+theorem composable {a b : Obj S} (h : a.Composable b) : (κ.obj b).Composable (κ.obj a) :=
+  ⟨(κ.ok_word h.right_wf).1, by rw [κ.obj_endR h.right_wf, ← h.endR_eq]; rfl,
+    (κ.ok_word h.left_wf).1⟩
+
+end MirrorColourMap
+
+namespace SigMirror
+
+variable (φ : SigMirror S S')
+
+/-- The reflection of `f ⊗ 1_b` is `1_{σ b} ⊗ σ f`. -/
+theorem map_rwhisker {a a' : Obj S} (f : a ⟶ a') (b : Obj S) (h : a.Composable b) :
+    φ.toLayerMap.map (Diagram.rwhisker f b h) =
+      Diagram.cast (Diagram.lwhisker (φ.obj b) (φ.toLayerMap.map f) (φ.composable h))
+        (φ.obj_tensor h).symm (φ.obj_tensor (h.map_left f)).symm := by
+  apply Diagram.ext
+  simp only [LayerMap.layers_map, Diagram.layers_rwhisker, Diagram.layers_cast,
+    Diagram.layers_lwhisker, List.map_map]
+  refine List.map_congr_left fun L hL => ?_
+  have hv := (Diagram.chain f).valid_of_mem hL
+  obtain ⟨d⟩ := (Diagram.chain f).nonempty_of_mem hL
+  refine Layer.ext ?_ ?_ rfl rfl
+  · show φ.region (S.endR (S.right L.gen) (L.right ++ b.word)) = φ.region b.endR
+    rw [Signature.endR_append, ← hv.endR_dom, (Diagram.chain d).endR_eq, h.endR_eq]
+    rfl
+  · simp [layer, Layer.wr, Layer.wl, MirrorColourMap.obj, MirrorColourMap.word_append]
+
+/-- The reflection of `1_a ⊗ g` is `σ g ⊗ 1_{σ a}`. -/
+theorem map_lwhisker (a : Obj S) {b b' : Obj S} (g : b ⟶ b') (h : a.Composable b) :
+    φ.toLayerMap.map (Diagram.lwhisker a g h) =
+      Diagram.cast (Diagram.rwhisker (φ.toLayerMap.map g) (φ.obj a) (φ.composable h))
+        (φ.obj_tensor h).symm (φ.obj_tensor (h.map_right g)).symm :=
+  Diagram.ext (by
+    simp [layer, Layer.wr, Layer.wl, MirrorColourMap.obj, MirrorColourMap.word_append,
+      Function.comp_def])
+
+theorem oddCount_map (hodd : ∀ g, S'.odd (φ.gen g) = S.odd g) {a b : Obj S} (d : a ⟶ b) :
+    Diagram.oddCount (φ.toLayerMap.map d) = Diagram.oddCount d := by
+  simp only [Diagram.oddCount, LayerMap.layers_map]
+  exact Diagram.oddCountList_map _ _ fun L _ => hodd L.gen
+
+variable {R : Type w} [CommRing R] (Q : Presentation.{w, v'} S' R)
+
+/-- **Koszul signs for reflections in a vertical axis.** For `f : a ⟶ a'`, `g : b ⟶ b'` with
+`a` composable with `b`, the reflection of `f ⊗ g = (f ⊗ 1) ≫ (1 ⊗ g)` is
+`(-1)^{|f||g|} σ g ⊗ σ f` in the presented category. -/
+theorem diag_map_tensor (hodd : ∀ g, S'.odd (φ.gen g) = S.odd g) {a a' b b' : Obj S}
+    (f : a ⟶ a') (g : b ⟶ b') (h : a.Composable b) :
+    Q.diag (φ.toLayerMap.map (Diagram.rwhisker f b h ≫ Diagram.lwhisker a' g (h.map_left f))) =
+      ((-1 : ℤ) ^ (Diagram.oddCount f * Diagram.oddCount g)) •
+        (eqToHom (congrArg Q.obj (φ.obj_tensor h)) ≫
+          Q.diag (Diagram.rwhisker (φ.toLayerMap.map g) (φ.obj a) (φ.composable h) ≫
+            Diagram.lwhisker (φ.obj b') (φ.toLayerMap.map f) (φ.composable (h.map_right g))) ≫
+          eqToHom (congrArg Q.obj (φ.obj_tensor ((h.map_left f).map_right g))).symm) := by
+  have key := Q.diag_interchange_of_composable_symm (φ.toLayerMap.map g)
+    (φ.toLayerMap.map f) (φ.composable h) (φ.composable (h.map_right g))
+    (φ.composable (h.map_left f))
+  rw [φ.oddCount_map hodd, φ.oddCount_map hodd, mul_comm] at key
+  simp only [toLayerMap_obj] at key
+  rw [LayerMap.map_comp, φ.map_rwhisker, φ.map_lwhisker, Q.diag_comp, Q.diag_cast,
+    Q.diag_cast]
+  simp only [Category.assoc, eqToHom_trans_assoc, eqToHom_refl, Category.id_comp]
+  rw [← Category.assoc (Q.diag _) (Q.diag _), ← Q.diag_comp, key, Linear.smul_comp,
+    Linear.comp_smul]
+
+end SigMirror
 
 end StringDiagrams
 
