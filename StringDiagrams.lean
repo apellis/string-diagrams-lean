@@ -30,6 +30,7 @@ import StringDiagrams.Super.UnderlyingBicategory
 import StringDiagrams.Super.PiTwo
 import StringDiagrams.Super.TwoFunctor
 import StringDiagrams.Super.GradedTwo
+import StringDiagrams.Super.DrinfeldCenter
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
