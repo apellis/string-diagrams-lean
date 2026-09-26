@@ -27,7 +27,7 @@ namespace StringDiagrams
 
 open CategoryTheory Supercategory
 
-universe w v u
+universe w v u v₁ u₁
 
 variable (R : Type w) [CommRing R]
 
@@ -1097,6 +1097,74 @@ theorem σ_eq [PiSupercategory R S] (X : Orbit d) : QPiSupercategory.σ (R := R)
 
 end Orbit
 
+
+/-! ## Functoriality of the orbit supercategory -/
+
+/-- A morphism of shift data: a superfunctor `F : S ⥤ S'` with an even natural isomorphism
+`γ : Q' F ≅ F Q` (in diagrammatic order `F ⋙ Q' ≅ Q ⋙ F`). -/
+structure ShiftFunctor {S : Type u} [Category.{v} S] [Preadditive S] [Linear R S]
+    [Supercategory R S] {S' : Type u₁} [Category.{v₁} S'] [Preadditive S'] [Linear R S']
+    [Supercategory R S'] (d : ShiftData R S) (d' : ShiftData R S') where
+  /-- The superfunctor. -/
+  F : S ⥤ S'
+  [additive : F.Additive]
+  [linear : F.Linear R]
+  [isSuperfunctor : IsSuperfunctor R F]
+  /-- `γ : F ⋙ Q' ≅ Q ⋙ F`. -/
+  γ : F ⋙ d'.Q ≅ d.Q ⋙ F
+  γ_mem : ∀ X : S, γ.hom.app X ∈ parity (R := R) (d'.Q.obj (F.obj X)) (F.obj (d.Q.obj X)) 0
+
+attribute [instance] ShiftFunctor.additive ShiftFunctor.linear ShiftFunctor.isSuperfunctor
+
+namespace ShiftFunctor
+
+variable {R} {S : Type u} [Category.{v} S] [Preadditive S] [Linear R S] [Supercategory R S]
+  {S' : Type u₁} [Category.{v₁} S'] [Preadditive S'] [Linear R S'] [Supercategory R S']
+  {d : ShiftData R S} {d' : ShiftData R S'} (Φ : ShiftFunctor R d d')
+
+open ShiftData
+
+/-- `Γⁿ : Q'ⁿ F ≅ F Qⁿ` for `n ∈ ℕ`. -/
+def ΓNat : ∀ n : ℕ, Φ.F ⋙ d'.powNat n ≅ d.powNat n ⋙ Φ.F
+  | 0 => Functor.rightUnitor _ ≪≫ (Functor.leftUnitor _).symm
+  | n + 1 => (Functor.associator _ _ _).symm ≪≫ isoWhiskerRight (ΓNat n) d'.Q ≪≫
+      Functor.associator _ _ _ ≪≫ isoWhiskerLeft (d.powNat n) Φ.γ ≪≫ (Functor.associator _ _ _).symm
+
+theorem ΓNat_succ_hom_app (n : ℕ) (X : S) :
+    (Φ.ΓNat (n + 1)).hom.app X = d'.Q.map ((Φ.ΓNat n).hom.app X) ≫ Φ.γ.hom.app ((d.powNat n).obj X) := by
+  show 𝟙 _ ≫ _ ≫ 𝟙 _ ≫ _ ≫ 𝟙 _ = _
+  simp
+
+/-- The isomorphism `Q'⁻ⁿ⁻¹ F ≅ F Q⁻ⁿ⁻¹` determined by the compatibility with `Γ⁻ⁿ`, using that
+`Q'` is fully faithful. -/
+def ΓNegAux (n : ℕ) (Γ' : Φ.F ⋙ d'.pow (Int.negSucc n + 1) ≅ d.pow (Int.negSucc n + 1) ⋙ Φ.F) :
+    Φ.F ⋙ d'.powNeg (n + 1) ≅ d.powNeg (n + 1) ⋙ Φ.F :=
+  NatIso.ofComponents (fun X => d'.Q.preimageIso (((d'.succ (Int.negSucc n)).app (Φ.F.obj X)) ≪≫
+      Γ'.app X ≪≫ Φ.F.mapIso ((d.succ (Int.negSucc n)).app X).symm ≪≫
+        (Φ.γ.app ((d.pow (Int.negSucc n)).obj X)).symm))
+    (fun {X Y} f => d'.Q.map_injective (by
+      simp only [Functor.comp_obj, Functor.comp_map, Iso.trans_hom, Iso.app_hom,
+        Functor.mapIso_hom, Iso.symm_hom, Iso.app_inv, Functor.map_comp,
+        Functor.preimageIso_hom, Functor.map_preimage, Category.assoc]
+      have n1 := (d'.succ (Int.negSucc n)).hom.naturality (Φ.F.map f)
+      have n2 := Γ'.hom.naturality f
+      have n3 := (d.succ (Int.negSucc n)).inv.naturality f
+      have n4 := Φ.γ.inv.naturality ((d.pow (Int.negSucc n)).map f)
+      simp only [Functor.comp_obj, Functor.comp_map] at n1 n2 n3 n4
+      erw [reassoc_of% n1, reassoc_of% n2, ← Φ.F.map_comp_assoc, n3, Φ.F.map_comp_assoc, n4]
+      rfl))
+
+/-- `Γⁿ : Q'ⁿ F ≅ F Qⁿ` for `n < 0`. -/
+def ΓNeg : ∀ n : ℕ, Φ.F ⋙ d'.powNeg (n + 1) ≅ d.powNeg (n + 1) ⋙ Φ.F
+  | 0 => Φ.ΓNegAux 0 (Φ.ΓNat 0)
+  | n + 1 => Φ.ΓNegAux (n + 1) (ΓNeg n)
+
+/-- `Γⁱ : Q'ⁱ F ≅ F Qⁱ`, `i ∈ ℤ` (the paper's `γ_F^i`). -/
+def Γ : ∀ i : ℤ, Φ.F ⋙ d'.pow i ≅ d.pow i ⋙ Φ.F
+  | Int.ofNat n => Φ.ΓNat n
+  | Int.negSucc n => Φ.ΓNeg n
+
+end ShiftFunctor
 
 end StringDiagrams
 
