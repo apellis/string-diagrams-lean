@@ -43,6 +43,11 @@ def bsum : List 𝒞 → 𝒞
 
 @[simp] theorem bsum_cons (X : 𝒞) (l : List 𝒞) : bsum (X :: l) = (X ⊞ bsum l) := rfl
 
+/-- `bsum (l₁ ++ l₂) ≅ bsum l₁ ⊞ bsum l₂`. -/
+def bsumAppendIso : (l₁ l₂ : List 𝒞) → (bsum (l₁ ++ l₂) ≅ bsum l₁ ⊞ bsum l₂)
+  | [], _ => isoZeroBiprod (isZero_zero 𝒞)
+  | X :: l₁, l₂ => biprod.mapIso (Iso.refl X) (bsumAppendIso l₁ l₂) ≪≫ (biprod.associator _ _ _).symm
+
 /-- A list of objects with maps to and from `A`. -/
 structure Piece (A : 𝒞) where
   /-- The object. -/
