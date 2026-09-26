@@ -737,7 +737,7 @@ structure Orbit {R : Type w} [CommRing R] {S : Type u} [Category.{v} S] [Preaddi
 
 namespace Orbit
 
-open ShiftData
+open ShiftData GradedSupercategory
 
 variable {R} {S : Type u} [Category.{v} S] [Preadditive S] [Linear R S] [Supercategory R S]
   {d : ShiftData R S}
@@ -880,6 +880,91 @@ instance : IsSuperfunctor R (ι d) where
 theorem ι_map_mem_degree {X Y : S} (g : X ⟶ Y) :
     (ι d).map g ∈ GradedSupercategory.degree (R := R) ((ι d).obj X) ((ι d).obj Y) 0 :=
   ⟨_, rfl⟩
+
+/-! ## The degree-zero part of the orbit supercategory is `S` -/
+
+variable (d) in
+/-- `ι` as a functor into the morphisms of degree zero. -/
+@[simps obj]
+def ιZ : S ⥤ DegreeZero R (Orbit d) where
+  obj X := ⟨⟨X⟩⟩
+  map g := ⟨(ι d).map g, ι_map_mem_degree g⟩
+  map_id X := DegreeZero.hom_ext ((ι d).map_id X)
+  map_comp f g := DegreeZero.hom_ext ((ι d).map_comp f g)
+
+instance : (ιZ d).Additive where
+  map_add := DegreeZero.hom_ext (ι d).map_add
+
+instance : (ιZ d).Linear R where
+  map_smul f r := DegreeZero.hom_ext (Functor.Linear.map_smul (F := ι d) f r)
+
+instance : IsSuperfunctor R (ιZ d) where
+  map_mem hf := map_mem (R := R) (ι d) hf
+
+theorem _root_.StringDiagrams.ShiftData.component_zero_compL {X Y Z : S} {x : d.Hom X Y}
+    {y : d.Hom Y Z} (hx : x ∈ d.degreeHom R X Y 0) (hy : y ∈ d.degreeHom R Y Z 0) :
+    d.component 0 X Z (d.compL X Y Z x y) =
+      ⟨d.famComp 0 (d.component 0 X Y x).1 (d.component 0 Y Z y).1,
+        by simpa using famComp_mem (d.component 0 X Y x).2 (d.component 0 Y Z y).2⟩ := by
+  obtain ⟨a, rfl⟩ := hx
+  obtain ⟨b, rfl⟩ := hy
+  rw [compL_lof_lof, show d.lof (0 + 0) X Z (d.famCompₗ 0 0 X Y Z a b) =
+    d.lof 0 X Z ⟨d.famComp 0 a.1 b.1, by simpa using famComp_mem a.2 b.2⟩ from
+      d.lof_congr (add_zero 0) rfl]
+  simp only [component_lof_self]
+
+theorem degreeZero_eq_lof {X Y : Orbit d} (x : (⟨X⟩ : DegreeZero R (Orbit d)) ⟶ ⟨Y⟩) :
+    x.1 = d.lof 0 X.obj Y.obj (d.component 0 X.obj Y.obj x.1) := by
+  obtain ⟨f, hf⟩ := x.2
+  rw [← hf, component_lof_self]
+
+variable (d) in
+/-- The entry `(0, 0)` of a morphism of degree zero. -/
+@[simps obj]
+def π₀ : DegreeZero R (Orbit d) ⥤ S where
+  obj X := X.obj.obj
+  map {X Y} x := (d.component 0 X.obj.obj Y.obj.obj x.1).1 0 0
+  map_id X := by
+    show (d.component 0 _ _ (d.idHom X.obj.obj)).1 0 0 = _
+    simp [idHom, idFam_self]
+  map_comp {X Y Z} x y := by
+    show (d.component 0 _ _ (d.compL _ _ _ x.1 y.1)).1 0 0 = _
+    rw [d.component_zero_compL x.2 y.2]
+    rfl
+
+theorem π₀_comp_ιZ_map {X Y : Orbit d} (x : (⟨X⟩ : DegreeZero R (Orbit d)) ⟶ ⟨Y⟩) :
+    (ιZ d).map ((π₀ d).map x) = x := by
+  apply DegreeZero.hom_ext
+  show d.lof 0 _ _ (d.mapFam _) = x.1
+  rw [degreeZero_eq_lof x]
+  congr 1
+  refine Subtype.ext (Fam.eq_of_entry (d.mapFam _).2 (d.component 0 _ _ x.1).2
+    (i₀ := 0) (j₀ := 0) rfl ?_)
+  simp [mapFam, diagFam_self]; rfl
+
+theorem ιZ_comp_π₀_map {X Y : S} (g : X ⟶ Y) : (π₀ d).map ((ιZ d).map g) = g := by
+  show (d.component 0 _ _ (d.lof 0 _ _ (d.mapFam g))).1 0 0 = g
+  rw [component_lof_self]
+  simp [mapFam, diagFam_self]
+
+theorem ιZ_comp_π₀ : ιZ d ⋙ π₀ d = 𝟭 S :=
+  CategoryTheory.Functor.ext (fun _ => rfl) fun X Y g => by simpa using ιZ_comp_π₀_map g
+
+theorem π₀_comp_ιZ : π₀ d ⋙ ιZ d = 𝟭 _ :=
+  CategoryTheory.Functor.ext (fun _ => rfl) fun X Y x => by simpa using π₀_comp_ιZ_map x
+
+instance : (π₀ d).Additive where
+  map_add {X Y x y} := by
+    show (d.component 0 _ _ (x.1 + y.1)).1 0 0 = _
+    rw [map_add]; rfl
+
+instance : (π₀ d).Linear R where
+  map_smul {X Y} x r := by
+    show (d.component 0 _ _ (r • x.1)).1 0 0 = _
+    rw [map_smul]; rfl
+
+instance : IsSuperfunctor R (π₀ d) where
+  map_mem hx := hx 0 0 0
 
 /-! ## The Π-structure -/
 
