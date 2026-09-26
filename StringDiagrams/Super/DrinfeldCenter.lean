@@ -35,10 +35,12 @@ odd, is defined directly, and the axioms of a monoidal supercategory
   and `PiTwoSupercategory.centerξ`: `ξ` is an even isomorphism `(π, β) ⊗ (π, β) ≅ 1`
   (Lemma 3.2(iv)).
 
-## Not formalized
+## Elsewhere and not formalized
 
 The braiding of the Drinfeld center (the paper omits the definition of a braided monoidal
-supercategory), and the remark that the Drinfeld center of a strict 2-supercategory is strict.
+supercategory) is in `StringDiagrams.Super.DrinfeldCenterBraiding`, and the monoidal
+superfunctor `Z(𝔄) → Z(𝔄_π)` of Remark 4.10 in `StringDiagrams.Super.DrinfeldCenterEnvelope`.
+The remark that the Drinfeld center of a strict 2-supercategory is strict is not formalized.
 -/
 
 noncomputable section
