@@ -229,6 +229,87 @@ def unitQPiFunctor : QPiFunctor R (unit R A) where
 @[simp] theorem unitQPiFunctor_γ_hom_app (X : A) :
     (unitQPiFunctor R A).γ.hom.app X = 𝟙 _ := rfl
 
+/-! ## `𝔻` on compatible `(Q, Π)`-functors -/
+
+section Map
+
+variable {A' : Type w₃} [Category.{w₄} A'] [Preadditive A'] [Linear R A'] [QPiCategory R A']
+
+theorem compat_inv {F : A ⥤ A'} [F.Additive] (hF : QPiFunctor R F) (hc : hF.IsCompatible R)
+    (Y : A) :
+    (QPiCategory.Q (R := R)).map (hF.β.inv.app Y) ≫
+        (QPiCategory.Q_pi (R := R) (C := A')).β.inv.app (F.obj Y) ≫
+          (PiCategory.pi (R := R)).map (hF.γ.hom.app Y) =
+      hF.γ.hom.app ((PiCategory.pi (R := R)).obj Y) ≫
+        F.map ((QPiCategory.Q_pi (R := R) (C := A)).β.inv.app Y) ≫
+          hF.β.inv.app ((QPiCategory.Q (R := R)).obj Y) := by
+  have h := (QPiFunctor.IsCompatible.iff hF).1 hc Y
+  rw [← cancel_epi ((QPiCategory.Q_pi (R := R) (C := A')).β.hom.app (F.obj Y) ≫
+    (QPiCategory.Q (R := R)).map (hF.β.hom.app Y))]
+  simp only [Category.assoc]
+  rw [reassoc_of% h]
+  simp only [Functor.comp_obj, ← Functor.map_comp_assoc, Iso.hom_inv_id_app, Iso.hom_inv_id_app_assoc]
+  simp
+
+/-- The even isomorphism `γ̂_F : Q̂' F̂ ≅ F̂ Q̂` of the associated Π-supercategories, for a
+compatible `(Q, Π)`-functor. -/
+def γhat {F : A ⥤ A'} [F.Additive] (hF : QPiFunctor R F) (hc : hF.IsCompatible R) :
+    Associated.map hF.toPiFunctor ⋙ Qhat R A' ≅ Qhat R A ⋙ Associated.map hF.toPiFunctor :=
+  NatIso.ofComponents (fun X =>
+    { hom := homMk (X := ⟨(QPiCategory.Q (R := R)).obj (F.obj X.obj)⟩)
+        (Y := ⟨F.obj ((QPiCategory.Q (R := R)).obj X.obj)⟩) (hF.γ.hom.app X.obj) 0
+      inv := homMk (X := ⟨F.obj ((QPiCategory.Q (R := R)).obj X.obj)⟩)
+        (Y := ⟨(QPiCategory.Q (R := R)).obj (F.obj X.obj)⟩) (hF.γ.inv.app X.obj) 0
+      hom_inv_id := hom_ext (by simp) (by simp)
+      inv_hom_id := hom_ext (by simp) (by simp) })
+    (fun {_ Y} f => by
+      apply hom_ext
+      · simp only [Functor.comp_obj, Functor.comp_map, Associated.map_map, comp_fst, homMk_fst,
+          homMk_snd, Limits.comp_zero, Limits.zero_comp, sub_zero, Functor.map_zero]
+        exact hF.γ.hom.naturality f.1
+      · simp only [Functor.comp_obj, Functor.comp_map, Associated.map_map, comp_snd, homMk_fst,
+          homMk_snd, Limits.comp_zero, zero_add, add_zero, Functor.map_comp, Category.assoc]
+        have n := hF.γ.hom.naturality f.2
+        simp only [Functor.comp_obj, Functor.comp_map] at n
+        rw [Limits.zero_comp, add_zero]
+        erw [compat_inv hF hc Y.obj]
+        rw [reassoc_of% n]
+        rfl)
+
+variable (R) in
+/-- The morphism of shift data induced by a compatible `(Q, Π)`-functor. -/
+def shiftFunctor {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F)
+    (hc : hF.IsCompatible R) : ShiftFunctor R (shiftData R A) (shiftData R A') where
+  F := Associated.map hF.toPiFunctor
+  γ := γhat hF hc
+  γ_mem _ := Associated.mem_parity_zero.2 rfl
+
+/-- **`𝔻` on 1-morphisms.** The graded superfunctor `F̂ : Â → Â'` induced by a compatible
+`(Q, Π)`-functor. -/
+abbrev map {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F) (hc : hF.IsCompatible R) :
+    QAssociated R A ⥤ QAssociated R A' :=
+  Orbit.map (shiftFunctor R hF hc)
+
+example {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F) (hc : hF.IsCompatible R) :
+    IsGradedSuperfunctor R (map hF hc) := inferInstance
+
+/-- **`𝔼 ∘ 𝔻 = I` on 1-morphisms**: under the identifications `unit`, `𝔼(𝔻 F) = F`. -/
+theorem unit_comp_map {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F)
+    (hc : hF.IsCompatible R) : unit R A ⋙ GUnderlying.map R (map hF hc) = F ⋙ unit R A' :=
+  CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by
+    simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp]
+    apply Underlying.hom_ext; apply DegreeZero.hom_ext
+    show (Orbit.map (shiftFunctor R hF hc)).map ((ι (shiftData R A)).map (homMk f 0)) =
+      (ι (shiftData R A')).map (homMk (F.map f) 0)
+    have := CategoryTheory.Functor.congr_hom (Orbit.ι_comp_map (shiftFunctor R hF hc))
+      (homMk (X := ⟨X⟩) (Y := ⟨Y⟩) f 0)
+    simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp] at this
+    rw [this]
+    congr 1
+    exact hom_ext rfl (by simp [shiftFunctor])
+
+end Map
+
 end QAssociated
 
 /-! ## `𝔻 ∘ 𝔼 ≅ I`: the isomorphism `T_B : (B̲)^ ≅ B` -/
