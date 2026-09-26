@@ -89,6 +89,7 @@ import StringDiagrams.Super.SBim
 import StringDiagrams.Super.SuperOpposite
 import StringDiagrams.Super.BoxProduct
 import StringDiagrams.Super.BimoduleFunctor
+import StringDiagrams.Super.GSBim
 import StringDiagrams.Super.KaroubiMonoidal
 import StringDiagrams.Super.SKarMonoidal
 import StringDiagrams.Super.EndMonoidal

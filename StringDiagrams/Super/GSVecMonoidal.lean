@@ -99,6 +99,16 @@ theorem tensorPiece_le_ker (n : ℤ) (rs : ℤ × ℤ) (h : rs.1 + rs.2 ≠ n) :
   Submodule.map₂_le.2 fun v hv w hw => LinearMap.mem_ker.2 (by
     rw [TensorProduct.mk_apply, tensorProj_tmul V W n rs.1 rs.2 hv hw, if_neg h])
 
+theorem tensorProj_of_mem {n : ℤ} {x : V.toSVec ⊗[k] W.toSVec} (hx : x ∈ V.tensorDeg W n) :
+    V.tensorProj W n x = x :=
+  LinearMap.mem_eqLocus.1
+    ((iSup₂_le fun rs hrs => tensorPiece_le_eqLocus V W n rs hrs : V.tensorDeg W n ≤ _) hx)
+
+theorem tensorProj_of_mem_ne {m n : ℤ} (h : m ≠ n) {x : V.toSVec ⊗[k] W.toSVec}
+    (hx : x ∈ V.tensorDeg W m) : V.tensorProj W n x = 0 :=
+  LinearMap.mem_ker.1 ((iSup₂_le fun rs hrs =>
+    tensorPiece_le_ker V W n rs fun e => h (hrs.symm.trans e) : V.tensorDeg W m ≤ _) hx)
+
 theorem iSupIndep_tensorDeg : iSupIndep (V.tensorDeg W) :=
   iSupIndep_of_projections _ (V.tensorProj W)
     (fun n => iSup₂_le fun rs hrs => tensorPiece_le_eqLocus V W n rs hrs)
