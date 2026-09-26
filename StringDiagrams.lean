@@ -113,6 +113,10 @@ import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
 import StringDiagrams.Bicategory
 import StringDiagrams.LocalInterpretation
+import StringDiagrams.IndexedInterpretation
+import StringDiagrams.Linear.MatEnd
+import StringDiagrams.Mathlib.CategoryTheory.Linear.Opposite
+import StringDiagrams.Mathlib.CategoryTheory.Linear.End
 import StringDiagrams.DSL.Basic
 import StringDiagrams.Render.SVG
 import StringDiagrams.Render.TikZ

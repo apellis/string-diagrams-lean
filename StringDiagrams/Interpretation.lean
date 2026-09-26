@@ -149,6 +149,18 @@ theorem freeLift_map_single (F : Obj S ⥤ D) {a b : Obj S} (f : a ⟶ b) (r : R
     (freeLift R F).map (LinDiagram.of f : LinDiagram R a b) = F.map f := by
   rw [freeLift_map_single, one_smul]
 
+theorem freeLift_map_whisker_single (F : Obj S ⥤ D) {a b : Obj S} (f : a ⟶ b) (r : R)
+    (u : Obj S) (v : List S.Colour) (hw : a.WhiskerOK u v) :
+    (freeLift R F).map (LinDiagram.whisker (Finsupp.single f r : LinDiagram R a b) u v hw) =
+      r • F.map (Diagram.whisker f u v hw) := by
+  rw [LinDiagram.whisker_single, freeLift_map_single]
+
+@[simp] theorem freeLift_map_whisker_of (F : Obj S ⥤ D) {a b : Obj S} (f : a ⟶ b) (u : Obj S)
+    (v : List S.Colour) (hw : a.WhiskerOK u v) :
+    (freeLift R F).map (LinDiagram.whisker (LinDiagram.of f : LinDiagram R a b) u v hw) =
+      F.map (Diagram.whisker f u v hw) := by
+  rw [LinDiagram.whisker_of, freeLift_map_of]
+
 instance freeLift_additive (F : Obj S ⥤ D) : (freeLift R F).Additive where
   map_add {X Y} f g := by
     simp only [freeLift_map]
@@ -158,6 +170,24 @@ instance freeLift_linear (F : Obj S ⥤ D) : (freeLift R F).Linear R where
   map_smul {X Y} f r := by
     simp only [freeLift_map]
     rw [Finsupp.sum_smul_index] <;> simp [Finsupp.smul_sum, mul_smul]
+
+/-- The linear extension on a whiskered two-term combination `of d₁ - c • of d₂` (the shape
+of most defining relations). -/
+theorem freeLift_map_whisker_sub_smul (F : Obj S ⥤ D) {a b : Obj S} (d₁ d₂ : a ⟶ b) (c : R)
+    (u : Obj S) (v : List S.Colour) (hw : a.WhiskerOK u v) :
+    (freeLift R F).map (LinDiagram.whisker
+        (LinDiagram.of d₁ - c • LinDiagram.of d₂ : LinDiagram R a b) u v hw) =
+      F.map (Diagram.whisker d₁ u v hw) - c • F.map (Diagram.whisker d₂ u v hw) := by
+  rw [LinDiagram.whisker_sub, LinDiagram.whisker_smul, Functor.map_sub, Functor.map_smul,
+    freeLift_map_whisker_of, freeLift_map_whisker_of]
+
+/-- The linear extension on a whiskered difference `of d₁ - of d₂`. -/
+theorem freeLift_map_whisker_sub (F : Obj S ⥤ D) {a b : Obj S} (d₁ d₂ : a ⟶ b)
+    (u : Obj S) (v : List S.Colour) (hw : a.WhiskerOK u v) :
+    (freeLift R F).map (LinDiagram.whisker
+        (LinDiagram.of d₁ - LinDiagram.of d₂ : LinDiagram R a b) u v hw) =
+      F.map (Diagram.whisker d₁ u v hw) - F.map (Diagram.whisker d₂ u v hw) := by
+  rw [LinDiagram.whisker_sub, Functor.map_sub, freeLift_map_whisker_of, freeLift_map_whisker_of]
 
 namespace Presentation
 
