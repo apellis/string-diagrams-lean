@@ -549,7 +549,8 @@ instance lift_additive : (lift P W hadm hrel hint i).Additive := P.lift_additive
 
 instance lift_linear : (lift P W hadm hrel hint i).Linear R := P.lift_linear _
 
-@[simp] theorem lift_obj (a : Obj S) : (lift P W hadm hrel hint i).obj (P.obj a) = Q.obj ((φ i).obj a) :=
+@[simp] theorem lift_obj (a : Obj S) :
+    (lift P W hadm hrel hint i).obj (P.obj a) = Q.obj ((φ i).obj a) :=
   rfl
 
 @[simp] theorem lift_diag {a b : Obj S} (d : a ⟶ b) :

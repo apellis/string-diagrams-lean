@@ -30,6 +30,12 @@ relabelled boundaries of `g` (which may depend on `g`, hence on the regions arou
 homogeneous of the parity of `g` (`LocalMap.ofGen_interchange`), by the super interchange law in
 `Q.Presented`. Hence (`LocalMap.liftGen`) such images define a functor
 `P.Presented ⥤ Q.Presented` as soon as the images of the relations of `P` vanish.
+
+## Degrees
+
+If the image of every layer is homogeneous of the degree of its generator
+(`LocalMap.PreservesDeg`; for images of generators, `LocalMap.ofGen_preservesDeg`), the induced
+functors preserve degrees (`LocalMap.lift_mem_homDeg`); for the parity gradings, parities.
 -/
 
 noncomputable section
@@ -269,6 +275,64 @@ theorem lift_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) {u : Obj S} {v : List
 
 end Lift
 
+/-! ### Degrees -/
+
+section Degree
+
+variable {A : Type*} [AddCommMonoid A] (deg : S.Gen → A) (deg' : S'.Gen → A)
+
+/-- A local map preserves degrees: the image of every well-formed layer is homogeneous of the
+degree of its generator. For the parity gradings this is parity preservation. -/
+def PreservesDeg (φ : LocalMap S Q) : Prop :=
+  ∀ (L : Layer S) (hv : L.Valid),
+    φ.layer L hv ∈ Q.homDeg deg' (φ.obj L.dom) (φ.obj L.cod) (deg L.gen)
+
+variable {deg deg'} {φ : LocalMap S Q}
+
+theorem PreservesDeg.functor_map_mem (h : φ.PreservesDeg deg deg') {a b : Obj S} (d : a ⟶ b) :
+    φ.functor.map d ∈ Q.homDeg deg' (φ.obj a) (φ.obj b) (Diagram.degree deg d) := by
+  obtain ⟨ls, hc⟩ := d
+  induction ls generalizing a with
+  | nil =>
+    cases hc
+    change φ.functor.map (𝟙 _) ∈ Q.homDeg deg' _ _ (Diagram.degree deg (𝟙 _))
+    rw [CategoryTheory.Functor.map_id, Diagram.degree_id]
+    exact Presentation.id_mem_homDeg Q deg' _
+  | cons L ls ih =>
+    obtain ⟨hv, rfl, hc'⟩ := hc
+    have e : (⟨L :: ls, hv, rfl, hc'⟩ : L.dom ⟶ b) = Diagram.ofLayer L hv ≫ ⟨ls, hc'⟩ :=
+      Diagram.ext rfl
+    rw [e, Functor.map_comp, functor_map_ofLayer, Diagram.degree_comp, Diagram.degree_ofLayer]
+    exact Presentation.comp_mem_homDeg (h L hv) (ih hc')
+
+theorem PreservesDeg.freeLift_mem (h : φ.PreservesDeg deg deg') {a b : Obj S}
+    {f : LinDiagram R a b} {e : A} (hf : f ∈ LinDiagram.homDeg R deg a b e) :
+    (freeLift R φ.functor).map f ∈ Q.homDeg deg' (φ.obj a) (φ.obj b) e := by
+  rw [LinDiagram.homDeg, Finsupp.supported_eq_span_single] at hf
+  induction hf using Submodule.span_induction with
+  | mem y hy =>
+    obtain ⟨d, hd, rfl⟩ := hy
+    rw [freeLift_map_single]
+    exact Submodule.smul_mem _ _ (hd ▸ h.functor_map_mem d)
+  | zero => rw [Functor.map_zero]; exact Submodule.zero_mem _
+  | add y z _ _ hy hz => rw [Functor.map_add]; exact Submodule.add_mem _ hy hz
+  | smul r y _ hy => rw [Functor.map_smul]; exact Submodule.smul_mem _ r hy
+
+/-- **Degree-preserving local maps induce degree-preserving functors.** -/
+theorem lift_mem_homDeg {P : Presentation.{w, v} S R} {φ : ι → LocalMap S Q}
+    (W : WhiskerData φ) (hadm : ∀ r, W.Admissible (P.dom r))
+    (hrel : ∀ i r, (freeLift R (φ i).functor).map (P.rel r) = 0)
+    (hint : ∀ i (x : InterchangeData S) (hx : x.Valid),
+      (freeLift R (φ i).functor).map (InterchangeData.rel R hx) = 0) (i : ι)
+    (h : (φ i).PreservesDeg deg deg') {a b : Obj S} {x : P.obj a ⟶ P.obj b} {e : A}
+    (hx : x ∈ P.homDeg deg a b e) :
+    (lift P W hadm hrel hint i).map x ∈ Q.homDeg deg' ((φ i).obj a) ((φ i).obj b) e := by
+  obtain ⟨f, hf, rfl⟩ := Presentation.mem_homDeg_iff.mp hx
+  rw [lift_lin]
+  exact h.freeLift_mem hf
+
+end Degree
+
 end LocalMap
 
 /-! ## Images of generators -/
@@ -493,6 +557,17 @@ theorem parity_of_isEven [S.IsEven] [S'.IsEven] (g : S.Gen) :
     simp [Presentation.parityDeg, Signature.IsEven.odd_eq_false]]
   exact Presentation.lin_mem_homDeg (LinDiagram.mem_homDeg_iff.mpr fun d _ => by
     rw [Diagram.degree_parityDeg, Diagram.oddCount_eq_zero, Nat.cast_zero])
+
+/-- If every image of a generator is homogeneous of the degree of the generator, the local
+map given by the images of generators preserves degrees. -/
+theorem ofGen_preservesDeg {A : Type*} [AddCommMonoid A] {deg : S.Gen → A} {deg' : S'.Gen → A}
+    (himg : ∀ g, img g ∈ Q.homDeg deg' (genDom κ g) (genCod κ g) (deg g)) :
+    (ofGen κ img).PreservesDeg deg deg' := fun L _ => by
+  have := Presentation.comp_mem_homDeg (Presentation.eqToHom_mem_homDeg (P := Q) deg'
+    (congrArg Q.obj (whisker_genDom κ L)).symm) (Presentation.comp_mem_homDeg
+      (Presentation.whisk_mem_homDeg (himg L.gen) (κ.obj ⟨L.start, L.left⟩) (κ.word L.right))
+      (Presentation.eqToHom_mem_homDeg (P := Q) deg' (congrArg Q.obj (whisker_genCod κ L))))
+  rwa [zero_add, add_zero] at this
 
 variable (P : Presentation.{w, v} S R)
 

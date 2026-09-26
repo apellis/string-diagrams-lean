@@ -203,7 +203,8 @@ def loopColours : ColourMap loopSig sig where
 
 /-- The image of the closed generator: the loop `cap ∘ cup`. -/
 def loopImg (g : loopSig.Gen) :
-    (pres R δ).obj (LocalMap.genDom loopColours g) ⟶ (pres R δ).obj (LocalMap.genCod loopColours g) :=
+    (pres R δ).obj (LocalMap.genDom loopColours g) ⟶
+      (pres R δ).obj (LocalMap.genCod loopColours g) :=
   (pres R δ).diag (dcup (m := 0) (i := 0) le_rfl ≫ dcap (m := 0) (i := 0) le_rfl)
 
 /-- **The closed generator as a loop**: the functor from the free category on `○` to `TL(δ)`

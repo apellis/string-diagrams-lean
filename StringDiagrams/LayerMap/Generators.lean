@@ -83,7 +83,8 @@ variable (κ : ColourMap S S')
 @[simp] theorem word_append (w w' : List S.Colour) : κ.word (w ++ w') = κ.word w ++ κ.word w' := by
   simp [κ.word_eq]
 
-theorem word_cons (c : S.Colour) (w : List S.Colour) : κ.word (c :: w) = κ.colour c :: κ.word w := by
+theorem word_cons (c : S.Colour) (w : List S.Colour) :
+    κ.word (c :: w) = κ.colour c :: κ.word w := by
   simp [κ.word_eq]
 
 /-- The identity relabelling, with `word := id`. -/
@@ -438,7 +439,8 @@ def word (w : List S.Colour) : List S'.Colour := (w.map κ.colour).reverse
 
 @[simp] theorem word_nil : κ.word [] = [] := rfl
 
-theorem word_cons (c : S.Colour) (w : List S.Colour) : κ.word (c :: w) = κ.word w ++ [κ.colour c] := by
+theorem word_cons (c : S.Colour) (w : List S.Colour) :
+    κ.word (c :: w) = κ.word w ++ [κ.colour c] := by
   simp [word]
 
 theorem word_append (w w' : List S.Colour) : κ.word (w ++ w') = κ.word w' ++ κ.word w := by
