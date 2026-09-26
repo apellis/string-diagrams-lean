@@ -21,6 +21,7 @@ import StringDiagrams.Super.Associated
 import StringDiagrams.Super.MonoidalEnvelope
 import StringDiagrams.Super.MonoidalPi
 import StringDiagrams.Super.TwoEnvelope
+import StringDiagrams.Super.MonoidalUniversal
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
