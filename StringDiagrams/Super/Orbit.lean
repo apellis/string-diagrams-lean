@@ -636,6 +636,64 @@ def mapFam {X Y : S} (g : X ⟶ Y) : d.Fam R 0 X Y :=
     simp only [Functor.comp_map] at this
     rw [this, Iso.inv_hom_id_app_assoc]⟩
 
+/-! ## The families `σ` -/
+
+/-- The family `σ_{i,i+1} : Qⁱ(Q X) ≅ Qⁱ⁺¹ X` (degree `-1`). -/
+def famσ (X : S) : d.FamAll (d.Q.obj X) X :=
+  fun i j => if h : j = i + 1 then
+    (d.comm i).hom.app X ≫ eqToHom (congrArg (fun k => (d.pow k).obj X) h.symm) else 0
+
+/-- The inverse family (degree `1`). -/
+def famσinv (X : S) : d.FamAll X (d.Q.obj X) :=
+  fun i j => if h : i = j + 1 then
+    eqToHom (congrArg (fun k => (d.pow k).obj X) h) ≫ (d.comm j).inv.app X else 0
+
+theorem famσ_succ (X : S) (i : ℤ) : d.famσ X i (i + 1) = (d.comm i).hom.app X := by
+  simp [famσ]
+
+theorem famσinv_succ (X : S) (j : ℤ) : d.famσinv X (j + 1) j = (d.comm j).inv.app X := by
+  simp [famσinv]
+
+theorem famσ_mem (X : S) : d.famσ X ∈ d.Fam R (-1) (d.Q.obj X) X := by
+  refine ⟨fun i j h => ?_, fun i j => ?_⟩
+  · rw [famσ, dif_neg (by omega)]
+  · by_cases h : j = i + 1
+    · subst h
+      rw [famσ_succ, famσ_succ, d.comm_succ]
+    · rw [famσ, famσ, dif_neg h, dif_neg (by omega)]; simp
+
+theorem famσinv_mem (X : S) : d.famσinv X ∈ d.Fam R 1 X (d.Q.obj X) := by
+  refine ⟨fun i j h => ?_, fun i j => ?_⟩
+  · rw [famσinv, dif_neg (by omega)]
+  · by_cases h : i = j + 1
+    · subst h
+      rw [famσinv_succ, famσinv_succ, ← cancel_epi ((d.comm (j + 1)).hom.app X),
+        Iso.hom_inv_id_app, d.comm_succ]
+      simp only [Category.assoc, Iso.hom_inv_id_app_assoc]
+      rw [← Functor.map_comp_assoc, Iso.hom_inv_id_app]
+      erw [CategoryTheory.Functor.map_id, Category.id_comp, Iso.inv_hom_id_app]
+      rfl
+    · rw [famσinv, famσinv, dif_neg h, dif_neg (by omega)]; simp
+
+theorem famComp_famσ_famσinv (X : S) :
+    d.famComp (-1) (d.famσ X) (d.famσinv X) = d.idFam (d.Q.obj X) := by
+  ext i k
+  simp only [famComp]
+  rw [show i - -1 = i + 1 by ring, famσ_succ]
+  by_cases h : i = k
+  · subst h; rw [famσinv_succ, Iso.hom_inv_id_app, idFam_self]; rfl
+  · rw [famσinv, dif_neg (by omega), Limits.comp_zero, idFam, dif_neg h]
+
+theorem famComp_famσinv_famσ (X : S) :
+    d.famComp 1 (d.famσinv X) (d.famσ X) = d.idFam X := by
+  ext i k
+  obtain ⟨j, rfl⟩ : ∃ j, i = j + 1 := ⟨i - 1, by ring⟩
+  simp only [famComp]
+  rw [show j + 1 - 1 = j by ring, famσinv_succ]
+  by_cases h : k = j + 1
+  · subst h; rw [famσ_succ, Iso.inv_hom_id_app, idFam_self]
+  · rw [famσ, dif_neg h, Limits.comp_zero, idFam, dif_neg (Ne.symm h)]
+
 end ShiftData
 
 /-! ## The orbit supercategory -/
@@ -818,6 +876,62 @@ theorem ζ_eq (X : Orbit d) : PiSupercategory.ζ (R := R) X = ζIso X := rfl
     (PiSupercategory.pi (R := R)).obj X = ⟨(PiSupercategory.pi (R := R)).obj X.obj⟩ := rfl
 
 end Pi
+
+/-! ## The `Q`-structure -/
+
+/-- The even isomorphism `σ_X : Q X ≅ X` of degree `-1`. -/
+def σIso (X : Orbit d) : (⟨d.Q.obj X.obj⟩ : Orbit d) ≅ X where
+  hom := d.lof (-1) _ _ ⟨d.famσ X.obj, d.famσ_mem X.obj⟩
+  inv := d.lof 1 _ _ ⟨d.famσinv X.obj, d.famσinv_mem X.obj⟩
+  hom_inv_id := by
+    show d.compL _ _ _ _ _ = d.idHom _
+    rw [compL_lof_lof]
+    exact d.lof_congr (by norm_num) (by rw [famCompₗ_apply]; exact d.famComp_famσ_famσinv _)
+  inv_hom_id := by
+    show d.compL _ _ _ _ _ = d.idHom _
+    rw [compL_lof_lof]
+    exact d.lof_congr (by norm_num) (by rw [famCompₗ_apply]; exact d.famComp_famσinv_famσ _)
+
+theorem σIso_hom_mem (X : Orbit d) :
+    (σIso X).hom ∈ parity (R := R) (⟨d.Q.obj X.obj⟩ : Orbit d) X 0 := by
+  intro m i j
+  show (d.component m _ _ (d.lof (-1) _ _ _)).1 i j ∈ _
+  by_cases h : m = -1
+  · subst h
+    simp only [component_lof_self, famσ]
+    split_ifs with hij
+    · subst hij; simpa using d.comm_hom_mem i X.obj
+    · exact Submodule.zero_mem _
+  · rw [d.component_lof_of_ne _ (Ne.symm h)]; exact Submodule.zero_mem _
+
+theorem σIso_hom_mem_degree (X : Orbit d) :
+    (σIso X).hom ∈ GradedSupercategory.degree (R := R) (⟨d.Q.obj X.obj⟩ : Orbit d) X (-1) :=
+  ⟨_, rfl⟩
+
+/-- The even isomorphism `σ̄_X : Q⁻¹ X ≅ X` of degree `1`: `σ_{Q⁻¹X}⁻¹` followed by the counit. -/
+def σbarIso (X : Orbit d) : (⟨d.Qi.obj X.obj⟩ : Orbit d) ≅ X :=
+  (σIso (⟨d.Qi.obj X.obj⟩ : Orbit d)).symm ≪≫ (ι d).mapIso (d.e.counitIso.app X.obj)
+
+theorem σbarIso_hom_mem (X : Orbit d) :
+    (σbarIso X).hom ∈ parity (R := R) (⟨d.Qi.obj X.obj⟩ : Orbit d) X 0 := by
+  have := comp_mem (inv_mem _ (σIso_hom_mem (⟨d.Qi.obj X.obj⟩ : Orbit d)))
+    (map_mem (ι d) (d.counit_mem X.obj))
+  simpa [σbarIso] using this
+
+theorem σbarIso_hom_mem_degree (X : Orbit d) :
+    (σbarIso X).hom ∈ GradedSupercategory.degree (R := R) (⟨d.Qi.obj X.obj⟩ : Orbit d) X 1 := by
+  have := GradedSupercategory.comp_mem_degree
+    (GradedSupercategory.inv_mem_degree _ (σIso_hom_mem_degree (⟨d.Qi.obj X.obj⟩ : Orbit d)))
+    (ι_map_mem_degree (d := d) (d.e.counitIso.hom.app X.obj))
+  simpa [σbarIso] using this
+
+/-- **The orbit supercategory of a Π-supercategory is a graded `(Q, Π)`-supercategory**, with
+`Q X = Q X` and `σ` of degree `-1` given by the isomorphisms `Qⁱ Q ≅ Qⁱ⁺¹`, and
+`Q⁻¹ X = Q⁻¹ X` with `σ̄ = σ⁻¹` followed by the counit. -/
+instance instQPiSupercategory [PiSupercategory R S] : QPiSupercategory R (Orbit d) :=
+  QPiSupercategory.ofIso (fun X => ι_map_mem_degree (d := d) (PiSupercategory.ζ (R := R) X.obj).hom)
+    (fun X => ⟨d.Q.obj X.obj⟩) σIso σIso_hom_mem σIso_hom_mem_degree
+    (fun X => ⟨d.Qi.obj X.obj⟩) σbarIso σbarIso_hom_mem σbarIso_hom_mem_degree
 
 end Orbit
 
