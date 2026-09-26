@@ -475,16 +475,6 @@ theorem ColourCupsCaps.biadjunctions_right_counit (Q : ColourCupsCaps P D) (x : 
     (h₂ : Obj.nil (S.colourSrc c) = (𝟙 l : l ⟶ l).obj) :
     (Q.biadjunctions x c hx).right.counit = P.diag (Diagram.cast (Q.cap' c) h₁ h₂) := rfl
 
-theorem _root_.StringDiagrams.Biadjunction.congr_right_unit {B : Type*} [Bicategory B]
-    {a b : B} {f f' : a ⟶ b} {g g' : b ⟶ a} (Q : f ⊣⊢ g) (hf : f = f') (hg : g = g') :
-    (Q.congr hf hg).right.unit = Q.right.unit ≫ eqToHom (by rw [hf, hg]) := by
-  subst hf hg; simp
-
-theorem _root_.StringDiagrams.Biadjunction.congr_right_counit {B : Type*} [Bicategory B]
-    {a b : B} {f f' : a ⟶ b} {g g' : b ⟶ a} (Q : f ⊣⊢ g) (hf : f = f') (hg : g = g') :
-    (Q.congr hf hg).right.counit = eqToHom (by rw [hf, hg]) ≫ Q.right.counit := by
-  subst hf hg; simp
-
 /-- The unit of `x ⊣ x*` for a word `w` is the class of the nested cups (induction on `w`). -/
 theorem biadjW_left_unit_eq_wordCup (Q : ColourCupsCaps P D) (w : List S.Colour) :
     ∀ {l m : P.Bicat} (x : l ⟶ m) (hx : x.obj.word = w),
@@ -928,12 +918,6 @@ def cupCapDiagrams :
       [⟨S.colourTgt (E.dual c), [], .cap (E.dual c), []⟩] := rfl
 
 end Pivotal
-
-@[simp] theorem Signature.ColourDuality.pivotal_dualWord (D : S.ColourDuality)
-    (w : List S.Colour) : D.pivotal.dualWord w = D.dualWord w := by
-  induction w with
-  | nil => rfl
-  | cons c w ih => simp [ih]
 
 namespace Presentation
 
