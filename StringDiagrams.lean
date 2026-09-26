@@ -58,6 +58,8 @@ import StringDiagrams.Super.TwoEnvelopeTwoHom
 import StringDiagrams.Super.PiCat
 import StringDiagrams.Super.TwoSCat
 import StringDiagrams.Super.DrinfeldCenterEnvelope
+import StringDiagrams.Super.Braided
+import StringDiagrams.Super.DrinfeldCenterBraiding
 import StringDiagrams.Super.SVec
 import StringDiagrams.Super.K0
 import StringDiagrams.Super.SKar
