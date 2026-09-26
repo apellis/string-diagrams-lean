@@ -105,6 +105,12 @@ theorem Chain.target_eq {a b : Obj S} {ls : List (Layer S)} (h : Chain a ls b) :
   | nil => exact h
   | cons L ls ih => exact ih h.2.2
 
+@[simp] theorem Chain.target_append_singleton (a : Obj S) (ls : List (Layer S)) (L : Layer S) :
+    Chain.target a (ls ++ [L]) = L.cod := by
+  induction ls generalizing a with
+  | nil => rfl
+  | cons L' ls ih => exact ih _
+
 end Decidable
 
 /-- A diagram from `a` to `b` in the free 2-category: a well-typed list of layers. -/
@@ -168,6 +174,55 @@ theorem cast_eq {a' b' : Obj S} (f : a ⟶ b) (ha : a = a') (hb : b = b') :
   ext; simp
 
 @[simp] theorem cast_rfl (f : a ⟶ b) : cast f rfl rfl = f := rfl
+
+@[simp] theorem cast_cast {a' b' a'' b'' : Obj S} (f : a ⟶ b) (ha : a = a') (hb : b = b')
+    (ha' : a' = a'') (hb' : b' = b'') :
+    cast (cast f ha hb) ha' hb' = cast f (ha.trans ha') (hb.trans hb') := rfl
+
+theorem cast_comp {a' b' c' : Obj S} (f : a ⟶ b) (g : b ⟶ c) (ha : a = a') (hb : b = b')
+    (hc : c = c') : cast (f ≫ g) ha hc = cast f ha hb ≫ cast g hb hc := rfl
+
+@[simp] theorem cast_id {a' a'' : Obj S} (ha : a = a') (ha' : a = a'') :
+    cast (𝟙 a) ha' ha = eqToHom (ha'.symm.trans ha) := by
+  ext; simp
+
+/-- Two diagrams with the same layers agree up to retyping. -/
+theorem eq_cast_of_layers_eq {a' b' : Obj S} {f : a ⟶ b} {g : a' ⟶ b'} (ha : a' = a)
+    (hb : b' = b) (h : layers f = layers g) : f = cast g ha hb :=
+  Diagram.ext h
+
+/-- The source of a diagram is the source of its first layer. -/
+theorem eq_dom_of_layers_eq_cons (f : a ⟶ b) {L : Layer S} {ls : List (Layer S)}
+    (h : layers f = L :: ls) : a = L.dom := by
+  have := chain f
+  rw [h] at this
+  exact this.2.1.symm
+
+/-- The target of a diagram is the target of its last layer. -/
+theorem eq_cod_of_layers_eq_append (f : a ⟶ b) {L : Layer S} {ls : List (Layer S)}
+    (h : layers f = ls ++ [L]) : b = L.cod := by
+  have := (chain f).target_eq
+  rw [h, Chain.target_append_singleton] at this
+  exact this.symm
+
+/-- The boundaries of a diagram with one layer. -/
+theorem eq_of_layers_eq_singleton (f : a ⟶ b) {L : Layer S} (h : layers f = [L]) :
+    a = L.dom ∧ b = L.cod :=
+  ⟨eq_dom_of_layers_eq_cons f h, eq_cod_of_layers_eq_append (ls := []) f h⟩
+
+/-- The boundaries of a diagram with two layers. -/
+theorem eq_of_layers_eq_pair (f : a ⟶ b) {L₁ L₂ : Layer S} (h : layers f = [L₁, L₂]) :
+    a = L₁.dom ∧ L₁.cod = L₂.dom ∧ b = L₂.cod := by
+  have := chain f
+  rw [h] at this
+  exact ⟨this.2.1.symm, this.2.2.2.1.symm, this.2.2.2.2.symm⟩
+
+/-- The boundaries of a diagram with three layers. -/
+theorem eq_of_layers_eq_triple (f : a ⟶ b) {L₁ L₂ L₃ : Layer S} (h : layers f = [L₁, L₂, L₃]) :
+    a = L₁.dom ∧ L₁.cod = L₂.dom ∧ L₂.cod = L₃.dom ∧ b = L₃.cod := by
+  have := chain f
+  rw [h] at this
+  exact ⟨this.2.1.symm, this.2.2.2.1.symm, this.2.2.2.2.2.1.symm, this.2.2.2.2.2.2.symm⟩
 
 /-- Whiskering `u ⊗ f ⊗ v` of a diagram. -/
 def whisker (f : a ⟶ b) (u : Obj S) (v : List S.Colour) (hw : a.WhiskerOK u v) :
