@@ -636,6 +636,36 @@ def mapFam {X Y : S} (g : X ⟶ Y) : d.Fam R 0 X Y :=
     simp only [Functor.comp_map] at this
     rw [this, Iso.inv_hom_id_app_assoc]⟩
 
+/-! ## Families are determined by one entry -/
+
+variable {d} in
+theorem FamAll.congr_entry {X Y : S} {f g : d.FamAll X Y} {i j i' j' : ℤ} (hi : i = i')
+    (hj : j = j') (h : f i j = g i j) : f i' j' = g i' j' := by
+  subst hi hj; exact h
+
+variable {d} in
+theorem Fam.eq_of_entry {m : ℤ} {X Y : S} {f g : d.FamAll X Y} (hf : f ∈ d.Fam R m X Y)
+    (hg : g ∈ d.Fam R m X Y) {i₀ j₀ : ℤ} (h₀ : i₀ - j₀ = m) (h : f i₀ j₀ = g i₀ j₀) : f = g := by
+  have key : ∀ k : ℤ, f (i₀ + k) (j₀ + k) = g (i₀ + k) (j₀ + k) := by
+    intro k
+    induction k using Int.induction_on with
+    | hz => exact FamAll.congr_entry (by ring) (by ring) h
+    | hp k ih =>
+      have e := FamAll.congr_entry (f := f) (g := g) (i' := i₀ + (k + 1)) (j' := j₀ + (k + 1))
+        (by ring) (by ring) (show f (i₀ + k + 1) (j₀ + k + 1) = g (i₀ + k + 1) (j₀ + k + 1) by
+          rw [Fam.compat hf, Fam.compat hg, ih])
+      exact e
+    | hn k ih =>
+      have e := FamAll.congr_entry (f := f) (g := g)
+        (i' := i₀ + (-(k : ℤ) - 1) + 1) (j' := j₀ + (-(k : ℤ) - 1) + 1) (by ring) (by ring) ih
+      rw [Fam.compat hf, Fam.compat hg] at e
+      have e3 := (cancel_mono _).1 ((cancel_epi _).1 e)
+      exact d.Q.map_injective e3
+  ext i j
+  by_cases hij : i - j = m
+  · exact FamAll.congr_entry (by ring) (by omega) (key (i - i₀))
+  · rw [Fam.eq_zero hf hij, Fam.eq_zero hg hij]
+
 /-! ## The families `σ` -/
 
 /-- The family `σ_{i,i+1} : Qⁱ(Q X) ≅ Qⁱ⁺¹ X` (degree `-1`). -/
