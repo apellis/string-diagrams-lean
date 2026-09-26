@@ -20,6 +20,7 @@ import StringDiagrams.Super.Underlying
 import StringDiagrams.Super.Associated
 import StringDiagrams.Super.MonoidalEnvelope
 import StringDiagrams.Super.MonoidalPi
+import StringDiagrams.Super.MonoidalAssociated
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
