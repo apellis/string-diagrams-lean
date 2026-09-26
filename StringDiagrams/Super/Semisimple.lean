@@ -152,7 +152,8 @@ theorem hasKernels_of_isVNRegular [IsIdempotentComplete 𝒞]
     (H : ∀ {X Y : 𝒞} (f : X ⟶ Y), IsVNRegular f) : HasKernels 𝒞 where
   has_limit f := by
     obtain ⟨g, hg⟩ := H f
-    obtain ⟨K, i, r, hir, hri⟩ := IsIdempotentComplete.idempotents_split _ _ (IsVNRegular.idem_left hg)
+    obtain ⟨K, i, r, hir, hri⟩ :=
+      IsIdempotentComplete.idempotents_split _ _ (IsVNRegular.idem_left hg)
     exact HasLimit.mk ⟨_, IsVNRegular.kernelIsLimit hg i r hir hri⟩
 
 variable (𝒞) in
@@ -161,7 +162,8 @@ theorem hasCokernels_of_isVNRegular [IsIdempotentComplete 𝒞]
     (H : ∀ {X Y : 𝒞} (f : X ⟶ Y), IsVNRegular f) : HasCokernels 𝒞 where
   has_colimit f := by
     obtain ⟨g, hg⟩ := H f
-    obtain ⟨C, i, r, hir, hri⟩ := IsIdempotentComplete.idempotents_split _ _ (IsVNRegular.idem_right hg)
+    obtain ⟨C, i, r, hir, hri⟩ :=
+      IsIdempotentComplete.idempotents_split _ _ (IsVNRegular.idem_right hg)
     exact HasColimit.mk ⟨_, IsVNRegular.cokernelIsColimit hg i r hir hri⟩
 
 variable (𝒞) in
