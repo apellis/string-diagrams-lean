@@ -61,6 +61,11 @@ instance : Subsingleton sig.Region := inferInstanceAs (Subsingleton Unit)
 
 instance : Inhabited sig.Region := inferInstanceAs (Inhabited Unit)
 
+@[simp] theorem sig_dom_cup : sig.dom .cup = [] := rfl
+@[simp] theorem sig_cod_cup : sig.cod .cup = [(), ()] := rfl
+@[simp] theorem sig_dom_cap : sig.dom .cap = [(), ()] := rfl
+@[simp] theorem sig_cod_cap : sig.cod .cap = [] := rfl
+
 /-- `n` strands. -/
 def strands (n : ℕ) : Obj sig := ⟨(), List.replicate n ()⟩
 

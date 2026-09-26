@@ -369,10 +369,6 @@ theorem cap_cup_op {p k : ℕ} (F : Fn R) {w : List (Fin 2)} (h : p + k + 2 ≤ 
 
 /-! ## Soundness -/
 
-@[simp] theorem sig_dom_cup : sig.dom .cup = [] := rfl
-@[simp] theorem sig_cod_cup : sig.cod .cup = [(), ()] := rfl
-@[simp] theorem sig_dom_cap : sig.dom .cap = [(), ()] := rfl
-@[simp] theorem sig_cod_cap : sig.cod .cap = [] := rfl
 
 /-- The loop value of the representation. -/
 abbrev delta (q : Rˣ) : R := -((q : R) - ((q⁻¹ : Rˣ) : R))
