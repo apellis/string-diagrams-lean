@@ -126,6 +126,8 @@ open CentralShift QPiTwoSupercategory Orbit
 /-- The Π-2-supercategory `(𝔅̲)^` associated to the underlying `(Q, Π)`-2-category of `𝔅`. -/
 local notation "𝔄" => Associated2 R (GUnderlying2 R B)
 
+instance (priority := high) : CentralShift R 𝔄 := Associated2.instCentralShift
+
 /-- The object of `𝔅` underlying an object of `(𝔅̲)^`. -/
 abbrev bo (a : 𝔄) : B := a.obj.obj.as
 
@@ -196,6 +198,11 @@ theorem TF_associator_inv {a b c d : 𝔄} (f : a ⟶ b) (g : b ⟶ c) (h : c �
 
 theorem TF_leftUnitor_hom {a b : 𝔄} (f : a ⟶ b) :
     (TF R B a b).map (leftUnitor f).hom = (leftUnitor ((TF R B a b).obj f)).hom := by
+  simp [TF_map, Associated2.T_map₂]
+  rfl
+
+theorem TF_leftUnitor_inv {a b : 𝔄} (f : a ⟶ b) :
+    (TF R B a b).map (leftUnitor f).inv = (leftUnitor ((TF R B a b).obj f)).inv := by
   simp [TF_map, Associated2.T_map₂]
   rfl
 
@@ -291,6 +298,120 @@ theorem Thom_whiskerLeft (f : a ⟶ b) {g h : b ⟶ c} (x : g ⟶ h) :
   rw [lift_map, lift_map, map_map_comp]
   erw [e]
   rw [← map_map_comp, eval_map_map (preShift_trivCompat (R := R) _ _)]
+  rfl
+
+instance (a b : 𝔄) : (TΦ R B a b).F.Faithful := inferInstanceAs (TF R B a b).Faithful
+
+theorem Thom_eq (a b : 𝔄) :
+    Thom R B a b = Orbit.lift (homTriv R (bo a) (bo b)) (TΦ R B a b) := rfl
+
+instance (a b : 𝔄) : (Thom R B a b).Additive :=
+  inferInstanceAs (Orbit.lift (homTriv R (bo a) (bo b)) (TΦ R B a b)).Additive
+
+instance (a b : 𝔄) : (Thom R B a b).Linear R :=
+  inferInstanceAs ((Orbit.lift (homTriv R (bo a) (bo b)) (TΦ R B a b)).Linear R)
+
+instance (a b : 𝔄) : IsSuperfunctor R (Thom R B a b) :=
+  inferInstanceAs (IsSuperfunctor R (Orbit.lift (homTriv R (bo a) (bo b)) (TΦ R B a b)))
+
+theorem Thom_ι_map {a b : 𝔄} {f g : a ⟶ b} (x : f ⟶ g) :
+    (Thom R B a b).map ((Orbit.ι (homShift R a b)).map x) = (TF R B a b).map x :=
+  lift_ι_map _ _ x
+
+theorem TΦ_γ_hom_mem_degree {a b : 𝔄} (f : a ⟶ b) :
+    (TΦ R B a b).γ.hom.app f ∈ degree (R := R) _ _ 0 := id_mem_degree _
+
+variable (R B) in
+/-- **`𝔻 ∘ 𝔼 ≅ 𝕀` on objects.** The 2-superfunctor `𝕋_𝔅 : (𝔅̲)^ → 𝔅`: the identity on objects
+and 1-morphisms, `Thom` on 2-morphisms, with identity coherence maps. -/
+@[simps obj map map₂]
+def T : TwoSuperfunctor R (QAssociated2 R (GUnderlying2 R B)) B where
+  obj a := bo a.obj
+  map {a b} f := (TF R B a.obj b.obj).obj f.obj
+  map₂ {a b _ _} x := (Thom R B a.obj b.obj).map x
+  map₂_id f := (Thom R B _ _).map_id f
+  map₂_comp x y := (Thom R B _ _).map_comp x y
+  map₂_add _ _ := (Thom R B _ _).map_add
+  map₂_smul r x := Functor.Linear.map_smul (F := Thom R B _ _) x r
+  map₂_mem hx := map_mem (Thom R B _ _) hx
+  mapComp f g := Iso.refl _
+  mapId a := Iso.refl _
+  mapComp_hom_mem _ _ := id_mem _
+  mapId_hom_mem _ := id_mem _
+  mapComp_naturality_left x h := by
+    simp only [Iso.refl_hom]
+    erw [Category.comp_id, Category.id_comp]
+    exact (Thom_whiskerRight x h).symm
+  mapComp_naturality_right f _ _ x := by
+    simp only [Iso.refl_hom]
+    erw [Category.comp_id, Category.id_comp]
+    exact (Thom_whiskerLeft f x).symm
+  map₂_associator f g h := by
+    simp only [Iso.refl_hom]
+    erw [whiskerLeft_id (R := R), Category.id_comp, Category.id_comp, id_whiskerRight (R := R),
+      Category.comp_id, Category.comp_id]
+    rw [Orbit2.associator_inv_def, Thom_ι_map, TF_associator_inv]
+  map₂_leftUnitor f := by
+    simp only [Iso.refl_hom]
+    erw [id_whiskerRight (R := R), Category.id_comp, Category.id_comp]
+    rw [Orbit2.leftUnitor_hom_def, Thom_ι_map, TF_leftUnitor_hom]
+  map₂_rightUnitor f := by
+    simp only [Iso.refl_hom]
+    erw [whiskerLeft_id (R := R), Category.id_comp, Category.id_comp]
+    rw [Orbit2.rightUnitor_hom_def, Thom_ι_map, TF_rightUnitor_hom]
+
+theorem Thom_map_mem_degree {a b : 𝔄} {f g : Orbit (homShift R a b)} {n : ℤ} {x : f ⟶ g}
+    (hx : x ∈ degree (R := R) f g n) :
+    (Thom R B a b).map x ∈ degree (R := R) ((Thom R B a b).obj f) ((Thom R B a b).obj g) n :=
+  lift_map_mem_degree (homTriv R (bo a) (bo b)) (Φ := TΦ R B a b)
+    (fun y => TF_map_mem_degree y) (fun y => TΦ_γ_hom_mem_degree y) hx
+
+theorem Thom_map_injective {a b : 𝔄} {f g : Orbit (homShift R a b)} {x y : f ⟶ g}
+    (h : (Thom R B a b).map x = (Thom R B a b).map y) : x = y :=
+  lift_map_injective (homTriv R (bo a) (bo b)) (Φ := TΦ R B a b)
+    (fun y => TF_map_mem_degree y) (fun y => TΦ_γ_hom_mem_degree y) h
+
+theorem Thom_map_surjective {a b : 𝔄} {f g : Orbit (homShift R a b)}
+    (h : (Thom R B a b).obj f ⟶ (Thom R B a b).obj g) : ∃ x : f ⟶ g, (Thom R B a b).map x = h :=
+  lift_map_surjective (homTriv R (bo a) (bo b)) (Φ := TΦ R B a b)
+    (fun y => TF_map_mem_degree y) (fun y => TΦ_γ_hom_mem_degree y)
+    (fun h hh => TF_map_surjective h hh) h
+
+variable {a b : QAssociated2 R (GUnderlying2 R B)}
+
+/-- **`𝕋_𝔅` is graded.** -/
+theorem T_map₂_mem_degree {f g : a ⟶ b} {n : ℤ} {x : f ⟶ g}
+    (hx : x ∈ degree (R := R) f g n) : (T R B).map₂ x ∈ degree (R := R) _ _ n :=
+  Thom_map_mem_degree (a := a.obj) (b := b.obj) hx
+
+/-- **`𝔻 ∘ 𝔼 ≅ 𝕀`.** `𝕋_𝔅` is bijective on 2-morphisms (and the identity on objects and
+1-morphisms), so it is an isomorphism of graded 2-supercategories. -/
+theorem T_map₂_bijective (f g : a ⟶ b) :
+    Function.Bijective ((T R B).map₂ : (f ⟶ g) → ((T R B).map f ⟶ (T R B).map g)) :=
+  ⟨fun _ _ h => Thom_map_injective (a := a.obj) (b := b.obj) h,
+    fun h => Thom_map_surjective (a := a.obj) (b := b.obj) h⟩
+
+/-- `𝕋_𝔅` carries `ζ` to `ζ`. -/
+theorem T_map₂_ζ (a : QAssociated2 R (GUnderlying2 R B)) :
+    (T R B).map₂ (PiTwoSupercategory.ζ (R := R) a).hom =
+      (PiTwoSupercategory.ζ (R := R) ((T R B).obj a)).hom := by
+  rw [T_map₂, Orbit2.ζ_hom_def, Thom_ι_map, TF_map]
+  exact congrArg Subtype.val (Associated2.T_map₂_ζ (R := R) (A := DegreeZero2 R B) a.obj)
+
+/-- `𝕋_𝔅` carries `σ` to `σ`. -/
+theorem T_map₂_σ (a : QAssociated2 R (GUnderlying2 R B)) :
+    (T R B).map₂ (QPiTwoSupercategory.σ (R := R) a).hom =
+      (QPiTwoSupercategory.σ (R := R) ((T R B).obj a)).hom := by
+  rw [T_map₂, Orbit2.σ_eq, Orbit2.σ_hom, Functor.map_comp, Thom_ι_map]
+  unfold Thom
+  erw [lift_σIso_hom]
+  simp only [TΦ_γ_inv_app, homTriv_σ_hom, TΦ_F]
+  erw [Category.id_comp]
+  rw [TF_leftUnitor_inv]
+  change (leftUnitor (QPiTwoSupercategory.q (R := R) (bo a.obj))).inv ≫
+    𝟙 _ ◁ (QPiTwoSupercategory.σ (R := R) (bo a.obj)).hom ≫
+    (rightUnitor (𝟙 (bo a.obj))).hom = _
+  rw [← leftUnitor_inv_naturality_assoc R, ← unitors_equal R, Iso.inv_hom_id, Category.comp_id]
   rfl
 
 end QAssociated2
