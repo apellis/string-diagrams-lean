@@ -963,6 +963,10 @@ theorem assoc_hom_mem [GradedAlgebra 𝒟] :
     (assoc M N P).hom ∈ parity (R := k) (tensor (tensor M N) P) (tensor M (tensor N P)) 0 :=
   mem_parity_iff.2 (assocHom_mem M N P)
 
+theorem assoc_inv_mem [GradedAlgebra 𝒟] :
+    (assoc M N P).inv ∈ parity (R := k) (tensor M (tensor N P)) (tensor (tensor M N) P) 0 :=
+  mem_parity_iff.2 (assocInv_mem M N P)
+
 end Iterated
 
 /-! ### Naturality of the associator and the pentagon identity -/
@@ -1033,6 +1037,21 @@ theorem pentagon [GradedAlgebra 𝒟] [GradedAlgebra ℰ] (Q : SuperBimodule �
       assoc_hom_btmul]
   | add x y hx hy =>
     rw [btmul_add_left, btmul_add_left, SVec.hom_map_add, SVec.hom_map_add, hx, hy]
+
+/-- The pentagon identity for the inverse associators. -/
+theorem pentagon_inv [GradedAlgebra 𝒟] [GradedAlgebra ℰ] (Q : SuperBimodule 𝒟 ℰ) :
+    whiskerLeft M (assoc N P Q).inv ≫ (assoc M (tensor N P) Q).inv ≫
+        whiskerRight (assoc M N P).inv Q =
+      (assoc M N (tensor P Q)).inv ≫ (assoc (tensor M N) P Q).inv := by
+  refine hom_ext (tensor_hom_ext_right M N (tensor P Q) fun m n x => ?_)
+  induction x using tensor_induction_on with
+  | zero => rw [btmul_zero_right, btmul_zero_right, SVec.hom_map_zero, SVec.hom_map_zero]
+  | btmul p q =>
+    simp only [comp_val, SVec.comp_apply]
+    rw [whiskerLeft_btmul_even M _ (assoc_inv_mem N P Q), assoc_inv_btmul, assoc_inv_btmul,
+      whiskerRight_btmul, assoc_inv_btmul, assoc_inv_btmul, assoc_inv_btmul]
+  | add x y hx hy =>
+    rw [btmul_add_right, btmul_add_right, SVec.hom_map_add, SVec.hom_map_add, hx, hy]
 
 end Naturality
 
