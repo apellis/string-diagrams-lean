@@ -20,8 +20,8 @@ end of the section.
   `[Q]` (`K₀.C_π_smul_mk`, `K₀.T_smul_mk`, `K₀.T_neg_one_smul_mk`).
 
 The 2-categorical version (`GSKAR(𝔄)`, the Grothendieck ring `K₀(GSKAR(𝔄))` as a locally unital
-`Zπ[q, q⁻¹]`-algebra) is not formalized: it requires the additive Karoubi envelope of a
-bicategory, with horizontal composition extended to formal direct sums and idempotents.
+`Zπ[q, q⁻¹]`-algebra) is in `StringDiagrams.Super.KarBicategory` and
+`StringDiagrams.Super.K0Ring`.
 -/
 
 noncomputable section

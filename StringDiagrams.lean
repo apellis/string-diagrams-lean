@@ -27,6 +27,12 @@ import StringDiagrams.Super.QPiCategory
 import StringDiagrams.Super.Orbit
 import StringDiagrams.Super.QAssociated
 import StringDiagrams.Super.GSKar
+import StringDiagrams.Super.BicategoryOfHcomp
+import StringDiagrams.Super.MatBicategory
+import StringDiagrams.Super.KaroubiBicategory
+import StringDiagrams.Super.KarBicategory
+import StringDiagrams.Super.QPiTwoHom
+import StringDiagrams.Super.K0Ring
 import StringDiagrams.Super.TwoEnvelope
 import StringDiagrams.Super.MonoidalUniversal
 import StringDiagrams.Super.TwoEnvelopeUniversal
