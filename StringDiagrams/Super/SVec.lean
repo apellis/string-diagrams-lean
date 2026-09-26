@@ -1,6 +1,9 @@
 import StringDiagrams.Super.MonoidalPi
 import Mathlib.LinearAlgebra.TensorProduct.Basic
 import Mathlib.LinearAlgebra.Projection
+import Mathlib.LinearAlgebra.Dimension.Constructions
+import Mathlib.LinearAlgebra.Dimension.Free
+import Mathlib.LinearAlgebra.Basis.VectorSpace
 
 /-!
 # The supercategory of superspaces
@@ -947,6 +950,143 @@ instance instMonoidalPiSupercategory : MonoidalPiSupercategory k (SVec k) where
   pi := piObj unit
   ζ := ζIso unit
   ζ_hom_mem := ζIso_hom_mem unit
+
+/-! ## Graded subspaces -/
+
+section Sub
+
+variable (V : SVec k) (U : Submodule k V) (hU : ∀ v ∈ U, V.odd v ∈ U)
+
+/-- A graded submodule `U ⊆ V` (one stable under the projection onto `V₁`), as a superspace. -/
+abbrev sub : SVec k where
+  carrier := U
+  odd := V.odd.restrict hU
+  odd_comp_odd := by
+    ext v
+    simp [odd_apply_odd]
+
+theorem sub_odd_apply (v : U) : ((sub V U hU).odd v : V) = V.odd v := rfl
+
+theorem sub_proj_apply (q : ZMod 2) (v : U) : ((sub V U hU).proj q v : V) = V.proj q v := by
+  rcases parity_eq_zero_or_one q with rfl | rfl
+  · simp [proj_zero, sub_odd_apply]
+  · simp [proj_one, sub_odd_apply]
+
+theorem mem_sub_part_iff {q : ZMod 2} {v : U} : v ∈ (sub V U hU).part q ↔ (v : V) ∈ V.part q := by
+  rw [mem_part_iff, mem_part_iff, ← sub_proj_apply V U hU, Subtype.ext_iff]
+
+variable {V U hU} {W : SVec k} {U' : Submodule k W} {hU' : ∀ w ∈ U', W.odd w ∈ U'}
+
+/-- The restriction of a linear map to graded submodules. -/
+def restrictHom (f : V ⟶ W) (hf : ∀ v ∈ U, f v ∈ U') : sub V U hU ⟶ sub W U' hU' :=
+  ofHom ((toLinearMap f).restrict hf)
+
+@[simp] theorem restrictHom_apply (f : V ⟶ W) (hf : ∀ v ∈ U, f v ∈ U') (v : U) :
+    (restrictHom (hU := hU) (hU' := hU') f hf v : W) = f v := rfl
+
+theorem restrictHom_mem {p : ZMod 2} {f : V ⟶ W} (hfp : f ∈ parityHom V W p)
+    (hf : ∀ v ∈ U, f v ∈ U') : restrictHom (hU := hU) (hU' := hU') f hf ∈
+      parityHom (sub V U hU) (sub W U' hU') p := by
+  intro q
+  ext v
+  show f ((sub V U hU).proj q v : V) = ((sub W U' hU').proj (q + p) ⟨f v, hf v v.2⟩ : W)
+  rw [sub_proj_apply, sub_proj_apply]
+  exact apply_proj_of_mem hfp q v
+
+end Sub
+
+/-! ## Dimensions -/
+
+section Dim
+
+/-- The decomposition `V ≅ V₀ × V₁` of a superspace. -/
+def partEquiv (V : SVec k) : V ≃ₗ[k] V.part 0 × V.part 1 where
+  toFun v := (⟨V.proj 0 v, proj_mem_part V 0 v⟩, ⟨V.proj 1 v, proj_mem_part V 1 v⟩)
+  map_add' _ _ := by ext <;> simp
+  map_smul' _ _ := by ext <;> simp
+  invFun x := x.1 + x.2
+  left_inv v := proj_apply_add V v
+  right_inv x := by
+    obtain ⟨⟨a, ha⟩, ⟨b, hb⟩⟩ := x
+    ext
+    · simp [proj_apply_of_mem_part _ ha, proj_apply_of_mem_part _ hb]
+    · simp [proj_apply_of_mem_part _ ha, proj_apply_of_mem_part _ hb]
+
+/-- An even linear map sends `V_q` to `W_q`. -/
+def partMap {V W : SVec k} (f : V ⟶ W) (hf : f ∈ parityHom V W 0) (q : ZMod 2) :
+    V.part q →ₗ[k] W.part q :=
+  (toLinearMap f).restrict fun v hv => by simpa using apply_mem_part hf hv
+
+@[simp] theorem partMap_apply {V W : SVec k} (f : V ⟶ W) (hf : f ∈ parityHom V W 0) (q : ZMod 2)
+    (v : V.part q) : (partMap f hf q v : W) = f v := rfl
+
+/-- An even isomorphism of superspaces restricts to isomorphisms of the homogeneous
+components. -/
+def partEquivOfIso {V W : SVec k} (e : V ≅ W) (he : e.hom ∈ parityHom V W 0) (q : ZMod 2) :
+    V.part q ≃ₗ[k] W.part q :=
+  LinearEquiv.ofLinear (partMap e.hom he q) (partMap e.inv (inv_mem e he) q)
+    (by ext v; simp [← comp_apply]) (by ext v; simp [← comp_apply])
+
+/-- Superspaces with isomorphic homogeneous components are evenly isomorphic. -/
+def isoOfPartEquiv {V W : SVec k} (e₀ : V.part 0 ≃ₗ[k] W.part 0) (e₁ : V.part 1 ≃ₗ[k] W.part 1) :
+    V ≅ W :=
+  isoOfLinearEquiv (V.partEquiv ≪≫ₗ e₀.prodCongr e₁ ≪≫ₗ W.partEquiv.symm)
+
+theorem isoOfPartEquiv_hom_mem {V W : SVec k} (e₀ : V.part 0 ≃ₗ[k] W.part 0)
+    (e₁ : V.part 1 ≃ₗ[k] W.part 1) : (isoOfPartEquiv e₀ e₁).hom ∈ parityHom V W 0 := by
+  refine mem_parityHom_of_apply_mem fun q v hv => ?_
+  rw [add_zero]
+  change ((e₀ (⟨V.proj 0 v, _⟩) : W) + e₁ ⟨V.proj 1 v, _⟩) ∈ W.part q
+  rcases parity_eq_zero_or_one q with rfl | rfl
+  · have : V.proj 1 v = 0 := by rw [proj_apply_of_mem_part _ hv]; rfl
+    simp only [this]
+    rw [show (⟨0, _⟩ : V.part 1) = 0 from rfl, map_zero, Submodule.coe_zero, add_zero]
+    exact (e₀ _).2
+  · have : V.proj 0 v = 0 := by rw [proj_apply_of_mem_part _ hv]; rfl
+    simp only [this]
+    rw [show (⟨0, _⟩ : V.part 0) = 0 from rfl, map_zero, Submodule.coe_zero, zero_add]
+    exact (e₁ _).2
+
+/-- The homogeneous components of a biproduct (given by even maps satisfying the biproduct
+equations) are the products of the components. -/
+def partEquivOfBiprod {V X Y : SVec k} (i₁ : X ⟶ V) (i₂ : Y ⟶ V) (p₁ : V ⟶ X) (p₂ : V ⟶ Y)
+    (hi₁ : i₁ ∈ parityHom X V 0) (hi₂ : i₂ ∈ parityHom Y V 0) (hp₁ : p₁ ∈ parityHom V X 0)
+    (hp₂ : p₂ ∈ parityHom V Y 0) (h₁ : i₁ ≫ p₁ = 𝟙 X) (h₂ : i₂ ≫ p₂ = 𝟙 Y)
+    (h₁₂ : i₁ ≫ p₂ = 0) (h₂₁ : i₂ ≫ p₁ = 0) (htot : p₁ ≫ i₁ + p₂ ≫ i₂ = 𝟙 V) (q : ZMod 2) :
+    V.part q ≃ₗ[k] X.part q × Y.part q where
+  toFun v := (partMap p₁ hp₁ q v, partMap p₂ hp₂ q v)
+  map_add' _ _ := by ext <;> simp
+  map_smul' _ _ := by ext <;> simp
+  invFun x := partMap i₁ hi₁ q x.1 + partMap i₂ hi₂ q x.2
+  left_inv v := by
+    apply Subtype.ext
+    have := congrArg (fun φ : V ⟶ V => φ v) htot
+    simpa using this
+  right_inv x := by
+    have e1 := fun (x : X) => congrArg (fun φ : X ⟶ X => φ x) h₁
+    have e2 := fun (y : Y) => congrArg (fun φ : Y ⟶ Y => φ y) h₂
+    have e3 := fun (x : X) => congrArg (fun φ : X ⟶ Y => φ x) h₁₂
+    have e4 := fun (y : Y) => congrArg (fun φ : Y ⟶ X => φ y) h₂₁
+    simp only [comp_apply, id_apply, zero_apply] at e1 e2 e3 e4
+    ext <;> simp [e1, e2, e3, e4]
+
+end Dim
+
+section DimField
+
+variable {K : Type u} [Field K]
+
+theorem finrank_part_of_biprod {V X Y : SVec K} (i₁ : X ⟶ V) (i₂ : Y ⟶ V) (p₁ : V ⟶ X)
+    (p₂ : V ⟶ Y) (hi₁ : i₁ ∈ parityHom X V 0) (hi₂ : i₂ ∈ parityHom Y V 0)
+    (hp₁ : p₁ ∈ parityHom V X 0) (hp₂ : p₂ ∈ parityHom V Y 0) (h₁ : i₁ ≫ p₁ = 𝟙 X)
+    (h₂ : i₂ ≫ p₂ = 𝟙 Y) (h₁₂ : i₁ ≫ p₂ = 0) (h₂₁ : i₂ ≫ p₁ = 0)
+    (htot : p₁ ≫ i₁ + p₂ ≫ i₂ = 𝟙 V) (q : ZMod 2) [Module.Finite K (X.part q)]
+    [Module.Finite K (Y.part q)] :
+    Module.finrank K (V.part q) = Module.finrank K (X.part q) + Module.finrank K (Y.part q) := by
+  rw [(partEquivOfBiprod i₁ i₂ p₁ p₂ hi₁ hi₂ hp₁ hp₂ h₁ h₂ h₁₂ h₂₁ htot q).finrank_eq,
+    Module.finrank_prod]
+
+end DimField
 
 end SVec
 

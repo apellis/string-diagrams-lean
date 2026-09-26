@@ -5,6 +5,7 @@ import Mathlib.CategoryTheory.Limits.Preserves.Shapes.Biproducts
 import Mathlib.GroupTheory.FreeAbelianGroup
 import Mathlib.GroupTheory.QuotientGroup.Defs
 import Mathlib.Algebra.Polynomial.Eval.Defs
+import Mathlib.Algebra.Polynomial.Basic
 import Mathlib.RingTheory.Ideal.Quotient.Defs
 import Mathlib.RingTheory.Ideal.Span
 import Mathlib.Algebra.Module.Hom
@@ -286,6 +287,47 @@ theorem π_mul_π : π * π = 1 := by
   rw [π, ← map_mul, ← sub_eq_zero, ← map_one (Ideal.Quotient.mk _), ← map_sub,
     Ideal.Quotient.eq_zero_iff_mem, ← pow_two]
   exact Ideal.subset_span rfl
+
+theorem π_pow_two : π ^ 2 = 1 := by rw [pow_two, π_mul_π]
+
+/-- Every element of `Zπ` is `a + b π` with `a b : ℤ`. -/
+theorem exists_eq_add_mul_π (z : Zπ) : ∃ a b : ℤ, z = a + b * π := by
+  obtain ⟨q, rfl⟩ := Ideal.Quotient.mk_surjective z
+  induction q using Polynomial.induction_on with
+  | C a => exact ⟨a, 0, by simp⟩
+  | add p q hp hq =>
+    obtain ⟨a, b, hab⟩ := hp
+    obtain ⟨c, d, hcd⟩ := hq
+    exact ⟨a + c, b + d, by rw [map_add, hab, hcd]; push_cast; ring⟩
+  | monomial n a h =>
+    obtain ⟨c, d, hcd⟩ := h
+    refine ⟨d, c, ?_⟩
+    have e : (Ideal.Quotient.mk _ (C a * X ^ (n + 1)) : Zπ) =
+        Ideal.Quotient.mk _ (C a * X ^ n) * π := by
+      rw [π, ← map_mul, mul_assoc, ← pow_succ]
+    rw [e, hcd, add_mul, mul_assoc, π_mul_π, mul_one]
+    ring
+
+/-- The evaluation `Zπ → ℤ` at `π = ε` for `ε² = 1`. -/
+def eval (ε : ℤ) (hε : ε * ε = 1) : Zπ →+* ℤ :=
+  Ideal.Quotient.lift _ (eval₂RingHom (RingHom.id ℤ) ε) (by
+    intro a ha
+    obtain ⟨b, rfl⟩ := Ideal.mem_span_singleton'.1 ha
+    simp [pow_two, hε])
+
+theorem eval_π (ε : ℤ) (hε : ε * ε = 1) : eval ε hε π = ε := by
+  simp [eval, π]
+
+theorem eval_add_mul_π (ε : ℤ) (hε : ε * ε = 1) (a b : ℤ) :
+    eval ε hε (a + b * π) = a + b * ε := by
+  simp [eval_π]
+
+/-- `1` and `π` are linearly independent over `ℤ`. -/
+theorem add_mul_π_injective {a b c d : ℤ} (h : (a : Zπ) + b * π = c + d * π) : a = c ∧ b = d := by
+  have h1 := congrArg (eval 1 (by norm_num)) h
+  have h2 := congrArg (eval (-1) (by norm_num)) h
+  rw [eval_add_mul_π, eval_add_mul_π] at h1 h2
+  constructor <;> omega
 
 variable {G : Type w} [AddCommGroup G]
 
