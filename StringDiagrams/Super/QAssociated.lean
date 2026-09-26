@@ -231,6 +231,90 @@ def unitQPiFunctor : QPiFunctor R (unit R A) where
 
 end QAssociated
 
+/-! ## `𝔻 ∘ 𝔼 ≅ I`: the isomorphism `T_B : (B̲)^ ≅ B` -/
+
+namespace QAssociated
+
+section T
+
+variable {R : Type w} [CommRing R] {B : Type w₁} [Category.{w₂} B] [Preadditive B] [Linear R B]
+  [Supercategory R B] [GradedSupercategory R B] [QPiSupercategory R B]
+
+open ShiftData Orbit QPiSupercategory
+
+variable (R B) in
+/-- The shift data of the associated Π-supercategory of the underlying `(Q, Π)`-category. -/
+abbrev dB : ShiftData R (Associated R (GUnderlying R B)) := shiftData R (GUnderlying R B)
+
+variable (R B) in
+/-- `T_{B̲} : (B̲)^ ⥤ B̲` of Lemma 5.1 followed by the inclusion into `B`. -/
+abbrev TbF : Associated R (GUnderlying R B) ⥤ B :=
+  Associated.T R (DegreeZero R B) ⋙ DegreeZero.ι R B
+
+theorem TbF_map_mem_degree {X Y : Associated R (GUnderlying R B)} (f : X ⟶ Y) :
+    (TbF R B).map f ∈ degree (R := R) ((TbF R B).obj X) ((TbF R B).obj Y) 0 :=
+  ((Associated.T R (DegreeZero R B)).map f).2
+
+theorem TbF_map_injective {X Y : Associated R (GUnderlying R B)} {f g : X ⟶ Y}
+    (h : (TbF R B).map f = (TbF R B).map g) : f = g :=
+  Associated.T_map_injective (DegreeZero.hom_ext h)
+
+/-- `T` intertwines `Q̂` and `Q` (Lemma 5.1, naturality of `T`). -/
+theorem TbF_map_Qhat {X Y : Associated R (GUnderlying R B)} (f : X ⟶ Y) :
+    (TbF R B).map ((Qhat R (GUnderlying R B)).map f) =
+      (QPiSupercategory.Q (R := R)).map ((TbF R B).map f) := by
+  have h := CategoryTheory.Functor.congr_hom (Associated.T_naturality (R := R)
+    (A := DegreeZero R B) (B := DegreeZero R B) (DegreeZero.map (R := R)
+      (QPiSupercategory.Q (R := R) (C := B)))) f
+  simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp] at h
+  exact congrArg Subtype.val h
+
+/-- The object of `B` underlying an object of the associated Π-supercategory. -/
+abbrev bobj (X : Associated R (GUnderlying R B)) : B := (TbF R B).obj X
+
+variable (R B) in
+/-- `τ_n : Qⁿ X ≅ X` in `B` for the powers of `Q̂`, `n ∈ ℕ`: iterated `σ`. -/
+def τNat : ∀ (n : ℕ) (X : Associated R (GUnderlying R B)), bobj (((dB R B).powNat n).obj X) ≅ bobj X
+  | 0, _ => Iso.refl _
+  | n + 1, X => σ (R := R) (bobj (((dB R B).powNat n).obj X)) ≪≫ τNat n X
+
+variable (R B) in
+/-- `τ_{-n-1} : Q⁻ⁿ⁻¹ X ≅ X` in `B`: `σ⁻¹` followed by the counit. -/
+def τNeg : ∀ (n : ℕ) (X : Associated R (GUnderlying R B)), bobj (((dB R B).powNeg (n + 1)).obj X) ≅ bobj X
+  | 0, X => (σ (R := R) (bobj ((dB R B).Qi.obj X))).symm ≪≫ (TbF R B).mapIso ((dB R B).e.counitIso.app X)
+  | n + 1, X => (σ (R := R) (bobj ((dB R B).Qi.obj (((dB R B).powNeg (n + 1)).obj X)))).symm ≪≫
+      (TbF R B).mapIso ((dB R B).e.counitIso.app (((dB R B).powNeg (n + 1)).obj X)) ≪≫ τNeg n X
+
+variable (R B) in
+/-- `τ_i : Qⁱ X ≅ X` in `B`, even of degree `-i`. -/
+def τ : ∀ (i : ℤ) (X : Associated R (GUnderlying R B)), bobj (((dB R B).pow i).obj X) ≅ bobj X
+  | Int.ofNat n, X => τNat R B n X
+  | Int.negSucc n, X => τNeg R B n X
+
+theorem τ_zero (X : Associated R (GUnderlying R B)) : τ R B 0 X = Iso.refl _ := rfl
+
+/-- The recursion of `τ`: `τ_{i+1} = τ_i ∘ σ ∘ T(Q Qⁱ ≅ Qⁱ⁺¹)⁻¹`. -/
+theorem τ_succ (i : ℤ) (X : Associated R (GUnderlying R B)) :
+    (τ R B (i + 1) X).hom = (TbF R B).map (((dB R B).succ i).inv.app X) ≫
+      (σ (R := R) (bobj (((dB R B).pow i).obj X))).hom ≫ (τ R B i X).hom := by
+  rcases i with n | (_ | n)
+  · show (τNat R B (n + 1) X).hom = (TbF R B).map (𝟙 _) ≫ _ ≫ _
+    rw [CategoryTheory.Functor.map_id, Category.id_comp]; rfl
+  · show 𝟙 _ = (TbF R B).map ((dB R B).e.counitIso.inv.app X) ≫ _ ≫
+      ((σ (R := R) (bobj ((dB R B).Qi.obj X))).inv ≫ (TbF R B).map ((dB R B).e.counitIso.hom.app X))
+    erw [Iso.hom_inv_id_assoc, ← Functor.map_comp, Iso.inv_hom_id_app]
+    exact ((TbF R B).map_id _).symm
+  · show (τ R B (Int.negSucc n) X).hom = (TbF R B).map (((dB R B).succ (Int.negSucc (n + 1))).inv.app X) ≫
+      _ ≫ ((σ (R := R) _).inv ≫ (TbF R B).map ((dB R B).e.counitIso.hom.app _) ≫ (τNeg R B n X).hom)
+    rw [succ_negSucc_succ_inv_app]
+    erw [Iso.hom_inv_id_assoc, ← Functor.map_comp_assoc, Iso.inv_hom_id_app]
+    erw [CategoryTheory.Functor.map_id, Category.id_comp]
+    rcases n with _ | n <;> rfl
+
+end T
+
+end QAssociated
+
 end StringDiagrams
 
 end
