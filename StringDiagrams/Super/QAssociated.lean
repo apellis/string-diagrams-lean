@@ -30,6 +30,22 @@ shift `(QV)ₙ = Vₙ₋₁`), the morphisms `λ → μ` of degree `m` must corr
 must have degree `-1`. (With the printed convention there is no degree `-1` isomorphism
 `Qλ → λ` in general.) Our orbit supercategory uses the corrected convention.
 
+## A missing axiom in Definition 6.12(ii)
+
+The construction of `𝔻` on 1-morphisms needs the isomorphism `γ_F : Q'F ≅ FQ` of a
+`(Q, Π)`-functor to be compatible with `β`:
+`γ_F Π ∘ Q' β_F ∘ β_{Q'} F = F β_Q ∘ β_F Q ∘ Π' γ_F` in `Hom(Π'Q'F, FQΠ)`, i.e. `γ_F` must be a
+Π-natural transformation between the Π-functors `Q'F` and `FQ`
+(`QPiFunctor.IsCompatible`). Otherwise `F̂` does not commute with the odd morphisms, which
+involve `β_{Qⁿ}`. This condition is not among the axioms of Definition 6.12(ii), but it holds
+for all `(Q, Π)`-functors in the image of `𝔼` (`GradedSupercategory.GUnderlying.qpiFunctor_isCompatible`,
+from `QPiSupercategory.β_γ_compat`) and it is invariant under `(Q, Π)`-natural isomorphism. So
+with Definition 6.12(ii) as printed, `𝔼` is not essentially surjective on 1-morphisms as soon
+as some `(Q, Π)`-category admits a natural automorphism `α` of `Q` with `αΠ ∘ β_Q ≠ β_Q ∘ Πα`
+(then `(I, β = 1, γ = α)` is a `(Q, Π)`-functor which is not compatible). Theorem 6.13 holds
+after adding the compatibility to Definition 6.12(ii); we formalize `𝔻` on compatible
+`(Q, Π)`-functors.
+
 ## Main definitions and statements
 
 * `QAssociated.shiftData`, `QAssociated R A` (the object part of `𝔻`), a graded
@@ -38,6 +54,13 @@ must have degree `-1`. (With the printed convention there is no degree `-1` isom
   underlying category of `QAssociated R A` (`unit_comp_counit`, `counit_comp_unit`), which
   commute strictly with `Π`, `Q` and `ξ`; `QAssociated.unitQPiFunctor` is the resulting
   `(Q, Π)`-functor with `β = 1` and `γ = 1` (`𝔼 ∘ 𝔻 = I` on objects).
+* `QAssociated.map hF hc` (`𝔻` on a compatible `(Q, Π)`-functor): a graded superfunctor,
+  with `unit ⋙ 𝔼(𝔻 F) = F ⋙ unit` (`unit_comp_map`, `𝔼 ∘ 𝔻 = I` on 1-morphisms).
+* `QAssociated.T` (`𝔻 ∘ 𝔼 ≅ I`): for a graded `(Q, Π)`-supercategory `B`, the graded
+  superfunctor `T_B : 𝔻(𝔼 B) ⥤ B`, an isomorphism of categories with inverse `Tinv`
+  (`T_comp_Tinv`, `Tinv_comp_T`) which preserves `Π`, `Q` on objects and carries `ζ` to `ζ`
+  and `σ` to `σ` (`T_map_ζ`, `T_map_σ`), natural in `B`: `𝔻(𝔼 F) ⋙ T_{B'} = T_B ⋙ F`
+  (`T_naturality`).
 -/
 
 noncomputable section
@@ -349,6 +372,11 @@ theorem TbF_map_Qhat {X Y : Associated R (GUnderlying R B)} (f : X ⟶ Y) :
       (QPiSupercategory.Q (R := R) (C := B)))) f
   simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp] at h
   exact congrArg Subtype.val h
+
+theorem TbF_map_dQ {X Y : Associated R (GUnderlying R B)} (f : X ⟶ Y) :
+    (TbF R B).map ((shiftData R (GUnderlying R B)).Q.map f) =
+      (QPiSupercategory.Q (R := R)).map ((TbF R B).map f) :=
+  TbF_map_Qhat f
 
 /-- The object of `B` underlying an object of the associated Π-supercategory. -/
 abbrev bobj (X : Associated R (GUnderlying R B)) : B := (TbF R B).obj X
@@ -734,6 +762,115 @@ theorem T_map_σ (X : QAssociated R (GUnderlying R B)) :
   erw [CategoryTheory.Functor.map_id, Category.id_comp, Category.id_comp]
   show (σ (R := R) _).hom ≫ 𝟙 _ = _
   rw [Category.comp_id]; rfl
+
+/-! ### Naturality of `T` -/
+
+section Naturality
+
+variable {B' : Type w₃} [Category.{w₄} B'] [Preadditive B'] [Linear R B'] [Supercategory R B']
+  [GradedSupercategory R B'] [QPiSupercategory R B']
+  (F : B ⥤ B') [F.Additive] [F.Linear R] [IsGradedSuperfunctor R F]
+
+/-- `𝔻(𝔼 F)`. -/
+abbrev DEmap : QAssociated R (GUnderlying R B) ⥤ QAssociated R (GUnderlying R B') :=
+  map (GUnderlying.qpiFunctor (R := R) F) (GUnderlying.qpiFunctor_isCompatible F)
+
+/-- The morphism of shift data underlying `𝔻(𝔼 F)`. -/
+abbrev DEΦ : ShiftFunctor R (dB R B) (dB R B') :=
+  shiftFunctor R (GUnderlying.qpiFunctor (R := R) F) (GUnderlying.qpiFunctor_isCompatible F)
+
+theorem TbF_map_F {Z W : Associated R (GUnderlying R B)} (f : Z ⟶ W) :
+    (TbF R B').map ((DEΦ F).F.map f) = F.map ((TbF R B).map f) := by
+  have h := CategoryTheory.Functor.congr_hom (Associated.T_naturality (R := R)
+    (A := DegreeZero R B) (B := DegreeZero R B') (DegreeZero.map (R := R) F)) f
+  simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp] at h
+  exact congrArg Subtype.val h
+
+theorem TbF_γhat_inv (Z : Associated R (GUnderlying R B)) :
+    (TbF R B').map ((DEΦ F).γ.inv.app Z) = (γ R F (bobj Z)).inv := by
+  show ((Associated.T R (DegreeZero R B')).map (Associated.homMk _ 0)).1 = _
+  rw [Associated.T_map]
+  simp only [Associated.homMk_fst, Associated.homMk_snd, Underlying.zero_val, Limits.zero_comp,
+    add_zero]
+  rfl
+
+theorem TbF_Γ_zero (Z : Associated R (GUnderlying R B)) :
+    (TbF R B').map (((DEΦ F).Γ 0).hom.app Z) = 𝟙 _ := by
+  show (TbF R B').map (𝟙 _ ≫ 𝟙 _) = _
+  simp
+
+/-- The step of the comparison between `Γ` and `τ`. -/
+theorem TbF_Γ_inv_τ_succ (i : ℤ) (Z : Associated R (GUnderlying R B)) :
+    (TbF R B').map (((DEΦ F).Γ (i + 1)).inv.app Z) ≫ (τ R B' (i + 1) ((DEΦ F).F.obj Z)).hom =
+      F.map ((TbF R B).map (((dB R B).succ i).inv.app Z) ≫ (σ (R := R) (bobj (((dB R B).pow i).obj Z))).hom) ≫
+        (TbF R B').map (((DEΦ F).Γ i).inv.app Z) ≫ (τ R B' i ((DEΦ F).F.obj Z)).hom := by
+  rw [ShiftFunctor.Γ_succ_inv_app]
+  rw [τ_succ]
+  rw [(TbF R B').map_comp, (TbF R B').map_comp, (TbF R B').map_comp]
+  simp only [Category.assoc]
+  rw [← (TbF R B').map_comp_assoc (((dB R B').succ i).hom.app _), Iso.hom_inv_id_app]
+  erw [CategoryTheory.Functor.map_id, Category.id_comp]
+  rw [TbF_map_dQ, TbF_map_F, TbF_γhat_inv]
+  erw [QPiSupercategory.σ_naturality_assoc (R := R) (C := B')
+    ((TbF R B').map (((DEΦ F).Γ i).inv.app Z))]
+  rw [γ_inv, F.map_comp]
+  simp only [Category.assoc]
+  erw [Iso.inv_hom_id_assoc]
+
+theorem TbF_Γ_inv_τ (i : ℤ) (Z : Associated R (GUnderlying R B)) :
+    (TbF R B').map (((DEΦ F).Γ i).inv.app Z) ≫ (τ R B' i ((DEΦ F).F.obj Z)).hom =
+      F.map (τ R B i Z).hom := by
+  have step : ∀ i : ℤ, ((TbF R B').map (((DEΦ F).Γ (i + 1)).inv.app Z) ≫
+      (τ R B' (i + 1) ((DEΦ F).F.obj Z)).hom = F.map (τ R B (i + 1) Z).hom) ↔
+      ((TbF R B').map (((DEΦ F).Γ i).inv.app Z) ≫ (τ R B' i ((DEΦ F).F.obj Z)).hom =
+        F.map (τ R B i Z).hom) := by
+    intro i
+    let K := F.mapIso (((TbF R B).mapIso (((dB R B).succ i).app Z)).symm ≪≫
+      σ (R := R) (bobj (((dB R B).pow i).obj Z)))
+    have h1 := TbF_Γ_inv_τ_succ F i Z
+    have h2 : F.map (τ R B (i + 1) Z).hom = K.hom ≫ F.map (τ R B i Z).hom := by
+      rw [τ_succ]; simp [K]
+    rw [h1, h2]
+    exact ⟨fun h => (cancel_epi K.hom).1 h, fun h => by rw [h]; rfl⟩
+  induction i using Int.induction_on with
+  | hz =>
+    rw [τ_zero, τ_zero]
+    simp only [Iso.refl_hom, CategoryTheory.Functor.map_id]
+    erw [Category.comp_id]
+    show (TbF R B').map (𝟙 _ ≫ 𝟙 _) = 𝟙 _
+    simp
+  | hp k ih => exact (step k).2 ih
+  | hn k ih =>
+    have := (step (-(k : ℤ) - 1)).1
+    rw [show -(k : ℤ) - 1 + 1 = -(k : ℤ) by ring] at this
+    exact this ih
+
+/-- **Naturality of `T`**: `F ∘ T_B = T_{B'} ∘ 𝔻(𝔼 F)` for a graded superfunctor `F`. -/
+theorem T_naturality : DEmap F ⋙ T R B' = T R B ⋙ F :=
+  CategoryTheory.Functor.ext (fun _ => rfl) fun X Y x => by
+    simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp]
+    induction x using Hom.induction_on with
+    | zero => simp
+    | add x y hx hy =>
+      rw [(DEmap F).map_add, (T R B').map_add, hx, hy, (T R B).map_add, F.map_add]
+    | lof m f =>
+      have e1 : (DEmap F).map ((dB R B).lof m X.obj Y.obj f : X ⟶ Y) =
+          (dB R B').lof m _ _ ((DEΦ F).famMapₗ m X.obj Y.obj f) :=
+        Orbit.map_map_lof (DEΦ F) f
+      rw [e1]
+      refine (T_map_lof (X := (DEmap F).obj X) (Y := (DEmap F).obj Y)
+        ((DEΦ F).famMapₗ m X.obj Y.obj f)).trans ?_
+      rw [T_map_lof, val, val, τ_zero, τ_zero]
+      simp only [Iso.refl_inv, F.map_comp]
+      erw [Category.id_comp, CategoryTheory.Functor.map_id, Category.id_comp]
+      show (TbF R B').map (((DEΦ F).Γ 0).hom.app _ ≫ (DEΦ F).F.map (f.1 0 (-m)) ≫
+          ((DEΦ F).Γ (-m)).inv.app _) ≫ _ = _
+      rw [(TbF R B').map_comp, (TbF R B').map_comp, TbF_Γ_zero, Category.id_comp, TbF_map_F,
+        Category.assoc]
+      congr 1
+      exact TbF_Γ_inv_τ F (-m) Y.obj
+
+end Naturality
 
 end T
 
