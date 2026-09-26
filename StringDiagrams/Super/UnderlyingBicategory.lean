@@ -84,6 +84,13 @@ variable {a b c d : Underlying2 R B}
 
 @[simp] theorem comp_obj (f : a ⟶ b) (g : b ⟶ c) : (f ≫ g).obj = f.obj ≫ g.obj := rfl
 
+@[simp] theorem comp₂_val {f g h : a ⟶ b} (η : f ⟶ g) (θ : g ⟶ h) : (η ≫ θ).1 = η.1 ≫ θ.1 :=
+  rfl
+
+@[simp] theorem id₂_val (f : a ⟶ b) : (𝟙 f : f ⟶ f).1 = 𝟙 f.obj := rfl
+
+@[simp] theorem hom1_obj {a b : B} (f : a ⟶ b) : (hom1 (R := R) f).obj = f := rfl
+
 @[simp] theorem whiskerLeft_val (f : a ⟶ b) {g h : b ⟶ c} (η : g ⟶ h) :
     (Bicategory.whiskerLeft f η).1 = f.obj ◁ η.1 := rfl
 
@@ -180,19 +187,19 @@ theorem rightUnitor_inv_naturality {f g : a ⟶ b} (η : f ⟶ g) :
     η ≫ (rightUnitor g).inv = (rightUnitor f).inv ≫ η ▷ 𝟙 b := by
   rw [whiskerRight_id (R := R)]; simp
 
-@[simp] theorem whiskerLeft_hom_inv (f : a ⟶ b) {g h : b ⟶ c} (e : g ≅ h) :
+@[reassoc (attr := simp)] theorem whiskerLeft_hom_inv (f : a ⟶ b) {g h : b ⟶ c} (e : g ≅ h) :
     f ◁ e.hom ≫ f ◁ e.inv = 𝟙 (f ≫ g) := by
   rw [← whiskerLeft_comp (R := R), e.hom_inv_id, whiskerLeft_id (R := R)]
 
-@[simp] theorem whiskerLeft_inv_hom (f : a ⟶ b) {g h : b ⟶ c} (e : g ≅ h) :
+@[reassoc (attr := simp)] theorem whiskerLeft_inv_hom (f : a ⟶ b) {g h : b ⟶ c} (e : g ≅ h) :
     f ◁ e.inv ≫ f ◁ e.hom = 𝟙 (f ≫ h) := by
   rw [← whiskerLeft_comp (R := R), e.inv_hom_id, whiskerLeft_id (R := R)]
 
-@[simp] theorem hom_inv_whiskerRight {f g : a ⟶ b} (e : f ≅ g) (h : b ⟶ c) :
+@[reassoc (attr := simp)] theorem hom_inv_whiskerRight {f g : a ⟶ b} (e : f ≅ g) (h : b ⟶ c) :
     e.hom ▷ h ≫ e.inv ▷ h = 𝟙 (f ≫ h) := by
   rw [← comp_whiskerRight (R := R), e.hom_inv_id, id_whiskerRight (R := R)]
 
-@[simp] theorem inv_hom_whiskerRight {f g : a ⟶ b} (e : f ≅ g) (h : b ⟶ c) :
+@[reassoc (attr := simp)] theorem inv_hom_whiskerRight {f g : a ⟶ b} (e : f ≅ g) (h : b ⟶ c) :
     e.inv ▷ h ≫ e.hom ▷ h = 𝟙 (g ≫ h) := by
   rw [← comp_whiskerRight (R := R), e.inv_hom_id, id_whiskerRight (R := R)]
 
@@ -218,6 +225,49 @@ theorem zsmul_whiskerRight {f g : a ⟶ b} (n : ℤ) (η : f ⟶ g) (h : b ⟶ c
 
 end Naturality
 
+variable (R) in
+include R in
+@[reassoc]
+theorem whiskerLeft_comp' (f : a ⟶ b) {g h i : b ⟶ c} (η : g ⟶ h) (θ : h ⟶ i) :
+    f ◁ (η ≫ θ) = f ◁ η ≫ f ◁ θ :=
+  whiskerLeft_comp (R := R) f η θ
+
+variable (R) in
+include R in
+@[reassoc]
+theorem comp_whiskerRight' {f g h : a ⟶ b} (η : f ⟶ g) (θ : g ⟶ h) (i : b ⟶ c) :
+    (η ≫ θ) ▷ i = η ▷ i ≫ θ ▷ i :=
+  comp_whiskerRight (R := R) η θ i
+
+/-- The super interchange law, precomposed form. -/
+theorem super_interchange_assoc {f g : a ⟶ b} {h i : b ⟶ c} {p q : ZMod 2} {η : f ⟶ g}
+    {θ : h ⟶ i} (hη : η ∈ parity (R := R) f g p) (hθ : θ ∈ parity (R := R) h i q) {k : a ⟶ c}
+    (ι : g ≫ i ⟶ k) :
+    η ▷ h ≫ g ◁ θ ≫ ι = koszulSign p q • (f ◁ θ ≫ η ▷ i ≫ ι) := by
+  rw [← Category.assoc, super_interchange hη hθ, Linear.smul_comp, Category.assoc]
+
+/-- The super interchange law for an even 2-morphism on the left. -/
+@[reassoc]
+theorem whisker_exchange_of_even_left {f g : a ⟶ b} {h i : b ⟶ c} {η : f ⟶ g}
+    (hη : η ∈ parity (R := R) f g 0) (θ : h ⟶ i) :
+    η ▷ h ≫ g ◁ θ = f ◁ θ ≫ η ▷ i := by
+  refine induction_on (R := R) θ (by simp [zero_whiskerRight R, whiskerLeft_zero R])
+    (fun q θ hθ => ?_) (fun θ θ' h h' => ?_)
+  · rw [super_interchange hη hθ, koszulSign_zero_left, one_smul]
+  · rw [whiskerLeft_add (R := R), whiskerLeft_add (R := R), Preadditive.comp_add,
+      Preadditive.add_comp, h, h']
+
+/-- The super interchange law for an even 2-morphism on the right. -/
+@[reassoc]
+theorem whisker_exchange_of_even_right {f g : a ⟶ b} {h i : b ⟶ c} (η : f ⟶ g) {θ : h ⟶ i}
+    (hθ : θ ∈ parity (R := R) h i 0) :
+    η ▷ h ≫ g ◁ θ = f ◁ θ ≫ η ▷ i := by
+  refine induction_on (R := R) η (by simp [zero_whiskerRight R, whiskerLeft_zero R])
+    (fun q η hη => ?_) (fun η η' h h' => ?_)
+  · rw [super_interchange hη hθ, koszulSign_zero_right, one_smul]
+  · rw [add_whiskerRight (R := R), add_whiskerRight (R := R), Preadditive.comp_add,
+      Preadditive.add_comp, h, h']
+
 /-- Left whiskering of an isomorphism of 1-morphisms. -/
 @[simps]
 def whiskerLeftIso (f : a ⟶ b) {g h : b ⟶ c} (e : g ≅ h) : f ≫ g ≅ f ≫ h where
@@ -238,16 +288,19 @@ def whiskerRightIso {f g : a ⟶ b} (e : f ≅ g) (h : b ⟶ c) : f ≫ h ≅ g 
 
 variable (R) in
 include R in
+@[reassoc]
 theorem unitors_equal (a : B) : (leftUnitor (𝟙 a)).hom = (rightUnitor (𝟙 a)).hom :=
   congrArg Subtype.val (Bicategory.unitors_equal (B := Underlying2 R B) (a := ⟨a⟩))
 
 variable (R) in
 include R in
+@[reassoc]
 theorem unitors_inv_equal (a : B) : (leftUnitor (𝟙 a)).inv = (rightUnitor (𝟙 a)).inv :=
   congrArg Subtype.val (Bicategory.unitors_inv_equal (B := Underlying2 R B) (a := ⟨a⟩))
 
 variable (R) in
 include R in
+@[reassoc]
 theorem leftUnitor_comp (f : a ⟶ b) (g : b ⟶ c) :
     (leftUnitor (f ≫ g)).hom = (associator (𝟙 a) f g).inv ≫ (leftUnitor f).hom ▷ g :=
   congrArg Subtype.val
@@ -255,6 +308,7 @@ theorem leftUnitor_comp (f : a ⟶ b) (g : b ⟶ c) :
 
 variable (R) in
 include R in
+@[reassoc]
 theorem leftUnitor_comp_inv (f : a ⟶ b) (g : b ⟶ c) :
     (leftUnitor (f ≫ g)).inv = (leftUnitor f).inv ▷ g ≫ (associator (𝟙 a) f g).hom :=
   congrArg Subtype.val
@@ -263,6 +317,7 @@ theorem leftUnitor_comp_inv (f : a ⟶ b) (g : b ⟶ c) :
 
 variable (R) in
 include R in
+@[reassoc]
 theorem rightUnitor_comp (f : a ⟶ b) (g : b ⟶ c) :
     (rightUnitor (f ≫ g)).hom = (associator f g (𝟙 c)).hom ≫ f ◁ (rightUnitor g).hom :=
   congrArg Subtype.val
@@ -271,6 +326,7 @@ theorem rightUnitor_comp (f : a ⟶ b) (g : b ⟶ c) :
 
 variable (R) in
 include R in
+@[reassoc]
 theorem rightUnitor_comp_inv (f : a ⟶ b) (g : b ⟶ c) :
     (rightUnitor (f ≫ g)).inv = f ◁ (rightUnitor g).inv ≫ (associator f g (𝟙 c)).inv :=
   congrArg Subtype.val
@@ -279,6 +335,7 @@ theorem rightUnitor_comp_inv (f : a ⟶ b) (g : b ⟶ c) :
 
 variable (R) in
 include R in
+@[reassoc]
 theorem leftUnitor_whiskerRight (f : a ⟶ b) (g : b ⟶ c) :
     (leftUnitor f).hom ▷ g = (associator (𝟙 a) f g).hom ≫ (leftUnitor (f ≫ g)).hom :=
   congrArg Subtype.val
@@ -287,6 +344,7 @@ theorem leftUnitor_whiskerRight (f : a ⟶ b) (g : b ⟶ c) :
 
 variable (R) in
 include R in
+@[reassoc]
 theorem whiskerLeft_rightUnitor (f : a ⟶ b) (g : b ⟶ c) :
     f ◁ (rightUnitor g).hom = (associator f g (𝟙 c)).inv ≫ (rightUnitor (f ≫ g)).hom :=
   congrArg Subtype.val

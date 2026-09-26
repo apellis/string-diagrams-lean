@@ -40,12 +40,15 @@ A supermodification `α : (X, x) ⇛ (Y, y)` (`StringDiagrams.Supermodification`
 of 2-morphisms of parity `p`, and every supermodification is uniquely `α = α₀ + α₁`
 (`Supermodification.proj`).
 
+The composite of 2-superfunctors and the identity and vertical composite of 2-natural
+transformations are in `StringDiagrams.Super.TwoFunctorComp`.
+
 ## Not formalized
 
-The composite of 2-superfunctors, the 2-category `2-𝔖ℭ𝔄𝔗`, the 2-supercategory
-`𝔥𝔬𝔪(𝔄, 𝔅)` and the 3-supercategory of 2-supercategories mentioned in Definition 2.2 (whose
-details the paper omits), 2-superequivalences and the coherence theorem for 2-supercategories
-are not formalized.
+The category `2-𝔖ℭ𝔞𝔱` and the 2-category `2-𝔖ℭ𝔄𝔗` (associativity and unit laws for these
+composites), the 2-supercategory `𝔥𝔬𝔪(𝔄, 𝔅)` and the 3-supercategory of 2-supercategories
+mentioned in Definition 2.2 (whose details the paper omits), 2-superequivalences of
+2-supercategories and the coherence theorem for 2-supercategories are not formalized.
 -/
 
 noncomputable section
@@ -113,6 +116,8 @@ namespace TwoSuperfunctor
 variable {R B C}
 
 attribute [simp] map₂_id map₂_add map₂_smul
+attribute [reassoc] map₂_comp mapComp_naturality_left mapComp_naturality_right
+  map₂_associator map₂_leftUnitor map₂_rightUnitor
 
 variable (F : TwoSuperfunctor R B C)
 
@@ -159,7 +164,7 @@ theorem mapComp_naturality {a b c : B} {f f' : a ⟶ b} {g g' : b ⟶ c} (η : f
 variable (R B) in
 /-- The identity 2-superfunctor `𝕀`. -/
 @[simps]
-def id [TwoSupercategory R B] : TwoSuperfunctor R B B where
+abbrev id [TwoSupercategory R B] : TwoSuperfunctor R B B where
   obj a := a
   map f := f
   map₂ η := η
@@ -208,6 +213,8 @@ structure TwoNatTrans (F G : TwoSuperfunctor R B C) where
       X a ◁ (G.mapId a).hom
 
 namespace TwoNatTrans
+
+attribute [reassoc] naturality x_comp x_id
 
 variable {F G : TwoSuperfunctor R B C}
 
