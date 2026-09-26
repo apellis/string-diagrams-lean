@@ -1,6 +1,7 @@
 import StringDiagrams.Super.MonoidalEquivalence
 import StringDiagrams.Super.EndMonoidal
 import Mathlib.Tactic.CategoryTheory.Coherence
+import Mathlib.CategoryTheory.Monoidal.Free.Coherence
 
 /-!
 # Strictification of monoidal supercategories
@@ -814,6 +815,14 @@ instance : (ι R A).Full := ιFullyFaithful.full
 
 instance : (ι R A).Faithful := ιFullyFaithful.faithful
 
+theorem ιObjIso_compat (M : Strictification R A) (Y Z : A) :
+    (α_ (M.toFunctor.obj (𝟙_ A)) Y Z).hom ≫ (M.γ (𝟙_ A) (Y ⊗ Z)).hom ≫
+        M.toFunctor.map (λ_ (Y ⊗ Z)).hom =
+      ((M.γ (𝟙_ A) Y).hom ≫ M.toFunctor.map (λ_ Y).hom) ▷ Z ≫ (M.γ Y Z).hom := by
+  rw [M.γ_assoc_assoc, MonoidalSupercategory.comp_whiskerRight (R := R), Category.assoc,
+    M.γ_naturality_left, ← Functor.map_comp, MonoidalSupercategory.leftUnitor_tensor R,
+    Iso.hom_inv_id_assoc]
+
 /-- The even isomorphism `F(1) ⊗ - ≅ F`, with components `F(l_X) ∘ γ_{1,X}`. -/
 def ιObjIso (M : Strictification R A) : (ι R A).obj (M.toFunctor.obj (𝟙_ A)) ≅ M :=
   isoMk (fun Y => M.γ (𝟙_ A) Y ≪≫ M.toFunctor.mapIso (λ_ Y))
@@ -825,13 +834,7 @@ def ιObjIso (M : Strictification R A) : (ι R A).obj (M.toFunctor.obj (𝟙_ A)
         ((M.γ (𝟙_ A) Y).hom ≫ M.toFunctor.map (λ_ Y).hom) ≫ M.toFunctor.map g
       rw [M.γ_naturality_right_assoc, Category.assoc, ← Functor.map_comp, ← Functor.map_comp,
         MonoidalSupercategory.leftUnitor_naturality (R := R)])
-    (fun Y Z => by
-      change (α_ (M.toFunctor.obj (𝟙_ A)) Y Z).hom ≫ (M.γ (𝟙_ A) (Y ⊗ Z)).hom ≫
-          M.toFunctor.map (λ_ (Y ⊗ Z)).hom =
-        ((M.γ (𝟙_ A) Y).hom ≫ M.toFunctor.map (λ_ Y).hom) ▷ Z ≫ (M.γ Y Z).hom
-      rw [M.γ_assoc_assoc, MonoidalSupercategory.comp_whiskerRight (R := R), Category.assoc,
-        M.γ_naturality_left, ← Functor.map_comp, MonoidalSupercategory.leftUnitor_tensor R,
-        Iso.hom_inv_id_assoc])
+    (fun Y Z => ιObjIso_compat M Y Z)
 
 theorem ιObjIso_hom_val_app (M : Strictification R A) (p : ZMod 2) (Y : A) :
     (ιObjIso M).hom.1.app p Y =
@@ -1030,11 +1033,12 @@ def evMonoidal : MonoidalSuperfunctor R (ev R A) where
       MonoidalSupercategory.add_whiskerRight (R := R), Preadditive.add_comp,
       Preadditive.comp_add, Category.assoc, ev_compat]
   μ_natural_right {N N'} M y := by
-    rw [evμIso_hom, evμIso_hom, ev_map, ev_map, M.γ_naturality_right_assoc, ← Functor.map_comp,
-      ← Functor.map_comp, MonoidalSupercategory.leftUnitor_naturality (R := R),
+    rw [evμIso_hom, evμIso_hom, ev_map, ev_map, Category.assoc]
+    erw [M.γ_naturality_right_assoc]
+    rw [← Functor.map_comp, MonoidalSupercategory.leftUnitor_naturality (R := R),
       Functor.map_comp]
     simp only [whiskerLeft_val, Superfunctor.whiskerRight_app, Superfunctor.map,
-      Functor.map_add]
+      Functor.map_add, Category.assoc]
     rfl
   associativity M N P := by
     rw [evμIso_hom, evμIso_hom, evμIso_hom, evμIso_hom, ev_map_associator_hom, Category.comp_id]
@@ -1054,7 +1058,7 @@ def evMonoidal : MonoidalSuperfunctor R (ev R A) where
       rw [MonoidalSupercategory.leftUnitor_naturality (R := R),
         reassoc_of% (MonoidalSupercategory.leftUnitor_naturality (R := R)
           (N.γ (𝟙_ A) (P.toFunctor.obj (𝟙_ A))).hom),
-        MonoidalSupercategory.leftUnitor_tensor R, Iso.hom_inv_id_assoc]
+        MonoidalSupercategory.leftUnitor_tensor R, Category.assoc, Iso.hom_inv_id_assoc]
     rw [key]
   left_unitality M := by
     rw [evμIso_hom, ev_map_leftUnitor_hom]
@@ -1066,7 +1070,179 @@ def evMonoidal : MonoidalSuperfunctor R (ev R A) where
     rw [MonoidalSupercategory.unitors_equal R, γ_unit]
     rfl
 
+/-! ## The monoidal superequivalence -/
+
+section EvenComp
+
+variable {M N P : Strictification R A}
+
+theorem app_one_eq_zero {x : M ⟶ N} (hx : x ∈ parity (R := R) M N 0) (X : A) :
+    x.1.app 1 X = 0 := by
+  have := congrFun ((Superfunctor.mem_parity_iff).1 (mem_parity_iff.1 hx)) X
+  simpa using this
+
+theorem comp_val_app_of_even_left {x : M ⟶ N} (hx : x ∈ parity (R := R) M N 0) (y : N ⟶ P)
+    (r : ZMod 2) (X : A) : (x ≫ y).1.app r X = x.1.app 0 X ≫ y.1.app r X := by
+  rw [comp_val, comp_app, app_one_eq_zero hx, Limits.zero_comp, add_zero]
+
+theorem comp_val_app_of_even_right (x : M ⟶ N) {y : N ⟶ P} (hy : y ∈ parity (R := R) N P 0)
+    (r : ZMod 2) (X : A) : (x ≫ y).1.app r X = x.1.app r X ≫ y.1.app 0 X := by
+  rw [comp_val, comp_app]
+  rcases parity_eq_zero_or_one r with rfl | rfl
+  · rw [zero_add, app_one_eq_zero hy, Limits.comp_zero, add_zero]
+  · rw [app_one_eq_zero hy, Limits.comp_zero, zero_add, SuperNatTrans.zmod2_one_add_one]
+
+end EvenComp
+
+theorem ιμIso_hom_val_app (X Y : A) (p : ZMod 2) (Z : A) :
+    (ιμIso (R := R) X Y).hom.1.app p Z = if p = 0 then (α_ X Y Z).inv else 0 := rfl
+
+theorem ιεIso_hom_val_app (p : ZMod 2) (Z : A) :
+    (ιεIso (R := R) (A := A)).hom.1.app p Z = if p = 0 then (λ_ Z).inv else 0 := rfl
+
+theorem ιμIso_hom_mem (X Y : A) : (ιμIso (R := R) X Y).hom ∈ parity (R := R) _ _ 0 :=
+  isoMk_hom_mem _ _ _ _
+
+theorem ιεIso_hom_mem : (ιεIso (R := R) (A := A)).hom ∈ parity (R := R) _ _ 0 :=
+  isoMk_hom_mem _ _ _ _
+
+theorem evμIso_hom_mem (M N : Strictification R A) :
+    (evμIso M N).hom ∈ parity (R := R) _ _ 0 := by
+  simpa [evμIso] using comp_mem (M.γ_mem (𝟙_ A) (N.toFunctor.obj (𝟙_ A)))
+    (map_mem M.toFunctor (MonoidalSupercategory.leftUnitor_hom_mem (R := R) _))
+
+theorem proj_app_add_app {M N : Strictification R A} (x : M ⟶ N) (r : ZMod 2) (X : A) :
+    proj R r (x.1.app 0 X + x.1.app 1 X) = x.1.app r X := by
+  have h0 := x.1.app_mem 0 X
+  have h1 := x.1.app_mem 1 X
+  rcases parity_eq_zero_or_one r with rfl | rfl
+  · exact proj_eq_of_add rfl h0 (by simpa using h1)
+  · rw [add_comm]; exact proj_eq_of_add rfl h1 (by simpa [SuperNatTrans.zmod2_one_add_one] using h0)
+
+/-- The natural isomorphism `1 ≅ ev ∘ ι`, `X ≅ X ⊗ 1` given by `r⁻¹`. -/
+def unitNatIso : 𝟭 A ≅ ι R A ⋙ ev R A :=
+  NatIso.ofComponents (fun X => (ρ_ X).symm) (fun {X Y} f => by
+    change f ≫ (ρ_ Y).inv = (ρ_ X).inv ≫ (proj R 0 f ▷ 𝟙_ A + proj R 1 f ▷ 𝟙_ A)
+    rw [← MonoidalSupercategory.add_whiskerRight (R := R), proj_add_proj,
+      MonoidalSupercategory.rightUnitor_inv_naturality R])
+
+/-- The unit `1 ⇒ ev ∘ ι` is a monoidal natural transformation. -/
+def unitNat : MonoidalNatTrans R (MonoidalSuperfunctor.id (R := R) (C := A))
+    (ιMonoidal.comp evMonoidal) where
+  toNatTrans := unitNatIso.hom
+  app_mem X := inv_mem _ (MonoidalSupercategory.rightUnitor_hom_mem (R := R) X)
+  tensor X Y := by
+    change 𝟙 ((X : A) ⊗ Y) ≫ (ρ_ ((X : A) ⊗ Y)).inv = ((ρ_ X).inv ⊗ (ρ_ Y).inv) ≫
+      ((α_ X (𝟙_ A) (Y ⊗ 𝟙_ A)).hom ≫ X ◁ (λ_ (Y ⊗ 𝟙_ A)).hom) ≫
+        ((ιμIso X Y).hom.1.app 0 (𝟙_ A) + (ιμIso X Y).hom.1.app 1 (𝟙_ A))
+    simp only [ιμIso, isoMk_hom_val_app, if_pos, zmod2_one_ne_zero, if_false, add_zero,
+      Iso.symm_hom, Category.id_comp, Category.assoc]
+    exact MonoidalSupercategory.coherence_rightUnitor_inv_tensor R X Y
+  unit := by
+    change 𝟙 _ ≫ (ρ_ (𝟙_ A)).inv = 𝟙 _ ≫ (ιεIso.hom.1.app 0 (𝟙_ A) + ιεIso.hom.1.app 1 (𝟙_ A))
+    simp only [ιεIso, isoMk_hom_val_app, if_pos, zmod2_one_ne_zero, if_false, add_zero,
+      Iso.symm_hom, Category.id_comp]
+    exact (MonoidalSupercategory.coherence_leftUnitor_inv_unit R).symm
+
+/-- The natural isomorphism `ι ∘ ev ≅ 1`, `F(1) ⊗ - ≅ F`. -/
+def counitNatIso : ev R A ⋙ ι R A ≅ 𝟭 (Strictification R A) :=
+  NatIso.ofComponents ιObjIso (fun {M N} x => hom_ext (Superfunctor.hom_ext fun r Y => by
+    erw [comp_val_app_of_even_right _ (ιObjIso_hom_mem N),
+      comp_val_app_of_even_left (ιObjIso_hom_mem M)]
+    rw [ιObjIso_hom_val_app, ιObjIso_hom_val_app, if_pos rfl, if_pos rfl]
+    change proj R r (x.1.app 0 (𝟙_ A) + x.1.app 1 (𝟙_ A)) ▷ Y ≫ _ = _
+    rw [proj_app_add_app]
+    simp only [Iso.trans_hom, Functor.mapIso_hom, Functor.id_map, Category.assoc]
+    exact ev_compat x r Y))
+
+/-- The counit `ι ∘ ev ⇒ 1` is a monoidal natural transformation. -/
+def counitNat : MonoidalNatTrans R (evMonoidal.comp ιMonoidal)
+    (MonoidalSuperfunctor.id (R := R) (C := Strictification R A)) where
+  toNatTrans := counitNatIso.hom
+  app_mem M := ιObjIso_hom_mem M
+  tensor M N := hom_ext (Superfunctor.hom_ext fun r Y => by
+    have hm := evμIso_hom_mem M N
+    change (((ιμIso _ _).hom ≫ (ι R A).map (evμIso M N).hom) ≫ (ιObjIso (M ⊗ N)).hom).1.app r Y =
+      (((ιObjIso M).hom ⊗ (ιObjIso N).hom) ≫ 𝟙 _).1.app r Y
+    rw [Category.comp_id, Category.assoc, comp_val_app_of_even_left (ιμIso_hom_mem _ _),
+      comp_val_app_of_even_right _ (ιObjIso_hom_mem _), tensorHom_val, comp_app,
+      ι_map_val_app, ιμIso_hom_val_app, ιObjIso_hom_val_app]
+    rcases parity_eq_zero_or_one r with rfl | rfl
+    · rw [proj_of_mem hm]
+      simp only [Superfunctor.whiskerLeft_app, Superfunctor.whiskerRight_app,
+        ιObjIso_hom_val_app, if_pos, zmod2_one_ne_zero, if_false, Functor.map_zero,
+        Limits.comp_zero, Limits.zero_comp, add_zero, zero_add, Superfunctor.map,
+        Superfunctor.obj]
+      rw [evμIso_hom, tensorObj_γ_hom, ← cancel_epi (α_ _ _ _).hom, Iso.hom_inv_id_assoc]
+      simp only [Category.assoc, Functor.map_comp, tensorObj_toFunctor', Functor.comp_map,
+        ev_obj, ι_obj, ιObj_toFunctor, leftMul_obj]
+      rw [reassoc_of% (ιObjIso_compat M (N.toFunctor.obj (𝟙_ A)) Y)]
+    · rw [proj_of_mem_ne hm (by decide)]
+      simp only [Superfunctor.whiskerLeft_app, Superfunctor.whiskerRight_app,
+        ιObjIso_hom_val_app, if_pos, zmod2_one_ne_zero, if_false, Functor.map_zero,
+        Limits.comp_zero, Limits.zero_comp, add_zero, MonoidalSupercategory.zero_whiskerRight R,
+        SuperNatTrans.zmod2_one_add_one])
+  unit := hom_ext (Superfunctor.hom_ext fun r Y => by
+    change ((ιεIso.hom ≫ (ι R A).map (𝟙 _)) ≫ (ιObjIso (𝟙_ _)).hom).1.app r Y =
+      (SuperNatTrans.id (𝟭 A)).app r Y
+    rw [CategoryTheory.Functor.map_id, Category.comp_id, comp_val_app_of_even_left ιεIso_hom_mem,
+      ιεIso_hom_val_app, ιObjIso_hom_val_app]
+    rcases parity_eq_zero_or_one r with rfl | rfl
+    · simp
+    · simp [zmod2_one_ne_zero])
+
+/-- **Brundan–Ellis, after Definition 1.4.** A monoidal supercategory `A` is monoidally
+superequivalent to its strictification, via the monoidal superfunctors `ι : A → B`,
+`X ↦ X ⊗ -`, and `ev : B → A`, `F ↦ F(1)`. -/
+def monoidalSuperequivalence : MonoidalSuperequivalence R A (Strictification R A) where
+  functor := ι R A
+  functorMonoidal := ιMonoidal
+  inverse := ev R A
+  inverseMonoidal := evMonoidal
+  unitIso := MonoidalNatIso.ofNatIso unitNat unitNatIso rfl
+  counitIso := MonoidalNatIso.ofNatIso counitNat counitNatIso rfl
+
 end Strictification
+
+namespace MonoidalSupercategory
+
+universe w' v' u'
+
+/-- **Coherence theorem for monoidal supercategories** (Brundan–Ellis, after Definition 1.4):
+every monoidal supercategory is monoidally superequivalent to a strict monoidal
+supercategory. -/
+theorem exists_strict_monoidalSuperequivalence :
+    ∃ (B : Type (max u v)) (_ : Category.{max u v} B) (_ : Preadditive B) (_ : Linear R B)
+      (_ : Supercategory R B) (_ : MonoidalCategoryStruct B) (_ : MonoidalSupercategory R B),
+      MonoidalSupercategory.IsStrict B ∧ Nonempty (MonoidalSuperequivalence R A B) :=
+  ⟨Strictification R A, inferInstance, inferInstance, inferInstance, inferInstance,
+    inferInstance, inferInstance, inferInstance, ⟨Strictification.monoidalSuperequivalence⟩⟩
+
+/-- **Coherence theorem for monoidal supercategories**, second formulation of Brundan–Ellis
+(after Definition 1.4): there is a monoidal superfunctor from `A` to a strict monoidal
+supercategory which is a superequivalence of the underlying supercategories. -/
+theorem exists_strict_monoidalSuperfunctor_superequivalence :
+    ∃ (B : Type (max u v)) (_ : Category.{max u v} B) (_ : Preadditive B) (_ : Linear R B)
+      (_ : Supercategory R B) (_ : MonoidalCategoryStruct B) (_ : MonoidalSupercategory R B)
+      (F : A ⥤ B) (_ : F.Additive) (_ : F.Linear R) (_ : IsSuperfunctor R F),
+      MonoidalSupercategory.IsStrict B ∧ Nonempty (MonoidalSuperfunctor R F) ∧
+        Nonempty (Superequivalence R F) :=
+  ⟨Strictification R A, inferInstance, inferInstance, inferInstance, inferInstance,
+    inferInstance, inferInstance, Strictification.ι R A, inferInstance, inferInstance,
+    inferInstance, inferInstance, ⟨Strictification.ιMonoidal⟩,
+    ⟨Strictification.ιSuperequivalence⟩⟩
+
+/-- **Mac Lane's coherence theorem for monoidal supercategories**: all diagrams built from the
+coherence maps commute. Precisely: for a family of objects `f : V → A`, any two morphisms
+between the same objects of the free monoidal category on `V` have the same image in `A`
+under the (strict) interpretation in the underlying monoidal category `A̲` of even morphisms.
+This is Mathlib's coherence theorem applied to `A̲` (all coherence maps are even). -/
+theorem coherence {V : Type u'} (f : V → A) {X Y : FreeMonoidalCategory V} (g h : X ⟶ Y) :
+    ((FreeMonoidalCategory.project (fun x => (⟨f x⟩ : Underlying R A))).map g).1 =
+      ((FreeMonoidalCategory.project (fun x => (⟨f x⟩ : Underlying R A))).map h).1 := by
+  rw [Subsingleton.elim g h]
+
+end MonoidalSupercategory
 
 end StringDiagrams
 

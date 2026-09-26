@@ -69,6 +69,8 @@ import StringDiagrams.Super.GSMod
 import StringDiagrams.Super.KaroubiMonoidal
 import StringDiagrams.Super.SKarMonoidal
 import StringDiagrams.Super.EndMonoidal
+import StringDiagrams.Super.MonoidalEquivalence
+import StringDiagrams.Super.Strictification
 import StringDiagrams.Super.SKarUnit
 import StringDiagrams.Super.SKarSuperalgebra
 import StringDiagrams.Super.SKarMonoidalPi
