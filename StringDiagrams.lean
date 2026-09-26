@@ -29,6 +29,12 @@ import StringDiagrams.Super.QAssociated
 import StringDiagrams.Super.OrbitFunctorial
 import StringDiagrams.Super.OrbitLift
 import StringDiagrams.Super.GSKar
+import StringDiagrams.Super.BicategoryOfHcomp
+import StringDiagrams.Super.MatBicategory
+import StringDiagrams.Super.KaroubiBicategory
+import StringDiagrams.Super.KarBicategory
+import StringDiagrams.Super.QPiTwoHom
+import StringDiagrams.Super.K0Ring
 import StringDiagrams.Super.TwoEnvelope
 import StringDiagrams.Super.MonoidalUniversal
 import StringDiagrams.Super.TwoEnvelopeUniversal
@@ -81,6 +87,13 @@ import StringDiagrams.Super.GSVec
 import StringDiagrams.Super.GSVecMonoidal
 import StringDiagrams.Super.GSCat
 import StringDiagrams.Super.GSMod
+import StringDiagrams.Super.SVecQuotient
+import StringDiagrams.Super.BalancedTensor
+import StringDiagrams.Super.BimoduleMonoidal
+import StringDiagrams.Super.SBim
+import StringDiagrams.Super.SuperOpposite
+import StringDiagrams.Super.BoxProduct
+import StringDiagrams.Super.BimoduleFunctor
 import StringDiagrams.Super.KaroubiMonoidal
 import StringDiagrams.Super.SKarMonoidal
 import StringDiagrams.Super.EndMonoidal
