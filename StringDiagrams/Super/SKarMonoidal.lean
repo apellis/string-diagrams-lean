@@ -21,11 +21,8 @@ monoidal category, hence so are its additive envelope and `SKar(A) = Kar(A̲_π)
   involution `[V] ↦ [Π V]` of §1.5 (`SKar.algebraMap_π`, `SKar.π_smul_eq`,
   `SKar.π_smul_mk_algebra`).
 
-## Not formalized
-
-The statement that `SKar(A)` is a *monoidal Π-category* (Definition 1.14) in full: we construct
-the monoidal structure and the isomorphisms `Π ≅ π ⊗ - ≅ - ⊗ π` on objects of `SKar(A)`, but not
-the half-braiding on `SKar(A)` with its axioms (1.6)–(1.8).
+The monoidal Π-category structure of `SKar(A)` (Definition 1.14: the half-braiding `β`, `ξ` and
+(1.8)) is constructed in `StringDiagrams.Super.SKarMonoidalPi`.
 -/
 
 noncomputable section
