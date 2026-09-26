@@ -25,6 +25,7 @@ import StringDiagrams.Super.AssociatedFunctorial
 import StringDiagrams.Super.PiTwoCategory
 import StringDiagrams.Super.AssociatedTwo
 import StringDiagrams.Super.AssociatedTwoT
+import StringDiagrams.Super.AssociatedTwoMap
 import StringDiagrams.Super.FunctorCategory
 import StringDiagrams.Super.SCat
 import StringDiagrams.Super.UnderlyingBicategory
