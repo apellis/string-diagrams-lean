@@ -6,6 +6,7 @@ import StringDiagrams.Whisker
 import StringDiagrams.Generation
 import StringDiagrams.Interchange
 import StringDiagrams.Grading
+import StringDiagrams.Super.Basic
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
