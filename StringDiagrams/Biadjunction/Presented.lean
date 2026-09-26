@@ -25,6 +25,54 @@ theorem _root_.StringDiagrams.Biadjunction.congr_heq {B : Type*} [Bicategory B] 
     HEq (Q.congr hf hg) Q := by
   subst hf hg; rfl
 
+/-! ## Sliding 2-morphisms along cups and caps -/
+
+section Sliding
+
+variable {B : Type*} [Bicategory B] {a b : B} {f f' : a ⟶ b} {g g' : b ⟶ a}
+
+/-- Sliding `α : f ⟶ f'` along the cup of `f ⊣ g` turns it into its right mate on the other
+strand. -/
+theorem _root_.StringDiagrams.Biadjunction.left_unit_comp_whiskerRight (Q : f ⊣⊢ g)
+    (Q' : f' ⊣⊢ g') (α : f ⟶ f') :
+    Q.left.unit ≫ α ▷ g = Q'.left.unit ≫ f' ◁ rightMate Q Q' α :=
+  unit_comp_whiskerRight_eq Q'.left Q.left α
+
+/-- Sliding `α : f ⟶ f'` along the cap of `f' ⊣ g'` turns it into its right mate on the other
+strand. -/
+theorem _root_.StringDiagrams.Biadjunction.whiskerLeft_comp_left_counit (Q : f ⊣⊢ g)
+    (Q' : f' ⊣⊢ g') (α : f ⟶ f') :
+    g' ◁ α ≫ Q'.left.counit = rightMate Q Q' α ▷ f ≫ Q.left.counit :=
+  whiskerLeft_comp_counit_eq Q'.left Q.left α
+
+/-- Sliding `α : f ⟶ f'` along the cup of `g ⊣ f` turns it into its left mate on the other
+strand. -/
+theorem _root_.StringDiagrams.Biadjunction.right_unit_comp_whiskerLeft (Q : f ⊣⊢ g)
+    (Q' : f' ⊣⊢ g') (α : f ⟶ f') :
+    Q.right.unit ≫ g ◁ α = Q'.right.unit ≫ leftMate Q Q' α ▷ f' :=
+  unit_comp_whiskerLeft_eq Q.right Q'.right α
+
+/-- Sliding `α : f ⟶ f'` along the cap of `g' ⊣ f'` turns it into its left mate on the other
+strand. -/
+theorem _root_.StringDiagrams.Biadjunction.whiskerRight_comp_right_counit (Q : f ⊣⊢ g)
+    (Q' : f' ⊣⊢ g') (α : f ⟶ f') :
+    α ▷ g' ≫ Q'.right.counit = f ◁ leftMate Q Q' α ≫ Q.right.counit :=
+  whiskerRight_comp_counit_eq Q.right Q'.right α
+
+/-- For a cyclic 2-morphism, sliding along a cup of either adjunction produces the same mate. -/
+theorem _root_.StringDiagrams.Biadjunction.IsCyclic.right_unit_comp_whiskerLeft {Q : f ⊣⊢ g}
+    {Q' : f' ⊣⊢ g'} {α : f ⟶ f'} (hα : Biadjunction.IsCyclic Q Q' α) :
+    Q.right.unit ≫ g ◁ α = Q'.right.unit ≫ rightMate Q Q' α ▷ f' := by
+  rw [hα.eq]; exact Q.right_unit_comp_whiskerLeft Q' α
+
+/-- For a cyclic 2-morphism, sliding along a cap of either adjunction produces the same mate. -/
+theorem _root_.StringDiagrams.Biadjunction.IsCyclic.whiskerRight_comp_right_counit
+    {Q : f ⊣⊢ g} {Q' : f' ⊣⊢ g'} {α : f ⟶ f'} (hα : Biadjunction.IsCyclic Q Q' α) :
+    α ▷ g' ≫ Q'.right.counit = f ◁ rightMate Q Q' α ≫ Q.right.counit := by
+  rw [hα.eq]; exact Q.whiskerRight_comp_right_counit Q' α
+
+end Sliding
+
 /-- A morphism of the presented category between the underlying words of two 1-morphisms of
 `P.Bicat`, as a 2-morphism. -/
 abbrev Bicat.homOf {P : Presentation.{w, v} S R} {l m : P.Bicat} {x x' : l ⟶ m}
@@ -143,6 +191,139 @@ theorem isCyclic_biadj_eqToHom {l m : P.Bicat} {x x' : l ⟶ m} (h : x = x') :
   isCyclic_eqToHom h (congrArg (P.dualHom D ·) h) (congr_arg_heq (fun z => biadj B z) h)
 
 end Words
+
+/-! ## Biadjunctions from cups and caps -/
+
+section CupsCaps
+
+variable {P} {l m : P.Bicat}
+
+/-- The biadjunction `x ⊣⊢ y` in `P.Bicat` given by two cups and two caps satisfying the four
+zigzag identities: `cup`, `cap` for `x ⊣ y` and `cup'`, `cap'` for `y ⊣ x`. -/
+@[simps]
+def biadjunctionOfZigzag (x : l ⟶ m) (y : m ⟶ l)
+    (cup : Obj.nil l.region ⟶ x.obj.tensor y.obj) (cap : y.obj.tensor x.obj ⟶ Obj.nil m.region)
+    (hl : P.diag (P.leftZigzagD x y cup cap) = 𝟙 _)
+    (hr : P.diag (P.rightZigzagD x y cup cap) = 𝟙 _)
+    (cup' : Obj.nil m.region ⟶ y.obj.tensor x.obj) (cap' : x.obj.tensor y.obj ⟶ Obj.nil l.region)
+    (hl' : P.diag (P.leftZigzagD y x cup' cap') = 𝟙 _)
+    (hr' : P.diag (P.rightZigzagD y x cup' cap') = 𝟙 _) : x ⊣⊢ y where
+  left := adjunctionOfZigzag x y cup cap hl hr
+  right := adjunctionOfZigzag y x cup' cap' hl' hr'
+
+omit [S.IsEven] in
+theorem diag_eq_id_of_layers {a a' : Obj S} (Z : a ⟶ a) (Z' : a' ⟶ a') (h : a = a')
+    (hZ : Diagram.layers Z = Diagram.layers Z') (h' : P.diag Z' = 𝟙 _) : P.diag Z = 𝟙 _ := by
+  rw [P.diag_eq_of_layers_eq' Z Z' h h hZ, h']; simp
+
+variable (P) (D : S.ColourDuality)
+
+/-- Cups and caps exhibiting every colour `c` as biadjoint to its dual `c*`: the unit `cup c`
+and counit `cap c` of `c ⊣ c*`, the unit `cup' c` and counit `cap' c` of `c* ⊣ c`, with the four
+zigzag identities (in the presented category, at the canonical position of the colour). -/
+structure ColourCupsCaps where
+  /-- The unit of `c ⊣ c*`. -/
+  cup : ∀ c : S.Colour, Obj.nil (S.colourSrc c) ⟶ ⟨S.colourSrc c, [c, D.dual c]⟩
+  /-- The counit of `c ⊣ c*`. -/
+  cap : ∀ c : S.Colour, (⟨S.colourTgt c, [D.dual c, c]⟩ : Obj S) ⟶ Obj.nil (S.colourTgt c)
+  /-- The unit of `c* ⊣ c`. -/
+  cup' : ∀ c : S.Colour, Obj.nil (S.colourTgt c) ⟶ ⟨S.colourTgt c, [D.dual c, c]⟩
+  /-- The counit of `c* ⊣ c`. -/
+  cap' : ∀ c : S.Colour, (⟨S.colourSrc c, [c, D.dual c]⟩ : Obj S) ⟶ Obj.nil (S.colourSrc c)
+  left_zigzag : ∀ c, P.diag (P.leftZigzagD (P.colourHom c) (P.dualColourHom D c) (cup c) (cap c)) = 𝟙 _
+  right_zigzag : ∀ c,
+    P.diag (P.rightZigzagD (P.colourHom c) (P.dualColourHom D c) (cup c) (cap c)) = 𝟙 _
+  left_zigzag' : ∀ c,
+    P.diag (P.leftZigzagD (P.dualColourHom D c) (P.colourHom c) (cup' c) (cap' c)) = 𝟙 _
+  right_zigzag' : ∀ c,
+    P.diag (P.rightZigzagD (P.dualColourHom D c) (P.colourHom c) (cup' c) (cap' c)) = 𝟙 _
+
+variable {P D}
+
+omit [S.IsEven] in
+theorem obj_eq_of_word_eq_singleton (x : l ⟶ m) {c : S.Colour} (hx : x.obj.word = [c]) :
+    x.obj = ⟨S.colourSrc c, [c]⟩ := by
+  have h := x.wf
+  rw [Obj.WF, hx] at h
+  exact Obj.ext h.1.symm hx
+
+omit [S.IsEven] in
+theorem dualHom_obj_eq_of_word_eq_singleton (x : l ⟶ m) {c : S.Colour} (hx : x.obj.word = [c]) :
+    (P.dualHom D x).obj = ⟨S.colourTgt c, [D.dual c]⟩ := by
+  have h := x.endR_eq
+  rw [obj_eq_of_word_eq_singleton x hx] at h
+  exact Obj.ext h.symm (by simp [hx])
+
+/-- The biadjunctions of all colours, at every placement, given by chosen cups and caps. -/
+def ColourCupsCaps.biadjunctions (Q : ColourCupsCaps P D) : ColourBiadjunctions P D :=
+  fun {l m} x c hx =>
+    have hx₁ := obj_eq_of_word_eq_singleton x hx
+    have hy₁ := dualHom_obj_eq_of_word_eq_singleton (P := P) (D := D) x hx
+    have hl : Obj.nil (S.colourSrc c) = Obj.nil l.region := by
+      rw [← x.start_eq, hx₁]
+    have hm : Obj.nil (S.colourTgt c) = Obj.nil m.region := by
+      rw [← (P.dualHom D x).start_eq, hy₁]
+    have hxy : (⟨S.colourSrc c, [c, D.dual c]⟩ : Obj S) = x.obj.tensor (P.dualHom D x).obj := by
+      rw [hx₁, hy₁]; rfl
+    have hyx : (⟨S.colourTgt c, [D.dual c, c]⟩ : Obj S) = (P.dualHom D x).obj.tensor x.obj := by
+      rw [hx₁, hy₁]; rfl
+    biadjunctionOfZigzag x (P.dualHom D x)
+      (Diagram.cast (Q.cup c) hl hxy) (Diagram.cast (Q.cap c) hyx hm)
+      (diag_eq_id_of_layers _ _ hx₁
+        (by
+          simp only [Diagram.layers_leftZigzag, Diagram.layers_cast]
+          rw [hx₁])
+        (Q.left_zigzag c))
+      (diag_eq_id_of_layers _ _ hy₁
+        (by
+          simp only [Diagram.layers_rightZigzag, Diagram.layers_cast]
+          rw [hy₁])
+        (Q.right_zigzag c))
+      (Diagram.cast (Q.cup' c) hm hyx) (Diagram.cast (Q.cap' c) hxy hl)
+      (diag_eq_id_of_layers _ _ hy₁
+        (by
+          simp only [Diagram.layers_leftZigzag, Diagram.layers_cast]
+          rw [hy₁])
+        (Q.left_zigzag' c))
+      (diag_eq_id_of_layers _ _ hx₁
+        (by
+          simp only [Diagram.layers_rightZigzag, Diagram.layers_cast]
+          rw [hx₁])
+        (Q.right_zigzag' c))
+
+end CupsCaps
+
+section Single
+
+variable {P} {D : S.ColourDuality} (B : ColourBiadjunctions P D)
+
+theorem colourBiadjunctions_heq {l m : P.Bicat} {z z' : l ⟶ m} (h : z = z') (c : S.Colour)
+    (hc : z.obj.word = [c]) (hc' : z'.obj.word = [c]) : HEq (B z c hc) (B z' c hc') := by
+  subst h; rfl
+
+/-- The biadjunction of a one-letter word is the chosen biadjunction of the colour, up to
+unitors. -/
+theorem isCyclic_biadj_single {l m : P.Bicat} (x : l ⟶ m) (c : S.Colour) (hx : x.obj.word = [c]) :
+    Biadjunction.IsCyclic (biadj B x) (B x c hx) (𝟙 x) := by
+  obtain ⟨m⟩ := m
+  have hm : S.colourTgt c = m := by
+    have := x.endR_eq; rw [Obj.endR, hx] at this; exact this
+  subst hm
+  rw [← biadjW_eq B [c] x hx]
+  simp only [biadjW]
+  rw [show nilBiadj (D := D) (P.tailHom x c [] hx) rfl = Biadjunction.id _ from nilBiadj_id _ _]
+  have hhx : P.headHom x c [] hx = x := Bicat.Hom.ext (Obj.ext x.start_eq.symm hx.symm)
+  have k₀ := isCyclic_eqToHom (P.headHom_comp_tailHom x c [] hx).symm
+    (P.dualHom_tail_comp_head D x c [] hx).symm
+    (Biadjunction.congr_heq ((B (P.headHom x c [] hx) c rfl).comp (Biadjunction.id _))
+      (P.headHom_comp_tailHom x c [] hx) (P.dualHom_tail_comp_head D x c [] hx))
+  have k₁ := isCyclic_rightUnitor_hom (B (P.headHom x c [] hx) c rfl)
+  have k₂ := isCyclic_eqToHom hhx (congrArg (P.dualHom D ·) hhx)
+    (colourBiadjunctions_heq B hhx c rfl hx)
+  convert k₀.comp (k₁.comp k₂) using 1
+  simp [Strict.rightUnitor_eqToIso]
+
+end Single
 
 /-! ## Generators as 2-morphisms of the presented bicategory -/
 
