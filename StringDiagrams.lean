@@ -146,6 +146,7 @@ import StringDiagrams.Biadjunction.NestedCups
 import StringDiagrams.Biadjunction.PivotalInclusion
 import StringDiagrams.Biadjunction.IsDiag
 import StringDiagrams.Biadjunction.MateCalculus
+import StringDiagrams.Biadjunction.TwistedRotation
 import StringDiagrams.Examples.TwoStrandGenerator
 import StringDiagrams.Examples.OddTemperleyLieb.Basic
 import StringDiagrams.Examples.OddTemperleyLieb.Representation
