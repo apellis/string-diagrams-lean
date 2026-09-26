@@ -218,11 +218,11 @@ def toPresented : Obj S ⥤ Q.Presentedᵒᵖ where
 @[simp] theorem toPresented_map {a b : Obj S} (d : a ⟶ b) :
     (φ.toPresented Q χ).map d = (Diagram.weight χ d • Q.diag (φ.map d)).op := rfl
 
-theorem unop_smul {X Y : Q.Presentedᵒᵖ} (r : R) (f : X ⟶ Y) : (r • f).unop = r • f.unop := rfl
+theorem unop_smul_hom {X Y : Q.Presentedᵒᵖ} (r : R) (f : X ⟶ Y) : (r • f).unop = r • f.unop := rfl
 
-theorem op_smul {X Y : Q.Presented} (r : R) (f : X ⟶ Y) : (r • f).op = r • f.op := rfl
+theorem op_smul_hom {X Y : Q.Presented} (r : R) (f : X ⟶ Y) : (r • f).op = r • f.op := rfl
 
-theorem unop_sub {X Y : Q.Presentedᵒᵖ} (f g : X ⟶ Y) : (f - g).unop = f.unop - g.unop := by
+theorem unop_sub_hom {X Y : Q.Presentedᵒᵖ} (f g : X ⟶ Y) : (f - g).unop = f.unop - g.unop := by
   rw [sub_eq_add_neg, unop_add, unop_neg, sub_eq_add_neg]
 
 theorem freeLift_toPresented_of {a b : Obj S} (d : a ⟶ b) :
@@ -319,8 +319,8 @@ theorem freeLift_whisker_eq_zero {i : ι} {a b : Obj S} (f : LinDiagram R a b) (
       map_add' := fun x y => by
         simp only [unop_add, Q.whisk_add, Preadditive.add_comp, Preadditive.comp_add, op_add]
       map_smul' := fun r x => by
-        simp only [unop_smul, Q.whisk_smul, Linear.smul_comp, Linear.comp_smul,
-          RingHom.id_apply, op_smul] }
+        simp only [unop_smul_hom, Q.whisk_smul, Linear.smul_comp, Linear.comp_smul,
+          RingHom.id_apply, op_smul_hom] }
   have := freeLift_map_mapDomain (F := (φ (W.idx i a u v)).toPresented Q χ)
     (G := (φ i).toPresented Q χ) (fun d => Diagram.whisker d u v hw) T
     (fun d => W.toPresented_map_whisker Q χ d u v ha hw) f
@@ -397,8 +397,8 @@ theorem lift_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) {u : Obj S} {v : List
       map_add' := fun x y => by
         simp only [unop_add, Q.whisk_add, Preadditive.add_comp, Preadditive.comp_add, op_add]
       map_smul' := fun r x => by
-        simp only [unop_smul, Q.whisk_smul, Linear.smul_comp, Linear.comp_smul,
-          RingHom.id_apply, op_smul] }
+        simp only [unop_smul_hom, Q.whisk_smul, Linear.smul_comp, Linear.comp_smul,
+          RingHom.id_apply, op_smul_hom] }
     (fun d => W.toPresented_map_whisker Q χ d u v ha hw) f
   exact congrArg Quiver.Hom.unop this
 
@@ -431,7 +431,7 @@ theorem toPresented_interchange_reflect {x : InterchangeData S} (hx : x.Valid)
   apply Quiver.Hom.unop_inj
   rw [InterchangeData.rel, Functor.map_sub, Functor.map_smul, freeLift_toPresented_of,
     freeLift_toPresented_of, e₁, e₂, Q.diag_ghDiagram hx', hs, InterchangeData.weight_hg]
-  simp only [unop_sub, unop_smul, Quiver.Hom.unop_op, Limits.unop_zero, Linear.smul_comp,
+  simp only [unop_sub_hom, unop_smul_hom, Quiver.Hom.unop_op, Limits.unop_zero, Linear.smul_comp,
     Linear.comp_smul, smul_smul, x.sign_cast_mul_self_assoc, sub_self]
 
 /-- A contravariant layer map respects the interchange law if it sends the four layers of an
@@ -455,7 +455,7 @@ theorem toPresented_interchange_rotate {x : InterchangeData S} (hx : x.Valid)
   apply Quiver.Hom.unop_inj
   rw [InterchangeData.rel, Functor.map_sub, Functor.map_smul, freeLift_toPresented_of,
     freeLift_toPresented_of, e₁, e₂, Q.diag_ghDiagram hx', hs, InterchangeData.weight_hg]
-  simp only [unop_sub, unop_smul, Quiver.Hom.unop_op, Limits.unop_zero, Linear.smul_comp,
+  simp only [unop_sub_hom, unop_smul_hom, Quiver.Hom.unop_op, Limits.unop_zero, Linear.smul_comp,
     Linear.comp_smul, smul_comm (Diagram.weight χ _), sub_self]
 
 /-! ### Degrees -/
@@ -487,11 +487,11 @@ theorem PreservesDeg.toPresented_mem_homDeg (h : φ.PreservesDeg deg deg') {a b 
   induction hf using Submodule.span_induction with
   | mem y hy =>
     obtain ⟨d, hd, rfl⟩ := hy
-    rw [freeLift_map_single, toPresented_map, unop_smul, Quiver.Hom.unop_op, smul_smul]
+    rw [freeLift_map_single, toPresented_map, unop_smul_hom, Quiver.Hom.unop_op, smul_smul]
     exact Submodule.smul_mem _ _ (Presentation.diag_mem_homDeg' ((h.degree_map d).trans hd))
   | zero => rw [Functor.map_zero, Limits.unop_zero]; exact Submodule.zero_mem _
   | add y z _ _ hy hz => rw [Functor.map_add, unop_add]; exact Submodule.add_mem _ hy hz
-  | smul r y _ hy => rw [Functor.map_smul, unop_smul]; exact Submodule.smul_mem _ r hy
+  | smul r y _ hy => rw [Functor.map_smul, unop_smul_hom]; exact Submodule.smul_mem _ r hy
 
 variable {Q χ}
 
