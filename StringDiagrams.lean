@@ -60,6 +60,7 @@ import StringDiagrams.Super.TwoSCat
 import StringDiagrams.Super.DrinfeldCenterEnvelope
 import StringDiagrams.Super.Braided
 import StringDiagrams.Super.DrinfeldCenterBraiding
+import StringDiagrams.Super.EnvelopeNaturality
 import StringDiagrams.Super.SVec
 import StringDiagrams.Super.K0
 import StringDiagrams.Super.SKar
