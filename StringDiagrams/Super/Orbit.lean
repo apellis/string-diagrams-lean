@@ -1222,7 +1222,146 @@ theorem Γ_hom_mem (i : ℤ) (X : S) : (Φ.Γ i).hom.app X ∈ parity (R := R) _
 theorem Γ_inv_mem (i : ℤ) (X : S) : (Φ.Γ i).inv.app X ∈ parity (R := R) _ _ 0 :=
   inv_mem ((Φ.Γ i).app X) (Φ.Γ_hom_mem i X)
 
+/-! ### The functor on families -/
+
+/-- The family `Γʲ ∘ F(f_{i,j}) ∘ (Γⁱ)⁻¹`. -/
+def famMap {X Y : S} (f : d.FamAll X Y) : d'.FamAll (Φ.F.obj X) (Φ.F.obj Y) :=
+  fun i j => (Φ.Γ i).hom.app X ≫ Φ.F.map (f i j) ≫ (Φ.Γ j).inv.app Y
+
+theorem famMap_mem {m : ℤ} {X Y : S} {f : d.FamAll X Y} (hf : f ∈ d.Fam R m X Y) :
+    Φ.famMap f ∈ d'.Fam R m (Φ.F.obj X) (Φ.F.obj Y) := by
+  refine ⟨fun i j h => by rw [famMap, Fam.eq_zero hf h]; simp, fun i j => ?_⟩
+  simp only [famMap]
+  rw [Γ_succ_hom_app, Γ_succ_inv_app, Fam.compat hf]
+  simp only [Functor.map_comp, Category.assoc]
+  rw [← Φ.F.map_comp_assoc ((d.succ i).hom.app X), Iso.hom_inv_id_app]
+  erw [CategoryTheory.Functor.map_id, Category.id_comp]
+  rw [← Φ.F.map_comp_assoc ((d.succ j).hom.app Y), Iso.hom_inv_id_app]
+  erw [CategoryTheory.Functor.map_id, Category.id_comp]
+  have hγ := Φ.γ.hom.naturality (f i j)
+  simp only [Functor.comp_obj, Functor.comp_map] at hγ
+  rw [← reassoc_of% hγ, Iso.hom_inv_id_app_assoc]
+
+variable (m : ℤ) (X Y : S) in
+/-- `famMap` on families of degree `m`, as a linear map. -/
+def famMapₗ : d.Fam R m X Y →ₗ[R] d'.Fam R m (Φ.F.obj X) (Φ.F.obj Y) where
+  toFun f := ⟨Φ.famMap f.1, Φ.famMap_mem f.2⟩
+  map_add' f g := Subtype.ext (FamAll.ext fun i j => by
+    simp [famMap, Preadditive.add_comp, Preadditive.comp_add])
+  map_smul' r f := Subtype.ext (FamAll.ext fun i j => by simp [famMap])
+
+theorem famMap_famComp (m : ℤ) {X Y Z : S} (f : d.FamAll X Y) (g : d.FamAll Y Z) :
+    Φ.famMap (d.famComp m f g) = d'.famComp m (Φ.famMap f) (Φ.famMap g) := by
+  ext i k
+  simp [famMap, famComp]
+
+theorem famMap_idFam (X : S) : Φ.famMap (d.idFam X) = d'.idFam (Φ.F.obj X) := by
+  ext i j
+  by_cases h : i = j
+  · subst h; simp [famMap, idFam_self]
+  · simp [famMap, idFam, h]
+
+theorem famMap_mapFam {X Y : S} (g : X ⟶ Y) :
+    Φ.famMap (d.mapFam g).1 = (d'.mapFam (Φ.F.map g)).1 := by
+  ext i j
+  by_cases h : i = j
+  · subst h
+    simp only [famMap, mapFam, diagFam_self]
+    have := (Φ.Γ i).hom.naturality g
+    simp only [Functor.comp_obj, Functor.comp_map] at this
+    rw [← Category.assoc, ← this, Category.assoc, Iso.hom_inv_id_app]
+    exact Category.comp_id _
+  · simp [famMap, mapFam, diagFam, h]
+
+variable (X Y : S) in
+/-- The functor on morphisms of the orbit supercategories. -/
+def mapL : d.Hom X Y →ₗ[R] d'.Hom (Φ.F.obj X) (Φ.F.obj Y) :=
+  DirectSum.toModule R ℤ (d'.Hom (Φ.F.obj X) (Φ.F.obj Y)) fun m =>
+    d'.lof m (Φ.F.obj X) (Φ.F.obj Y) ∘ₗ Φ.famMapₗ m X Y
+
+theorem mapL_lof {m : ℤ} {X Y : S} (f : d.Fam R m X Y) :
+    Φ.mapL X Y (d.lof m X Y f) = d'.lof m (Φ.F.obj X) (Φ.F.obj Y) (Φ.famMapₗ m X Y f) := by
+  rw [mapL, ShiftData.lof]
+  erw [DirectSum.toModule_lof]
+  rfl
+
 end ShiftFunctor
+
+namespace Orbit
+
+open ShiftData ShiftFunctor GradedSupercategory
+
+variable {R} {S : Type u} [Category.{v} S] [Preadditive S] [Linear R S] [Supercategory R S]
+  {S' : Type u₁} [Category.{v₁} S'] [Preadditive S'] [Linear R S'] [Supercategory R S']
+  {d : ShiftData R S} {d' : ShiftData R S'}
+
+/-- The graded superfunctor `Orbit d ⥤ Orbit d'` induced by a morphism of shift data. -/
+@[simps obj]
+def map (Φ : ShiftFunctor R d d') : Orbit d ⥤ Orbit d' where
+  obj X := ⟨Φ.F.obj X.obj⟩
+  map {X Y} x := Φ.mapL X.obj Y.obj x
+  map_id X := by
+    show Φ.mapL _ _ (d.lof 0 _ _ _) = d'.lof 0 _ _ _
+    rw [mapL_lof]
+    congr 1
+    exact Subtype.ext (Φ.famMap_idFam X.obj)
+  map_comp {X Y Z} x y := by
+    show Φ.mapL _ _ (d.compL _ _ _ x y) = d'.compL _ _ _ (Φ.mapL _ _ x) (Φ.mapL _ _ y)
+    induction x using Hom.induction_on with
+    | zero => simp
+    | add x x' hx hx' => simp only [map_add, LinearMap.add_apply, hx, hx']
+    | lof m f =>
+      induction y using Hom.induction_on with
+      | zero => simp
+      | add y y' hy hy' => simp only [map_add, hy, hy']
+      | lof n g =>
+        rw [compL_lof_lof, mapL_lof, mapL_lof, mapL_lof, compL_lof_lof]
+        congr 1
+        exact Subtype.ext (Φ.famMap_famComp m f.1 g.1)
+
+theorem map_map_lof (Φ : ShiftFunctor R d d') {X Y : Orbit d} {m : ℤ} (f : d.Fam R m X.obj Y.obj) :
+    (map Φ).map (d.lof m X.obj Y.obj f : X ⟶ Y) = d'.lof m _ _ (Φ.famMapₗ m X.obj Y.obj f) :=
+  Φ.mapL_lof f
+
+instance (Φ : ShiftFunctor R d d') : (map Φ).Additive where
+  map_add {X Y x y} := LinearMap.map_add (Φ.mapL X.obj Y.obj) x y
+
+instance (Φ : ShiftFunctor R d d') : (map Φ).Linear R where
+  map_smul {X Y} x r := LinearMap.map_smul (Φ.mapL X.obj Y.obj) r x
+
+instance (Φ : ShiftFunctor R d d') : IsGradedSuperfunctor R (map Φ) where
+  map_mem {X Y p x} hx := by
+    rw [mem_parity_iff, ← d.projHom_of_mem hx]
+    clear hx
+    induction x using Hom.induction_on with
+    | zero => simp only [map_zero]; exact Submodule.zero_mem _
+    | add x x' hx hx' =>
+      rw [map_add, Functor.map_add]; exact Submodule.add_mem _ hx hx'
+    | lof m f =>
+      rw [projHom_lof]
+      erw [map_map_lof]
+      intro k i j
+      by_cases h : m = k
+      · subst h
+        erw [component_lof_self]
+        show (Φ.Γ i).hom.app _ ≫ Φ.F.map (proj R p (f.1 i j)) ≫ (Φ.Γ j).inv.app _ ∈ _
+        simpa using comp_mem (comp_mem (Φ.Γ_hom_mem i _) (map_mem Φ.F (proj_mem p _)))
+          (Φ.Γ_inv_mem j _)
+      · erw [d'.component_lof_of_ne _ h]; exact Submodule.zero_mem _
+  map_mem_degree {X Y n x} hx := by
+    obtain ⟨f, rfl⟩ := hx
+    exact ⟨_, (map_map_lof Φ f).symm⟩
+
+/-- `map Φ` extends `F`: `F̃ ∘ ι = ι ∘ F`. -/
+theorem ι_comp_map (Φ : ShiftFunctor R d d') : ι d ⋙ map Φ = Φ.F ⋙ ι d' :=
+  CategoryTheory.Functor.ext (fun _ => rfl) fun X Y g => by
+    simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp]
+    show Φ.mapL X Y (d.lof 0 X Y _) = d'.lof 0 _ _ _
+    rw [mapL_lof]
+    congr 1
+    exact Subtype.ext (Φ.famMap_mapFam g)
+
+end Orbit
 
 end StringDiagrams
 
