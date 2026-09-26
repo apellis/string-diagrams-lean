@@ -377,6 +377,108 @@ instance instPiTwoSupercategory : PiTwoSupercategory R (PiSCat.{w₁, v, u} R) w
 @[simp] theorem ζ_inv_app_zero (A : PiSCat.{w₁, v, u} R) (X : A) :
     (PiTwoSupercategory.ζ (R := R) A).inv.app 0 X = 0 := rfl
 
+/-! ### Corollary 3.3 from Lemma 3.2 -/
+
+section Corollary
+
+variable {A B C : PiSCat.{w₁, v, u} R}
+
+@[simp] theorem piHom_obj (X : A.carrier) :
+    Superfunctor.obj (PiTwoSupercategory.pi (R := R) A) X = (PiSupercategory.pi (R := R)).obj X :=
+  rfl
+
+@[simp] theorem piHom_map {X Y : A.carrier} (f : X ⟶ Y) :
+    Superfunctor.map (PiTwoSupercategory.pi (R := R) A) f = (PiSupercategory.pi (R := R)).map f :=
+  rfl
+
+/-- In `Π-𝔖ℭ𝔞𝔱`, the components of `β_F` of Lemma 3.2 are those of `β_F` of Corollary 3.3
+(`PiSupercategory.β`). -/
+theorem β_app_zero (F : A ⟶ B) (X : A.carrier) :
+    (PiTwoSupercategory.β (R := R) F).hom.app 0 X = (PiSupercategory.β R F.toFunctor X).hom := by
+  simp [PiTwoSupercategory.β_hom, PiSupercategory.β_hom]
+
+theorem β_app_one (F : A ⟶ B) (X : A.carrier) :
+    (PiTwoSupercategory.β (R := R) F).hom.app 1 X = 0 := by
+  simp [PiTwoSupercategory.β_hom]
+
+/-- In `Π-𝔖ℭ𝔞𝔱`, the components of `ξ` of Lemma 3.2 are those of `ξ` of (1.4)
+(`PiSupercategory.ξ`). -/
+theorem ξ_app_zero (A : PiSCat.{w₁, v, u} R) (X : A.carrier) :
+    (PiTwoSupercategory.ξ (R := R) A).hom.app 0 X = (PiSupercategory.ξ (R := R) X).hom := by
+  simp [PiTwoSupercategory.ξ_hom, PiSupercategory.ξ_hom]
+
+/-- **Corollary 3.3(i)**, derived from Lemma 3.2(iii): `Π ζ = -ζ Π`. (Proved directly as
+`PiSupercategory.pi_map_ζ`.) -/
+theorem pi_map_ζ (A : PiSCat.{w₁, v, u} R) (X : A.carrier) :
+    (PiSupercategory.pi (R := R)).map (PiSupercategory.ζ (R := R) X).hom =
+      -(PiSupercategory.ζ (R := R) ((PiSupercategory.pi (R := R)).obj X)).hom := by
+  simpa using congrArg (fun t => t.app 1 X) (PiTwoSupercategory.pi_whisker_ζ (R := R) A)
+
+/-- **Corollary 3.3(i)**, derived from Lemma 3.2(iii): `Π ξ = ξ Π`. (Proved directly as
+`PiSupercategory.ξ_pi`.) -/
+theorem ξ_pi (A : PiSCat.{w₁, v, u} R) (X : A.carrier) :
+    (PiSupercategory.ξ (R := R) ((PiSupercategory.pi (R := R)).obj X)).hom =
+      (PiSupercategory.pi (R := R)).map (PiSupercategory.ξ (R := R) X).hom := by
+  have h : (PiSupercategory.ζ (R := R) ((PiSupercategory.pi (R := R)).obj X)).hom =
+      -(PiSupercategory.pi (R := R)).map (PiSupercategory.ζ (R := R) X).hom := by
+    rw [pi_map_ζ A, neg_neg]
+  rw [PiSupercategory.ξ_hom, PiSupercategory.ξ_hom, h, Functor.map_neg, Preadditive.neg_comp,
+    Preadditive.comp_neg, neg_neg, Functor.map_comp]
+
+/-- **Corollary 3.3(ii)**, derived from Lemma 3.2(iv):
+`ξ_B F ξ_A⁻¹ = β_F Π_A ∘ Π_B β_F`. (Proved directly as `PiSupercategory.β_comm`.) -/
+theorem β_comm (F : A ⟶ B) (X : A.carrier) :
+    (PiSupercategory.ξ (R := R) (F.obj X)).hom ≫ F.map (PiSupercategory.ξ (R := R) X).inv =
+      (PiSupercategory.pi (R := R)).map (PiSupercategory.β R F.toFunctor X).hom ≫
+        (PiSupercategory.β R F.toFunctor ((PiSupercategory.pi (R := R)).obj X)).hom := by
+  have h := congrArg (fun t => t.app 0 X) (PiTwoSupercategory.ξ_comm (R := R) F)
+  simp [PiTwoSupercategory.ξ_hom, PiTwoSupercategory.ξ_inv, PiTwoSupercategory.β_hom] at h
+  simpa [PiSupercategory.ξ_hom, PiSupercategory.β_hom, PiSupercategory.ξ] using h
+
+/-- **Corollary 3.3(iii)**, derived from Lemma 3.2 (equation (3.1)): for a supernatural
+transformation `x : F ⇒ G` of parity `p`, `β_G ∘ Π_B x = x Π_A ∘ β_F`. (Proved directly as
+`PiSupercategory.β_naturality_supernatural`.) -/
+theorem β_naturality_supernatural {F G : A ⟶ B} {p : ZMod 2}
+    {x : ∀ X, F.obj X ⟶ G.obj X}
+    (hx : IsSupernatural R p (F := F.toFunctor) (G := G.toFunctor) x) (X : A.carrier) :
+    (PiSupercategory.pi (R := R)).map (x X) ≫ (PiSupercategory.β R G.toFunctor X).hom =
+      (PiSupercategory.β R F.toFunctor X).hom ≫ x ((PiSupercategory.pi (R := R)).obj X) := by
+  have h := congrArg (fun t => t.app p X)
+    (PiTwoSupercategory.β_naturality (R := R) (a := A) (b := B)
+      (Superfunctor.homMk hx.toSuperNatTrans : F ⟶ G))
+  rcases parity_eq_zero_or_one p with rfl | rfl <;>
+    simpa [comp_app, ← β_app_zero, β_app_one, IsSupernatural.toSuperNatTrans,
+      SuperNatTrans.zmod2_one_add_one] using h.symm
+
+/-- **Corollary 3.3(iv)**, derived from Lemma 3.2(i): `β_{GF} = G β_F ∘ β_G F`. (Proved
+directly as `PiSupercategory.β_comp`.) -/
+theorem β_comp (F : A ⟶ B) (G : B ⟶ C) (X : A.carrier) :
+    (PiSupercategory.β R (F.toFunctor ⋙ G.toFunctor) X).hom =
+      (PiSupercategory.β R G.toFunctor (F.obj X)).hom ≫
+        G.map (PiSupercategory.β R F.toFunctor X).hom := by
+  have h := congrArg (fun t => t.app 0 X) (PiTwoSupercategory.β_comp (R := R) F G)
+  simp only [comp_app_zero, associator_hom, associator_inv, id_app_zero, id_app_one,
+    whiskerLeft_app, whiskerRight_app, β_app_zero, β_app_one] at h
+  simpa using h
+
+/-- **Corollary 3.3(iv)**, derived from Lemma 3.2(ii): `β_I = 1_Π`. (Proved directly as
+`PiSupercategory.β_id`.) -/
+theorem β_id (A : PiSCat.{w₁, v, u} R) (X : A.carrier) :
+    (PiSupercategory.β R (𝟭 A.carrier) X).hom = 𝟙 _ := by
+  have h := congrArg (fun t => t.app 0 X) (PiTwoSupercategory.β_id (R := R) A)
+  simp only [β_app_zero] at h
+  simpa using h
+
+/-- **Corollary 3.3(iv)**, derived from Lemma 3.2(iii): `β_Π = -1_{Π²}`. (Proved directly as
+`PiSupercategory.β_pi`.) -/
+theorem β_pi (A : PiSCat.{w₁, v, u} R) (X : A.carrier) :
+    (PiSupercategory.β R (PiSupercategory.pi (R := R) (C := A.carrier)) X).hom = -𝟙 _ := by
+  have h := congrArg (fun t => t.app 0 X) (PiTwoSupercategory.β_pi (R := R) A)
+  simp only [β_app_zero] at h
+  simpa using h
+
+end Corollary
+
 end PiSCat
 
 end StringDiagrams

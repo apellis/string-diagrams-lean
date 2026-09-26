@@ -135,6 +135,9 @@ variable {A B C : SCat.{w, v, u} R}
     (x ≫ y).app 1 X = x.app 0 X ≫ y.app 1 X + x.app 1 X ≫ y.app 0 X :=
   Superfunctor.comp_app_one x y X
 
+theorem comp_app {F G H : A ⟶ B} (x : F ⟶ G) (y : G ⟶ H) (r : ZMod 2) (X : A.carrier) :
+    (x ≫ y).app r X = x.app 0 X ≫ y.app r X + x.app 1 X ≫ y.app (r + 1) X := rfl
+
 @[simp] theorem id_app_zero (F : A ⟶ B) (X : A.carrier) :
     (𝟙 F : F ⟶ F).app 0 X = 𝟙 (F.obj X) := rfl
 
@@ -293,6 +296,9 @@ variable {A B C : PiSCat.{w, v, u} R}
     (x ≫ y).app 1 X = x.app 0 X ≫ y.app 1 X + x.app 1 X ≫ y.app 0 X :=
   Superfunctor.comp_app_one x y X
 
+theorem comp_app {F G H : A ⟶ B} (x : F ⟶ G) (y : G ⟶ H) (r : ZMod 2) (X : A.carrier) :
+    (x ≫ y).app r X = x.app 0 X ≫ y.app r X + x.app 1 X ≫ y.app (r + 1) X := rfl
+
 @[simp] theorem id_app_zero (F : A ⟶ B) (X : A.carrier) :
     (𝟙 F : F ⟶ F).app 0 X = 𝟙 (F.obj X) := rfl
 
@@ -356,6 +362,24 @@ instance : TwoSupercategory R (PiSCat.{w, v, u} R) where
   associator_hom_mem F G H := TwoSupercategory.associator_hom_mem (B := SCat R) F G H
   leftUnitor_hom_mem F := TwoSupercategory.leftUnitor_hom_mem (B := SCat R) F
   rightUnitor_hom_mem F := TwoSupercategory.rightUnitor_hom_mem (B := SCat R) F
+
+@[simp] theorem associator_hom {A B C D : PiSCat.{w, v, u} R} (F : A ⟶ B) (G : B ⟶ C)
+    (H : C ⟶ D) : (associator F G H).hom = 𝟙 (F ≫ G ≫ H) := rfl
+
+@[simp] theorem associator_inv {A B C D : PiSCat.{w, v, u} R} (F : A ⟶ B) (G : B ⟶ C)
+    (H : C ⟶ D) : (associator F G H).inv = 𝟙 (F ≫ G ≫ H) := rfl
+
+@[simp] theorem leftUnitor_hom {A B : PiSCat.{w, v, u} R} (F : A ⟶ B) :
+    (leftUnitor F).hom = 𝟙 F := rfl
+
+@[simp] theorem leftUnitor_inv {A B : PiSCat.{w, v, u} R} (F : A ⟶ B) :
+    (leftUnitor F).inv = 𝟙 F := rfl
+
+@[simp] theorem rightUnitor_hom {A B : PiSCat.{w, v, u} R} (F : A ⟶ B) :
+    (rightUnitor F).hom = 𝟙 F := rfl
+
+@[simp] theorem rightUnitor_inv {A B : PiSCat.{w, v, u} R} (F : A ⟶ B) :
+    (rightUnitor F).inv = 𝟙 F := rfl
 
 /-- `Π-𝔖ℭ𝔞𝔱` is a strict 2-supercategory. -/
 instance : BicategoryStruct.Strict (PiSCat.{w, v, u} R) where
