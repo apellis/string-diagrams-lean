@@ -1,6 +1,9 @@
 import StringDiagrams.Super.MonoidalPi
 import Mathlib.LinearAlgebra.TensorProduct.Basic
 import Mathlib.LinearAlgebra.Projection
+import Mathlib.LinearAlgebra.Dimension.Constructions
+import Mathlib.LinearAlgebra.Dimension.Free
+import Mathlib.LinearAlgebra.Basis.VectorSpace
 
 /-!
 # The supercategory of superspaces
@@ -1044,7 +1047,46 @@ theorem isoOfPartEquiv_hom_mem {V W : SVec k} (e₀ : V.part 0 ≃ₗ[k] W.part 
     rw [show (⟨0, _⟩ : V.part 0) = 0 from rfl, map_zero, Submodule.coe_zero, zero_add]
     exact (e₁ _).2
 
+/-- The homogeneous components of a biproduct (given by even maps satisfying the biproduct
+equations) are the products of the components. -/
+def partEquivOfBiprod {V X Y : SVec k} (i₁ : X ⟶ V) (i₂ : Y ⟶ V) (p₁ : V ⟶ X) (p₂ : V ⟶ Y)
+    (hi₁ : i₁ ∈ parityHom X V 0) (hi₂ : i₂ ∈ parityHom Y V 0) (hp₁ : p₁ ∈ parityHom V X 0)
+    (hp₂ : p₂ ∈ parityHom V Y 0) (h₁ : i₁ ≫ p₁ = 𝟙 X) (h₂ : i₂ ≫ p₂ = 𝟙 Y)
+    (h₁₂ : i₁ ≫ p₂ = 0) (h₂₁ : i₂ ≫ p₁ = 0) (htot : p₁ ≫ i₁ + p₂ ≫ i₂ = 𝟙 V) (q : ZMod 2) :
+    V.part q ≃ₗ[k] X.part q × Y.part q where
+  toFun v := (partMap p₁ hp₁ q v, partMap p₂ hp₂ q v)
+  map_add' _ _ := by ext <;> simp
+  map_smul' _ _ := by ext <;> simp
+  invFun x := partMap i₁ hi₁ q x.1 + partMap i₂ hi₂ q x.2
+  left_inv v := by
+    apply Subtype.ext
+    have := congrArg (fun φ : V ⟶ V => φ v) htot
+    simpa using this
+  right_inv x := by
+    have e1 := fun (x : X) => congrArg (fun φ : X ⟶ X => φ x) h₁
+    have e2 := fun (y : Y) => congrArg (fun φ : Y ⟶ Y => φ y) h₂
+    have e3 := fun (x : X) => congrArg (fun φ : X ⟶ Y => φ x) h₁₂
+    have e4 := fun (y : Y) => congrArg (fun φ : Y ⟶ X => φ y) h₂₁
+    simp only [comp_apply, id_apply, zero_apply] at e1 e2 e3 e4
+    ext <;> simp [e1, e2, e3, e4]
+
 end Dim
+
+section DimField
+
+variable {K : Type u} [Field K]
+
+theorem finrank_part_of_biprod {V X Y : SVec K} (i₁ : X ⟶ V) (i₂ : Y ⟶ V) (p₁ : V ⟶ X)
+    (p₂ : V ⟶ Y) (hi₁ : i₁ ∈ parityHom X V 0) (hi₂ : i₂ ∈ parityHom Y V 0)
+    (hp₁ : p₁ ∈ parityHom V X 0) (hp₂ : p₂ ∈ parityHom V Y 0) (h₁ : i₁ ≫ p₁ = 𝟙 X)
+    (h₂ : i₂ ≫ p₂ = 𝟙 Y) (h₁₂ : i₁ ≫ p₂ = 0) (h₂₁ : i₂ ≫ p₁ = 0)
+    (htot : p₁ ≫ i₁ + p₂ ≫ i₂ = 𝟙 V) (q : ZMod 2) [Module.Finite K (X.part q)]
+    [Module.Finite K (Y.part q)] :
+    Module.finrank K (V.part q) = Module.finrank K (X.part q) + Module.finrank K (Y.part q) := by
+  rw [(partEquivOfBiprod i₁ i₂ p₁ p₂ hi₁ hi₂ hp₁ hp₂ h₁ h₂ h₁₂ h₂₁ htot q).finrank_eq,
+    Module.finrank_prod]
+
+end DimField
 
 end SVec
 
