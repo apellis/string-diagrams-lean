@@ -1,5 +1,6 @@
 import StringDiagrams.Biadjunction.Words
 import StringDiagrams.Biadjunction.Linear
+import StringDiagrams.Biadjunction.Pivotal
 
 noncomputable section
 
@@ -293,6 +294,128 @@ def ColourCupsCaps.biadjunctions (Q : ColourCupsCaps P D) : ColourBiadjunctions 
 
 end CupsCaps
 
+/-! ## Mates of classes of diagrams -/
+
+section Rotation
+
+variable {P} {l m : P.Bicat}
+
+/-- The right rotation of a diagram `d : x ⟶ x'`, a diagram `y' ⟶ y`: `d` rotated using a cup
+`1_l ⟶ x ⊗ y` and a cap `y' ⊗ x' ⟶ 1_m`. -/
+def rightRotateD (x x' : l ⟶ m) (y y' : m ⟶ l) (cup : Obj.nil l.region ⟶ x.obj.tensor y.obj)
+    (cap' : y'.obj.tensor x'.obj ⟶ Obj.nil m.region) (d : x.obj ⟶ x'.obj) : y'.obj ⟶ y.obj :=
+  Diagram.cast
+    (Diagram.lwhisker y'.obj cup (Bicat.Hom.composable y' (𝟙 l)) ≫
+      Diagram.lwhisker y'.obj (Diagram.rwhisker d y.obj (Bicat.Hom.composable x y))
+        (Bicat.Hom.composable y' (x ≫ y)) ≫
+      eqToHom (Obj.tensor_assoc y'.obj x'.obj y.obj).symm ≫
+      Diagram.rwhisker cap' y.obj (Bicat.Hom.composable (y' ≫ x') y))
+    (Obj.tensor_nil y'.obj l.region) (Obj.nil_tensor y.start_eq)
+
+/-- The left rotation of a diagram `d : x ⟶ x'`, a diagram `y' ⟶ y`: `d` rotated using a cup
+`1_m ⟶ y ⊗ x` and a cap `x' ⊗ y' ⟶ 1_l`. -/
+def leftRotateD (x x' : l ⟶ m) (y y' : m ⟶ l) (cup : Obj.nil m.region ⟶ y.obj.tensor x.obj)
+    (cap' : x'.obj.tensor y'.obj ⟶ Obj.nil l.region) (d : x.obj ⟶ x'.obj) : y'.obj ⟶ y.obj :=
+  Diagram.cast
+    (Diagram.rwhisker cup y'.obj (Bicat.Hom.composable (𝟙 m) y') ≫
+      eqToHom (Obj.tensor_assoc y.obj x.obj y'.obj) ≫
+      Diagram.lwhisker y.obj (Diagram.rwhisker d y'.obj (Bicat.Hom.composable x y'))
+        (Bicat.Hom.composable y (x ≫ y')) ≫
+      Diagram.lwhisker y.obj cap' (Bicat.Hom.composable y (x' ≫ y')))
+    (Obj.nil_tensor y'.start_eq) (Obj.tensor_nil y.obj l.region)
+
+omit [S.IsEven] in
+@[simp] theorem layers_rightRotateD (x x' : l ⟶ m) (y y' : m ⟶ l)
+    (cup : Obj.nil l.region ⟶ x.obj.tensor y.obj) (cap' : y'.obj.tensor x'.obj ⟶ Obj.nil m.region)
+    (d : x.obj ⟶ x'.obj) :
+    Diagram.layers (rightRotateD x x' y y' cup cap' d) =
+      (Diagram.layers cup).map (·.wl y'.obj) ++
+        ((Diagram.layers d).map (·.wr y.obj.word)).map (·.wl y'.obj) ++
+          (Diagram.layers cap').map (·.wr y.obj.word) := by
+  simp [rightRotateD]
+
+omit [S.IsEven] in
+@[simp] theorem layers_leftRotateD (x x' : l ⟶ m) (y y' : m ⟶ l)
+    (cup : Obj.nil m.region ⟶ y.obj.tensor x.obj) (cap' : x'.obj.tensor y'.obj ⟶ Obj.nil l.region)
+    (d : x.obj ⟶ x'.obj) :
+    Diagram.layers (leftRotateD x x' y y' cup cap' d) =
+      (Diagram.layers cup).map (·.wr y'.obj.word) ++
+        ((Diagram.layers d).map (·.wr y'.obj.word)).map (·.wl y.obj) ++
+          (Diagram.layers cap').map (·.wl y.obj) := by
+  simp [leftRotateD]
+
+/-- The right mate of the class of a diagram, for biadjunctions whose units and counits are
+classes of diagrams, is the class of the rotated diagram. -/
+theorem rightMate_diag {x x' : l ⟶ m} {y y' : m ⟶ l} (Q : x ⊣⊢ y) (Q' : x' ⊣⊢ y')
+    (cup : Obj.nil l.region ⟶ x.obj.tensor y.obj) (hcup : Q.left.unit = P.diag cup)
+    (cap' : y'.obj.tensor x'.obj ⟶ Obj.nil m.region) (hcap : Q'.left.counit = P.diag cap')
+    (d : x.obj ⟶ x'.obj) :
+    rightMate Q Q' (P.diag d : x ⟶ x') = P.diag (rightRotateD x x' y y' cup cap' d) := by
+  rw [rightMate_apply, hcup, hcap]
+  change eqToHom (congrArg P.obj (Obj.tensor_nil y'.obj l.region).symm) ≫
+      P.wL y'.obj (P.diag cup) ≫
+        P.wL y'.obj (P.wRAt l.region (P.diag d) y.obj x.start_eq x'.start_eq) ≫
+          eqToHom (congrArg P.obj (Obj.tensor_assoc y'.obj x'.obj y.obj).symm) ≫
+            P.wRAt m.region (P.diag cap') y.obj (y' ≫ x').start_eq rfl ≫
+              eqToHom (congrArg P.obj (Obj.nil_tensor y.start_eq)) = _
+  rw [P.wRAt_diag d _ (Bicat.Hom.composable x y),
+    P.wRAt_diag cap' _ (Bicat.Hom.composable (y' ≫ x') y),
+    P.wL_diag_of_composable _ cup (Bicat.Hom.composable y' (𝟙 l)),
+    P.wL_diag_of_composable _ _ (Bicat.Hom.composable y' (x ≫ y))]
+  simp [rightRotateD, Diagram.cast_eq, P.diag_eqToHom]
+
+/-- The left mate of the class of a diagram, for biadjunctions whose units and counits are
+classes of diagrams, is the class of the rotated diagram. -/
+theorem leftMate_diag {x x' : l ⟶ m} {y y' : m ⟶ l} (Q : x ⊣⊢ y) (Q' : x' ⊣⊢ y')
+    (cup : Obj.nil m.region ⟶ y.obj.tensor x.obj) (hcup : Q.right.unit = P.diag cup)
+    (cap' : x'.obj.tensor y'.obj ⟶ Obj.nil l.region) (hcap : Q'.right.counit = P.diag cap')
+    (d : x.obj ⟶ x'.obj) :
+    leftMate Q Q' (P.diag d : x ⟶ x') = P.diag (leftRotateD x x' y y' cup cap' d) := by
+  rw [leftMate_apply, hcup, hcap]
+  change eqToHom (congrArg P.obj (Obj.nil_tensor y'.start_eq).symm) ≫
+      P.wRAt m.region (P.diag cup) y'.obj rfl (y ≫ x).start_eq ≫
+        eqToHom (congrArg P.obj (Obj.tensor_assoc y.obj x.obj y'.obj)) ≫
+          P.wL y.obj (P.wRAt l.region (P.diag d) y'.obj x.start_eq x'.start_eq) ≫
+            P.wL y.obj (P.diag cap') ≫
+              eqToHom (congrArg P.obj (Obj.tensor_nil y.obj l.region)) = _
+  rw [P.wRAt_diag cup _ (Bicat.Hom.composable (𝟙 m) y'),
+    P.wRAt_diag d _ (Bicat.Hom.composable x y'),
+    P.wL_diag_of_composable _ _ (Bicat.Hom.composable y (x ≫ y')),
+    P.wL_diag_of_composable _ cap' (Bicat.Hom.composable y (x' ≫ y'))]
+  simp [leftRotateD, Diagram.cast_eq, P.diag_eqToHom]
+
+/-- A 2-morphism given by the class of a diagram is cyclic if and only if its two rotations
+have the same class. -/
+theorem isCyclic_diag_iff {x x' : l ⟶ m} {y y' : m ⟶ l} (Q : x ⊣⊢ y) (Q' : x' ⊣⊢ y')
+    (cup : Obj.nil l.region ⟶ x.obj.tensor y.obj) (hcup : Q.left.unit = P.diag cup)
+    (cap' : y'.obj.tensor x'.obj ⟶ Obj.nil m.region) (hcap : Q'.left.counit = P.diag cap')
+    (cupR : Obj.nil m.region ⟶ y.obj.tensor x.obj) (hcupR : Q.right.unit = P.diag cupR)
+    (capR' : x'.obj.tensor y'.obj ⟶ Obj.nil l.region) (hcapR : Q'.right.counit = P.diag capR')
+    (d : x.obj ⟶ x'.obj) :
+    Biadjunction.IsCyclic Q Q' (P.diag d : x ⟶ x') ↔
+      P.diag (rightRotateD x x' y y' cup cap' d) = P.diag (leftRotateD x x' y y' cupR capR' d) := by
+  rw [Biadjunction.IsCyclic, rightMate_diag Q Q' cup hcup cap' hcap,
+    leftMate_diag Q Q' cupR hcupR capR' hcapR]
+
+/-- Cyclicity of the class of a diagram from a relation `rel i = r₁ - r₂` of `P` whose two terms
+have the layers of the two rotations. -/
+theorem isCyclic_diag_of_rel {x x' : l ⟶ m} {y y' : m ⟶ l} (Q : x ⊣⊢ y) (Q' : x' ⊣⊢ y')
+    (cup : Obj.nil l.region ⟶ x.obj.tensor y.obj) (hcup : Q.left.unit = P.diag cup)
+    (cap' : y'.obj.tensor x'.obj ⟶ Obj.nil m.region) (hcap : Q'.left.counit = P.diag cap')
+    (cupR : Obj.nil m.region ⟶ y.obj.tensor x.obj) (hcupR : Q.right.unit = P.diag cupR)
+    (capR' : x'.obj.tensor y'.obj ⟶ Obj.nil l.region) (hcapR : Q'.right.counit = P.diag capR')
+    (d : x.obj ⟶ x'.obj) (i : P.Rel) {r₁ r₂ : P.dom i ⟶ P.cod i}
+    (hi : P.rel i = LinDiagram.of r₁ - LinDiagram.of r₂) (hdom : P.dom i = y'.obj)
+    (hcod : P.cod i = y.obj)
+    (h₁ : Diagram.layers r₁ = Diagram.layers (rightRotateD x x' y y' cup cap' d))
+    (h₂ : Diagram.layers r₂ = Diagram.layers (leftRotateD x x' y y' cupR capR' d)) :
+    Biadjunction.IsCyclic Q Q' (P.diag d : x ⟶ x') := by
+  rw [isCyclic_diag_iff Q Q' cup hcup cap' hcap cupR hcupR capR' hcapR,
+    P.diag_eq_of_layers_eq' _ r₁ hdom.symm hcod.symm h₁.symm,
+    P.diag_eq_of_layers_eq' _ r₂ hdom.symm hcod.symm h₂.symm, P.diag_eq_of_rel i hi]
+
+end Rotation
+
 section Single
 
 variable {P} {D : S.ColourDuality} (B : ColourBiadjunctions P D)
@@ -487,6 +610,16 @@ theorem isCyclic_of_generators
       convert (hf l m x x' hx hx').smul r using 1
       simp only [Linear.smul_comp, Linear.comp_smul]
   simpa using key l m x x' rfl rfl
+
+/-- The pivotal structure on `P.Bicat` given by the biadjunctions of words, when every generator
+is cyclic. -/
+def pivotalOfGenerators
+    (hgen : ∀ (g : S.Gen) (hg : S.GenValid g),
+      Biadjunction.IsCyclic (biadj B (P.genDom g hg)) (biadj B (P.genCod g hg)) (P.gen2 g hg)) :
+    Pivotal P.Bicat where
+  dual := P.dualHom D
+  biadj := biadj B
+  isCyclic := isCyclic_of_generators B hgen
 
 end Cyclic
 
