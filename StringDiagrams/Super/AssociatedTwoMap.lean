@@ -236,7 +236,96 @@ def mapTwo : TwoSuperfunctor R (Associated2 R B) (Associated2 R C) where
       erw [hF.map₂_zero]
       simp
 
+/-- **Lemma 5.4, `E₂ ∘ D₂ = I` on morphisms.** The coherence map
+`ĵ := (ℝ̂ζ)⁻¹ ∘ i ∘ ζ` of the Π-2-functor `E₂ ℝ̂` is `j`, viewed as an even 2-isomorphism. -/
+theorem jIso_mapTwo_hom (a : Associated2 R B) :
+    ((hF.mapTwo).jIso a).hom =
+      Associated.homMk (R := R) (X := ⟨𝛑 (F.obj a.obj)⟩) (Y := ⟨F.map (𝛑 a.obj)⟩)
+        (hF.j a.obj).hom 0 := by
+  rw [← cancel_mono ((hF.mapTwo).map₂Iso (PiTwoSupercategory.ζ (R := R) a)).hom,
+    TwoSuperfunctor.map₂Iso_hom, TwoSuperfunctor.jIso_hom_comp_map₂_ζ]
+  apply Associated2.hom₂_ext
+  · simp [Associated2.ζ_eq]
+    erw [hF.map₂_zero]
+    simp
+  · simp only [Associated2.ζ_eq, Associated2.comp₂_snd, Associated2.ζ_hom_fst,
+      Associated2.ζ_hom_snd, mapTwo_map₂, mapTwo_mapId, Associated.evenIso_hom,
+      Associated.homMk_fst, Associated.homMk_snd, Associated.map_map, homFunctor_map,
+      homPi_β_inv_app, βHom_inv, Iso.symm_hom, Limits.zero_comp, zero_add, add_zero,
+      pi_map, Functor.map_zero]
+    have e : F.map₂ (λ_ (𝛑 a.obj)).inv ≫ (F.mapComp (𝟙 a.obj) (𝛑 a.obj)).hom =
+        (λ_ (F.map (𝛑 a.obj))).inv ≫ (F.mapId a.obj).inv ▷ F.map (𝛑 a.obj) := by
+      apply (cancel_epi (F.map₂ (λ_ (𝛑 a.obj)).hom)).1
+      rw [← F.map₂_comp_assoc, Iso.hom_inv_id, F.map₂_id, Category.id_comp,
+        Pseudofunctor.map₂_left_unitor]
+      simp
+    erw [reassoc_of% e]
+    have e2 := Bicategory.leftUnitor_inv_naturality (hF.j a.obj).hom
+    rw [← Category.assoc]
+    erw [e2]
+    rw [Category.assoc, whisker_exchange_assoc]
+    simp
+
 end PiTwoFunctor
+
+/-! ## Lemma 5.4: naturality of `𝕋` -/
+
+namespace Associated2
+
+open BicategoryStruct TwoSupercategory
+
+variable {R : Type w} [CommRing R] {A : Type u₁} [BicategoryStruct.{w₁, v₁} A]
+  [∀ a b : A, Preadditive (a ⟶ b)] [∀ a b : A, Linear R (a ⟶ b)]
+  [∀ a b : A, Supercategory R (a ⟶ b)] [TwoSupercategory R A] [PiTwoSupercategory R A]
+  {A' : Type u₂} [BicategoryStruct.{w₂, v₂} A']
+  [∀ a b : A', Preadditive (a ⟶ b)] [∀ a b : A', Linear R (a ⟶ b)]
+  [∀ a b : A', Supercategory R (a ⟶ b)] [TwoSupercategory R A'] [PiTwoSupercategory R A']
+  (G : TwoSuperfunctor R A A')
+
+/-- `ℝ(ζ_μ F) = ζ_{ℝμ}(ℝF) ∘ (ℝF) j⁻¹ ∘ c⁻¹`. -/
+theorem map₂_ζG {a b : A} (g : a ⟶ b) :
+    G.map₂ (ζG (R := R) g).hom = (G.mapComp g (PiTwoSupercategory.pi (R := R) b)).inv ≫
+      G.map g ◁ (G.jIso b).inv ≫ (ζG (R := R) (G.map g)).hom := by
+  have hr := G.map₂_rightUnitor g
+  have hj : (G.jIso b).inv ≫ (PiTwoSupercategory.ζ (R := R) (G.obj b)).hom =
+      G.map₂ (PiTwoSupercategory.ζ (R := R) b).hom ≫ (G.mapId b).inv := by
+    rw [Iso.inv_comp_eq, ← Category.assoc, TwoSuperfunctor.jIso_hom_comp_map₂_ζ,
+      Category.assoc, Iso.hom_inv_id, Category.comp_id]
+  have n : G.map₂ (g ◁ (PiTwoSupercategory.ζ (R := R) b).hom) =
+      (G.mapComp g (PiTwoSupercategory.pi (R := R) b)).inv ≫
+        G.map g ◁ G.map₂ (PiTwoSupercategory.ζ (R := R) b).hom ≫ (G.mapComp g (𝟙 b)).hom := by
+    rw [G.mapComp_naturality_right, Iso.inv_hom_id_assoc]
+  have r : (G.mapComp g (𝟙 b)).hom ≫ G.map₂ (rightUnitor g).hom =
+      G.map g ◁ (G.mapId b).inv ≫ (rightUnitor (G.map g)).hom := by
+    rw [← hr, TwoSupercategory.whiskerLeft_inv_hom_assoc R]
+  rw [ζG_hom, ζG_hom, G.map₂_comp, n, Category.assoc, Category.assoc, r,
+    ← whiskerLeft_comp'_assoc R, ← hj, whiskerLeft_comp'_assoc R]
+
+/-- **Lemma 5.4, naturality of `𝕋`.** For a 2-superfunctor `ℝ : 𝔄 → 𝔄'` of Π-2-supercategories,
+`ℝ ∘ 𝕋_𝔄 = 𝕋_𝔄' ∘ (E₂ ℝ)^` on 2-morphisms (both are `ℝ` on objects and 1-morphisms). -/
+theorem T_map₂_mapTwo {a b : Associated2 R (Underlying2 R A)} {f g : a ⟶ b} (x : f ⟶ g) :
+    (T R A').map₂ ((G.toPiTwoFunctor.mapTwo).map₂ x) = G.map₂ ((T R A).map₂ x) := by
+  rw [T_map₂, T_map₂, G.map₂_add, G.map₂_comp]
+  erw [map₂_ζG G g.obj.obj]
+  congr 1
+  change (G.map₂ x.2.1 ≫ ((G.mapComp g.obj.obj (PiTwoSupercategory.pi (R := R) b.obj.obj)).inv ≫
+    G.map g.obj.obj ◁ (G.jIso b.obj.obj).inv)) ≫ _ = _
+  simp only [Category.assoc]
+  rfl
+
+/-- **Lemma 5.4, naturality of `𝕋`**, on the coherence maps `c`: both composites have coherence
+maps `c_ℝ`. -/
+theorem T_map₂_mapTwo_mapComp {a b c : Associated2 R (Underlying2 R A)} (f : a ⟶ b) (g : b ⟶ c) :
+    (T R A').map₂ ((G.toPiTwoFunctor.mapTwo).mapComp f g).hom =
+      (G.mapComp f.obj.obj g.obj.obj).hom := by
+  simp [T_map₂]
+
+/-- **Lemma 5.4, naturality of `𝕋`**, on the coherence maps `i`. -/
+theorem T_map₂_mapTwo_mapId (a : Associated2 R (Underlying2 R A)) :
+    (T R A').map₂ ((G.toPiTwoFunctor.mapTwo).mapId a).hom = (G.mapId a.obj.obj).hom := by
+  simp [T_map₂]
+
+end Associated2
 
 end StringDiagrams
 
