@@ -18,6 +18,7 @@ import StringDiagrams.Super.Pi
 import StringDiagrams.Super.Envelope
 import StringDiagrams.Super.Underlying
 import StringDiagrams.Super.Associated
+import StringDiagrams.Super.MonoidalEnvelope
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal

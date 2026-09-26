@@ -25,17 +25,17 @@ variable (R : Type*) [CommRing R]
 instance : Supercategory R (pres R).Presented := (pres R).supercategory (isParityHomogeneous R)
 
 /-- The Π-envelope of the odd Brauer supercategory is a Π-supercategory. -/
-example : PiSupercategory R (Envelope (pres R).Presented) := inferInstance
+example : PiSupercategory R (Envelope R (pres R).Presented) := inferInstance
 
 /-- The odd cup, as a morphism `Π⁰(n) → Π¹(n + 2)` of the Π-envelope. -/
 def cupShift (n i : ℕ) :
-    (⟨0, (pres R).obj (strands n)⟩ : Envelope (pres R).Presented) ⟶
+    (⟨0, (pres R).obj (strands n)⟩ : Envelope R (pres R).Presented) ⟶
       ⟨1, (pres R).obj (strands (n + 2))⟩ :=
   Envelope.ofHom (cup R n i)
 
 /-- The odd cap, as a morphism `Π¹(n + 2) → Π⁰(n)` of the Π-envelope. -/
 def capShift (n i : ℕ) :
-    (⟨1, (pres R).obj (strands (n + 2))⟩ : Envelope (pres R).Presented) ⟶
+    (⟨1, (pres R).obj (strands (n + 2))⟩ : Envelope R (pres R).Presented) ⟶
       ⟨0, (pres R).obj (strands n)⟩ :=
   Envelope.ofHom (cap R n i)
 
@@ -60,19 +60,19 @@ theorem cap_mem (n i : ℕ) :
 /-- In the Π-envelope, the shifted cup is even. -/
 theorem cupShift_mem (n i : ℕ) :
     cupShift R n i ∈ parity (R := R)
-      (⟨0, (pres R).obj (strands n)⟩ : Envelope (pres R).Presented)
+      (⟨0, (pres R).obj (strands n)⟩ : Envelope R (pres R).Presented)
       ⟨1, (pres R).obj (strands (n + 2))⟩ 0 := by
-  have := Envelope.ofHom_mem (X := (⟨0, (pres R).obj (strands n)⟩ : Envelope (pres R).Presented))
+  have := Envelope.ofHom_mem (X := (⟨0, (pres R).obj (strands n)⟩ : Envelope R (pres R).Presented))
     (Y := ⟨1, (pres R).obj (strands (n + 2))⟩) (cup_mem R n i)
   rwa [show (1 : ZMod 2) + (0 + 1) = 0 by decide] at this
 
 /-- In the Π-envelope, the shifted cap is even. -/
 theorem capShift_mem (n i : ℕ) :
     capShift R n i ∈ parity (R := R)
-      (⟨1, (pres R).obj (strands (n + 2))⟩ : Envelope (pres R).Presented)
+      (⟨1, (pres R).obj (strands (n + 2))⟩ : Envelope R (pres R).Presented)
       ⟨0, (pres R).obj (strands n)⟩ 0 := by
   have := Envelope.ofHom_mem
-    (X := (⟨1, (pres R).obj (strands (n + 2))⟩ : Envelope (pres R).Presented))
+    (X := (⟨1, (pres R).obj (strands (n + 2))⟩ : Envelope R (pres R).Presented))
     (Y := ⟨0, (pres R).obj (strands n)⟩) (cap_mem R n i)
   rwa [show (1 : ZMod 2) + (1 + 0) = 0 by decide] at this
 
@@ -86,7 +86,7 @@ theorem cupShift_comp_capShift {n i : ℕ} (h : i + 1 ≤ n) :
 theorem extend_J {B : Type*} [Category B] [Preadditive B] [Linear R B] [Supercategory R B]
     [PiSupercategory R B] (F : (pres R).Presented ⥤ B) [F.Additive] [F.Linear R]
     [IsSuperfunctor R F] :
-    Envelope.J _ ⋙ Envelope.extend R F = F :=
+    Envelope.J R _ ⋙ Envelope.extend R F = F :=
   Envelope.J_comp_extend R F
 
 end StringDiagrams.OddBrauer

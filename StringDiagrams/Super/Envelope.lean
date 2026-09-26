@@ -6,7 +6,7 @@ import StringDiagrams.Super.Pi
 Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v3,
 Definition 1.10, Lemmas 4.1–4.2 and Theorem 4.3 (the first half of Theorem 1.9).
 
-The Π-envelope `A_π` of a supercategory `A` (`StringDiagrams.Envelope C`) has objects `Πᵃ λ`
+The Π-envelope `A_π` of a supercategory `A` (`StringDiagrams.Envelope R C`) has objects `Πᵃ λ`
 for `λ ∈ A`, `a ∈ ℤ/2`, and morphisms `Hom(Πᵃ λ, Πᵇ μ) := Π^{a+b} Hom_A(λ, μ)`: the morphism
 `f_a^b : Πᵃ λ → Πᵇ μ` coming from a homogeneous `f : λ → μ` has parity `|f| + a + b`, and
 composition is induced by that of `A` (without signs). It is a Π-supercategory with
@@ -14,7 +14,7 @@ composition is induced by that of `A` (without signs). It is a Π-supercategory 
 
 ## Main definitions and statements
 
-* `Envelope C`, with its `Preadditive`, `Linear`, `Supercategory` and `PiSupercategory`
+* `Envelope R C`, with its `Preadditive`, `Linear`, `Supercategory` and `PiSupercategory`
   instances (Definition 1.10).
 * `Envelope.J`: the canonical superfunctor `J : A → A_π`, `λ ↦ Π⁰ λ`, `f ↦ f₀⁰`; it is full
   and faithful.
@@ -55,7 +55,7 @@ universe w w₁ w₂ w₃ w₄
 
 /-- The objects `Πᵃ λ` of the Π-envelope of `C` (Brundan–Ellis, Definition 1.10). -/
 @[ext]
-structure Envelope (C : Type w₁) where
+structure Envelope (R : Type w) (C : Type w₁) where
   /-- The parity shift `a`. -/
   par : ZMod 2
   /-- The underlying object `λ`. -/
@@ -63,9 +63,9 @@ structure Envelope (C : Type w₁) where
 
 namespace Envelope
 
-variable {R : Type w} [CommRing R] {C : Type w₁} [Category.{w₂} C]
+variable {R : Type w} {C : Type w₁} [Category.{w₂} C]
 
-instance : Category (Envelope C) where
+instance : Category (Envelope R C) where
   Hom X Y := X.obj ⟶ Y.obj
   id X := 𝟙 X.obj
   comp {X Y Z} (f : X.obj ⟶ Y.obj) (g : Y.obj ⟶ Z.obj) := f ≫ g
@@ -74,25 +74,25 @@ instance : Category (Envelope C) where
   assoc {W X _ _} (f : W.obj ⟶ X.obj) g h := Category.assoc f g h
 
 /-- The morphism of `C` underlying a morphism of the envelope. -/
-def toHom {X Y : Envelope C} (f : X ⟶ Y) : X.obj ⟶ Y.obj := f
+def toHom {X Y : Envelope R C} (f : X ⟶ Y) : X.obj ⟶ Y.obj := f
 
 /-- The morphism `f_a^b : Πᵃ λ ⟶ Πᵇ μ` of the envelope given by `f : λ ⟶ μ`. -/
-def ofHom {X Y : Envelope C} (f : X.obj ⟶ Y.obj) : X ⟶ Y := f
+def ofHom {X Y : Envelope R C} (f : X.obj ⟶ Y.obj) : X ⟶ Y := f
 
-@[simp] theorem toHom_ofHom {X Y : Envelope C} (f : X.obj ⟶ Y.obj) : toHom (ofHom f) = f := rfl
+@[simp] theorem toHom_ofHom {X Y : Envelope R C} (f : X.obj ⟶ Y.obj) : toHom (ofHom f) = f := rfl
 
-@[simp] theorem ofHom_toHom {X Y : Envelope C} (f : X ⟶ Y) : ofHom (toHom f) = f := rfl
+@[simp] theorem ofHom_toHom {X Y : Envelope R C} (f : X ⟶ Y) : ofHom (toHom f) = f := rfl
 
-@[ext] theorem hom_ext {X Y : Envelope C} {f g : X ⟶ Y} (h : toHom f = toHom g) : f = g := h
+@[ext] theorem hom_ext {X Y : Envelope R C} {f g : X ⟶ Y} (h : toHom f = toHom g) : f = g := h
 
-@[simp] theorem toHom_id (X : Envelope C) : toHom (𝟙 X) = 𝟙 X.obj := rfl
+@[simp] theorem toHom_id (X : Envelope R C) : toHom (𝟙 X) = 𝟙 X.obj := rfl
 
-@[simp] theorem toHom_comp {X Y Z : Envelope C} (f : X ⟶ Y) (g : Y ⟶ Z) :
+@[simp] theorem toHom_comp {X Y Z : Envelope R C} (f : X ⟶ Y) (g : Y ⟶ Z) :
     toHom (f ≫ g) = toHom f ≫ toHom g := rfl
 
 /-- An isomorphism of the envelope gives an isomorphism of underlying objects. -/
 @[simps]
-def isoToIso {X Y : Envelope C} (e : X ≅ Y) : X.obj ≅ Y.obj where
+def isoToIso {X Y : Envelope R C} (e : X ≅ Y) : X.obj ≅ Y.obj where
   hom := toHom e.hom
   inv := toHom e.inv
   hom_inv_id := e.hom_inv_id
@@ -100,7 +100,7 @@ def isoToIso {X Y : Envelope C} (e : X ≅ Y) : X.obj ≅ Y.obj where
 
 /-- An isomorphism of underlying objects gives an isomorphism of the envelope. -/
 @[simps]
-def isoOfIso {X Y : Envelope C} (e : X.obj ≅ Y.obj) : X ≅ Y where
+def isoOfIso {X Y : Envelope R C} (e : X.obj ≅ Y.obj) : X ≅ Y where
   hom := ofHom e.hom
   inv := ofHom e.inv
   hom_inv_id := e.hom_inv_id
@@ -110,26 +110,26 @@ section Linear
 
 variable [Preadditive C]
 
-instance : Preadditive (Envelope C) where
+instance : Preadditive (Envelope R C) where
   homGroup X Y := inferInstanceAs (AddCommGroup (X.obj ⟶ Y.obj))
   add_comp _ _ _ f f' g := Preadditive.add_comp (C := C) _ _ _ f f' g
   comp_add _ _ _ f g g' := Preadditive.comp_add (C := C) _ _ _ f g g'
 
-@[simp] theorem toHom_add {X Y : Envelope C} (f g : X ⟶ Y) : toHom (f + g) = toHom f + toHom g :=
+@[simp] theorem toHom_add {X Y : Envelope R C} (f g : X ⟶ Y) : toHom (f + g) = toHom f + toHom g :=
   rfl
 
-@[simp] theorem toHom_zero {X Y : Envelope C} : toHom (0 : X ⟶ Y) = 0 := rfl
+@[simp] theorem toHom_zero {X Y : Envelope R C} : toHom (0 : X ⟶ Y) = 0 := rfl
 
-@[simp] theorem toHom_neg {X Y : Envelope C} (f : X ⟶ Y) : toHom (-f) = -toHom f := rfl
+@[simp] theorem toHom_neg {X Y : Envelope R C} (f : X ⟶ Y) : toHom (-f) = -toHom f := rfl
 
-variable [Linear R C]
+variable [CommRing R] [Linear R C]
 
-instance : Linear R (Envelope C) where
+instance : Linear R (Envelope R C) where
   homModule X Y := inferInstanceAs (Module R (X.obj ⟶ Y.obj))
   smul_comp _ _ _ r f g := Linear.smul_comp (C := C) _ _ _ r f g
   comp_smul _ _ _ f r g := Linear.comp_smul (C := C) _ _ _ f r g
 
-@[simp] theorem toHom_smul {X Y : Envelope C} (r : R) (f : X ⟶ Y) : toHom (r • f) = r • toHom f :=
+@[simp] theorem toHom_smul {X Y : Envelope R C} (r : R) (f : X ⟶ Y) : toHom (r • f) = r • toHom f :=
   rfl
 
 /-! ## The supercategory structure -/
@@ -145,7 +145,7 @@ theorem isInternal_shift (X Y : C) (s : ZMod 2) :
     rw [← h.2]; exact (Equiv.addRight s).iSup_comp (g := fun p => parity (R := R) X Y p)⟩
 
 /-- The Π-envelope is a supercategory: `f_a^b` has parity `|f| + a + b`. -/
-instance : Supercategory R (Envelope C) where
+instance : Supercategory R (Envelope R C) where
   parity X Y p := parity (R := R) X.obj Y.obj (p + (X.par + Y.par))
   isInternal X Y := isInternal_shift (R := R) X.obj Y.obj (X.par + Y.par)
   id_mem X := by
@@ -158,18 +158,18 @@ instance : Supercategory R (Envelope C) where
       by ring, zmod2_add_self, add_zero] at this
     exact this
 
-theorem mem_parity_iff {X Y : Envelope C} {f : X ⟶ Y} {p : ZMod 2} :
+theorem mem_parity_iff {X Y : Envelope R C} {f : X ⟶ Y} {p : ZMod 2} :
     f ∈ parity (R := R) X Y p ↔ toHom f ∈ parity (R := R) X.obj Y.obj (p + (X.par + Y.par)) :=
   Iff.rfl
 
-theorem ofHom_mem {X Y : Envelope C} {f : X.obj ⟶ Y.obj} {q : ZMod 2}
+theorem ofHom_mem {X Y : Envelope R C} {f : X.obj ⟶ Y.obj} {q : ZMod 2}
     (hf : f ∈ parity (R := R) X.obj Y.obj q) :
     ofHom f ∈ parity (R := R) X Y (q + (X.par + Y.par)) := by
   rw [mem_parity_iff, toHom_ofHom, add_assoc, zmod2_add_self, add_zero]
   exact hf
 
 /-- The parity components in the envelope are shifted components in `C`. -/
-theorem toHom_proj (p : ZMod 2) {X Y : Envelope C} (f : X ⟶ Y) :
+theorem toHom_proj (p : ZMod 2) {X Y : Envelope R C} (f : X ⟶ Y) :
     toHom (proj R p f) = proj R (p + (X.par + Y.par)) (toHom f) := by
   set s := X.par + Y.par
   let g : X ⟶ Y := ofHom (proj R (p + s) (toHom f))
@@ -184,7 +184,7 @@ theorem toHom_proj (p : ZMod 2) {X Y : Envelope C} (f : X ⟶ Y) :
 
 /-- The twist in the envelope: `f_a^b ↦ (-1)^{p(a+b)} (f')_a^b` where `f'` is the twist in
 `C`. -/
-theorem toHom_twist (p : ZMod 2) {X Y : Envelope C} (f : X ⟶ Y) :
+theorem toHom_twist (p : ZMod 2) {X Y : Envelope R C} (f : X ⟶ Y) :
     toHom (twist R p f) = sign R (p * (X.par + Y.par)) • twist R p (toHom f) := by
   rw [twist_apply, twist_apply, toHom_add, toHom_smul, toHom_proj, toHom_proj]
   rcases parity_eq_zero_or_one (X.par + Y.par) with h | h <;> rw [h]
@@ -195,11 +195,11 @@ theorem toHom_twist (p : ZMod 2) {X Y : Envelope C} (f : X ⟶ Y) :
 /-! ## The Π-supercategory structure -/
 
 /-- The odd isomorphism `ζ_{Πᵃ λ} = (1_λ)_{a+1}^a : Π^{a+1} λ ≅ Πᵃ λ`. -/
-def ζIso (X : Envelope C) : (⟨X.par + 1, X.obj⟩ : Envelope C) ≅ X :=
+def ζIso (X : Envelope R C) : (⟨X.par + 1, X.obj⟩ : Envelope R C) ≅ X :=
   isoOfIso (Iso.refl X.obj)
 
-theorem ζIso_mem (X : Envelope C) :
-    (ζIso X).hom ∈ parity (R := R) (⟨X.par + 1, X.obj⟩ : Envelope C) X 1 := by
+theorem ζIso_mem (X : Envelope R C) :
+    (ζIso X).hom ∈ parity (R := R) (⟨X.par + 1, X.obj⟩ : Envelope R C) X 1 := by
   rw [mem_parity_iff]
   show 𝟙 X.obj ∈ parity (R := R) X.obj X.obj (1 + (X.par + 1 + X.par))
   rw [show (1 : ZMod 2) + (X.par + 1 + X.par) = (1 + 1) + (X.par + X.par) by ring,
@@ -208,23 +208,23 @@ theorem ζIso_mem (X : Envelope C) :
 
 /-- The Π-envelope is a Π-supercategory: `Π(Πᵃ λ) = Π^{a+1} λ`, `ζ = (1_λ)_{a+1}^a`
 (Brundan–Ellis, Definition 1.10). -/
-instance : PiSupercategory R (Envelope C) :=
+instance : PiSupercategory R (Envelope R C) :=
   PiSupercategory.ofIso (fun X => ⟨X.par + 1, X.obj⟩) ζIso ζIso_mem
 
-@[simp] theorem pi_obj (X : Envelope C) :
+@[simp] theorem pi_obj (X : Envelope R C) :
     (PiSupercategory.pi (R := R)).obj X = ⟨X.par + 1, X.obj⟩ := rfl
 
-theorem ζ_eq (X : Envelope C) : PiSupercategory.ζ (R := R) X = ζIso X := rfl
+theorem ζ_eq (X : Envelope R C) : PiSupercategory.ζ (R := R) X = ζIso X := rfl
 
-@[simp] theorem toHom_ζ_hom (X : Envelope C) :
+@[simp] theorem toHom_ζ_hom (X : Envelope R C) :
     toHom (PiSupercategory.ζ (R := R) X).hom = 𝟙 X.obj := rfl
 
-@[simp] theorem toHom_ζ_inv (X : Envelope C) :
+@[simp] theorem toHom_ζ_inv (X : Envelope R C) :
     toHom (PiSupercategory.ζ (R := R) X).inv = 𝟙 X.obj := rfl
 
 /-- The action of `Π` on morphisms of the envelope:
 `Π(f_a^b) = (-1)^{a+b} (f₀ - f₁)_{a+1}^{b+1}`. -/
-theorem toHom_pi_map {X Y : Envelope C} (f : X ⟶ Y) :
+theorem toHom_pi_map {X Y : Envelope R C} (f : X ⟶ Y) :
     toHom ((PiSupercategory.pi (R := R)).map f) =
       sign R (X.par + Y.par) • twist R 1 (toHom f) := by
   show toHom (ζIso X).hom ≫ toHom (twist R 1 f) ≫ toHom (ζIso Y).inv = _
@@ -233,43 +233,43 @@ theorem toHom_pi_map {X Y : Envelope C} (f : X ⟶ Y) :
 
 /-! ## The canonical superfunctor `J` -/
 
-variable (C) in
+variable (R C) in
 /-- The canonical superfunctor `J : A ⥤ A_π`, `λ ↦ Π⁰ λ`, `f ↦ f₀⁰`. -/
 @[simps]
-def J : C ⥤ Envelope C where
+def J : C ⥤ Envelope R C where
   obj X := ⟨0, X⟩
   map f := ofHom f
   map_id _ := rfl
   map_comp _ _ := rfl
 
-instance : (J C).Additive where
+instance : (J R C).Additive where
   map_add := rfl
 
-instance : (J C).Linear R where
+instance : (J R C).Linear R where
   map_smul _ _ := rfl
 
-instance : IsSuperfunctor R (J C) where
+instance : IsSuperfunctor R (J R C) where
   map_mem {X Y p f} hf := by
     rw [mem_parity_iff]
     simpa using hf
 
-instance : (J C).Full where
+instance : (J R C).Full where
   map_surjective f := ⟨toHom f, rfl⟩
 
-instance : (J C).Faithful where
+instance : (J R C).Faithful where
   map_injective h := h
 
 /-- The morphism `(1_λ)_0^a : Π⁰ λ ⟶ Πᵃ λ`, of parity `a`. -/
-def shiftIso (X : Envelope C) : (J C).obj X.obj ≅ X := isoOfIso (Iso.refl X.obj)
+def shiftIso (X : Envelope R C) : (J R C).obj X.obj ≅ X := isoOfIso (Iso.refl X.obj)
 
-theorem shiftIso_hom_mem (X : Envelope C) :
-    (shiftIso X).hom ∈ parity (R := R) ((J C).obj X.obj) X X.par := by
+theorem shiftIso_hom_mem (X : Envelope R C) :
+    (shiftIso X).hom ∈ parity (R := R) ((J R C).obj X.obj) X X.par := by
   rw [mem_parity_iff]
   show 𝟙 X.obj ∈ parity (R := R) X.obj X.obj (X.par + (0 + X.par))
   rw [zero_add, zmod2_add_self]; exact id_mem X.obj
 
-theorem shiftIso_inv_mem (X : Envelope C) :
-    (shiftIso X).inv ∈ parity (R := R) X ((J C).obj X.obj) X.par :=
+theorem shiftIso_inv_mem (X : Envelope R C) :
+    (shiftIso X).inv ∈ parity (R := R) X ((J R C).obj X.obj) X.par :=
   inv_mem _ (shiftIso_hom_mem X)
 
 /-! ## Lemma 4.1 -/
@@ -290,7 +290,7 @@ def PiComplete.piSupercategory (h : PiComplete R C) : PiSupercategory R C :=
     (fun X => (h X).choose_spec.choose_spec)
 
 /-- **Lemma 4.1**, even density: `J` is evenly dense if and only if `A` is Π-complete. -/
-theorem J_evenlyDense_iff : EvenlyDense R (J C) ↔ PiComplete R C := by
+theorem J_evenlyDense_iff : EvenlyDense R (J R C) ↔ PiComplete R C := by
   constructor
   · intro h X
     obtain ⟨Y, e, he⟩ := h ⟨1, X⟩
@@ -307,12 +307,12 @@ theorem J_evenlyDense_iff : EvenlyDense R (J C) ↔ PiComplete R C := by
       simpa using he
 
 /-- **Lemma 4.1** ("if"): if `A` is Π-complete then `J : A → A_π` is a superequivalence. -/
-def superequivalenceJ (h : PiComplete R C) : Superequivalence R (J C) :=
-  Superequivalence.ofFullyFaithful (J C) (J_evenlyDense_iff.2 h)
+def superequivalenceJ (h : PiComplete R C) : Superequivalence R (J R C) :=
+  Superequivalence.ofFullyFaithful (J R C) (J_evenlyDense_iff.2 h)
 
 /-- **Lemma 4.1** ("only if"): if `J : A → A_π` is a superequivalence then `A` is
 Π-complete. -/
-theorem piComplete_of_superequivalence (e : Superequivalence R (J C)) : PiComplete R C :=
+theorem piComplete_of_superequivalence (e : Superequivalence R (J R C)) : PiComplete R C :=
   J_evenlyDense_iff.1 e.evenlyDense
 
 /-! ## Lemma 4.2: the universal property -/
@@ -359,7 +359,7 @@ variable (R) (F : C ⥤ B) [F.Additive] [F.Linear R] [IsSuperfunctor R F]
 /-- **Lemma 4.2(i).** The extension `F̃ : A_π ⥤ B` of a superfunctor `F : A ⥤ B` to the
 Π-envelope: `F̃(Πᵃ λ) = Πᵃ(F λ)`, `F̃(f_a^b) = (ζᵇ_{F μ})⁻¹ ∘ F f ∘ ζᵃ_{F λ}`. -/
 @[simps]
-def extend : Envelope C ⥤ B where
+def extend : Envelope R C ⥤ B where
   obj X := piPow R X.par (F.obj X.obj)
   map {X Y} f := (ζPow R X.par (F.obj X.obj)).hom ≫ F.map (toHom f) ≫
     (ζPow R Y.par (F.obj Y.obj)).inv
@@ -383,7 +383,7 @@ instance : IsSuperfunctor R (extend R F) where
 omit [Preadditive C] [Linear R C] [Supercategory R C] [F.Additive] [F.Linear R]
   [IsSuperfunctor R F] in
 /-- **Lemma 4.2(i).** `F = F̃ J`. -/
-theorem J_comp_extend : J C ⋙ extend R F = F :=
+theorem J_comp_extend : J R C ⋙ extend R F = F :=
   CategoryTheory.Functor.ext (fun _ => rfl) (fun X Y f => by simp)
 
 variable {R F}
@@ -393,7 +393,7 @@ variable {G : C ⥤ B} [G.Additive] [G.Linear R] [IsSuperfunctor R G]
 variable (R F G) in
 /-- **Lemma 4.2(ii)**, formula (4.2): the extension
 `x̃_{Πᵃ λ} = (-1)^{a|x|} (ζᵃ_{G λ})⁻¹ ∘ x_λ ∘ ζᵃ_{F λ}` of a family `x` of parity `p`. -/
-def extendNat (p : ZMod 2) (x : ∀ X, F.obj X ⟶ G.obj X) (X : Envelope C) :
+def extendNat (p : ZMod 2) (x : ∀ X, F.obj X ⟶ G.obj X) (X : Envelope R C) :
     (extend R F).obj X ⟶ (extend R G).obj X :=
   sign R (X.par * p) • ((ζPow R X.par (F.obj X.obj)).hom ≫ x X.obj ≫
     (ζPow R X.par (G.obj X.obj)).inv)
@@ -424,21 +424,21 @@ omit [Preadditive C] [Linear R C] [Supercategory R C] [F.Additive] [F.Linear R]
   [IsSuperfunctor R F] [G.Additive] [G.Linear R] [IsSuperfunctor R G] in
 /-- **Lemma 4.2(ii).** `x̃ J = x`. -/
 @[simp] theorem extendNat_zero_par (p : ZMod 2) (x : ∀ X, F.obj X ⟶ G.obj X) (X : C) :
-    extendNat R F G p x ((J C).obj X) = x X := by
+    extendNat R F G p x ((J R C).obj X) = x X := by
   simp [extendNat]
 
 omit [PiSupercategory R B] in
 /-- **Uniqueness in Lemma 4.2(ii).** Supernatural transformations of the same parity between
 superfunctors out of the Π-envelope agree if they agree on the objects `Π⁰ λ`. -/
-theorem eq_of_restrict_eq {H K : Envelope C ⥤ B} [H.Additive] [H.Linear R] [IsSuperfunctor R H]
+theorem eq_of_restrict_eq {H K : Envelope R C ⥤ B} [H.Additive] [H.Linear R] [IsSuperfunctor R H]
     [K.Additive] [K.Linear R] [IsSuperfunctor R K] {p : ZMod 2}
     {y y' : ∀ X, H.obj X ⟶ K.obj X} (hy : IsSupernatural R p y) (hy' : IsSupernatural R p y')
-    (h : ∀ X : C, y ((J C).obj X) = y' ((J C).obj X)) : y = y' := by
+    (h : ∀ X : C, y ((J R C).obj X) = y' ((J R C).obj X)) : y = y' := by
   funext X
   obtain ⟨a, X⟩ := X
   rcases parity_eq_zero_or_one a with rfl | rfl
   · exact h X
-  · have hu := ζIso_mem (R := R) (⟨0, X⟩ : Envelope C)
+  · have hu := ζIso_mem (R := R) (⟨0, X⟩ : Envelope R C)
     have e1 := hy.naturality hu
     have e2 := hy'.naturality hu
     have h0 : y ⟨0, X⟩ = y' ⟨0, X⟩ := h X
@@ -454,7 +454,7 @@ restricting to `x`. -/
 theorem eq_extendNat {p : ZMod 2} {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsSupernatural R p x)
     {y : ∀ X, (extend R F).obj X ⟶ (extend R G).obj X}
     (hy : IsSupernatural R p (F := extend R F) (G := extend R G) y)
-    (h : ∀ X : C, y ((J C).obj X) = x X) : y = extendNat R F G p x :=
+    (h : ∀ X : C, y ((J R C).obj X) = x X) : y = extendNat R F G p x :=
   eq_of_restrict_eq hy (isSupernatural_extendNat hx) fun X => by rw [h, extendNat_zero_par]
 
 /-- **Theorem 4.3**, full faithfulness: restriction along `J` is a bijection from parity-`p`
@@ -462,8 +462,8 @@ supernatural transformations `F̃ ⇒ G̃` to parity-`p` supernatural transforma
 theorem restrict_bijective (p : ZMod 2) :
     Function.Bijective (fun y : {y : ∀ X, (extend R F).obj X ⟶ (extend R G).obj X //
         IsSupernatural R p (F := extend R F) (G := extend R G) y} =>
-      (⟨fun X => y.1 ((J C).obj X), ⟨fun X => y.2.mem ((J C).obj X), fun {X Y q f} hf => by
-        simpa using y.2.naturality (map_mem (J C) hf)⟩⟩ :
+      (⟨fun X => y.1 ((J R C).obj X), ⟨fun X => y.2.mem ((J R C).obj X), fun {X Y q f} hf => by
+        simpa using y.2.naturality (map_mem (J R C) hf)⟩⟩ :
         {x : ∀ X, F.obj X ⟶ G.obj X // IsSupernatural R p x})) := by
   constructor
   · intro y y' hyy
@@ -505,9 +505,9 @@ theorem extendNat_smul {p : ZMod 2} (r : R) (x : ∀ X, F.obj X ⟶ G.obj X) :
 /-- **Theorem 4.3**, even density: every superfunctor `H : A_π ⥤ B` is isomorphic to the
 extension of its restriction `J ⋙ H`, via the even isomorphisms
 `ζᵃ ≫ H((1_λ)_0^a) : Πᵃ(H Π⁰ λ) ≅ H(Πᵃ λ)`. -/
-def extendRestrictIso (H : Envelope C ⥤ B) [H.Additive] [H.Linear R] [IsSuperfunctor R H] :
-    extend R (J C ⋙ H) ≅ H :=
-  NatIso.ofComponents (fun X => ζPow R X.par (H.obj ((J C).obj X.obj)) ≪≫ H.mapIso (shiftIso X))
+def extendRestrictIso (H : Envelope R C ⥤ B) [H.Additive] [H.Linear R] [IsSuperfunctor R H] :
+    extend R (J R C ⋙ H) ≅ H :=
+  NatIso.ofComponents (fun X => ζPow R X.par (H.obj ((J R C).obj X.obj)) ≪≫ H.mapIso (shiftIso X))
     (fun {X Y} f => by
       simp only [extend_obj, Functor.comp_obj, extend_map, Functor.comp_map, Iso.trans_hom,
         Functor.mapIso_hom, Category.assoc, Iso.inv_hom_id_assoc]
@@ -515,11 +515,11 @@ def extendRestrictIso (H : Envelope C ⥤ B) [H.Additive] [H.Linear R] [IsSuperf
       congr 2
       exact hom_ext (by simp [shiftIso]))
 
-theorem extendRestrictIso_hom_mem (H : Envelope C ⥤ B) [H.Additive] [H.Linear R]
-    [IsSuperfunctor R H] (X : Envelope C) :
+theorem extendRestrictIso_hom_mem (H : Envelope R C ⥤ B) [H.Additive] [H.Linear R]
+    [IsSuperfunctor R H] (X : Envelope R C) :
     (extendRestrictIso H).hom.app X ∈
-      parity (R := R) ((extend R (J C ⋙ H)).obj X) (H.obj X) 0 := by
-  have := comp_mem (ζPow_hom_mem X.par (H.obj ((J C).obj X.obj)))
+      parity (R := R) ((extend R (J R C ⋙ H)).obj X) (H.obj X) 0 := by
+  have := comp_mem (ζPow_hom_mem X.par (H.obj ((J R C).obj X.obj)))
     (map_mem H (shiftIso_hom_mem (R := R) X))
   rw [zmod2_add_self] at this
   exact this
@@ -532,38 +532,40 @@ section Map
 
 variable {D : Type w₃} [Category.{w₄} D] [Preadditive D] [Linear R D] [Supercategory R D]
 
+variable (R) in
 /-- The extension `F_π : A_π ⥤ B_π` of a functor, `Πᵃ λ ↦ Πᵃ(F λ)`, `f_a^b ↦ (F f)_a^b`
 (Brundan–Ellis, Definition 1.10). -/
 @[simps]
-def map (F : C ⥤ D) : Envelope C ⥤ Envelope D where
+def map (F : C ⥤ D) : Envelope R C ⥤ Envelope R D where
   obj X := ⟨X.par, F.obj X.obj⟩
   map f := ofHom (F.map (toHom f))
   map_id X := F.map_id X.obj
   map_comp f g := F.map_comp (toHom f) (toHom g)
 
-instance (F : C ⥤ D) [F.Additive] : (map F).Additive where
+instance (F : C ⥤ D) [F.Additive] : (map R F).Additive where
   map_add := F.map_add
 
-instance (F : C ⥤ D) [F.Additive] [F.Linear R] : (map F).Linear R where
+instance (F : C ⥤ D) [F.Additive] [F.Linear R] : (map R F).Linear R where
   map_smul f r := Functor.Linear.map_smul (F := F) (toHom f) r
 
-instance (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] : IsSuperfunctor R (map F) where
+instance (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] :
+    IsSuperfunctor R (map R F) where
   map_mem hf := map_mem (R := R) F hf
 
-omit [Preadditive C] [Preadditive D] in
-theorem J_comp_map (F : C ⥤ D) : J C ⋙ map F = F ⋙ J D := rfl
+omit [CommRing R] [Preadditive C] [Preadditive D] in
+theorem J_comp_map (F : C ⥤ D) : J R C ⋙ map R F = F ⋙ J R D := rfl
 
-omit [Preadditive C] in
-theorem map_id : map (𝟭 C) = 𝟭 (Envelope C) := rfl
+omit [CommRing R] [Preadditive C] in
+theorem map_id : map R (𝟭 C) = 𝟭 (Envelope R C) := rfl
 
-omit [Preadditive C] [Preadditive D] in
+omit [CommRing R] [Preadditive C] [Preadditive D] in
 theorem map_comp {E : Type*} [Category E] (F : C ⥤ D) (G : D ⥤ E) :
-    map (F ⋙ G) = map F ⋙ map G := rfl
+    map R (F ⋙ G) = map R F ⋙ map R G := rfl
 
 /-- `F_π` commutes with `Π` on the nose. -/
-theorem map_pi_obj (F : C ⥤ D) (X : Envelope C) :
-    (map F).obj ((PiSupercategory.pi (R := R)).obj X) =
-      (PiSupercategory.pi (R := R)).obj ((map F).obj X) := rfl
+theorem map_pi_obj (F : C ⥤ D) (X : Envelope R C) :
+    (map R F).obj ((PiSupercategory.pi (R := R)).obj X) =
+      (PiSupercategory.pi (R := R)).obj ((map R F).obj X) := rfl
 
 end Map
 
