@@ -52,6 +52,12 @@ import StringDiagrams.Super.GradedTwoEnvelope
 import StringDiagrams.Super.QPiTwoCategory
 import StringDiagrams.Super.DrinfeldCenter
 import StringDiagrams.Super.TwoFunctorComp
+import StringDiagrams.Super.TwoHom
+import StringDiagrams.Super.TwoFunctorStrict
+import StringDiagrams.Super.TwoEnvelopeTwoHom
+import StringDiagrams.Super.PiCat
+import StringDiagrams.Super.TwoSCat
+import StringDiagrams.Super.DrinfeldCenterEnvelope
 import StringDiagrams.Super.SVec
 import StringDiagrams.Super.K0
 import StringDiagrams.Super.SKar
