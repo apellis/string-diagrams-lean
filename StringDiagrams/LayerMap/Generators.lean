@@ -189,6 +189,19 @@ theorem layer_whisker (L : Layer S) (u : Obj S) (v : List S.Colour) :
     φ.layer (L.whisker u v) = (φ.layer L).whisker (φ.obj u) (φ.word v) := by
   simp [layer, Layer.whisker, ColourMap.obj]
 
+/-- A relabelling of the generators of `S` fixing regions and strands. Objects, and the types
+of diagrams, are unchanged (`φ.obj a` is `a` by definition). -/
+@[simps!]
+def ofGen (γ : S.Gen → S.Gen) (dom : ∀ g, S.dom (γ g) = S.dom g)
+    (cod : ∀ g, S.cod (γ g) = S.cod g) (left : ∀ g, S.left (γ g) = S.left g)
+    (right : ∀ g, S.right (γ g) = S.right g) : SigMap S S :=
+  { ColourMap.id S with gen := γ, dom := dom, cod := cod, left := left, right := right }
+
+/-- The identity map of signatures. With weights `χ`, it induces the functors rescaling every
+generator `g` by `χ g`. -/
+protected abbrev id (S : Signature.{u₀, u₁, u₂}) : SigMap S S :=
+  ofGen id (fun _ => rfl) (fun _ => rfl) (fun _ => rfl) (fun _ => rfl)
+
 /-- A map of signatures commutes with whiskering, on all objects. -/
 def whiskerData : LayerMap.WhiskerData fun _ : Unit => φ.toLayerMap where
   Admissible _ := True
@@ -325,6 +338,14 @@ def toOpLayerMap : OpLayerMap S S' where
 theorem layer_whisker (L : Layer S) (u : Obj S) (v : List S.Colour) :
     φ.layer (L.whisker u v) = (φ.layer L).whisker (φ.obj u) (φ.word v) := by
   simp [layer, Layer.whisker, ColourMap.obj]
+
+/-- A reflection of the generators of `S` in a horizontal axis fixing regions and strands.
+Objects, and the types of diagrams, are unchanged (`φ.obj a` is `a` by definition). -/
+@[simps!]
+def ofGen (γ : S.Gen → S.Gen) (dom : ∀ g, S.dom (γ g) = S.cod g)
+    (cod : ∀ g, S.cod (γ g) = S.dom g) (left : ∀ g, S.left (γ g) = S.left g)
+    (right : ∀ g, S.right (γ g) = S.right g) : SigFlip S S :=
+  { ColourMap.id S with gen := γ, dom := dom, cod := cod, left := left, right := right }
 
 /-- A reflection of generators commutes with whiskering, on all objects. -/
 def whiskerData : OpLayerMap.WhiskerData fun _ : Unit => φ.toOpLayerMap where
