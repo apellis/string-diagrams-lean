@@ -990,6 +990,22 @@ theorem ζ_eq (X : Orbit d) : PiSupercategory.ζ (R := R) X = ζIso X := rfl
 @[simp] theorem pi_obj (X : Orbit d) :
     (PiSupercategory.pi (R := R)).obj X = ⟨(PiSupercategory.pi (R := R)).obj X.obj⟩ := rfl
 
+/-- `Π` commutes with `ι`. -/
+theorem pi_map_ι {X Y : S} (g : X ⟶ Y) :
+    (PiSupercategory.pi (R := R)).map ((ι d).map g) =
+      (ι d).map ((PiSupercategory.pi (R := R)).map g) := by
+  show (ζIso _).hom ≫ twist R 1 ((ι d).map g) ≫ (ζIso _).inv = _
+  rw [← map_twist (ι d), ζIso, ζIso, Functor.mapIso_hom, Functor.mapIso_inv, ← Functor.map_comp,
+    ← Functor.map_comp, PiSupercategory.pi_map_eq (R := R) g]
+  rfl
+
+/-- `ξ = ζζ` of the orbit supercategory is `ξ` of `S`. -/
+theorem ξ_hom_eq (X : S) :
+    (PiSupercategory.ξ (R := R) (⟨X⟩ : Orbit d)).hom = (ι d).map (PiSupercategory.ξ (R := R) X).hom := by
+  rw [PiSupercategory.ξ_hom, PiSupercategory.ξ_hom, ζ_eq, ζIso, Functor.mapIso_hom]
+  erw [pi_map_ι]
+  rw [← Functor.map_comp]
+
 end Pi
 
 /-! ## The `Q`-structure -/
@@ -1023,6 +1039,23 @@ theorem σIso_hom_mem_degree (X : Orbit d) :
     (σIso X).hom ∈ GradedSupercategory.degree (R := R) (⟨d.Q.obj X.obj⟩ : Orbit d) X (-1) :=
   ⟨_, rfl⟩
 
+/-- `σ` is natural with respect to the morphisms of `S`: `σ_Y ∘ ι(Q g) = ι(g) ∘ σ_X`. -/
+theorem σIso_hom_naturality {X Y : S} (g : X ⟶ Y) :
+    (σIso ((ι d).obj X)).hom ≫ (ι d).map g = (ι d).map (d.Q.map g) ≫ (σIso ((ι d).obj Y)).hom := by
+  show d.compL _ _ _ (d.lof (-1) _ _ _) (d.lof 0 _ _ _) = d.compL _ _ _ (d.lof 0 _ _ _) (d.lof (-1) _ _ _)
+  rw [compL_lof_lof, compL_lof_lof]
+  refine d.lof_congr (by norm_num) ?_
+  rw [famCompₗ_apply, famCompₗ_apply]
+  ext i k
+  simp only [famComp, mapFam]
+  rw [show i - -1 = i + 1 by ring, show i - 0 = i by ring, diagFam_self]
+  by_cases h : k = i + 1
+  · subst h
+    rw [famσ_succ, famσ_succ, diagFam_self]
+    exact ((d.comm i).hom.naturality g).symm
+  · rw [famσ_succ, diagFam, dif_neg (Ne.symm h), Limits.comp_zero, famσ, dif_neg h,
+      Limits.comp_zero]
+
 /-- The even isomorphism `σ̄_X : Q⁻¹ X ≅ X` of degree `1`: `σ_{Q⁻¹X}⁻¹` followed by the counit. -/
 def σbarIso (X : Orbit d) : (⟨d.Qi.obj X.obj⟩ : Orbit d) ≅ X :=
   (σIso (⟨d.Qi.obj X.obj⟩ : Orbit d)).symm ≪≫ (ι d).mapIso (d.e.counitIso.app X.obj)
@@ -1047,6 +1080,16 @@ instance instQPiSupercategory [PiSupercategory R S] : QPiSupercategory R (Orbit 
   QPiSupercategory.ofIso (fun X => ι_map_mem_degree (d := d) (PiSupercategory.ζ (R := R) X.obj).hom)
     (fun X => ⟨d.Q.obj X.obj⟩) σIso σIso_hom_mem σIso_hom_mem_degree
     (fun X => ⟨d.Qi.obj X.obj⟩) σbarIso σbarIso_hom_mem σbarIso_hom_mem_degree
+
+theorem Q_map_ι [PiSupercategory R S] {X Y : S} (g : X ⟶ Y) :
+    (QPiSupercategory.Q (R := R) (C := Orbit d)).map ((ι d).map g) = (ι d).map (d.Q.map g) := by
+  show (σIso _).hom ≫ (ι d).map g ≫ (σIso _).inv = _
+  rw [reassoc_of% (σIso_hom_naturality g), Iso.hom_inv_id, Category.comp_id]
+
+@[simp] theorem Q_obj [PiSupercategory R S] (X : Orbit d) :
+    (QPiSupercategory.Q (R := R) (C := Orbit d)).obj X = ⟨d.Q.obj X.obj⟩ := rfl
+
+theorem σ_eq [PiSupercategory R S] (X : Orbit d) : QPiSupercategory.σ (R := R) X = σIso X := rfl
 
 end Orbit
 
