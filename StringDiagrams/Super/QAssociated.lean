@@ -1,4 +1,4 @@
-import StringDiagrams.Super.Orbit
+import StringDiagrams.Super.OrbitFunctorial
 import StringDiagrams.Super.QPiCategory
 import StringDiagrams.Super.AssociatedFunctorial
 
@@ -83,7 +83,7 @@ namespace StringDiagrams
 
 open CategoryTheory Supercategory GradedSupercategory
 
-universe w w₁ w₂ w₃ w₄
+universe w w₁ w₂ w₃ w₄ w₅ w₆
 
 namespace QAssociated
 
@@ -416,6 +416,82 @@ theorem unit_map_app_mapNat {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additi
     {hF : QPiFunctor R F} {hG : QPiFunctor R G} {x : F ⟶ G}
     (hx : QPiFunctor.IsQPiNatural R hF hG x) (X : A) :
     ((unit R A').map (x.app X)).1.1 = (mapNat hx).app ((unit R A).obj X).obj.obj := rfl
+
+@[simp] theorem shiftFunctor_F {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F) :
+    (shiftFunctor R hF).F = Associated.map hF.toPiFunctor := rfl
+
+theorem shiftFunctor_γ_hom_app {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F)
+    (X : Associated R A) :
+    (shiftFunctor R hF).γ.hom.app X =
+      homMk (X := ⟨(QPiCategory.Q (R := R)).obj (F.obj X.obj)⟩)
+        (Y := ⟨F.obj ((QPiCategory.Q (R := R)).obj X.obj)⟩) (hF.γ.hom.app X.obj) 0 := rfl
+
+/-! ### `𝔻` is a strict 2-functor: identities and composition of `(Q, Π)`-functors -/
+
+/-- **`𝔻` preserves identity 1-morphisms.** -/
+theorem map_id : map (QPiFunctor.id R A) = 𝟭 (QAssociated R A) := by
+  rw [← Orbit.map_id]
+  refine Orbit.map_congr' (fun _ => rfl) (fun g => ?_) fun X => ?_
+  · simp only [eqToHom_refl, Category.comp_id, Category.id_comp, ShiftFunctor.id_F,
+      Functor.id_map, shiftFunctor_F]
+    apply hom_ext <;> simp
+  · simp only [shiftFunctor_γ_hom_app, ShiftFunctor.id_γ_hom_app, QPiFunctor.id_γ_hom_app,
+      eqToHom_refl, Category.comp_id, Category.id_comp]
+    exact hom_ext rfl rfl
+
+variable {A'' : Type w₅} [Category.{w₆} A''] [Preadditive A''] [Linear R A''] [QPiCategory R A'']
+
+/-- **`𝔻` preserves composition of 1-morphisms.** -/
+theorem map_comp {F : A ⥤ A'} [F.Additive] [F.Linear R] {G : A' ⥤ A''} [G.Additive] [G.Linear R]
+    (hF : QPiFunctor R F) (hG : QPiFunctor R G) : map (hF.comp hG) = map hF ⋙ map hG := by
+  rw [← Orbit.map_comp]
+  refine Orbit.map_congr' (fun _ => rfl) (fun g => ?_) fun X => ?_
+  · simp only [eqToHom_refl, Category.comp_id, Category.id_comp, ShiftFunctor.comp_F,
+      Functor.comp_map, shiftFunctor_F]
+    apply hom_ext <;> simp
+  · simp only [shiftFunctor_γ_hom_app, ShiftFunctor.comp_γ_hom_app, QPiFunctor.comp_γ_hom_app,
+      eqToHom_refl, Category.comp_id, Category.id_comp]
+    change _ = homMk _ 0 ≫ (Associated.map hG.toPiFunctor).map (homMk _ 0)
+    apply hom_ext <;> simp
+
+/-! ### `𝔻` on whiskered 2-morphisms -/
+
+variable {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive] [G.Linear R]
+  {hF : QPiFunctor R F} {hG : QPiFunctor R G} {x : F ⟶ G}
+
+omit [F.Additive] [F.Linear R] [G.Additive] [G.Linear R] in
+/-- Whiskering a `(Q, Π)`-natural transformation by a `(Q, Π)`-functor on the left. -/
+theorem isQPiNatural_whiskerLeft {E : Type w₅} [Category.{w₆} E] [Preadditive E] [Linear R E]
+    [QPiCategory R E] {K : E ⥤ A} [K.Additive] [K.Linear R] (hK : QPiFunctor R K)
+    (hx : QPiFunctor.IsQPiNatural R hF hG x) :
+    QPiFunctor.IsQPiNatural R (hK.comp hF) (hK.comp hG) (whiskerLeft K x) :=
+  ⟨Associated.isPiNatural_whiskerLeft hK.toPiFunctor hx.1, fun X => by
+    simp only [QPiFunctor.comp_γ_hom_app, whiskerLeft_app, Functor.comp_obj, Category.assoc]
+    rw [x.naturality, reassoc_of% (hx.2 (K.obj X))]⟩
+
+omit [F.Additive] [F.Linear R] [G.Additive] [G.Linear R] in
+/-- Whiskering a `(Q, Π)`-natural transformation by a `(Q, Π)`-functor on the right. -/
+theorem isQPiNatural_whiskerRight {K : A' ⥤ A''} [K.Additive] [K.Linear R] (hK : QPiFunctor R K)
+    (hx : QPiFunctor.IsQPiNatural R hF hG x) :
+    QPiFunctor.IsQPiNatural R (hF.comp hK) (hG.comp hK) (whiskerRight x K) :=
+  ⟨Associated.isPiNatural_whiskerRight hK.toPiFunctor hx.1, fun X => by
+    simp only [QPiFunctor.comp_γ_hom_app, whiskerRight_app, Functor.comp_obj, Category.assoc,
+      ← K.map_comp, hx.2 X]
+    rw [K.map_comp, reassoc_of% (hK.γ.hom.naturality (x.app X))]⟩
+
+/-- **`𝔻` preserves whiskering on the left** (with `𝔻(K F) = 𝔻 K ⋙ 𝔻 F`, `map_comp`). -/
+theorem mapNat_whiskerLeft_app {E : Type w₅} [Category.{w₆} E] [Preadditive E] [Linear R E]
+    [QPiCategory R E] {K : E ⥤ A} [K.Additive] [K.Linear R] (hK : QPiFunctor R K)
+    (hx : QPiFunctor.IsQPiNatural R hF hG x) (X : QAssociated R E) :
+    (mapNat (isQPiNatural_whiskerLeft hK hx)).app X = (mapNat hx).app ((map hK).obj X) := rfl
+
+/-- **`𝔻` preserves whiskering on the right.** -/
+theorem mapNat_whiskerRight_app {K : A' ⥤ A''} [K.Additive] [K.Linear R] (hK : QPiFunctor R K)
+    (hx : QPiFunctor.IsQPiNatural R hF hG x) (X : QAssociated R A) :
+    (mapNat (isQPiNatural_whiskerRight hK hx)).app X = (map hK).map ((mapNat hx).app X) := by
+  rw [mapNat_app, mapNat_app, Orbit.map_ι_map]
+  congr 1
+  apply hom_ext <;> simp [shiftFunctor]
 
 end Map
 

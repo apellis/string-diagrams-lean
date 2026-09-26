@@ -305,6 +305,16 @@ theorem map_map_comp_ι_map {Φ Ψ : ShiftFunctor R d d'} (x : Φ.F ⟶ Ψ.F)
     (map Φ).map z ≫ (ι d').map (x.app Y.obj) = (ι d').map (x.app X.obj) ≫ (map Ψ).map z :=
   (mapNat x hx).naturality z
 
+/-- `Orbit.map` depends only on the functor and on `γ`, with the functor equality given
+objectwise. -/
+theorem map_congr' {Φ Ψ : ShiftFunctor R d d'} (hobj : ∀ X, Φ.F.obj X = Ψ.F.obj X)
+    (hmap : ∀ {X Y : S} (g : X ⟶ Y),
+      Φ.F.map g = eqToHom (hobj X) ≫ Ψ.F.map g ≫ eqToHom (hobj Y).symm)
+    (hγ : ∀ X, Φ.γ.hom.app X ≫ eqToHom (hobj (d.Q.obj X)) =
+      eqToHom (congrArg d'.Q.obj (hobj X)) ≫ Ψ.γ.hom.app X) :
+    map Φ = map Ψ :=
+  map_congr (CategoryTheory.Functor.ext hobj fun _ _ g => hmap g) fun X => hγ X
+
 /-! ## The isomorphisms `σ` -/
 
 /-- `Orbit.map Φ` carries `σ_X` to `σ_{F X}`, up to `γ`. -/

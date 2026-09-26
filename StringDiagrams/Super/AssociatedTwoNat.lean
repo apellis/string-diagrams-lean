@@ -186,6 +186,136 @@ theorem T_map₂_mapTwoNat (θ : TwoNatTrans G G') {a b : Associated2 R (Underly
 
 end Associated2
 
+/-! ## Compatibility with identities and vertical composition (Theorem 5.5) -/
+
+namespace TwoNatTrans
+
+variable {R : Type w} [CommRing R] {A : Type u₁} [BicategoryStruct.{w₁, v₁} A]
+  [∀ a b : A, Preadditive (a ⟶ b)] [∀ a b : A, Linear R (a ⟶ b)]
+  [∀ a b : A, Supercategory R (a ⟶ b)] [TwoSupercategory R A]
+  {A' : Type u₂} [BicategoryStruct.{w₂, v₂} A']
+  [∀ a b : A', Preadditive (a ⟶ b)] [∀ a b : A', Linear R (a ⟶ b)]
+  [∀ a b : A', Supercategory R (a ⟶ b)] [TwoSupercategory R A']
+  {F G H : TwoSuperfunctor R A A'}
+
+omit [TwoSupercategory R A] [TwoSupercategory R A'] in
+/-- Two 2-natural transformations with the same components are equal. -/
+theorem ext_of_eq {θ θ' : TwoNatTrans F G} (hX : θ.X = θ'.X)
+    (hx : ∀ {a b : A} (f : a ⟶ b), θ.x f = eqToHom (by rw [hX]) ≫ θ'.x f ≫ eqToHom (by rw [hX])) :
+    θ = θ' := by
+  obtain ⟨X, x, _, _, _, _⟩ := θ
+  obtain ⟨X', x', _, _, _, _⟩ := θ'
+  dsimp only at hX
+  subst hX
+  simp only [eqToHom_refl, Category.comp_id, Category.id_comp] at hx
+  congr
+  funext a b f
+  exact hx f
+
+theorem toOplaxTrans_ofOplaxTrans (η : F.toOplax ⟶ G.toOplax)
+    (nat : ∀ {a b : A} {f g : a ⟶ b} (ε : f ⟶ g),
+      BicategoryStruct.whiskerRight (F.map₂ ε) (η.app ⟨b⟩).obj ≫
+          (η.naturality (Underlying2.hom1 g)).1 =
+        (η.naturality (Underlying2.hom1 f)).1 ≫
+          BicategoryStruct.whiskerLeft (η.app ⟨a⟩).obj (G.map₂ ε)) :
+    (ofOplaxTrans η nat).toOplaxTrans = η := by
+  obtain ⟨app, naturality, _, _, _⟩ := η
+  rfl
+
+/-- **Theorem 5.5, `𝔼₂` preserves identities.** -/
+theorem toOplaxTrans_id : (TwoNatTrans.id F).toOplaxTrans = 𝟙 F.toOplax := rfl
+
+/-- **Theorem 5.5, `𝔼₂` preserves vertical composition.** -/
+theorem toOplaxTrans_vcomp (θ : TwoNatTrans F G) (θ' : TwoNatTrans G H) :
+    (θ.vcomp θ').toOplaxTrans = θ.toOplaxTrans ≫ θ'.toOplaxTrans := rfl
+
+end TwoNatTrans
+
+namespace PiTwoFunctor
+
+variable {R : Type w} [CommRing R] {B : Type u₁} [Bicategory.{w₁, v₁} B]
+  [∀ a b : B, Preadditive (a ⟶ b)] [∀ a b : B, Linear R (a ⟶ b)] [PreadditiveBicategory B]
+  [LinearBicategory R B] [PiTwoCategory R B]
+  {C : Type u₂} [Bicategory.{w₂, v₂} C]
+  [∀ a b : C, Preadditive (a ⟶ b)] [∀ a b : C, Linear R (a ⟶ b)] [PreadditiveBicategory C]
+  [LinearBicategory R C] [PiTwoCategory R C]
+  {F G H : Pseudofunctor B C} {hF : PiTwoFunctor R F} {hG : PiTwoFunctor R G}
+  {hH : PiTwoFunctor R H}
+
+open PiTwoCategory
+
+local notation "𝛑" => PiTwoCategory.pi (R := R)
+local notation "𝛃" => PiTwoCategory.β (R := R)
+
+/-- The identity oplax transformation is Π-2-natural. -/
+theorem isPiTwoNatural_id (hF : PiTwoFunctor R F) :
+    hF.IsPiTwoNatural hF (Oplax.OplaxTrans.id F.toOplax) := fun a => by
+  simp only [Oplax.OplaxTrans.id, β_id, Pseudofunctor.toOplax_toPrelaxFunctor]
+  bicategory
+
+/-- The vertical composite of Π-2-natural transformations is Π-2-natural. -/
+theorem IsPiTwoNatural.vcomp {η : Oplax.OplaxTrans F.toOplax G.toOplax}
+    {θ : Oplax.OplaxTrans G.toOplax H.toOplax} (hη : hF.IsPiTwoNatural hG η)
+    (hθ : hG.IsPiTwoNatural hH θ) : hF.IsPiTwoNatural hH (Oplax.OplaxTrans.vcomp η θ) := fun a => by
+  simp only [Oplax.OplaxTrans.vcomp, β_comp, Pseudofunctor.toOplax_toPrelaxFunctor,
+    Category.assoc]
+  have c1 : (α_ (η.app a) (θ.app a) (𝛑 (H.obj a))).hom ≫ η.app a ◁ (𝛃 (θ.app a)).hom ≫
+      (α_ (η.app a) (𝛑 (G.obj a)) (θ.app a)).inv ≫ (𝛃 (η.app a)).hom ▷ θ.app a ≫
+        (α_ (𝛑 (F.obj a)) (η.app a) (θ.app a)).hom ≫ (hF.j a).hom ▷ (η.app a ≫ θ.app a) ≫
+          (α_ (F.map (𝛑 a)) (η.app a) (θ.app a)).inv ≫ η.naturality (𝛑 a) ▷ θ.app a ≫
+            (α_ (η.app a) (G.map (𝛑 a)) (θ.app a)).hom ≫ η.app a ◁ θ.naturality (𝛑 a) ≫
+              (α_ (η.app a) (θ.app a) (H.map (𝛑 a))).inv =
+      (α_ (η.app a) (θ.app a) (𝛑 (H.obj a))).hom ≫ η.app a ◁ (𝛃 (θ.app a)).hom ≫
+        (α_ (η.app a) (𝛑 (G.obj a)) (θ.app a)).inv ≫
+          ((𝛃 (η.app a)).hom ≫ (hF.j a).hom ▷ η.app a ≫ η.naturality (𝛑 a)) ▷ θ.app a ≫
+            (α_ (η.app a) (G.map (𝛑 a)) (θ.app a)).hom ≫ η.app a ◁ θ.naturality (𝛑 a) ≫
+              (α_ (η.app a) (θ.app a) (H.map (𝛑 a))).inv := by
+    bicategory
+  rw [c1, hη a]
+  have c2 : (α_ (η.app a) (θ.app a) (𝛑 (H.obj a))).hom ≫ η.app a ◁ (𝛃 (θ.app a)).hom ≫
+      (α_ (η.app a) (𝛑 (G.obj a)) (θ.app a)).inv ≫ (η.app a ◁ (hG.j a).hom) ▷ θ.app a ≫
+        (α_ (η.app a) (G.map (𝛑 a)) (θ.app a)).hom ≫ η.app a ◁ θ.naturality (𝛑 a) ≫
+          (α_ (η.app a) (θ.app a) (H.map (𝛑 a))).inv =
+      (α_ (η.app a) (θ.app a) (𝛑 (H.obj a))).hom ≫
+        η.app a ◁ ((𝛃 (θ.app a)).hom ≫ (hG.j a).hom ▷ θ.app a ≫ θ.naturality (𝛑 a)) ≫
+          (α_ (η.app a) (θ.app a) (H.map (𝛑 a))).inv := by
+    bicategory
+  rw [c2, hθ a]
+  bicategory
+
+/-- **Theorem 5.5, `𝔻₂` preserves identities.** -/
+theorem mapTwoNat_id (hF : PiTwoFunctor R F) :
+    mapTwoNat hF hF (isPiTwoNatural_id hF) = TwoNatTrans.id hF.mapTwo := by
+  refine TwoNatTrans.ext_of_eq rfl fun f => ?_
+  simp only [eqToHom_refl, Category.comp_id, Category.id_comp, mapTwoNat_x,
+    Oplax.OplaxTrans.id, TwoNatTrans.id_x]
+  apply Associated2.hom₂_ext <;> simp
+
+/-- **Theorem 5.5, `𝔻₂` preserves vertical composition.** -/
+theorem mapTwoNat_vcomp {η : Oplax.OplaxTrans F.toOplax G.toOplax}
+    {θ : Oplax.OplaxTrans G.toOplax H.toOplax} (hη : hF.IsPiTwoNatural hG η)
+    (hθ : hG.IsPiTwoNatural hH θ) :
+    mapTwoNat hF hH (hη.vcomp hθ) = (mapTwoNat hF hG hη).vcomp (mapTwoNat hG hH hθ) := by
+  refine TwoNatTrans.ext_of_eq rfl fun f => ?_
+  simp only [eqToHom_refl, Category.comp_id, Category.id_comp, mapTwoNat_x,
+    Oplax.OplaxTrans.vcomp, TwoNatTrans.vcomp_x]
+  apply Associated2.hom₂_ext
+  · simp only [Associated2.comp₂_fst, Associated2.whiskerLeft_fst, Associated2.whiskerLeft_snd,
+      Associated2.whiskerRight_fst, Associated2.whiskerRight_snd, Associated2.associator_hom_fst,
+      Associated2.associator_hom_snd, Associated2.associator_inv_fst,
+      Associated2.associator_inv_snd, Associated.homMk_fst, Associated.homMk_snd,
+      PreadditiveBicategory.zero_whiskerRight, PreadditiveBicategory.whiskerLeft_zero,
+      Limits.zero_comp, Limits.comp_zero, sub_zero, Category.assoc, mapTwo_map_obj,
+      Associated2.comp_obj, mapTwoNat_X_obj, Pseudofunctor.toOplax_toPrelaxFunctor]
+  · simp only [Associated2.comp₂_snd, Associated2.whiskerLeft_fst, Associated2.whiskerLeft_snd,
+      Associated2.whiskerRight_fst, Associated2.whiskerRight_snd, Associated2.associator_hom_fst,
+      Associated2.associator_hom_snd, Associated2.associator_inv_fst,
+      Associated2.associator_inv_snd, Associated.homMk_fst, Associated.homMk_snd,
+      PreadditiveBicategory.zero_whiskerRight, PreadditiveBicategory.whiskerLeft_zero,
+      Limits.zero_comp, Limits.comp_zero, add_zero, zero_add, pi_map]
+
+end PiTwoFunctor
+
 end StringDiagrams
 
 end
