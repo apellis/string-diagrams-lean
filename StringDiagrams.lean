@@ -58,7 +58,9 @@ import StringDiagrams.Super.SKar
 import StringDiagrams.Super.Superalgebra
 import StringDiagrams.Super.Superbimodule
 import StringDiagrams.Super.GradedSub
+import StringDiagrams.Super.GradedMonoidal
 import StringDiagrams.Super.GSVec
+import StringDiagrams.Super.GSVecMonoidal
 import StringDiagrams.Super.GSCat
 import StringDiagrams.Super.GSMod
 import StringDiagrams.Super.KaroubiMonoidal

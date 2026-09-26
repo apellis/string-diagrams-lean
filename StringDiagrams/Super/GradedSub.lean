@@ -1,4 +1,5 @@
 import StringDiagrams.Super.Graded
+import Mathlib.Algebra.Module.Submodule.EqLocus
 
 /-!
 # Graded subcategories of a supercategory
@@ -27,7 +28,8 @@ morphisms (`GradedHomFamily.hom`).
   `GradedSubcategory.ι` to the ambient supercategory; `GradedSubcategory.homMk`,
   `GradedSubcategory.isoMk`.
 * `iSupIndep_of_eval`: a criterion for the independence of a family of submodules, by
-  evaluation into modules with independent families; `iSupIndep_comap_of_injective`.
+  evaluation into modules with independent families; `iSupIndep_of_projections`: independence
+  from a family of projections; `iSupIndep_comap_of_injective`.
 * `isInternal_inf_of_decompose_mem`: two gradings of a module, the components of the first
   being stable under the projections of the second, form a bigrading.
 -/
@@ -81,6 +83,21 @@ theorem iSupIndep_of_eval {ι : Type*} {M : Type*} [AddCommGroup M] [Module R M]
       exact iSup_mono fun hj => hdeg a j
     exact this ⟨x, hx', rfl⟩
   exact Submodule.disjoint_def.1 (iSupIndep_def.1 (hE a) i) _ h1 h2
+
+/-- A family of submodules `P i` is independent if there are linear maps `π i` which are the
+identity on `P i` and vanish on `P j` for `j ≠ i`. -/
+theorem iSupIndep_of_projections {ι M : Type*} [AddCommGroup M] [Module R M]
+    (P : ι → Submodule R M) (π : ι → M →ₗ[R] M)
+    (h_same : ∀ i, P i ≤ LinearMap.eqLocus (π i) LinearMap.id)
+    (h_ne : ∀ i j, j ≠ i → P j ≤ LinearMap.ker (π i)) : iSupIndep P := by
+  rw [iSupIndep_def]
+  intro i
+  rw [Submodule.disjoint_def]
+  intro x hx hx'
+  have h1 : π i x = x := LinearMap.mem_eqLocus.1 (h_same i hx)
+  have h2 : π i x = 0 :=
+    LinearMap.mem_ker.1 ((iSup₂_le fun j hj => h_ne i j hj : (⨆ (j) (_ : j ≠ i), P j) ≤ _) hx')
+  rw [← h1, h2]
 
 /-- Two decompositions `𝒜`, `ℬ` of a module such that each `𝒜 i` is stable under the
 projections onto the `ℬ j` form a bigrading: the module is the internal direct sum of the
