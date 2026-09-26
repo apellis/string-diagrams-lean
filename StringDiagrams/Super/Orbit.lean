@@ -601,7 +601,144 @@ theorem isInternal_degreeHom (X Y : S) : DirectSum.IsInternal (d.degreeHom R X Y
     | lof m f => exact Submodule.mem_iSup_of_mem m ⟨f, rfl⟩
     | add x y hx hy => exact Submodule.add_mem _ hx hy
 
+/-! ## Diagonal families -/
+
+/-- The diagonal family with entries `φ i : Qⁱ X ⟶ Qⁱ Y`. -/
+def diagFam {X Y : S} (φ : ∀ i : ℤ, (d.pow i).obj X ⟶ (d.pow i).obj Y) : d.FamAll X Y :=
+  fun i j => if h : i = j then φ i ≫ eqToHom (congrArg (fun k => (d.pow k).obj Y) h) else 0
+
+theorem diagFam_self {X Y : S} (φ : ∀ i : ℤ, (d.pow i).obj X ⟶ (d.pow i).obj Y) (i : ℤ) :
+    d.diagFam φ i i = φ i := by simp [diagFam]
+
+theorem diagFam_mem {X Y : S} {φ : ∀ i : ℤ, (d.pow i).obj X ⟶ (d.pow i).obj Y}
+    (hφ : ∀ i, φ (i + 1) = (d.succ i).inv.app X ≫ d.Q.map (φ i) ≫ (d.succ i).hom.app Y) :
+    d.diagFam φ ∈ d.Fam R 0 X Y := by
+  refine ⟨fun i j h => ?_, fun i j => ?_⟩
+  · rw [diagFam, dif_neg (by omega)]
+  · by_cases h : i = j
+    · subst h; rw [diagFam_self, diagFam_self, hφ]
+    · rw [diagFam, diagFam, dif_neg h, dif_neg (by omega)]; simp
+
+theorem famComp_diagFam {X Y Z : S} (φ : ∀ i : ℤ, (d.pow i).obj X ⟶ (d.pow i).obj Y)
+    (ψ : ∀ i : ℤ, (d.pow i).obj Y ⟶ (d.pow i).obj Z) :
+    d.famComp 0 (d.diagFam φ) (d.diagFam ψ) = d.diagFam fun i => φ i ≫ ψ i := by
+  ext i k
+  simp only [famComp]
+  rw [show i - 0 = i by ring, diagFam_self]
+  by_cases h : i = k
+  · subst h; simp [diagFam_self]
+  · simp [diagFam, h]
+
+/-- The family `(Qⁱ g)ᵢ` of a morphism `g` of `S`. -/
+def mapFam {X Y : S} (g : X ⟶ Y) : d.Fam R 0 X Y :=
+  ⟨d.diagFam fun i => (d.pow i).map g, d.diagFam_mem fun i => by
+    have := (d.succ i).hom.naturality g
+    simp only [Functor.comp_map] at this
+    rw [this, Iso.inv_hom_id_app_assoc]⟩
+
 end ShiftData
+
+/-! ## The orbit supercategory -/
+
+/-- The orbit supercategory of `d`: the objects of `S`; see the module documentation. -/
+@[ext]
+structure Orbit {R : Type w} [CommRing R] {S : Type u} [Category.{v} S] [Preadditive S]
+    [Linear R S] [Supercategory R S] (d : ShiftData R S) where
+  /-- The object of `S`. -/
+  obj : S
+
+namespace Orbit
+
+open ShiftData
+
+variable {R} {S : Type u} [Category.{v} S] [Preadditive S] [Linear R S] [Supercategory R S]
+  {d : ShiftData R S}
+
+instance : Category (Orbit d) where
+  Hom X Y := d.Hom X.obj Y.obj
+  id X := d.idHom X.obj
+  comp f g := d.compL _ _ _ f g
+  id_comp f := d.id_compL f
+  comp_id f := d.compL_id f
+  assoc f g h := d.compL_assoc f g h
+
+theorem comp_def {X Y Z : Orbit d} (f : X ⟶ Y) (g : Y ⟶ Z) :
+    f ≫ g = d.compL X.obj Y.obj Z.obj f g := rfl
+
+theorem id_def (X : Orbit d) : 𝟙 X = d.idHom X.obj := rfl
+
+instance : Preadditive (Orbit d) where
+  homGroup X Y := inferInstanceAs (AddCommGroup (d.Hom X.obj Y.obj))
+  add_comp X Y Z f f' g := LinearMap.map_add₂ (d.compL X.obj Y.obj Z.obj) f f' g
+  comp_add X Y Z f g g' := LinearMap.map_add (d.compL X.obj Y.obj Z.obj f) g g'
+
+instance : Linear R (Orbit d) where
+  homModule X Y := inferInstanceAs (Module R (d.Hom X.obj Y.obj))
+  smul_comp X Y Z r f g := LinearMap.map_smul₂ (d.compL X.obj Y.obj Z.obj) r f g
+  comp_smul X Y Z f r g := LinearMap.map_smul (d.compL X.obj Y.obj Z.obj f) r g
+
+/-- The orbit supercategory is a supercategory: a morphism has parity `p` if all entries of all
+its families do. -/
+instance : Supercategory R (Orbit d) where
+  parity X Y p := d.parityHom R X.obj Y.obj p
+  isInternal X Y := by
+    rw [DirectSum.isInternal_submodule_iff_isCompl _ (i := 0) (j := 1) (by decide)
+      (by ext p; rcases parity_eq_zero_or_one p with rfl | rfl <;> simp)]
+    constructor
+    · rw [Submodule.disjoint_def]
+      intro x h0 h1
+      refine Hom.ext fun m => Subtype.ext (FamAll.ext fun i j => ?_)
+      have e := proj_of_mem (R := R) (h0 m i j)
+      rw [proj_of_mem_ne (h1 m i j) (by decide)] at e
+      simpa using e.symm
+    · rw [codisjoint_iff, eq_top_iff]
+      intro x _
+      rw [← d.projHom_add_projHom x]
+      exact Submodule.add_mem_sup (d.projHom_mem 0 x) (d.projHom_mem 1 x)
+  id_mem X m i j := by
+    by_cases h : m = 0
+    · subst h
+      simp only [id_def, idHom, component_lof_self, idFam]
+      split_ifs with hij
+      · subst hij; simpa using id_mem (R := R) _
+      · exact Submodule.zero_mem _
+    · rw [id_def, idHom, d.component_lof_of_ne _ (Ne.symm h)]; exact Submodule.zero_mem _
+  comp_mem hf hg := d.compL_mem hf hg
+
+theorem mem_parity_iff {X Y : Orbit d} {p : ZMod 2} {f : X ⟶ Y} :
+    f ∈ parity (R := R) X Y p ↔ f ∈ d.parityHom R X.obj Y.obj p := Iff.rfl
+
+theorem proj_eq {X Y : Orbit d} (p : ZMod 2) (f : X ⟶ Y) :
+    proj R p f = d.projHom R p X.obj Y.obj f :=
+  proj_eq_of_add (h := d.projHom R (p + 1) X.obj Y.obj f)
+    (by
+      rcases parity_eq_zero_or_one p with rfl | rfl
+      · exact (d.projHom_add_projHom f).symm
+      · rw [add_comm]; exact (d.projHom_add_projHom f).symm)
+    (d.projHom_mem p f) (d.projHom_mem (p + 1) f)
+
+/-- The orbit supercategory is graded: the families of degree `m` have degree `m`. -/
+instance : GradedSupercategory R (Orbit d) where
+  degree X Y n := d.degreeHom R X.obj Y.obj n
+  isInternal_degree X Y := d.isInternal_degreeHom X.obj Y.obj
+  proj_mem_degree p {X Y n f} hf := by
+    obtain ⟨g, rfl⟩ := hf
+    rw [proj_eq, projHom_lof]
+    exact ⟨_, rfl⟩
+  id_mem_degree X := ⟨_, rfl⟩
+  comp_mem_degree {X Y Z m n f g} hf hg := by
+    obtain ⟨f, rfl⟩ := hf
+    obtain ⟨g, rfl⟩ := hg
+    exact ⟨_, (d.compL_lof_lof f g).symm⟩
+
+theorem mem_degree_iff {X Y : Orbit d} {n : ℤ} {f : X ⟶ Y} :
+    f ∈ GradedSupercategory.degree (R := R) X Y n ↔ ∃ g, d.lof n X.obj Y.obj g = f := Iff.rfl
+
+theorem lof_mem_degree {X Y : Orbit d} {n : ℤ} (g : d.Fam R n X.obj Y.obj) :
+    (d.lof n X.obj Y.obj g : X ⟶ Y) ∈ GradedSupercategory.degree (R := R) X Y n := ⟨g, rfl⟩
+
+end Orbit
+
 
 end StringDiagrams
 
