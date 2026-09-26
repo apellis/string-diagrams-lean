@@ -38,11 +38,11 @@ composition is induced by that of `A` (without signs). It is a Π-supercategory 
 ## Scope
 
 The statement of Theorem 4.3 is about the supercategories `Hom(A, νB)` and `Hom(A_π, B)` of
-superfunctors and supernatural transformations. These Hom-supercategories are not constructed
-here; instead their content is stated directly: on objects (`extend`, `J_comp_extend`,
-`extendRestrictIso`), on morphisms of each parity (`restrict_bijective`), and for the
-compositional structure (`extendNat_comp`, `extendNat_id`, linearity). The 2-adjunction
-formulation (`-π` left 2-adjoint to the forgetful 2-superfunctor `ν`) is not packaged.
+superfunctors and supernatural transformations. Here its content is stated directly: on
+objects (`extend`, `J_comp_extend`, `extendRestrictIso`), on morphisms of each parity
+(`restrict_bijective`), and for the compositional structure (`extendNat_comp`, `extendNat_id`,
+linearity). The superequivalence `Hom(A, νB) → Hom(A_π, B)` itself is
+`Envelope.extendHomSuperequivalence` in `StringDiagrams.Super.EnvelopeAdjunction`.
 -/
 
 noncomputable section
