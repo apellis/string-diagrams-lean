@@ -1,4 +1,5 @@
 import StringDiagrams.LayerMap.Generators
+import StringDiagrams.Super.Presented
 
 /-!
 # Functors from local images of layers
@@ -58,6 +59,11 @@ variable {Q : Presentation.{w, v'} S' R} (φ : LocalMap S Q)
 def toInterpretation : Interpretation S Q.Presented where
   obj a := Q.obj (φ.obj a)
   layer := φ.layer
+
+@[simp] theorem toInterpretation_obj (a : Obj S) : φ.toInterpretation.obj a = Q.obj (φ.obj a) :=
+  rfl
+
+@[simp] theorem toInterpretation_layer : φ.toInterpretation.layer = φ.layer := rfl
 
 /-- The functor induced by a local map: the image of a diagram is the composite of the images of
 its layers. -/
@@ -367,6 +373,183 @@ def ofGen_whiskerData : WhiskerData fun _ : Unit => ofGen κ img where
         (by simp [ColourMap.obj, Obj.tensor, Layer.whisker]) (by simp [Layer.whisker])]
     simp only [Category.assoc, eqToHom_trans, eqToHom_trans_assoc]
     rfl
+
+private theorem whisk_nil_eq_wRAt {a a' : Obj S'} (f : Q.obj a ⟶ Q.obj a') {r : S'.Region}
+    (b : Obj S') (ha : a.start = r) (ha' : a'.start = r) :
+    Q.whisk f (Obj.nil r) b.word =
+      eqToHom (congrArg Q.obj (Obj.tensor_eq_whisker_nil_of_start b ha)).symm ≫
+        Q.wRAt r f b ha ha' ≫
+          eqToHom (congrArg Q.obj (Obj.tensor_eq_whisker_nil_of_start b ha')) := by
+  simp [Presentation.wRAt]
+
+private theorem whisk_eq_wL {b b' : Obj S'} (g : Q.obj b ⟶ Q.obj b') (a : Obj S') :
+    Q.whisk g a [] =
+      eqToHom (congrArg Q.obj (Obj.tensor_eq_whisker_nil a b)).symm ≫ Q.wL a g ≫
+        eqToHom (congrArg Q.obj (Obj.tensor_eq_whisker_nil a b')) := by
+  simp [Presentation.wL]
+
+/-- **Images of generators respect the interchange law** when every image `img g` is homogeneous
+of the parity of `g`: this is the super interchange law in `Q.Presented`. -/
+theorem ofGen_interchange
+    (himg : ∀ g, img g ∈ Q.homDeg (Presentation.parityDeg S') (genDom κ g) (genCod κ g)
+      (Presentation.parityDeg S g))
+    {x : InterchangeData S} (hx : x.Valid) :
+    (freeLift R (ofGen κ img).functor).map (InterchangeData.rel R hx) = 0 := by
+  have hs : x.start = S.left x.g := hx.gh₁.left_end
+  have e₀ : S.endR (S.right x.g) x.mid = S.left x.h := by
+    have h₀ := hx.gh₁.left_end
+    have h₁ := hx.hg₁.left_end
+    have h₂ := hx.gh₁.dom_end
+    simp only [InterchangeData.hg₁, InterchangeData.gh₁, Signature.endR_append,
+      Signature.endR_nil] at h₀ h₁ h₂
+    rwa [h₀, h₂] at h₁
+  have hmok : S.ok (S.right x.g) x.mid := ((Signature.ok_append _ _ _).1 hx.gh₁.right_ok).1
+  set r := κ.region (S.left x.g) with hr
+  let A := genDom κ x.g
+  let A' := genCod κ x.g
+  let M : Obj S' := κ.obj ⟨S.right x.g, x.mid⟩
+  let Dh := genDom κ x.h
+  let Ch := genCod κ x.h
+  have hMend : M.endR = κ.region (S.left x.h) := by
+    show S'.endR (κ.region (S.right x.g)) (x.mid.map κ.colour) = _
+    rw [κ.endR_map, e₀]
+  have hMD : M.Composable Dh := ⟨κ.ok_map hmok, hMend, κ.ok_map hx.hg₁.dom_ok⟩
+  have hMC : M.Composable Ch := ⟨κ.ok_map hmok, hMend, κ.ok_map hx.hg₁.cod_ok⟩
+  have hgd : S.endR (S.left x.g) (S.dom x.g) = S.right x.g := hx.gh₁.dom_end
+  have hgc : S.endR (S.left x.g) (S.cod x.g) = S.right x.g := hx.gh₁.cod_end
+  have hAM : A.Composable M := ⟨κ.ok_map hx.gh₁.dom_ok, by
+    show S'.endR (κ.region (S.left x.g)) ((S.dom x.g).map κ.colour) = _
+    rw [κ.endR_map, hgd]; rfl, κ.ok_map hmok⟩
+  have hA'M : A'.Composable M := ⟨κ.ok_map hx.gh₁.cod_ok, by
+    show S'.endR (κ.region (S.left x.g)) ((S.cod x.g).map κ.colour) = _
+    rw [κ.endR_map, hgc]; rfl, κ.ok_map hmok⟩
+  have hA : A.start = r := rfl
+  have hA' : A'.start = r := rfl
+  let G := Q.wL M (img x.h)
+  have hG := Q.wL_mem (Presentation.parityDeg S') M (himg x.h)
+  have key := Q.wRAt_comp_wL_super (hAM.tensor_right hMD) (himg x.g) hG hA hA'
+  have hk : ((Supercategory.koszulSign (Presentation.parityDeg S x.g)
+      (Presentation.parityDeg S x.h) : ℤ) : R) = ((x.sign : ℤ) : R) := by
+    congr 1
+    unfold InterchangeData.sign Presentation.parityDeg
+    cases S.odd x.g <;> cases S.odd x.h <;> simp
+  have oE₁ : κ.obj x.dom = A.tensor (M.tensor Dh) := by
+    refine Obj.ext (by simp [A, InterchangeData.dom, genDom, ColourMap.obj, Obj.tensor, hs]) ?_
+    simp [A, M, Dh, InterchangeData.dom, genDom, ColourMap.obj, Obj.tensor]
+  have oE₂ : A'.tensor (M.tensor Ch) = κ.obj x.cod := by
+    refine Obj.ext (by simp [A', InterchangeData.cod, genCod, ColourMap.obj, Obj.tensor, hs]) ?_
+    simp [A', M, Ch, InterchangeData.cod, genCod, ColourMap.obj, Obj.tensor]
+  have hgh : (ofGen κ img).functor.map (InterchangeData.ghDiagram hx) =
+      eqToHom (congrArg Q.obj oE₁) ≫ (Q.wRAt r (img x.g) (M.tensor Dh) hA hA' ≫ Q.wL A' G) ≫
+        eqToHom (congrArg Q.obj oE₂) := by
+    unfold InterchangeData.ghDiagram
+    show (ofGen κ img).toInterpretation.functor.map _ = _
+    rw [Interpretation.functor_map_mk_cons, Interpretation.functor_map_mk_cons,
+      Interpretation.functor_map_mk_nil]
+    rw [toInterpretation_layer, ofGen_layer, ofGen_layer,
+      whisk_congr' (img x.gh₁.gen) (u' := Obj.nil r) (v' := (M.tensor Dh).word)
+        (by simp [ColourMap.obj, InterchangeData.gh₁, Obj.nil, hs, r])
+        (by simp [InterchangeData.gh₁, M, Dh, genDom, ColourMap.obj, Obj.tensor]),
+      whisk_nil_eq_wRAt (img x.gh₁.gen) (M.tensor Dh) hA hA',
+      whisk_congr' (img x.gh₂.gen) (u' := A'.tensor M) (v' := [])
+        (by simp [ColourMap.obj, InterchangeData.gh₂, A', M, genCod, Obj.tensor, hs])
+        (by simp [InterchangeData.gh₂]),
+      whisk_eq_wL (img x.gh₂.gen) (A'.tensor M), Q.wL_tensor hA'M hMD]
+    simp only [Category.assoc, eqToHom_trans_assoc, eqToHom_trans, eqToHom_refl,
+      Category.id_comp]
+    rfl
+  have hhg : (ofGen κ img).functor.map (InterchangeData.hgDiagram hx) =
+      eqToHom (congrArg Q.obj oE₁) ≫ (Q.wL A G ≫ Q.wRAt r (img x.g) (M.tensor Ch) hA hA') ≫
+        eqToHom (congrArg Q.obj oE₂) := by
+    unfold InterchangeData.hgDiagram
+    show (ofGen κ img).toInterpretation.functor.map _ = _
+    rw [Interpretation.functor_map_mk_cons, Interpretation.functor_map_mk_cons,
+      Interpretation.functor_map_mk_nil]
+    rw [toInterpretation_layer, ofGen_layer, ofGen_layer,
+      whisk_congr' (img x.hg₁.gen) (u' := A.tensor M) (v' := [])
+        (by simp [ColourMap.obj, InterchangeData.hg₁, A, M, genDom, Obj.tensor, hs])
+        (by simp [InterchangeData.hg₁]),
+      whisk_eq_wL (img x.hg₁.gen) (A.tensor M), Q.wL_tensor hAM hMD,
+      whisk_congr' (img x.hg₂.gen) (u' := Obj.nil r) (v' := (M.tensor Ch).word)
+        (by simp [ColourMap.obj, InterchangeData.hg₂, Obj.nil, hs, r])
+        (by simp [InterchangeData.hg₂, M, Ch, genCod, ColourMap.obj, Obj.tensor]),
+      whisk_nil_eq_wRAt (img x.hg₂.gen) (M.tensor Ch) hA hA']
+    simp only [Category.assoc, eqToHom_trans_assoc, eqToHom_trans, eqToHom_refl,
+      Category.id_comp]
+    rfl
+  have key' : Q.wRAt r (img x.g) (M.tensor Dh) hA hA' ≫ Q.wL A' G =
+      ((x.sign : ℤ) : R) • (Q.wL A G ≫ Q.wRAt r (img x.g) (M.tensor Ch) hA hA') := by
+    rw [← hk, Int.cast_smul_eq_zsmul]; exact key
+  rw [InterchangeData.rel, Functor.map_sub, Functor.map_smul, freeLift_map_of, freeLift_map_of,
+    hgh, hhg, key', Linear.smul_comp, Linear.comp_smul, sub_self]
+
+/-- For even signatures, the images of generators are automatically homogeneous of the right
+(even) parity. -/
+theorem parity_of_isEven [S.IsEven] [S'.IsEven] (g : S.Gen) :
+    img g ∈ Q.homDeg (Presentation.parityDeg S') (genDom κ g) (genCod κ g)
+      (Presentation.parityDeg S g) := by
+  obtain ⟨f, hf⟩ := Q.lin_surjective (img g)
+  rw [← hf, show Presentation.parityDeg S g = 0 by
+    simp [Presentation.parityDeg, Signature.IsEven.odd_eq_false]]
+  exact Presentation.lin_mem_homDeg (LinDiagram.mem_homDeg_iff.mpr fun d _ => by
+    rw [Diagram.degree_parityDeg, Diagram.oddCount_eq_zero, Nat.cast_zero])
+
+variable (P : Presentation.{w, v} S R)
+
+/-- **Functors from images of generators.** Let `κ` relabel regions and strands and let
+`img g` be a morphism of `Q.Presented` between the relabelled boundaries of each generator `g`,
+homogeneous of the parity of `g` (automatic for even signatures, `LocalMap.parity_of_isEven`).
+If the images of the relations of `P` vanish, then `u ⊗ g ⊗ v ↦ κ u ⊗ img g ⊗ κ v` defines a
+functor `P.Presented ⥤ Q.Presented`. -/
+def liftGen
+    (himg : ∀ g, img g ∈ Q.homDeg (Presentation.parityDeg S') (genDom κ g) (genCod κ g)
+      (Presentation.parityDeg S g))
+    (hrel : ∀ r, (freeLift R (ofGen κ img).functor).map (P.rel r) = 0) :
+    P.Presented ⥤ Q.Presented :=
+  lift P (ofGen_whiskerData κ img) (fun _ => trivial) (fun _ => hrel)
+    (fun _ _ hx => ofGen_interchange κ img himg hx) ()
+
+section LiftGen
+
+variable {P}
+  (himg : ∀ g, img g ∈ Q.homDeg (Presentation.parityDeg S') (genDom κ g) (genCod κ g)
+    (Presentation.parityDeg S g))
+  (hrel : ∀ r, (freeLift R (ofGen κ img).functor).map (P.rel r) = 0)
+
+instance liftGen_additive : (liftGen κ img P himg hrel).Additive := lift_additive _ _ _ _ _
+
+instance liftGen_linear : (liftGen κ img P himg hrel).Linear R := lift_linear _ _ _ _ _
+
+@[simp] theorem liftGen_obj (a : Obj S) :
+    (liftGen κ img P himg hrel).obj (P.obj a) = Q.obj (κ.obj a) := rfl
+
+theorem liftGen_diag {a b : Obj S} (d : a ⟶ b) :
+    (liftGen κ img P himg hrel).map (P.diag d) = (ofGen κ img).functor.map d :=
+  lift_diag _ _ _ _ _ d
+
+theorem liftGen_lin {a b : Obj S} (f : LinDiagram R a b) :
+    (liftGen κ img P himg hrel).map (P.lin f) = (freeLift R (ofGen κ img).functor).map f :=
+  lift_lin _ _ _ _ _ f
+
+/-- A layer `u ⊗ g ⊗ v` goes to `κ u ⊗ img g ⊗ κ v`. -/
+theorem liftGen_layer (L : Layer S) (hv : L.Valid) :
+    (liftGen κ img P himg hrel).map (P.diag (Diagram.ofLayer L hv)) =
+      eqToHom (congrArg Q.obj (whisker_genDom κ L)).symm ≫
+        Q.whisk (img L.gen) (κ.obj ⟨L.start, L.left⟩) (L.right.map κ.colour) ≫
+          eqToHom (congrArg Q.obj (whisker_genCod κ L)) :=
+  lift_layer _ _ _ _ _ L hv
+
+/-- The functor commutes with whiskering. -/
+theorem liftGen_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) {u : Obj S} {v : List S.Colour}
+    (hw : a.WhiskerOK u v) (hb : Nonempty (a ⟶ b)) :
+    (liftGen κ img P himg hrel).map (P.whisk f u v) =
+      eqToHom (congrArg Q.obj (κ.obj_whisker a u v)) ≫
+        Q.whisk ((liftGen κ img P himg hrel).map f) (κ.obj u) (v.map κ.colour) ≫
+          eqToHom (congrArg Q.obj (κ.obj_whisker b u v)).symm :=
+  lift_whisk (P := P) (ofGen_whiskerData κ img) (fun _ => trivial) (fun _ => hrel)
+    (fun _ _ hx => ofGen_interchange κ img himg hx) () f trivial hw hb
+
+end LiftGen
 
 end LocalMap
 
