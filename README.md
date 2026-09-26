@@ -38,6 +38,17 @@ A Lean 4 library for diagrammatic reasoning: typed diagram syntax, presentations
 | `StringDiagrams.Biadjunction.Presented` | Biadjunctions from four cups and caps; pitchfork (sliding) lemmas; mates of diagram classes as rotated diagrams (`rightMate_diag`, `isCyclic_diag_iff`); rotation invariance: if every generator is cyclic, every 2-morphism is (`Presentation.isCyclic_of_generators`), packaged as `pivotalOfGenerators : Pivotal P.Bicat`. |
 | `StringDiagrams.Biadjunction.PivotalExtension` | The pivotal extension of a presentation: added cup/cap generators for every colour and zigzag relations (`Presentation.pivotal`); for an involution on colours, cups and caps are automatically cyclic, so a pivotal structure only needs cyclicity of the original generators. |
 
+### Monoidal supercategories and 2-supercategories
+
+Following J. Brundan, A. P. Ellis, *Monoidal supercategories* ([arXiv:1603.05928v3](https://arxiv.org/abs/1603.05928)). Mathlib's `MonoidalCategory` and `Bicategory` contain the ordinary interchange law, so the super versions are separate `Prop` classes over Mathlib's `MonoidalCategoryStruct` and a data class `BicategoryStruct`.
+
+| Module | Contents |
+| --- | --- |
+| `StringDiagrams.Super.Functor` | Definition 1.1(ii)–(iii), (v): superfunctors (`Supercategory.IsSuperfunctor`: linear, parity-preserving), supernatural transformations given by their homogeneous components with the sign rule `F f ≫ x_{p} = (-1)^{p|f|} x_{p} ≫ G f` (`Supercategory.SuperNatTrans`), vertical composition, even supernatural transformations as natural transformations with even components; the Koszul sign `koszulSign p q`. |
+| `StringDiagrams.Super.Monoidal` | Definition 1.4: `MonoidalSupercategory R C` (Mathlib's monoidal axioms except `tensor_comp`, functoriality of whiskering, the super interchange law `f ▷ Y ≫ X' ◁ g = (-1)^{|f||g|} (X ◁ g ≫ f ▷ Y')`, linear and even whiskering, even coherence maps), `IsStrict`; the super interchange law (1.1) for the paper's tensor product `superTensorHom f g = X ◁ g ≫ f ▷ Y'` (`superTensorHom_comp_superTensorHom`) and for Mathlib's `tensorHom`; without odd morphisms, monoidal supercategories are Mathlib monoidal linear categories and conversely (`toMonoidalCategory`, `ofMonoidalCategory`); monoidal superfunctors and monoidal natural transformations (Definition 1.4(ii)–(iii)). |
+| `StringDiagrams.Super.Bicategory` | Definitions 2.1–2.2: `BicategoryStruct` (the data of Mathlib's `Bicategory`), `TwoSupercategory R B` (Mathlib's bicategory axioms except `whisker_exchange`, the super interchange law, linear and even whiskering, even coherence maps), `BicategoryStruct.Strict`; the super interchange law `(vu) ∘ (yx) = (-1)^{|u||y|} (v ∘ y)(u ∘ x)` (`hcomp_comp_hcomp`); without odd 2-morphisms, a 2-supercategory is a Mathlib bicategory (`toBicategory`, `toBicategory_strict`). |
+| `StringDiagrams.Super.Presented` | For parity-homogeneous presentations with odd generators: `P.Presented` is a strict monoidal supercategory for monoidal signatures (`Presentation.monoidalSupercategory`, `Presentation.isStrict`) and `P.Bicat` a strict 2-supercategory for general regions (`Presentation.twoSupercategory`, `Presentation.Bicat.instStrict`); the super interchange law for homogeneous morphisms (`wR_comp_wL_super`, `wRAt_comp_wL_super`). For even signatures the induced Mathlib structures are the existing instances (`toMonoidalCategory_eq`, `toBicategory_eq`, by `rfl`). |
+
 ### Example: the walking biadjunction
 
 `StringDiagrams.Examples.WalkingBiadjunction`: strands `E : a → b`, `F : b → a` with all four cups and caps and a dot on `E` whose two rotations agree; every 2-morphism is cyclic (`pivotal`), the dot slides along both cups, and the plain bubble equals the trace of `snakeDown ≫ snakeUp` (`bubble_eq_trace_snakes`), a consequence of trace cyclicity.
@@ -66,6 +77,10 @@ A Lean 4 library for diagrammatic reasoning: typed diagram syntax, presentations
 | --- | --- |
 | `StringDiagrams.Examples.TemperleyLieb.FarCommutativity` | Interchange of cups and caps at symbolic positions and widths (`cap_cap_interchange`, `cup_cup_interchange`, `cap_cup_interchange`, `cup_cap_interchange`); far commutativity `e_i e_j = e_j e_i` for `i + 2 ≤ j` in every width (`e_mul_e_comm`, `e_mul_e_comm_of_far`). |
 | `StringDiagrams.Examples.TemperleyLieb.Representation` | The representation of `pres R (-2)` on `(R²)^{⊗n}` over any commutative ring (`Rep.rep`), with cup `e₀ ⊗ e₁ − e₁ ⊗ e₀` and the inverse pairing as cap; soundness via `Presentation.lift` (`Rep.respects`); non-vacuity `e (-2) m i ≠ 0` for `i ≤ m` over a nontrivial ring (`Rep.e_ne_zero`). |
+
+### Example: the odd Brauer supercategory
+
+`StringDiagrams.Examples.OddBrauer`: Brundan–Ellis, Example 1.5(iii) (the marked Brauer category of Kujawa–Tharp): an even crossing and odd cup and cap with the relations of the paper (`s² = 1`, braid, zigzags `1` and `-1`, a strand sliding through a cup, `cup ≫ s = cup`), a strict monoidal supercategory (`OddBrauer.monoidalSupercategory`). Using the relations and the super interchange law: `s ≫ cap = -cap` (`cross_comp_cap`), hence the bubble is minus itself, `2 • bubble = 0` over any commutative ring (`two_smul_bubble`), and `bubble = 0` when `2` is invertible (`bubble_eq_zero`).
 
 Application-specific presentations are developed in downstream repositories that depend on this library.
 

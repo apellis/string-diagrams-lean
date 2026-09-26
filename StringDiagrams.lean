@@ -42,6 +42,7 @@ import StringDiagrams.Biadjunction.Words
 import StringDiagrams.Biadjunction.Presented
 import StringDiagrams.Biadjunction.PivotalExtension
 import StringDiagrams.Examples.WalkingBiadjunction
+import StringDiagrams.Examples.OddBrauer
 
 /-!
 # StringDiagrams
