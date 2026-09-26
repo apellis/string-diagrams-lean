@@ -33,6 +33,14 @@ A Lean 4 library for diagrammatic reasoning: typed diagram syntax, presentations
 | `StringDiagrams.Biadjunction.Trace` | `tr(α ≫ β) = tr(β ≫ doubleMate α)` in general (`rightTrace_comp`), hence `tr(α ≫ β) = tr(β ≫ α)` when either factor is cyclic; traces versus mates; partial traces for composite biadjunctions. |
 | `StringDiagrams.Biadjunction.Pivotal` | `Pivotal B` (chosen biadjoints, every 2-morphism cyclic); rotation `rotate` is a contravariant equivalence, `rotate (rotate α)` is conjugation by the natural `f ≅ dual (dual f)`; traces are cyclic. |
 | `StringDiagrams.Biadjunction.Monoidal` | Monoidal case via `MonoidalSingleObj`: `ExactPairing` as adjunction, bidualities, mates agree with Mathlib's `rightAdjointMate`/`leftAdjointMate`, traces in `End (𝟙_ C)`. |
+| `StringDiagrams.Biadjunction.Zigzag` | Adjunctions in `P.Bicat` (`adjunctionOfZigzag`, `adjunctionOfRels`) and `ExactPairing`s in the monoidal case (`exactPairingOfZigzag`, `exactPairingOfRels`) from cup/cap classes satisfying zigzag equations, or directly from zigzag relations of the presentation. |
+| `StringDiagrams.Biadjunction.Words` | Colour dualities compatible with regions; dual words `(w.map dual).reverse`; biadjunctions for all well-formed words by composition, with nested units/counits, from biadjunctions of single colours. |
+| `StringDiagrams.Biadjunction.Presented` | Biadjunctions from four cups and caps; pitchfork (sliding) lemmas; mates of diagram classes as rotated diagrams (`rightMate_diag`, `isCyclic_diag_iff`); rotation invariance: if every generator is cyclic, every 2-morphism is (`Presentation.isCyclic_of_generators`), packaged as `pivotalOfGenerators : Pivotal P.Bicat`. |
+| `StringDiagrams.Biadjunction.PivotalExtension` | The pivotal extension of a presentation: added cup/cap generators for every colour and zigzag relations (`Presentation.pivotal`); for an involution on colours, cups and caps are automatically cyclic, so a pivotal structure only needs cyclicity of the original generators. |
+
+### Example: the walking biadjunction
+
+`StringDiagrams.Examples.WalkingBiadjunction`: strands `E : a → b`, `F : b → a` with all four cups and caps and a dot on `E` whose two rotations agree; every 2-morphism is cyclic (`pivotal`), the dot slides along both cups, and the plain bubble equals the trace of `snakeDown ≫ snakeUp` (`bubble_eq_trace_snakes`), a consequence of trace cyclicity.
 
 ### Example: odd dots
 
