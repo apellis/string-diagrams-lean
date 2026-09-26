@@ -175,6 +175,25 @@ theorem IsCompatible.iff {F : C ⥤ D} (hF : QPiFunctor R F) :
   simp only [PiFunctor.comp_β, NatIso.ofComponents_hom_app, Iso.trans_hom, Iso.app_hom,
     Functor.mapIso_hom, Category.assoc]
 
+/-- Compatibility is invariant under `(Q, Π)`-natural isomorphisms. -/
+theorem IsCompatible.of_iso {F G : C ⥤ D} {hF : QPiFunctor R F} {hG : QPiFunctor R G}
+    (x : F ≅ G) (hx : IsQPiNatural R hF hG x.hom) (hc : hG.IsCompatible R) :
+    hF.IsCompatible R := by
+  rw [IsCompatible.iff] at hc ⊢
+  intro X
+  rw [← cancel_mono (x.hom.app ((QPiCategory.Q (R := R)).obj ((PiCategory.pi (R := R)).obj X)))]
+  have h1 := hx.2 ((PiCategory.pi (R := R)).obj X)
+  have h2 := hx.1 X
+  have h3 := hx.1 ((QPiCategory.Q (R := R)).obj X)
+  have h4 := hx.2 X
+  have n1 := (QPiCategory.Q_pi (R := R) (C := D)).β.hom.naturality (x.hom.app X)
+  have n2 := x.hom.naturality ((QPiCategory.Q_pi (R := R) (C := C)).β.hom.app X)
+  simp only [Functor.comp_obj, Functor.comp_map] at n1 n2
+  simp only [Category.assoc]
+  rw [h1, ← Functor.map_comp_assoc, h2, Functor.map_comp_assoc, ← reassoc_of% n1, hc X, n2,
+    reassoc_of% h3, ← Functor.map_comp_assoc (PiCategory.pi (R := R)) (hF.γ.hom.app X), h4,
+    Functor.map_comp_assoc]
+
 theorem isQPiNatural_id {F : C ⥤ D} (hF : QPiFunctor R F) : IsQPiNatural R hF hF (𝟙 F) :=
   ⟨PiFunctor.isPiNatural_id hF.toPiFunctor, fun X => by simp⟩
 
