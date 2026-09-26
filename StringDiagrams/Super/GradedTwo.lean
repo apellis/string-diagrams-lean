@@ -1,4 +1,4 @@
-import StringDiagrams.Super.TwoFunctor
+import StringDiagrams.Super.DrinfeldCenter
 import StringDiagrams.Super.Graded
 import Mathlib.Tactic.CategoryTheory.Bicategory.Basic
 
@@ -31,7 +31,9 @@ Definitions 6.2, 6.3, 6.5 and Lemma 6.6.
   `ξ_hom_mem_degree`); (ii) `γ_F := σ_μ F σ_λ⁻¹ : q_μ F ≅ F q_λ`
   (`QPiTwoSupercategory.γ`) is even of degree zero, supernatural (`γ_naturality`), and
   satisfies `γ_{GF} = G γ_F ∘ γ_G F` (`γ_comp`), `γ_{1_λ} = 1_{q_λ}` (`γ_id`),
-  `γ_{q_λ} = 1_{q_λ²}` (`γ_q`) and `γ_{π_λ} = β_{q_λ}⁻¹` (`γ_pi`); (iii)
+  `γ_{q_λ} = 1_{q_λ²}` (`γ_q`) and `γ_{π_λ} = β_{q_λ}⁻¹` (`γ_pi`), so that `(q, γ)` is an
+  object of the Drinfeld center of Definition 2.3 (`qCenterObj`), invertible since `σ` is an
+  (even) isomorphism `(q, γ) ≅ 1` in the center (`centerσ`); (iii)
   `ii_λ := σ̄_λσ_λ : q_λ⁻¹ q_λ ≅ 1_λ` and `jj_λ := σ_λσ̄_λ : q_λ q_λ⁻¹ ≅ 1_λ` are even of
   degree zero with `q_λ ii_λ = jj_λ q_λ` (`q_ii`) and `ii_λ q_λ⁻¹ = q_λ⁻¹ jj_λ` (`ii_qinv`).
 
@@ -489,6 +491,65 @@ theorem ii_qinv (a : B) : qinv (R := R) a ◁ (ii (R := R) a).hom ≫
       (associator (qinv (R := R) a) (q (R := R) a) (qinv (R := R) a)).inv ≫
         (jj (R := R) a).hom ▷ qinv (R := R) a ≫ (leftUnitor (qinv (R := R) a)).hom := by
   exact congrArg Subtype.val (UnitIso.ii_qinv (σU (R := R) (B := B) ⟨a⟩) (σbarU ⟨a⟩))
+
+/-! ### (ii) `(q, γ)` in the Drinfeld center -/
+
+@[reassoc]
+theorem γ_hom_comp_σ (f : a ⟶ b) :
+    (γ (R := R) f).hom ≫ (σ (R := R) a).hom ▷ f =
+      f ◁ (σ (R := R) b).hom ≫ (rightUnitor f).hom ≫ (leftUnitor f).inv := by
+  rw [γ_hom]; simp only [Category.assoc, inv_hom_whiskerRight R, Category.comp_id]
+
+open DrinfeldCenter MonoidalCategory
+
+variable (R B) in
+/-- **Lemma 6.6(ii).** `(q, γ)` is an object of the Drinfeld center (Definition 2.3):
+`X_λ := q_λ`, `x_F := γ_F`. -/
+def qCenterObj : DrinfeldCenter R B where
+  toTwoNatTrans :=
+    { X := q (R := R)
+      x f := (γ (R := R) f).hom
+      x_mem f := γ_hom_mem f
+      naturality η := (γ_naturality η).symm
+      x_comp f g := by
+        simp only [TwoSuperfunctor.id_mapComp, Iso.refl_hom, TwoSuperfunctor.id_map]
+        erw [id_whiskerRight (R := R), whiskerLeft_id (R := R), Category.id_comp,
+          Category.comp_id]
+        exact γ_comp f g
+      x_id a := by
+        simp only [TwoSuperfunctor.id_mapId, Iso.refl_hom, TwoSuperfunctor.id_obj]
+        erw [id_whiskerRight (R := R), whiskerLeft_id (R := R), Category.id_comp]
+        rw [γ_id]
+        simp }
+  isStrong f := inferInstanceAs (IsIso (γ (R := R) f).hom)
+
+@[simp] theorem qCenterObj_X (a : B) : (qCenterObj R B).toTwoNatTrans.X a = q (R := R) a := rfl
+
+@[simp] theorem qCenterObj_x {a b : B} (f : a ⟶ b) :
+    (qCenterObj R B).toTwoNatTrans.x f = (γ (R := R) f).hom := rfl
+
+variable (R B) in
+/-- **Lemma 6.6(ii).** `σ` is an even isomorphism `(q, γ) ≅ 1` in the Drinfeld center; in
+particular `(q, γ)` is an invertible object of the Drinfeld center. -/
+def centerσ : qCenterObj R B ≅ 𝟙_ (DrinfeldCenter R B) where
+  hom :=
+    { app a := (σ (R := R) a).hom
+      naturality f := by
+        change (γ (R := R) f).hom ≫ (σ (R := R) _).hom ▷ f =
+          f ◁ (σ (R := R) _).hom ≫ (rightUnitor f).hom ≫ (leftUnitor f).inv
+        exact γ_hom_comp_σ f }
+  inv :=
+    { app a := (σ (R := R) a).inv
+      naturality f := by
+        change ((rightUnitor f).hom ≫ (leftUnitor f).inv) ≫ (σ (R := R) _).inv ▷ f =
+          f ◁ (σ (R := R) _).inv ≫ (γ (R := R) f).hom
+        rw [γ_hom, TwoSupercategory.whiskerLeft_inv_hom_assoc R, Category.assoc] }
+  hom_inv_id := hom_ext fun a => (σ (R := R) a).hom_inv_id
+  inv_hom_id := hom_ext fun a => (σ (R := R) a).inv_hom_id
+
+theorem centerσ_hom_mem :
+    (centerσ R B).hom ∈ parity (R := R) (qCenterObj R B) (𝟙_ (DrinfeldCenter R B)) 0 :=
+  fun a => σ_hom_mem (R := R) a
 
 end QPiTwoSupercategory
 
