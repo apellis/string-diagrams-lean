@@ -233,6 +233,99 @@ theorem ξ_hom_mem (a : B) :
     (leftUnitor_hom_mem (R := R) (pi (R := R) a))) (ζ_hom_mem (R := R) a)
   simpa [Category.assoc] using h
 
+/-! ### Lemma 3.2 -/
+
+variable (a b) in
+/-- **Lemma 3.2.** `β_{μ,λ}` is an even supernatural isomorphism `π_μ - ⇒ - π_λ` between the
+superfunctors `ℋom(λ, μ) → ℋom(λ, μ)` given by horizontal composition with `π_μ` and
+`π_λ`. -/
+theorem β_isSupernatural :
+    IsSupernatural R 0 (F := postcomp R (a := a) (pi (R := R) b))
+      (G := precomp R (c := b) (pi (R := R) a)) fun f => (β (R := R) f).hom where
+  mem f := β_hom_mem f
+  naturality {f g q x} _ := by
+    simp only [postcomp_obj, postcomp_map, precomp_obj, precomp_map, zero_mul, sign_zero,
+      one_smul]
+    exact (β_naturality x).symm
+
+/-- **Lemma 3.2(i).** `(β_{ν,λ})_{GF} = G (β_{μ,λ})_F ∘ (β_{ν,μ})_G F`, i.e.
+`β_{F ≫ G} = α ≫ F ◁ β_G ≫ α⁻¹ ≫ β_F ▷ G ≫ α`. -/
+theorem β_comp (f : a ⟶ b) (g : b ⟶ c) :
+    (β (R := R) (f ≫ g)).hom =
+      (associator f g (pi (R := R) c)).hom ≫ f ◁ (β (R := R) g).hom ≫
+        (associator f (pi (R := R) b) g).inv ≫ (β (R := R) f).hom ▷ g ≫
+          (associator (pi (R := R) a) f g).hom := by
+  symm
+  simp only [β_hom, whiskerLeft_comp' R, comp_whiskerRight' R, Category.assoc]
+  rw [associator_inv_naturality_middle_assoc R, ← comp_whiskerRight'_assoc R,
+    ← whiskerLeft_comp' R, Iso.inv_hom_id, whiskerLeft_id (R := R), id_whiskerRight (R := R),
+    Category.id_comp, ← triangle (R := R), Category.assoc, Iso.inv_hom_id_assoc,
+    whiskerLeft_inv_hom_assoc R, associator_naturality_left R, ← leftUnitor_comp_inv_assoc R,
+    ← associator_naturality_right_assoc R, ← rightUnitor_comp_assoc R]
+
+/-- **Lemma 3.2(ii).** `(β_{λ,λ})_{1_λ} = 1_{π_λ}`, i.e. `β_{1_λ} = λ_{π_λ} ≫ ρ_{π_λ}⁻¹`. -/
+theorem β_id (a : B) :
+    (β (R := R) (𝟙 a)).hom = (leftUnitor (pi (R := R) a)).hom ≫ (rightUnitor (pi (R := R) a)).inv := by
+  rw [β_hom, ← unitors_equal R, Iso.hom_inv_id_assoc, id_whiskerLeft (R := R),
+    whiskerRight_id (R := R), Category.assoc, Category.assoc, ← unitors_equal R,
+    Iso.inv_hom_id_assoc, Iso.hom_inv_id_assoc]
+
+/-- **Lemma 3.2(iii).** `π_λ ζ_λ = -ζ_λ π_λ`, i.e.
+`ζ_λ ▷ π_λ ≫ λ_{π_λ} = -(π_λ ◁ ζ_λ ≫ ρ_{π_λ})`. -/
+theorem pi_whisker_ζ (a : B) :
+    (ζ (R := R) a).hom ▷ pi (R := R) a ≫ (leftUnitor (pi (R := R) a)).hom =
+      -(pi (R := R) a ◁ (ζ (R := R) a).hom ≫ (rightUnitor (pi (R := R) a)).hom) := by
+  have h := super_interchange (R := R) (ζ_hom_mem (R := R) a) (ζ_hom_mem (R := R) a)
+  rw [koszulSign_one_one, neg_smul, one_smul, id_whiskerLeft (R := R),
+    whiskerRight_id (R := R), ← unitors_inv_equal R] at h
+  apply (cancel_mono ((ζ (R := R) a).hom ≫ (leftUnitor (𝟙 a)).inv)).1
+  simpa only [Category.assoc, Preadditive.neg_comp] using h
+
+/-- **Lemma 3.2(iii).** `(β_{λ,λ})_{π_λ} = -1_{π_λ²}`. -/
+theorem β_pi (a : B) : (β (R := R) (pi (R := R) a)).hom = -𝟙 _ := by
+  have h : pi (R := R) a ◁ (ζ (R := R) a).hom ≫ (rightUnitor (pi (R := R) a)).hom =
+      -((ζ (R := R) a).hom ▷ pi (R := R) a ≫ (leftUnitor (pi (R := R) a)).hom) := by
+    rw [pi_whisker_ζ, neg_neg]
+  rw [β_hom, ← Category.assoc, h]
+  simp only [Preadditive.neg_comp, Category.assoc, Iso.hom_inv_id_assoc]
+  rw [hom_inv_whiskerRight R]
+
+/-- **Lemma 3.2(iv).** `ξ_μ F ξ_λ⁻¹ = (β_{μ,λ})_F π_λ ∘ π_μ (β_{μ,λ})_F` in
+`Hom(π_μ² F, F π_λ²)`, where `ξ_μ F ξ_λ⁻¹ = F ◁ ξ_μ ≫ ρ_F ≫ λ_F⁻¹ ≫ ξ_λ⁻¹ ▷ F` (both
+factors are even, so the order of the horizontal composition does not matter). -/
+theorem ξ_comm (f : a ⟶ b) :
+    f ◁ (ξ (R := R) b).hom ≫ (rightUnitor f).hom ≫ (leftUnitor f).inv ≫ (ξ (R := R) a).inv ▷ f =
+      (associator f (pi (R := R) b) (pi (R := R) b)).inv ≫ (β (R := R) f).hom ▷ pi (R := R) b ≫
+        (associator (pi (R := R) a) f (pi (R := R) b)).hom ≫ pi (R := R) a ◁ (β (R := R) f).hom ≫
+          (associator (pi (R := R) a) (pi (R := R) a) f).inv := by
+  -- Notation: `(pi (R := R) a) = π_λ`, `(pi (R := R) b) = π_μ`, `z = ζ_λ`, `y = ζ_μ`.
+  have hz := ζ_hom_mem (R := R) a
+  have hy := ζ_hom_mem (R := R) b
+  have hβ := β_hom_mem (R := R) f
+  -- The key identity: the right-hand side followed by `ξ_λ F` is `F ξ_μ` (with unitors).
+  have key : (associator f (pi (R := R) b) (pi (R := R) b)).inv ≫ (β (R := R) f).hom ▷ (pi (R := R) b) ≫ (associator (pi (R := R) a) f (pi (R := R) b)).hom ≫
+      (pi (R := R) a) ◁ (β (R := R) f).hom ≫ (associator (pi (R := R) a) (pi (R := R) a) f).inv ≫ (ξ (R := R) a).hom ▷ f =
+        f ◁ (ξ (R := R) b).hom ≫ (rightUnitor f).hom ≫ (leftUnitor f).inv := by
+    rw [ξ_hom, comp_whiskerRight' R, comp_whiskerRight' R,
+      ← associator_inv_naturality_left_assoc R]
+    have h2 : (pi (R := R) a) ◁ (β (R := R) f).hom ≫ (ζ (R := R) a).hom ▷ ((pi (R := R) a) ≫ f) =
+        (ζ (R := R) a).hom ▷ (f ≫ (pi (R := R) b)) ≫ 𝟙 a ◁ (β (R := R) f).hom :=
+      (whisker_exchange_of_even_right (ζ (R := R) a).hom hβ).symm
+    rw [reassoc_of% h2, ← leftUnitor_comp_assoc R, leftUnitor_naturality_assoc R,
+      β_hom_comp_ζ, ← associator_naturality_left_assoc R,
+      ← leftUnitor_whiskerRight_assoc R, ← comp_whiskerRight'_assoc R,
+      ← comp_whiskerRight'_assoc R, Category.assoc, β_hom_comp_ζ_assoc, Iso.inv_hom_id,
+      Category.comp_id, comp_whiskerRight'_assoc R,
+      whisker_exchange_of_even_left_assoc (rightUnitor_hom_mem (R := R) f),
+      super_interchange_assoc (whiskerLeft_mem f hy) hy, koszulSign_one_one, neg_smul, one_smul,
+      Preadditive.comp_neg, rightUnitor_naturality_assoc R, rightUnitor_naturality_assoc R,
+      ← associator_inv_naturality_right_assoc R, ← whiskerLeft_rightUnitor_assoc R,
+      ξ_hom, ← Category.assoc ((ζ (R := R) b).hom ▷ (pi (R := R) b)), pi_whisker_ζ, Preadditive.neg_comp,
+      whiskerLeft_neg R, whiskerLeft_comp' R, whiskerLeft_comp' R]
+    simp only [Preadditive.neg_comp, Category.assoc]
+  rw [← reassoc_of% key]
+  simp only [Category.assoc, hom_inv_whiskerRight R, Category.comp_id]
+
 end
 
 end PiTwoSupercategory
