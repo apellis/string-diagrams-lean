@@ -53,6 +53,9 @@ variable {R}
 theorem zmod2_cases (p : ZMod 2) : p = 0 ∨ p = 1 := by
   fin_cases p <;> simp
 
+theorem zmod2_add_self (p : ZMod 2) : p + p = 0 := by
+  rcases zmod2_cases p with rfl | rfl <;> rfl
+
 theorem zmod2_add_one_ne (p : ZMod 2) : p + 1 ≠ p := by
   rcases zmod2_cases p with rfl | rfl <;> decide
 
@@ -131,6 +134,12 @@ theorem proj_add_proj {X Y : C} (f : X ⟶ Y) : proj R 0 f + proj R 1 f = f := b
     · rw [proj_of_mem hg, proj_of_mem_ne hg (by decide), add_zero]
     · rw [proj_of_mem hg, proj_of_mem_ne hg (by decide), zero_add]
   · rw [map_add, map_add, add_add_add_comm, hg, hh]
+
+theorem proj_add_proj_add_one (s : ZMod 2) {X Y : C} (f : X ⟶ Y) :
+    proj R s f + proj R (s + 1) f = f := by
+  rcases zmod2_cases s with rfl | rfl
+  · exact proj_add_proj f
+  · rw [show (1 : ZMod 2) + 1 = 0 from rfl, add_comm]; exact proj_add_proj f
 
 /-- The components are characterized by homogeneity: if `f = g + h` with `g` of parity `p` and
 `h` of parity `p + 1`, then `fₚ = g`. -/
