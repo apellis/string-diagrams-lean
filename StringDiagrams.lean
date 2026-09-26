@@ -32,6 +32,13 @@ import StringDiagrams.Super.PiTwo
 import StringDiagrams.Super.TwoFunctor
 import StringDiagrams.Super.DrinfeldCenter
 import StringDiagrams.Super.TwoFunctorComp
+import StringDiagrams.Super.SVec
+import StringDiagrams.Super.K0
+import StringDiagrams.Super.SKar
+import StringDiagrams.Super.Superalgebra
+import StringDiagrams.Super.Superbimodule
+import StringDiagrams.Super.KaroubiMonoidal
+import StringDiagrams.Super.SKarMonoidal
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
