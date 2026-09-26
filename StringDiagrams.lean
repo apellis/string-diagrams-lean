@@ -26,6 +26,7 @@ import StringDiagrams.Super.QEnvelope
 import StringDiagrams.Super.QPiCategory
 import StringDiagrams.Super.Orbit
 import StringDiagrams.Super.QAssociated
+import StringDiagrams.Super.GSKar
 import StringDiagrams.Super.TwoEnvelope
 import StringDiagrams.Super.MonoidalUniversal
 import StringDiagrams.Super.TwoEnvelopeUniversal
