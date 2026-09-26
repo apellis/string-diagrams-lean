@@ -37,6 +37,7 @@ import StringDiagrams.Super.TwoFunctorComp
 import StringDiagrams.Super.EndMonoidal
 import StringDiagrams.Super.SKarUnit
 import StringDiagrams.Super.SKarSuperalgebra
+import StringDiagrams.Super.SKarMonoidalPi
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
