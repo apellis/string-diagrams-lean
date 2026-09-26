@@ -22,6 +22,18 @@ A Lean 4 library for diagrammatic reasoning: typed diagram syntax, presentations
 | `StringDiagrams.Generation` | Induction principles: morphisms are linear combinations of diagrams, diagrams are composites of layers (`Presentation.hom_induction_layers`). |
 | `StringDiagrams.LocalInterpretation` | Representations by local operators (`LocalInterpretation`): objects go to modules `M (κ a)` indexed by a function of the object, layers act by local operators on an ambient module. The image of any diagram is the composite of its layer operators (`functor_map_hom`, and `functor_map_transport` along arbitrary equalities of indices); soundness reduces to the vanishing of a linear evaluation of each whiskered relation (`respects_of`, `evalW`), and the interchange part to commutation of generators at disjoint positions with the Koszul sign (`evalW_interchange_eq_zero`). Special cases: one module for all objects (`uniform`), index-preserving componentwise operators on `Π i, M i` (`pi`, `pi_functor_map_transport`). Over `ℤ`: `Presentation.int_smul_eq_zsmul`, `Presentation.hom_induction_int`. Used by the polynomial representation of free commuting dots (`uniform`) and the Temperley–Lieb representation. |
 
+### Biadjunctions (any Mathlib bicategory)
+
+| Module | Contents |
+| --- | --- |
+| `StringDiagrams.Biadjunction.Basic` | `Biadjunction f g` (`f ⊣⊢ g`: Mathlib adjunctions `f ⊣ g` and `g ⊣ f`), `id`, `comp`, `symm`; the right and left mates `(f ⟶ f') ≃ (g' ⟶ g)`; `IsCyclic` (the two mates agree); right and left traces (bubbles) in `𝟙 a ⟶ 𝟙 a`, `𝟙 b ⟶ 𝟙 b`. |
+| `StringDiagrams.Biadjunction.Conjugate` | Sliding a 2-morphism through a unit or counit (`unit_comp_whiskerRight_eq`, `whiskerLeft_comp_counit_eq`), uniqueness of conjugates, conjugates of whiskerings for composite adjunctions. |
+| `StringDiagrams.Biadjunction.Cyclic` | Mates reverse composition; cyclic 2-morphisms are closed under composition, inverses, whiskering, horizontal composition and mates; coherence isomorphisms, units and counits are cyclic (with explicit mates). |
+| `StringDiagrams.Biadjunction.Linear` | `LocallyPreadditive`, `LocallyLinear` bicategories; mates as linear equivalences; cyclic 2-morphisms form a submodule; linearity of traces. |
+| `StringDiagrams.Biadjunction.Trace` | `tr(α ≫ β) = tr(β ≫ doubleMate α)` in general (`rightTrace_comp`), hence `tr(α ≫ β) = tr(β ≫ α)` when either factor is cyclic; traces versus mates; partial traces for composite biadjunctions. |
+| `StringDiagrams.Biadjunction.Pivotal` | `Pivotal B` (chosen biadjoints, every 2-morphism cyclic); rotation `rotate` is a contravariant equivalence, `rotate (rotate α)` is conjugation by the natural `f ≅ dual (dual f)`; traces are cyclic. |
+| `StringDiagrams.Biadjunction.Monoidal` | Monoidal case via `MonoidalSingleObj`: `ExactPairing` as adjunction, bidualities, mates agree with Mathlib's `rightAdjointMate`/`leftAdjointMate`, traces in `End (𝟙_ C)`. |
+
 ### Example: odd dots
 
 `StringDiagrams.Examples.Exterior`: a single odd dot with `dot ≫ dot = 0`; distinct dots anticommute by the super interchange law alone (`x_mul_x_anticomm`).

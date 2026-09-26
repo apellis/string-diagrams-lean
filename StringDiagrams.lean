@@ -25,6 +25,13 @@ import StringDiagrams.Tactic.WordRw
 import StringDiagrams.Examples.Grading
 import StringDiagrams.Examples.TemperleyLiebMonoidal
 import StringDiagrams.Examples.WeightedBubbles
+import StringDiagrams.Biadjunction.Basic
+import StringDiagrams.Biadjunction.Conjugate
+import StringDiagrams.Biadjunction.Cyclic
+import StringDiagrams.Biadjunction.Linear
+import StringDiagrams.Biadjunction.Trace
+import StringDiagrams.Biadjunction.Pivotal
+import StringDiagrams.Biadjunction.Monoidal
 
 /-!
 # StringDiagrams
