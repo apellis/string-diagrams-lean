@@ -331,6 +331,14 @@ theorem map_σIso_hom (Φ : ShiftFunctor R d d') (X : Orbit d) :
   simp
   erw [CategoryTheory.Functor.map_id, Category.id_comp]
 
+theorem map_σIso_inv (Φ : ShiftFunctor R d d') (X : Orbit d) :
+    (map Φ).map (σIso X).inv =
+      (σIso (⟨Φ.F.obj X.obj⟩ : Orbit d')).inv ≫ (ι d').map (Φ.γ.hom.app X.obj) := by
+  rw [← cancel_epi ((map Φ).map (σIso X).hom), ← Functor.map_comp, Iso.hom_inv_id,
+    CategoryTheory.Functor.map_id, map_σIso_hom, Category.assoc, Iso.hom_inv_id_assoc,
+    ← Functor.map_comp, Iso.inv_hom_id_app, CategoryTheory.Functor.map_id]
+  rfl
+
 /-- `σ` is natural with respect to the functor `Orbit.map (ShiftFunctor.self d)` induced by
 `(Q, 1)`; equivalently, this functor is the functor `Q` of the orbit supercategory. -/
 theorem map_self_comp_σIso_hom {X Y : Orbit d} (z : X ⟶ Y) :

@@ -622,6 +622,10 @@ theorem whiskerLeft_comp'' (f : a ⟶ b) {g h i : b ⟶ c} (η : g ⟶ h) (θ : 
 theorem whiskerLeft_id'' (f : a ⟶ b) (g : b ⟶ c) : f ◁ 𝟙 g = 𝟙 (f ≫ g) :=
   (Orbit.map (preShift R c.obj f.obj)).map_id g
 
+theorem comp_whiskerRight'' {f g h : a ⟶ b} (η : f ⟶ g) (θ : g ⟶ h) (i : b ⟶ c) :
+    (η ≫ θ) ▷ i = η ▷ i ≫ θ ▷ i :=
+  (Orbit.map (postShift R a.obj i.obj)).map_comp η θ
+
 theorem whiskerLeft_add'' (f : a ⟶ b) {g h : b ⟶ c} (η θ : g ⟶ h) :
     f ◁ (η + θ) = f ◁ η + f ◁ θ :=
   (Orbit.map (preShift R c.obj f.obj)).map_add
@@ -863,6 +867,73 @@ theorem qinv_obj (a : Orbit2 R B) :
 theorem σ_eq (a : Orbit2 R B) : QPiTwoSupercategory.σ (R := R) a = σ a := rfl
 
 theorem σbar_eq (a : Orbit2 R B) : QPiTwoSupercategory.σbar (R := R) a = σbar a := rfl
+
+/-! ### The underlying structures of `Orbit2 R 𝔅` are those of `𝔅` -/
+
+/-- The `β` of Lemma 3.2 for `Orbit2 R 𝔅` is that of `𝔅`, in degree zero. -/
+theorem β_hom_eq (f : a ⟶ b) :
+    (PiTwoSupercategory.β (R := R) f).hom =
+      (Orbit.ι (homShift R a.obj b.obj)).map (PiTwoSupercategory.β (R := R) f.obj).hom := by
+  rw [PiTwoSupercategory.β_hom, PiTwoSupercategory.β_hom, ζ_hom_def, whiskerLeft_ι,
+    rightUnitor_hom_def, leftUnitor_inv_def]
+  change _ ≫ _ ≫ _ ≫ (Orbit.ι (homShift R a.obj a.obj)).map (PiTwoSupercategory.ζ (R := R) a.obj).inv ▷ f = _
+  rw [whiskerRight_ι, ← Functor.map_comp, ← Functor.map_comp, ← Functor.map_comp]
+
+/-- The `ξ = ζζ` of Lemma 3.2(iv) for `Orbit2 R 𝔅` is that of `𝔅`, in degree zero. -/
+theorem ξ_hom_eq (a : Orbit2 R B) :
+    (PiTwoSupercategory.ξ (R := R) a).hom =
+      (Orbit.ι (homShift R a.obj a.obj)).map (PiTwoSupercategory.ξ (R := R) a.obj).hom := by
+  rw [PiTwoSupercategory.ξ_hom, PiTwoSupercategory.ξ_hom, ζ_hom_def, whiskerRight_ι,
+    leftUnitor_hom_def, ← Functor.map_comp, ← Functor.map_comp]
+  rfl
+
+theorem whiskerLeft_σ_hom (f : a ⟶ b) :
+    f ◁ (QPiTwoSupercategory.σ (R := R) b).hom =
+      (Orbit.ι (homShift R a.obj b.obj)).map (f.obj ◁ (leftUnitor (𝐪 b.obj)).inv ≫
+        (associator f.obj (𝟙 b.obj) (𝐪 b.obj)).inv) ≫
+        (σIso (⟨f.obj ≫ 𝟙 b.obj⟩ : a ⟶ b)).hom := by
+  rw [σ_eq, σ_hom, whiskerLeft_comp'', whiskerLeft_ι, whiskerLeft_def]
+  erw [map_σIso_hom]
+  rw [preShift_γ_inv_app, Functor.map_comp, Category.assoc]
+  rfl
+
+theorem σ_inv_whiskerRight (f : a ⟶ b) :
+    (QPiTwoSupercategory.σ (R := R) a).inv ▷ f =
+      (σIso (⟨𝟙 a.obj ≫ f.obj⟩ : a ⟶ b)).inv ≫ (Orbit.ι (homShift R a.obj b.obj)).map
+        ((γR (R := R) (𝟙 a.obj) f.obj).hom ≫ (leftUnitor (𝐪 a.obj)).hom ▷ f.obj) := by
+  have e : (QPiTwoSupercategory.σ (R := R) a).inv = (σIso (⟨𝟙 a.obj⟩ : a ⟶ a)).inv ≫
+      (Orbit.ι (homShift R a.obj a.obj)).map (leftUnitor (𝐪 a.obj)).hom := by
+    simp [σ_eq, σ]
+  rw [e, comp_whiskerRight'', whiskerRight_ι, whiskerRight_def]
+  erw [map_σIso_inv]
+  rw [postShift_γ_hom_app, Functor.map_comp, Category.assoc]
+  rfl
+
+open Bicategory in
+/-- The half-braiding `γ_F = σ_μ F σ_λ⁻¹` of Lemma 6.6(ii) for `Orbit2 R 𝔅` is the `γ_F` of
+`𝔅`, in degree zero. -/
+theorem γ_hom_eq (f : a ⟶ b) :
+    (QPiTwoSupercategory.γ (R := R) f).hom =
+      (Orbit.ι (homShift R a.obj b.obj)).map (CentralShift.γ (R := R) f.obj).hom := by
+  have n := σIso_hom_naturality (d := homShift R a.obj b.obj)
+    ((rightUnitor f.obj).hom ≫ (leftUnitor f.obj).inv)
+  simp only [ι_obj, homShift_Q, postcomp_map] at n
+  rw [QPiTwoSupercategory.γ_hom, whiskerLeft_σ_hom, σ_inv_whiskerRight, rightUnitor_hom_def,
+    leftUnitor_inv_def]
+  simp only [Category.assoc]
+  rw [← Functor.map_comp_assoc (Orbit.ι (homShift R a.obj b.obj)) (rightUnitor f.obj).hom,
+    reassoc_of% n, Iso.hom_inv_id_assoc, ← Functor.map_comp, ← Functor.map_comp]
+  congr 1
+  simp only [γR_hom, Category.assoc]
+  have key : ∀ f' : (⟨a.obj⟩ : Underlying2 R B) ⟶ ⟨b.obj⟩,
+      Bicategory.whiskerLeft f' (λ_ (Underlying2.hom1 (𝐪 b.obj))).inv ≫ (α_ f' (𝟙 _) _).inv ≫
+        Bicategory.whiskerRight ((ρ_ f').hom ≫ (λ_ f').inv) (Underlying2.hom1 (𝐪 b.obj)) ≫
+          (α_ (𝟙 _) f' _).hom ≫ Bicategory.whiskerLeft (𝟙 _) (γU (R := R) f').hom ≫
+            (α_ (𝟙 _) _ f').inv ≫ Bicategory.whiskerRight (λ_ (Underlying2.hom1 (𝐪 a.obj))).hom f' =
+      (γU (R := R) f').hom := by
+    intro f'
+    bicategory
+  exact congrArg Subtype.val (key (Underlying2.hom1 f.obj))
 
 end Pi
 
