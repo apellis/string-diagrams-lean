@@ -6,6 +6,11 @@ import StringDiagrams.Whisker
 import StringDiagrams.Generation
 import StringDiagrams.Interchange
 import StringDiagrams.Grading
+import StringDiagrams.Transport
+import StringDiagrams.Positional
+import StringDiagrams.SingleColour
+import StringDiagrams.EckmannHilton
+import StringDiagrams.BicatHom
 import StringDiagrams.Super.Basic
 import StringDiagrams.Super.Functor
 import StringDiagrams.Super.Monoidal

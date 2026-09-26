@@ -120,6 +120,9 @@ namespace Obj
 /-- The rightmost region of an object. -/
 def endR (a : Obj S) : S.Region := S.endR a.start a.word
 
+@[simp] theorem endR_mk (r : S.Region) (w : List S.Colour) :
+    (⟨r, w⟩ : Obj S).endR = S.endR r w := rfl
+
 /-- Whiskering of an object: `u ⊗ a ⊗ v` (the start of `u` is kept; `v` is a word). -/
 def whisker (a : Obj S) (u : Obj S) (v : List S.Colour) : Obj S :=
   ⟨u.start, u.word ++ a.word ++ v⟩
