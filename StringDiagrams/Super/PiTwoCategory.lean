@@ -1,4 +1,4 @@
-import StringDiagrams.Super.TwoFunctor
+import StringDiagrams.Super.TwoFunctorComp
 import StringDiagrams.Super.PiCategory
 import Mathlib.CategoryTheory.Bicategory.Functor.Pseudofunctor
 import Mathlib.CategoryTheory.Bicategory.NaturalTransformation.Oplax
@@ -41,8 +41,8 @@ paper's `g f`), so the paper's `π_μ F` is `F ≫ π_μ` and `F π_λ` is `π_�
 * On 2-superfunctors: `TwoSuperfunctor.toPseudofunctor` restricts a 2-superfunctor to the
   underlying bicategories; it is a Π-2-functor with `j` defined by `ℝζ_λ ∘ j = i ∘ ζ_{ℝλ}`
   (`TwoSuperfunctor.toPiTwoFunctor`, the two axioms `jβ_comm`, `jξ_comm`).
-* On 2-natural transformations ((5.6)): `TwoNatTrans.toOplax`, which is Π-2-natural
-  (`TwoNatTrans.isPiTwoNatural`).
+* On 2-natural transformations ((5.6)): `TwoNatTrans.toOplaxTrans`
+  (`StringDiagrams.Super.TwoFunctorComp`), which is Π-2-natural (`TwoNatTrans.isPiTwoNatural`).
 
 Applied to `PiSCat R` (`StringDiagrams.Super.PiTwo`), `Underlying2.instPiTwoCategory` makes the
 underlying 2-category of `Π-𝔖ℭ𝔞𝔱` a Π-2-category, as stated after Definition 5.2. The basic
@@ -500,47 +500,16 @@ variable {R : Type w} [CommRing R] {A : Type u₁} [BicategoryStruct.{w₁, v₁
   [∀ a b : A', Supercategory R (a ⟶ b)] [TwoSupercategory R A']
   {F G : TwoSuperfunctor R A A'} (θ : TwoNatTrans F G)
 
-/-- **Brundan–Ellis, (5.6), `𝔼₂` on 2-natural transformations.** A 2-natural transformation
-`(X, x) : ℝ ⇒ 𝕊` gives an oplax natural transformation `(X̲, x̲) : ℝ̲ ⇒ 𝕊̲` of the underlying
-pseudofunctors. -/
-@[simps]
-def toOplax : Oplax.OplaxTrans F.toPseudofunctor.toOplax G.toPseudofunctor.toOplax where
-  app a := ⟨θ.X a.obj⟩
-  naturality f := ⟨θ.x f.obj, θ.x_mem f.obj⟩
-  naturality_naturality η := Subtype.ext (θ.naturality η.1)
-  naturality_id a := Subtype.ext (by
-    change θ.x (𝟙 a.obj) ≫ θ.X a.obj ◁ (G.mapId a.obj).inv =
-      (F.mapId a.obj).inv ▷ θ.X a.obj ≫ (leftUnitor (θ.X a.obj)).hom ≫
-        (rightUnitor (θ.X a.obj)).inv
-    have h := θ.x_id a.obj
-    have h' : θ.x (𝟙 a.obj) = (F.mapId a.obj).inv ▷ θ.X a.obj ≫ (leftUnitor (θ.X a.obj)).hom ≫
-        (rightUnitor (θ.X a.obj)).inv ≫ θ.X a.obj ◁ (G.mapId a.obj).hom := by
-      rw [← h]
-      simp only [Category.assoc, Iso.inv_hom_id_assoc, Iso.hom_inv_id_assoc,
-        TwoSupercategory.inv_hom_whiskerRight_assoc R]
-    rw [h']
-    simp only [Category.assoc, TwoSupercategory.whiskerLeft_hom_inv R, Category.comp_id])
-  naturality_comp f g := Subtype.ext (by
-    change θ.x (f.obj ≫ g.obj) ≫ θ.X _ ◁ (G.mapComp f.obj g.obj).inv =
-      (F.mapComp f.obj g.obj).inv ▷ θ.X _ ≫ (BicategoryStruct.associator _ _ _).hom ≫
-        F.map f.obj ◁ θ.x g.obj ≫ (BicategoryStruct.associator _ _ _).inv ≫
-          θ.x f.obj ▷ G.map g.obj ≫ (BicategoryStruct.associator _ _ _).hom
-    have h := θ.x_comp f.obj g.obj
-    refine (cancel_mono (whiskerLeftIso (R := R) (θ.X _) (G.mapComp f.obj g.obj)).hom).1 ?_
-    simp only [TwoSupercategory.whiskerLeftIso_hom, Category.assoc,
-      TwoSupercategory.whiskerLeft_inv_hom R,
-      Category.comp_id]
-    rw [← h, TwoSupercategory.inv_hom_whiskerRight_assoc R])
-
 variable [PiTwoSupercategory R A] [PiTwoSupercategory R A']
 
 local notation "𝛑" => PiTwoSupercategory.pi (R := R)
 local notation "𝛇" => PiTwoSupercategory.ζ (R := R)
 
-/-- **Brundan–Ellis, (5.6).** `𝔼₂(X, x)` is Π-2-natural (the coherence axiom of
-Definition 5.2(iii)). -/
+/-- **Brundan–Ellis, (5.6).** `𝔼₂(X, x) = (X̲, x̲)` (the oplax transformation
+`TwoNatTrans.toOplaxTrans` of the underlying bicategories) is Π-2-natural: the coherence axiom of
+Definition 5.2(iii) holds. -/
 theorem isPiTwoNatural :
-    F.toPiTwoFunctor.IsPiTwoNatural G.toPiTwoFunctor θ.toOplax := fun a => Subtype.ext (by
+    F.toPiTwoFunctor.IsPiTwoNatural G.toPiTwoFunctor θ.toOplaxTrans := fun a => Subtype.ext (by
   change (PiTwoSupercategory.β (R := R) (θ.X a.obj)).hom ≫ (F.jIso a.obj).hom ▷ θ.X a.obj ≫
     θ.x (𝛑 a.obj) = θ.X a.obj ◁ (G.jIso a.obj).hom
   have hn := θ.naturality (𝛇 a.obj).inv

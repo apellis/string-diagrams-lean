@@ -6,7 +6,7 @@ import StringDiagrams.Super.AssociatedTwoMap
 Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v3, (5.6) and
 Theorem 5.5.
 
-* `𝔼₂` on 2-natural transformations is `TwoNatTrans.toOplax`, which is Π-2-natural
+* `𝔼₂` on 2-natural transformations is `TwoNatTrans.toOplaxTrans`, which is Π-2-natural
   (`TwoNatTrans.isPiTwoNatural`, in `StringDiagrams.Super.PiTwoCategory`).
 * `𝔻₂` on Π-2-natural transformations (`PiTwoFunctor.mapTwoNat`): a Π-2-natural transformation
   `(Y, y) : ℝ ⇒ 𝕊` gives the 2-natural transformation `(Ŷ, ŷ) : ℝ̂ ⇒ 𝕊̂` with `ŷ_F = (y_F, 0)`.
@@ -154,11 +154,11 @@ def mapTwoNat (hη : hF.IsPiTwoNatural hG η) : TwoNatTrans hF.mapTwo hG.mapTwo 
 /-- **Theorem 5.5, `𝔼₂ ∘ 𝔻₂ = 𝕀` on 2-morphisms.** The components of `𝔼₂(𝔻₂(Y, y))` are those of
 `(Y, y)`, under the identification `Associated2.unit` of Lemma 5.4. -/
 theorem toOplax_mapTwoNat_naturality (hη : hF.IsPiTwoNatural hG η) {a b : B} (f : a ⟶ b) :
-    ((mapTwoNat hF hG hη).toOplax).naturality ((Associated2.unit R B).map f) =
+    ((mapTwoNat hF hG hη).toOplaxTrans).naturality ((Associated2.unit R B).map f) =
       (Associated2.unit R C).map₂ (η.naturality f) := rfl
 
 theorem toOplax_mapTwoNat_app (hη : hF.IsPiTwoNatural hG η) (a : B) :
-    ((mapTwoNat hF hG hη).toOplax).app ((Associated2.unit R B).obj a) =
+    ((mapTwoNat hF hG hη).toOplaxTrans).app ((Associated2.unit R B).obj a) =
       (Associated2.unit R C).map (η.app a) := rfl
 
 end PiTwoFunctor
