@@ -155,6 +155,26 @@ def IsQPiNatural {F G : C ⥤ D} (hF : QPiFunctor R F) (hG : QPiFunctor R G) (x 
     ∀ X : C, hF.γ.hom.app X ≫ x.app ((QPiCategory.Q (R := R)).obj X) =
       (QPiCategory.Q (R := R)).map (x.app X) ≫ hG.γ.hom.app X
 
+variable (R) in
+/-- The compatibility of `γ_F` with `β` (needed for Theorem 6.13, see the erratum in
+`StringDiagrams.Super.QAssociated`): `γ_F` is a Π-natural transformation between the
+Π-functors `Q' F` and `F Q`, i.e. `γ_F Π ∘ Q' β_F ∘ β_{Q'} F = F β_Q ∘ β_F Q ∘ Π' γ_F` in
+`Hom(Π' Q' F, F Q Π)`. -/
+def IsCompatible {F : C ⥤ D} (hF : QPiFunctor R F) : Prop :=
+  PiFunctor.IsPiNatural R (hF.toPiFunctor.comp (QPiCategory.Q_pi (R := R) (C := D)))
+    ((QPiCategory.Q_pi (R := R) (C := C)).comp hF.toPiFunctor) hF.γ.hom
+
+theorem IsCompatible.iff {F : C ⥤ D} (hF : QPiFunctor R F) :
+    hF.IsCompatible R ↔ ∀ X : C,
+      (QPiCategory.Q_pi (R := R) (C := D)).β.hom.app (F.obj X) ≫
+        (QPiCategory.Q (R := R)).map (hF.β.hom.app X) ≫
+          hF.γ.hom.app ((PiCategory.pi (R := R)).obj X) =
+      (PiCategory.pi (R := R)).map (hF.γ.hom.app X) ≫ hF.β.hom.app ((QPiCategory.Q (R := R)).obj X) ≫
+        F.map ((QPiCategory.Q_pi (R := R) (C := C)).β.hom.app X) := by
+  unfold IsCompatible PiFunctor.IsPiNatural
+  simp only [PiFunctor.comp_β, NatIso.ofComponents_hom_app, Iso.trans_hom, Iso.app_hom,
+    Functor.mapIso_hom, Category.assoc]
+
 theorem isQPiNatural_id {F : C ⥤ D} (hF : QPiFunctor R F) : IsQPiNatural R hF hF (𝟙 F) :=
   ⟨PiFunctor.isPiNatural_id hF.toPiFunctor, fun X => by simp⟩
 
@@ -328,6 +348,15 @@ theorem isQPiNatural {F G : A ⥤ B} [F.Additive] [F.Linear R] [IsGradedSuperfun
       (PiSupercategory.β_naturality_supernatural F G hx.toIsSupernatural X.obj.obj).symm),
     fun X => Underlying.hom_ext (DegreeZero.hom_ext
       (γ_naturality_supernatural F G hx.toIsSupernatural X.obj.obj).symm)⟩
+
+/-- The `(Q, Π)`-functors in the image of `𝔼` satisfy the compatibility
+`QPiFunctor.IsCompatible` (from `QPiSupercategory.β_γ_compat`). -/
+theorem qpiFunctor_isCompatible (F : A ⥤ B) [F.Additive] [F.Linear R] [IsGradedSuperfunctor R F] :
+    (qpiFunctor (R := R) F).IsCompatible R := by
+  rw [QPiFunctor.IsCompatible.iff]
+  intro X
+  apply Underlying.hom_ext; apply DegreeZero.hom_ext
+  exact QPiSupercategory.β_γ_compat F X.obj.obj
 
 omit [QPiSupercategory R A] [QPiSupercategory R B] [QPiSupercategory R B'] in
 /-- **(6.3)**, `𝔼` is a strict 2-functor: it preserves composition of 1-morphisms. -/

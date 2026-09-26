@@ -409,6 +409,29 @@ theorem γ_Q (X : C) : (γ R 𝐐 X).hom = 𝟙 _ := by
   rw [γ_hom, Q_map_eq]
   simp
 
+/-- The compatibility of `γ_F` with `β`: `γ_F Π ∘ Q' β_F ∘ β_{Q'} F = F β_Q ∘ β_F Q ∘ Π' γ_F`
+in `Hom(Π' Q' F, F Q Π)` (this identity is needed in Theorem 6.13; it is not listed among the
+axioms of a `(Q, Π)`-functor in Definition 6.12(ii), see `QPiFunctor.IsCompatible`). -/
+theorem β_γ_compat (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] (X : C) :
+    (PiSupercategory.β R (Q (R := R) (C := D)) (F.obj X)).hom ≫
+        (Q (R := R)).map (PiSupercategory.β R F X).hom ≫ (γ R F ((PiSupercategory.pi (R := R)).obj X)).hom =
+      (PiSupercategory.pi (R := R)).map (γ R F X).hom ≫ (PiSupercategory.β R F ((Q (R := R)).obj X)).hom ≫
+        F.map (PiSupercategory.β R 𝐐 X).hom := by
+  simp only [PiSupercategory.β_hom, γ_hom, Functor.map_comp, Category.assoc]
+  rw [← (Q (R := R)).map_comp_assoc (PiSupercategory.ζ (R := R) (F.obj X)).inv, Iso.inv_hom_id]
+  erw [CategoryTheory.Functor.map_id, Category.id_comp]
+  rw [σ_naturality_assoc, ← Functor.map_comp_assoc (PiSupercategory.pi (R := R)),
+    PiSupercategory.ζ_naturality_assoc,
+    twist_one_of_mem (comp_mem (σ_hom_mem (R := R) (F.obj X)) (map_mem F (σ_inv_mem (R := R) X))),
+    add_zero, sign_zero, one_smul]
+  simp only [Category.assoc]
+  rw [← F.map_comp_assoc (PiSupercategory.ζ (R := R) ((Q (R := R)).obj X)).inv, Iso.inv_hom_id]
+  erw [CategoryTheory.Functor.map_id, Category.id_comp]
+  simp only [← F.map_comp]
+  congr 3
+  rw [Q_map_eq (R := R) (PiSupercategory.ζ (R := R) X).inv]
+  simp
+
 /-! ## Powers of `Q` -/
 
 variable (R) in
