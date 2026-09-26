@@ -23,6 +23,7 @@ import StringDiagrams.Super.MonoidalPi
 import StringDiagrams.Super.Graded
 import StringDiagrams.Super.QPi
 import StringDiagrams.Super.QEnvelope
+import StringDiagrams.Super.QPiCategory
 import StringDiagrams.Super.FunctorCategory
 import StringDiagrams.Super.SCat
 import StringDiagrams.Super.UnderlyingBicategory
