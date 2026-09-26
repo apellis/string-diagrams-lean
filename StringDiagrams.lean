@@ -63,6 +63,8 @@ import StringDiagrams.Super.EndMonoidal
 import StringDiagrams.Super.SKarUnit
 import StringDiagrams.Super.SKarSuperalgebra
 import StringDiagrams.Super.SKarMonoidalPi
+import StringDiagrams.Super.Semisimple
+import StringDiagrams.Super.SKarUnitAbelian
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
@@ -119,6 +121,7 @@ import StringDiagrams.Examples.OddTemperleyLieb.KZero
 import StringDiagrams.Examples.OddTemperleyLieb.KZeroRing
 import StringDiagrams.Examples.OddTemperleyLieb.KZeroIso
 import StringDiagrams.Examples.OddTemperleyLieb.KZeroPoly
+import StringDiagrams.Examples.OddTemperleyLieb.Semisimple
 
 /-!
 # StringDiagrams
