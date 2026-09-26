@@ -49,6 +49,22 @@ variable {R} {C : Type w₁} [Category.{w₂} C] [Preadditive C] [Linear R C] [P
   {D : Type w₃} [Category.{w₄} D] [Preadditive D] [Linear R D] [PiCategory R D]
   {E : Type w₅} [Category.{w₆} E] [Preadditive E] [Linear R E] [PiCategory R E]
 
+/-- The component `ξ_X : Π² X ≅ X`. -/
+def ξApp (X : C) : (pi (R := R)).obj ((pi (R := R)).obj X) ≅ X := (ξ (R := R)).app X
+
+theorem ξApp_hom (X : C) : (ξApp (R := R) X).hom = (ξ (R := R)).hom.app X := rfl
+
+theorem ξApp_inv (X : C) : (ξApp (R := R) X).inv = (ξ (R := R)).inv.app X := rfl
+
+@[reassoc]
+theorem ξApp_naturality {X Y : C} (f : X ⟶ Y) :
+    (pi (R := R)).map ((pi (R := R)).map f) ≫ (ξApp (R := R) Y).hom = (ξApp (R := R) X).hom ≫ f :=
+  (ξ (R := R)).hom.naturality f
+
+theorem ξApp_pi (X : C) :
+    (ξApp (R := R) ((pi (R := R)).obj X)).hom = (pi (R := R)).map (ξApp (R := R) X).hom :=
+  ξ_pi X
+
 theorem ξ_inv_pi (X : C) :
     (ξ (R := R)).inv.app ((pi (R := R)).obj X) = (pi (R := R)).map ((ξ (R := R)).inv.app X) := by
   rw [← cancel_mono ((ξ (R := R)).hom.app _), Iso.inv_hom_id_app, ξ_pi, ← Functor.map_comp,

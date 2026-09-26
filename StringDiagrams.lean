@@ -7,6 +7,13 @@ import StringDiagrams.Generation
 import StringDiagrams.Interchange
 import StringDiagrams.Grading
 import StringDiagrams.Super.Basic
+import StringDiagrams.Super.Parity
+import StringDiagrams.Super.Supernatural
+import StringDiagrams.Super.PiCategory
+import StringDiagrams.Super.Pi
+import StringDiagrams.Super.Envelope
+import StringDiagrams.Super.Underlying
+import StringDiagrams.Super.Associated
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
