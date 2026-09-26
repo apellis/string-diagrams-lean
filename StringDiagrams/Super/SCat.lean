@@ -122,6 +122,58 @@ theorem whiskerRight_def {A B C : SCat.{w, v, u} R} {F H : A ⟶ B} (x : F ⟶ H
 @[simp] theorem rightUnitor_inv {A B : SCat.{w, v, u} R} (F : A ⟶ B) :
     (rightUnitor F).inv = 𝟙 F := rfl
 
+
+section App
+
+variable {A B C : SCat.{w, v, u} R}
+
+@[simp] theorem comp_app_zero {F G H : A ⟶ B} (x : F ⟶ G) (y : G ⟶ H) (X : A.carrier) :
+    (x ≫ y).app 0 X = x.app 0 X ≫ y.app 0 X + x.app 1 X ≫ y.app 1 X :=
+  Superfunctor.comp_app_zero x y X
+
+@[simp] theorem comp_app_one {F G H : A ⟶ B} (x : F ⟶ G) (y : G ⟶ H) (X : A.carrier) :
+    (x ≫ y).app 1 X = x.app 0 X ≫ y.app 1 X + x.app 1 X ≫ y.app 0 X :=
+  Superfunctor.comp_app_one x y X
+
+@[simp] theorem id_app_zero (F : A ⟶ B) (X : A.carrier) :
+    (𝟙 F : F ⟶ F).app 0 X = 𝟙 (F.obj X) := rfl
+
+@[simp] theorem id_app_one (F : A ⟶ B) (X : A.carrier) : (𝟙 F : F ⟶ F).app 1 X = 0 := rfl
+
+@[simp] theorem add_app {F G : A ⟶ B} (x y : F ⟶ G) (p : ZMod 2) (X : A.carrier) :
+    (x + y).app p X = x.app p X + y.app p X := rfl
+
+@[simp] theorem neg_app {F G : A ⟶ B} (x : F ⟶ G) (p : ZMod 2) (X : A.carrier) :
+    (-x).app p X = -x.app p X := rfl
+
+@[simp] theorem smul_app {F G : A ⟶ B} (r : R) (x : F ⟶ G) (p : ZMod 2) (X : A.carrier) :
+    (r • x).app p X = r • x.app p X := rfl
+
+@[simp] theorem zero_app {F G : A ⟶ B} (p : ZMod 2) (X : A.carrier) :
+    (0 : F ⟶ G).app p X = 0 := rfl
+
+@[simp] theorem whiskerLeft_app (F : A ⟶ B) {G K : B ⟶ C} (y : G ⟶ K) (p : ZMod 2)
+    (X : A.carrier) : (F ◁ y).app p X = y.app p (F.obj X) := rfl
+
+@[simp] theorem whiskerRight_app {F H : A ⟶ B} (x : F ⟶ H) (G : B ⟶ C) (p : ZMod 2)
+    (X : A.carrier) : (x ▷ G).app p X = G.map (x.app p X) := rfl
+
+@[simp] theorem comp_obj (F : A ⟶ B) (G : B ⟶ C) (X : A.carrier) :
+    Superfunctor.obj (F ≫ G) X = G.obj (F.obj X) := rfl
+
+@[simp] theorem comp_map (F : A ⟶ B) (G : B ⟶ C) {X Y : A.carrier} (f : X ⟶ Y) :
+    Superfunctor.map (F ≫ G) f = G.map (F.map f) := rfl
+
+@[simp] theorem id_obj (X : A.carrier) : Superfunctor.obj (𝟙 A) X = X := rfl
+
+@[simp] theorem id_map {X Y : A.carrier} (f : X ⟶ Y) : Superfunctor.map (𝟙 A) f = f := rfl
+
+theorem hom_ext {F G : A ⟶ B} {x y : F ⟶ G} (h0 : ∀ X, x.app 0 X = y.app 0 X)
+    (h1 : ∀ X, x.app 1 X = y.app 1 X) : x = y :=
+  Superfunctor.hom_ext_parity h0 h1
+
+end App
+
 /-- **Brundan–Ellis, Section 2.** Supercategories, superfunctors and supernatural
 transformations form a 2-supercategory `𝔖ℭ𝔞𝔱`. -/
 instance : TwoSupercategory R (SCat.{w, v, u} R) where
@@ -227,6 +279,58 @@ theorem whiskerLeft_def {A B C : PiSCat.{w, v, u} R} (F : A ⟶ B) {G K : B ⟶ 
 
 theorem whiskerRight_def {A B C : PiSCat.{w, v, u} R} {F H : A ⟶ B} (x : F ⟶ H)
     (G : B ⟶ C) : x ▷ G = Superfunctor.whiskerRight x G := rfl
+
+
+section App
+
+variable {A B C : PiSCat.{w, v, u} R}
+
+@[simp] theorem comp_app_zero {F G H : A ⟶ B} (x : F ⟶ G) (y : G ⟶ H) (X : A.carrier) :
+    (x ≫ y).app 0 X = x.app 0 X ≫ y.app 0 X + x.app 1 X ≫ y.app 1 X :=
+  Superfunctor.comp_app_zero x y X
+
+@[simp] theorem comp_app_one {F G H : A ⟶ B} (x : F ⟶ G) (y : G ⟶ H) (X : A.carrier) :
+    (x ≫ y).app 1 X = x.app 0 X ≫ y.app 1 X + x.app 1 X ≫ y.app 0 X :=
+  Superfunctor.comp_app_one x y X
+
+@[simp] theorem id_app_zero (F : A ⟶ B) (X : A.carrier) :
+    (𝟙 F : F ⟶ F).app 0 X = 𝟙 (F.obj X) := rfl
+
+@[simp] theorem id_app_one (F : A ⟶ B) (X : A.carrier) : (𝟙 F : F ⟶ F).app 1 X = 0 := rfl
+
+@[simp] theorem add_app {F G : A ⟶ B} (x y : F ⟶ G) (p : ZMod 2) (X : A.carrier) :
+    (x + y).app p X = x.app p X + y.app p X := rfl
+
+@[simp] theorem neg_app {F G : A ⟶ B} (x : F ⟶ G) (p : ZMod 2) (X : A.carrier) :
+    (-x).app p X = -x.app p X := rfl
+
+@[simp] theorem smul_app {F G : A ⟶ B} (r : R) (x : F ⟶ G) (p : ZMod 2) (X : A.carrier) :
+    (r • x).app p X = r • x.app p X := rfl
+
+@[simp] theorem zero_app {F G : A ⟶ B} (p : ZMod 2) (X : A.carrier) :
+    (0 : F ⟶ G).app p X = 0 := rfl
+
+@[simp] theorem whiskerLeft_app (F : A ⟶ B) {G K : B ⟶ C} (y : G ⟶ K) (p : ZMod 2)
+    (X : A.carrier) : (F ◁ y).app p X = y.app p (F.obj X) := rfl
+
+@[simp] theorem whiskerRight_app {F H : A ⟶ B} (x : F ⟶ H) (G : B ⟶ C) (p : ZMod 2)
+    (X : A.carrier) : (x ▷ G).app p X = G.map (x.app p X) := rfl
+
+@[simp] theorem comp_obj (F : A ⟶ B) (G : B ⟶ C) (X : A.carrier) :
+    Superfunctor.obj (F ≫ G) X = G.obj (F.obj X) := rfl
+
+@[simp] theorem comp_map (F : A ⟶ B) (G : B ⟶ C) {X Y : A.carrier} (f : X ⟶ Y) :
+    Superfunctor.map (F ≫ G) f = G.map (F.map f) := rfl
+
+@[simp] theorem id_obj (X : A.carrier) : Superfunctor.obj (𝟙 A) X = X := rfl
+
+@[simp] theorem id_map {X Y : A.carrier} (f : X ⟶ Y) : Superfunctor.map (𝟙 A) f = f := rfl
+
+theorem hom_ext {F G : A ⟶ B} {x y : F ⟶ G} (h0 : ∀ X, x.app 0 X = y.app 0 X)
+    (h1 : ∀ X, x.app 1 X = y.app 1 X) : x = y :=
+  Superfunctor.hom_ext_parity h0 h1
+
+end App
 
 /-- **Brundan–Ellis, Section 3.** Π-supercategories, superfunctors and supernatural
 transformations form a 2-supercategory `Π-𝔖ℭ𝔞𝔱`. -/
