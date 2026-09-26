@@ -25,10 +25,11 @@ the image of `p` acting on the superspace `⊕ᵢ Π^{aᵢ} k`, and prove:
   dimension map intertwines `[V] ↦ [Π V]` with multiplication by `π`
   (`SKarUnit.K₀Dim_piInvolution`).
 
-Not formalized: the compatibility of the equivalence with the monoidal structures (the paper
-states a monoidal equivalence), and the statement that `SKar(I)` is a semisimple abelian category
-with the two simple objects `k` and `Π k` (the classification of objects up to isomorphism by
-their dimensions is `SKarUnit.nonempty_iso_of_dim_eq`).
+The classification of objects up to isomorphism by their dimensions is
+`SKarUnit.nonempty_iso_of_dim_eq`; that `SKar(I)` is a semisimple abelian category with the two
+simple objects `k` and `Π k` is proved in `StringDiagrams.Super.SKarUnitAbelian`; the
+compatibility of the equivalence with the monoidal structures (the paper states a monoidal
+equivalence) is proved in `StringDiagrams.Super.SKarUnitMonoidal`.
 -/
 
 noncomputable section

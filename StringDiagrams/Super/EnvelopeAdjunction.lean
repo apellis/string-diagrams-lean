@@ -19,8 +19,8 @@ it is a superequivalence (`Envelope.extendHomSuperequivalence`). This is Theorem
 first statement of Theorem 1.9 ("the functor (1) is left 2-adjoint to the forgetful functor
 `ν` in the sense that there is a superequivalence `ℋom(A, νB) → ℋom(A_π, B)`").
 
-The strict 2-superfunctor `-_π` and the 2-adjunction language of Theorem 4.3 are not packaged
-beyond this superequivalence.
+The naturality of this superequivalence in `A` and `B` (the "functorial" of Theorem 4.3, i.e.
+the content of "`-_π` is left 2-adjoint to `ν`") is in `StringDiagrams.Super.EnvelopeNaturality`.
 -/
 
 noncomputable section

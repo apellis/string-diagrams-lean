@@ -27,6 +27,12 @@ import StringDiagrams.Super.QPiCategory
 import StringDiagrams.Super.Orbit
 import StringDiagrams.Super.QAssociated
 import StringDiagrams.Super.GSKar
+import StringDiagrams.Super.BicategoryOfHcomp
+import StringDiagrams.Super.MatBicategory
+import StringDiagrams.Super.KaroubiBicategory
+import StringDiagrams.Super.KarBicategory
+import StringDiagrams.Super.QPiTwoHom
+import StringDiagrams.Super.K0Ring
 import StringDiagrams.Super.TwoEnvelope
 import StringDiagrams.Super.MonoidalUniversal
 import StringDiagrams.Super.TwoEnvelopeUniversal
@@ -55,6 +61,16 @@ import StringDiagrams.Super.UnitQPiEnvelope
 import StringDiagrams.Super.QPiTwoCategory
 import StringDiagrams.Super.DrinfeldCenter
 import StringDiagrams.Super.TwoFunctorComp
+import StringDiagrams.Super.TwoHom
+import StringDiagrams.Super.TwoFunctorStrict
+import StringDiagrams.Super.TwoEnvelopeTwoHom
+import StringDiagrams.Super.PiCat
+import StringDiagrams.Super.TwoSCat
+import StringDiagrams.Super.DrinfeldCenterEnvelope
+import StringDiagrams.Super.Braided
+import StringDiagrams.Super.DrinfeldCenterBraiding
+import StringDiagrams.Super.EnvelopeNaturality
+import StringDiagrams.Super.AssociatedTwoLocal
 import StringDiagrams.Super.SVec
 import StringDiagrams.Super.K0
 import StringDiagrams.Super.SKar
@@ -74,6 +90,10 @@ import StringDiagrams.Super.Strictification
 import StringDiagrams.Super.SKarUnit
 import StringDiagrams.Super.SKarSuperalgebra
 import StringDiagrams.Super.SKarMonoidalPi
+import StringDiagrams.Super.Semisimple
+import StringDiagrams.Super.SKarUnitAbelian
+import StringDiagrams.Super.SKarSuperalgebraK0
+import StringDiagrams.Super.SKarUnitMonoidal
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
@@ -130,6 +150,7 @@ import StringDiagrams.Examples.OddTemperleyLieb.KZero
 import StringDiagrams.Examples.OddTemperleyLieb.KZeroRing
 import StringDiagrams.Examples.OddTemperleyLieb.KZeroIso
 import StringDiagrams.Examples.OddTemperleyLieb.KZeroPoly
+import StringDiagrams.Examples.OddTemperleyLieb.Semisimple
 
 /-!
 # StringDiagrams
