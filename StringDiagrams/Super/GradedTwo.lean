@@ -6,7 +6,7 @@ import Mathlib.Tactic.CategoryTheory.Bicategory.Basic
 # Graded 2-supercategories and graded (Q, Π)-2-supercategories
 
 Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v3, §6,
-Definitions 6.2, 6.3, 6.5 and Lemma 6.11.
+Definitions 6.2, 6.3, 6.5 and Lemma 6.6.
 
 * A *graded 2-supercategory* (`StringDiagrams.GradedTwoSupercategory`, Definition 6.2 and its
   weak version) is a 2-supercategory whose morphism supercategories are graded
@@ -25,7 +25,7 @@ Definitions 6.2, 6.3, 6.5 and Lemma 6.11.
   2-isomorphisms `σ_λ : q_λ ⇒ 1_λ`, `σ̄_λ : q_λ⁻¹ ⇒ 1_λ`, `ζ_λ : π_λ ⇒ 1_λ`, which are even,
   even and odd of degrees `-1`, `1` and `0`. It extends `PiTwoSupercategory`
   (Definition 3.1).
-* **Lemma 6.11**, stated (like Lemma 3.2 in `StringDiagrams.Super.PiTwo`) for not necessarily
+* **Lemma 6.6**, stated (like Lemma 3.2 in `StringDiagrams.Super.PiTwo`) for not necessarily
   strict 2-supercategories, the unitors and associators being inserted:
   (i) `β` and `ξ` of Lemma 3.2 are even of degree zero (`β_hom_mem_degree`,
   `ξ_hom_mem_degree`); (ii) `γ_F := σ_μ F σ_λ⁻¹ : q_μ F ≅ F q_λ`
@@ -53,7 +53,7 @@ universe w v u w₁ w₂ v₂ u₂
 /-! ## Isomorphisms `q ≅ 1` in a bicategory
 
 Generic identities for a family of 2-isomorphisms `s_λ : q_λ ≅ 1_λ` in a (Mathlib) bicategory,
-used for Lemma 6.11(ii)–(iii) through the underlying bicategory of even 2-morphisms. -/
+used for Lemma 6.6(ii)–(iii) through the underlying bicategory of even 2-morphisms. -/
 
 namespace UnitIso
 
@@ -258,7 +258,7 @@ class QPiTwoSupercategory [GradedTwoSupercategory R B] extends PiTwoSupercategor
 
 end QPiDef
 
-/-! ## Lemma 6.11 -/
+/-! ## Lemma 6.6 -/
 
 namespace QPiTwoSupercategory
 
@@ -292,7 +292,7 @@ theorem ζ_inv_mem_degree' (a : B) :
 
 /-! ### (i) `β` and `ξ` have degree zero -/
 
-/-- **Lemma 6.11(i).** `β_F` (Lemma 3.2) is even of degree zero. -/
+/-- **Lemma 6.6(i).** `β_F` (Lemma 3.2) is even of degree zero. -/
 theorem β_hom_mem_degree (f : a ⟶ b) :
     (β (R := R) f).hom ∈ degree (R := R) (f ≫ pi (R := R) b) (pi (R := R) a ≫ f) 0 := by
   rw [β_hom]
@@ -302,7 +302,7 @@ theorem β_hom_mem_degree (f : a ⟶ b) :
     (whiskerRight_mem_degree f (ζ_inv_mem_degree' (R := R) a))
   simpa [Category.assoc] using h
 
-/-- **Lemma 6.11(i).** `ξ_λ` (Lemma 3.2(iv)) is even of degree zero. -/
+/-- **Lemma 6.6(i).** `ξ_λ` (Lemma 3.2(iv)) is even of degree zero. -/
 theorem ξ_hom_mem_degree (a : B) :
     (ξ (R := R) a).hom ∈ degree (R := R) (pi (R := R) a ≫ pi (R := R) a) (𝟙 a) 0 := by
   rw [ξ_hom]
@@ -313,7 +313,7 @@ theorem ξ_hom_mem_degree (a : B) :
 
 /-! ### (ii) The half-braiding `γ` -/
 
-/-- **Lemma 6.11(ii).** `γ_F := σ_μ F σ_λ⁻¹ : q_μ F ⇒ F q_λ` for `F : λ → μ`, in the
+/-- **Lemma 6.6(ii).** `γ_F := σ_μ F σ_λ⁻¹ : q_μ F ⇒ F q_λ` for `F : λ → μ`, in the
 diagrammatic order: `F ◁ σ_μ ≫ ρ_F ≫ λ_F⁻¹ ≫ σ_λ⁻¹ ▷ F : F ≫ q_μ ≅ q_λ ≫ F`. (All maps being
 even, this is the horizontal composite of `σ_λ⁻¹` and `F σ_μ` up to unitors, without sign.) -/
 def γ (f : a ⟶ b) : f ≫ q (R := R) b ≅ q (R := R) a ≫ f :=
@@ -325,7 +325,7 @@ theorem γ_hom (f : a ⟶ b) : (γ (R := R) f).hom =
       (σ (R := R) a).inv ▷ f := by
   simp [γ]
 
-/-- **Lemma 6.11(ii).** `γ_F` is even. -/
+/-- **Lemma 6.6(ii).** `γ_F` is even. -/
 theorem γ_hom_mem (f : a ⟶ b) :
     (γ (R := R) f).hom ∈ parity (R := R) (f ≫ q (R := R) b) (q (R := R) a ≫ f) 0 := by
   rw [γ_hom]
@@ -334,7 +334,7 @@ theorem γ_hom_mem (f : a ⟶ b) :
     (whiskerRight_mem f (σ_inv_mem (R := R) a))
   simpa [Category.assoc] using h
 
-/-- **Lemma 6.11(ii).** `γ_F` has degree zero. -/
+/-- **Lemma 6.6(ii).** `γ_F` has degree zero. -/
 theorem γ_hom_mem_degree (f : a ⟶ b) :
     (γ (R := R) f).hom ∈ degree (R := R) (f ≫ q (R := R) b) (q (R := R) a ≫ f) 0 := by
   rw [γ_hom]
@@ -344,7 +344,7 @@ theorem γ_hom_mem_degree (f : a ⟶ b) :
     (whiskerRight_mem_degree f (σ_inv_mem_degree (R := R) a))
   simpa [Category.assoc] using h
 
-/-- **Lemma 6.11(ii).** `γ` is natural for all 2-morphisms `x : F ⇒ G` (of either parity):
+/-- **Lemma 6.6(ii).** `γ` is natural for all 2-morphisms `x : F ⇒ G` (of either parity):
 `x q_λ ∘ γ_F = γ_G ∘ q_μ x`. Together with `γ_hom_mem`, `γ_{μ,λ}` is an even supernatural
 isomorphism `q_μ - ⇒ - q_λ`. -/
 theorem γ_naturality {f g : a ⟶ b} (x : f ⟶ g) :
@@ -391,7 +391,7 @@ theorem halfBraid_val (f : a ⟶ b) :
   rw [UnitIso.halfBraid_hom, γ_hom]
   rfl
 
-/-- **Lemma 6.11(ii).** `γ_{GF} = G γ_F ∘ γ_G F` (with associators). -/
+/-- **Lemma 6.6(ii).** `γ_{GF} = G γ_F ∘ γ_G F` (with associators). -/
 theorem γ_comp (f : a ⟶ b) (g : b ⟶ c) :
     (γ (R := R) (f ≫ g)).hom = (associator f g (q (R := R) c)).hom ≫ f ◁ (γ (R := R) g).hom ≫
       (associator f (q (R := R) b) g).inv ≫ (γ (R := R) f).hom ▷ g ≫
@@ -401,20 +401,20 @@ theorem γ_comp (f : a ⟶ b) (g : b ⟶ c) :
   rw [← halfBraid_val, ← halfBraid_val, ← halfBraid_val]
   exact h
 
-/-- **Lemma 6.11(ii).** `γ_{1_λ} = 1_{q_λ}` (up to unitors). -/
+/-- **Lemma 6.6(ii).** `γ_{1_λ} = 1_{q_λ}` (up to unitors). -/
 theorem γ_id (a : B) :
     (γ (R := R) (𝟙 a)).hom = (leftUnitor (q (R := R) a)).hom ≫ (rightUnitor (q (R := R) a)).inv := by
   have h := congrArg Subtype.val (UnitIso.halfBraid_id (qU (R := R) (B := B)) σU ⟨a⟩)
   rw [← halfBraid_val]
   exact h
 
-/-- **Lemma 6.11(ii).** `γ_{q_λ} = 1_{q_λ²}`. -/
+/-- **Lemma 6.6(ii).** `γ_{q_λ} = 1_{q_λ²}`. -/
 theorem γ_q (a : B) : (γ (R := R) (q (R := R) a)).hom = 𝟙 _ := by
   have h := congrArg Subtype.val (UnitIso.halfBraid_self (qU (R := R) (B := B)) σU ⟨a⟩)
   rw [← halfBraid_val]
   exact h
 
-/-- **Lemma 6.11(ii).** `γ_{π_λ} = β_{q_λ}⁻¹`. -/
+/-- **Lemma 6.6(ii).** `γ_{π_λ} = β_{q_λ}⁻¹`. -/
 theorem γ_pi (a : B) : (γ (R := R) (pi (R := R) a)).hom = (β (R := R) (q (R := R) a)).inv := by
   rw [← cancel_mono (β (R := R) (q (R := R) a)).hom, Iso.inv_hom_id, γ_hom, β_hom]
   simp only [Category.assoc]
@@ -429,12 +429,12 @@ theorem γ_pi (a : B) : (γ (R := R) (pi (R := R) a)).hom = (β (R := R) (q (R :
 
 /-! ### (iii) `ii` and `jj` -/
 
-/-- **Lemma 6.11(iii).** `ii_λ := σ̄_λ σ_λ : q_λ⁻¹ q_λ ≅ 1_λ`, in the diagrammatic order
+/-- **Lemma 6.6(iii).** `ii_λ := σ̄_λ σ_λ : q_λ⁻¹ q_λ ≅ 1_λ`, in the diagrammatic order
 `q_λ ≫ q_λ⁻¹ ≅ 𝟙`: `σ_λ ▷ q_λ⁻¹ ≫ λ ≫ σ̄_λ`. -/
 def ii (a : B) : q (R := R) a ≫ qinv (R := R) a ≅ 𝟙 a :=
   whiskerRightIso (R := R) (σ (R := R) a) (qinv (R := R) a) ≪≫ leftUnitor _ ≪≫ σbar (R := R) a
 
-/-- **Lemma 6.11(iii).** `jj_λ := σ_λ σ̄_λ : q_λ q_λ⁻¹ ≅ 1_λ`, in the diagrammatic order
+/-- **Lemma 6.6(iii).** `jj_λ := σ_λ σ̄_λ : q_λ q_λ⁻¹ ≅ 1_λ`, in the diagrammatic order
 `q_λ⁻¹ ≫ q_λ ≅ 𝟙`: `σ̄_λ ▷ q_λ ≫ λ ≫ σ_λ`. -/
 def jj (a : B) : qinv (R := R) a ≫ q (R := R) a ≅ 𝟙 a :=
   whiskerRightIso (R := R) (σbar (R := R) a) (q (R := R) a) ≪≫ leftUnitor _ ≪≫ σ (R := R) a
@@ -447,13 +447,13 @@ theorem jj_hom (a : B) : (jj (R := R) a).hom = (σbar (R := R) a).hom ▷ q (R :
     (leftUnitor (q (R := R) a)).hom ≫ (σ (R := R) a).hom := by
   simp [jj]
 
-/-- **Lemma 6.11(iii).** `ii_λ` is even. -/
+/-- **Lemma 6.6(iii).** `ii_λ` is even. -/
 theorem ii_hom_mem (a : B) : (ii (R := R) a).hom ∈ parity (R := R) _ (𝟙 a) 0 := by
   rw [ii_hom]
   simpa [Category.assoc] using comp_mem (comp_mem (whiskerRight_mem _ (σ_hom_mem (R := R) a))
     (leftUnitor_hom_mem (R := R) _)) (σbar_hom_mem (R := R) a)
 
-/-- **Lemma 6.11(iii).** `ii_λ` has degree zero. -/
+/-- **Lemma 6.6(iii).** `ii_λ` has degree zero. -/
 theorem ii_hom_mem_degree (a : B) : (ii (R := R) a).hom ∈ degree (R := R) _ (𝟙 a) 0 := by
   rw [ii_hom]
   have h := comp_mem_degree (comp_mem_degree
@@ -461,13 +461,13 @@ theorem ii_hom_mem_degree (a : B) : (ii (R := R) a).hom ∈ degree (R := R) _ (�
     (leftUnitor_hom_mem_degree (R := R) _)) (σbar_hom_mem_degree (R := R) a)
   simpa [Category.assoc] using h
 
-/-- **Lemma 6.11(iii).** `jj_λ` is even. -/
+/-- **Lemma 6.6(iii).** `jj_λ` is even. -/
 theorem jj_hom_mem (a : B) : (jj (R := R) a).hom ∈ parity (R := R) _ (𝟙 a) 0 := by
   rw [jj_hom]
   simpa [Category.assoc] using comp_mem (comp_mem (whiskerRight_mem _ (σbar_hom_mem (R := R) a))
     (leftUnitor_hom_mem (R := R) _)) (σ_hom_mem (R := R) a)
 
-/-- **Lemma 6.11(iii).** `jj_λ` has degree zero. -/
+/-- **Lemma 6.6(iii).** `jj_λ` has degree zero. -/
 theorem jj_hom_mem_degree (a : B) : (jj (R := R) a).hom ∈ degree (R := R) _ (𝟙 a) 0 := by
   rw [jj_hom]
   have h := comp_mem_degree (comp_mem_degree
@@ -475,14 +475,14 @@ theorem jj_hom_mem_degree (a : B) : (jj (R := R) a).hom ∈ degree (R := R) _ (�
     (leftUnitor_hom_mem_degree (R := R) _)) (σ_hom_mem_degree (R := R) a)
   simpa [Category.assoc] using h
 
-/-- **Lemma 6.11(iii).** `q_λ ii_λ = jj_λ q_λ` in `Hom(q_λ q_λ⁻¹ q_λ, q_λ)` (with unitors and
+/-- **Lemma 6.6(iii).** `q_λ ii_λ = jj_λ q_λ` in `Hom(q_λ q_λ⁻¹ q_λ, q_λ)` (with unitors and
 the associator). -/
 theorem q_ii (a : B) : (ii (R := R) a).hom ▷ q (R := R) a ≫ (leftUnitor (q (R := R) a)).hom =
     (associator (q (R := R) a) (qinv (R := R) a) (q (R := R) a)).hom ≫
       q (R := R) a ◁ (jj (R := R) a).hom ≫ (rightUnitor (q (R := R) a)).hom := by
   exact congrArg Subtype.val (UnitIso.q_ii (σU (R := R) (B := B) ⟨a⟩) (σbarU ⟨a⟩))
 
-/-- **Lemma 6.11(iii).** `ii_λ q_λ⁻¹ = q_λ⁻¹ jj_λ` in `Hom(q_λ⁻¹ q_λ q_λ⁻¹, q_λ⁻¹)` (with
+/-- **Lemma 6.6(iii).** `ii_λ q_λ⁻¹ = q_λ⁻¹ jj_λ` in `Hom(q_λ⁻¹ q_λ q_λ⁻¹, q_λ⁻¹)` (with
 unitors and the associator). -/
 theorem ii_qinv (a : B) : qinv (R := R) a ◁ (ii (R := R) a).hom ≫
     (rightUnitor (qinv (R := R) a)).hom =
