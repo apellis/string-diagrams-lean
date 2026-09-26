@@ -1,5 +1,6 @@
 import StringDiagrams.Interpretation
 import StringDiagrams.Monoidal
+import StringDiagrams.Horizontal
 import StringDiagrams.Super.Basic
 
 /-!
@@ -214,6 +215,32 @@ theorem respects_of_whisker {ι : Sort*} (F : ι → Obj S ⥤ D)
   rel r u v hw := hwhisk i _ u v hw fun j => hrel j r
   interchange x hx u v hw := hwhisk i _ u v hw fun j => hint j x hx
 
+/-- Every relation of the presentation has a well-formed bottom boundary. This holds for every
+presentation of a monoidal signature (`Presentation.wfDom_of_subsingleton`). -/
+def WFDom : Prop := ∀ r, (P.dom r).WF
+
+theorem wfDom_of_subsingleton [Subsingleton S.Region] : P.WFDom :=
+  fun _ => Signature.ok_of_subsingleton _ _
+
+/-- The bottom boundary of a well-formed instance of the interchange law is well formed. -/
+theorem _root_.StringDiagrams.InterchangeData.Valid.wf_dom {x : InterchangeData S}
+    (hx : x.Valid) : x.dom.WF :=
+  x.gh₁_dom ▸ hx.gh₁.wf_dom
+
+/-- **Soundness from unwhiskered relations**, for functors compatible with whiskering on a
+class `A` of objects only (for example the well-formed objects), containing the bottom
+boundaries of the relations of `P` and of the instances of the interchange law. -/
+theorem respects_of_whisker_on {ι : Sort*} (F : ι → Obj S ⥤ D) (A : Obj S → Prop)
+    (hA : ∀ r, A (P.dom r)) (hAx : ∀ x : InterchangeData S, x.Valid → A x.dom)
+    (hwhisk : ∀ (i : ι) {a b : Obj S} (f : LinDiagram R a b) (u : Obj S) (v : List S.Colour),
+      A a → ∀ (hw : a.WhiskerOK u v), (∀ j, (freeLift R (F j)).map f = 0) →
+        (freeLift R (F i)).map (LinDiagram.whisker f u v hw) = 0)
+    (hrel : ∀ i r, (freeLift R (F i)).map (P.rel r) = 0)
+    (hint : ∀ i (x : InterchangeData S) (hx : x.Valid),
+      (freeLift R (F i)).map (InterchangeData.rel R hx) = 0) (i : ι) : P.Respects (F i) where
+  rel r u v hw := hwhisk i _ u v (hA r) hw fun j => hrel j r
+  interchange x hx u v hw := hwhisk i _ u v (hAx x hx) hw fun j => hint j x hx
+
 end Presentation
 
 /-- The interchange law without whiskering: `[g below h] = (-1)^{|g||h|} [h below g]`. -/
@@ -404,6 +431,11 @@ theorem freeLift_toPresented_one {a b : Obj S} (f : LinDiagram R a b) :
 `a` by `u` on the left and `v` on the right and then applying `φ i` is the same as applying
 `φ (idx i a u v)` and then whiskering by `left i a u v` and `right i a u v`. -/
 structure WhiskerData {ι : Type*} (φ : ι → LayerMap S S') where
+  /-- The objects on which compatibility with whiskering is required (for example all objects,
+  or the well-formed ones). -/
+  Admissible : Obj S → Prop
+  /-- The bottom boundaries of the instances of the interchange law are admissible. -/
+  admissible_interchange : ∀ {x : InterchangeData S}, x.Valid → Admissible x.dom
   /-- The layer map to apply before whiskering. -/
   idx : ι → Obj S → Obj S → List S.Colour → ι
   /-- The object by which images are whiskered on the left. -/
@@ -411,15 +443,15 @@ structure WhiskerData {ι : Type*} (φ : ι → LayerMap S S') where
   /-- The word by which images are whiskered on the right. -/
   right : ι → Obj S → Obj S → List S.Colour → List S'.Colour
   /-- The whiskering of images is well formed. -/
-  whiskerOK : ∀ {i : ι} {a u : Obj S} {v : List S.Colour}, a.WhiskerOK u v →
+  whiskerOK : ∀ {i : ι} {a u : Obj S} {v : List S.Colour}, Admissible a → a.WhiskerOK u v →
     ((φ (idx i a u v)).obj a).WhiskerOK (left i a u v) (right i a u v)
   /-- Compatibility on objects reachable from `a`. -/
-  obj_whisker : ∀ {i : ι} {a u : Obj S} {v : List S.Colour}, a.WhiskerOK u v →
+  obj_whisker : ∀ {i : ι} {a u : Obj S} {v : List S.Colour}, Admissible a → a.WhiskerOK u v →
     ∀ {b : Obj S}, Nonempty (a ⟶ b) →
       ((φ (idx i a u v)).obj b).whisker (left i a u v) (right i a u v) =
         (φ i).obj (b.whisker u v)
   /-- Compatibility on layers reachable from `a`. -/
-  layer_whisker : ∀ {i : ι} {a u : Obj S} {v : List S.Colour}, a.WhiskerOK u v →
+  layer_whisker : ∀ {i : ι} {a u : Obj S} {v : List S.Colour}, Admissible a → a.WhiskerOK u v →
     ∀ {L : Layer S}, L.Valid → Nonempty (a ⟶ L.dom) →
       (φ i).layer (L.whisker u v) =
         ((φ (idx i a u v)).layer L).whisker (left i a u v) (right i a u v)
@@ -430,31 +462,31 @@ variable {ι : Type*} {φ : ι → LayerMap S S'} (W : WhiskerData φ)
 
 /-- Compatibility of the image of a diagram with whiskering. -/
 theorem map_whisker {i : ι} {a b : Obj S} (d : a ⟶ b) (u : Obj S) (v : List S.Colour)
-    (hw : a.WhiskerOK u v) :
+    (ha : W.Admissible a) (hw : a.WhiskerOK u v) :
     (φ i).map (Diagram.whisker d u v hw) =
       Diagram.cast (Diagram.whisker ((φ (W.idx i a u v)).map d) (W.left i a u v)
-          (W.right i a u v) (W.whiskerOK hw))
-        (W.obj_whisker hw ⟨𝟙 a⟩) (W.obj_whisker hw ⟨d⟩) := by
+          (W.right i a u v) (W.whiskerOK ha hw))
+        (W.obj_whisker ha hw ⟨𝟙 a⟩) (W.obj_whisker ha hw ⟨d⟩) := by
   apply Diagram.ext
   simp only [layers_map, Diagram.layers_whisker, Diagram.layers_cast, List.map_map]
   refine List.map_congr_left fun L hL => ?_
-  exact W.layer_whisker hw ((Diagram.chain d).valid_of_mem hL)
+  exact W.layer_whisker ha hw ((Diagram.chain d).valid_of_mem hL)
     ((Diagram.chain d).nonempty_of_mem hL)
 
 theorem toPresented_map_whisker {i : ι} {a b : Obj S} (d : a ⟶ b) (u : Obj S)
-    (v : List S.Colour) (hw : a.WhiskerOK u v) :
+    (v : List S.Colour) (ha : W.Admissible a) (hw : a.WhiskerOK u v) :
     ((φ i).toPresented Q χ).map (Diagram.whisker d u v hw) =
-      eqToHom (congrArg Q.obj (W.obj_whisker hw ⟨𝟙 a⟩).symm) ≫
+      eqToHom (congrArg Q.obj (W.obj_whisker ha hw ⟨𝟙 a⟩).symm) ≫
         Q.whisk (((φ (W.idx i a u v)).toPresented Q χ).map d) (W.left i a u v)
           (W.right i a u v) ≫
-        eqToHom (congrArg Q.obj (W.obj_whisker hw ⟨d⟩)) := by
-  rw [toPresented_map, toPresented_map, W.map_whisker, Diagram.weight_whisker, Q.diag_cast,
-    Q.whisk_smul, Q.whisk_diag _ _ _ (W.whiskerOK hw), Linear.smul_comp, Linear.comp_smul]
+        eqToHom (congrArg Q.obj (W.obj_whisker ha hw ⟨d⟩)) := by
+  rw [toPresented_map, toPresented_map, W.map_whisker _ _ _ ha, Diagram.weight_whisker, Q.diag_cast,
+    Q.whisk_smul, Q.whisk_diag _ _ _ (W.whiskerOK ha hw), Linear.smul_comp, Linear.comp_smul]
 
 /-- The hypothesis on whiskering of `Presentation.respects_of_whisker`, for the functors
 induced by a family of layer maps compatible with whiskering. -/
 theorem freeLift_whisker_eq_zero {i : ι} {a b : Obj S} (f : LinDiagram R a b) (u : Obj S)
-    (v : List S.Colour) (hw : a.WhiskerOK u v)
+    (v : List S.Colour) (ha : W.Admissible a) (hw : a.WhiskerOK u v)
     (hf : (freeLift R ((φ (W.idx i a u v)).toPresented Q χ)).map f = 0) :
     (freeLift R ((φ i).toPresented Q χ)).map (LinDiagram.whisker f u v hw) = 0 := by
   by_cases h0 : f = 0
@@ -462,8 +494,8 @@ theorem freeLift_whisker_eq_zero {i : ι} {a b : Obj S} (f : LinDiagram R a b) (
     rw [show LinDiagram.whisker (0 : LinDiagram R a b) u v hw = 0 from Finsupp.mapDomain_zero,
       Functor.map_zero]
   obtain ⟨d₀, -⟩ := Finsupp.ne_iff.mp h0
-  have ea := congrArg Q.obj (W.obj_whisker (i := i) hw ⟨𝟙 a⟩).symm
-  have eb := congrArg Q.obj (W.obj_whisker (i := i) hw ⟨d₀⟩)
+  have ea := congrArg Q.obj (W.obj_whisker (i := i) ha hw ⟨𝟙 a⟩).symm
+  have eb := congrArg Q.obj (W.obj_whisker (i := i) ha hw ⟨d₀⟩)
   let T : (Q.obj ((φ (W.idx i a u v)).obj a) ⟶ Q.obj ((φ (W.idx i a u v)).obj b)) →ₗ[R]
       (Q.obj ((φ i).obj (a.whisker u v)) ⟶ Q.obj ((φ i).obj (b.whisker u v))) :=
     { toFun := fun x => eqToHom ea ≫ Q.whisk x (W.left i a u v) (W.right i a u v) ≫ eqToHom eb
@@ -473,7 +505,7 @@ theorem freeLift_whisker_eq_zero {i : ι} {a b : Obj S} (f : LinDiagram R a b) (
         simp only [Q.whisk_smul, Linear.smul_comp, Linear.comp_smul, RingHom.id_apply] }
   have := freeLift_map_mapDomain (F := (φ (W.idx i a u v)).toPresented Q χ)
     (G := (φ i).toPresented Q χ) (fun d => Diagram.whisker d u v hw) T
-    (fun d => W.toPresented_map_whisker Q χ d u v hw) f
+    (fun d => W.toPresented_map_whisker Q χ d u v ha hw) f
   exact this.trans (by rw [hf, map_zero])
 
 end WhiskerData
@@ -486,43 +518,46 @@ variable {ι : Type*} (P : Presentation.{w, v} S R) {Q χ}
 weights `χ`, respects a presentation `P` as soon as the relations of `P` and the interchange
 law are respected without whiskering. -/
 theorem respects {φ : ι → LayerMap S S'} (W : WhiskerData φ)
+    (hadm : ∀ r, W.Admissible (P.dom r))
     (hrel : ∀ i r, (freeLift R ((φ i).toPresented Q χ)).map (P.rel r) = 0)
     (hint : ∀ i (x : InterchangeData S) (hx : x.Valid),
       (freeLift R ((φ i).toPresented Q χ)).map (InterchangeData.rel R hx) = 0) (i : ι) :
     P.Respects ((φ i).toPresented Q χ) :=
-  P.respects_of_whisker (fun i => (φ i).toPresented Q χ)
-    (fun _ _ _ f u v hw hf => W.freeLift_whisker_eq_zero Q χ f u v hw (hf _)) hrel hint i
+  P.respects_of_whisker_on (fun i => (φ i).toPresented Q χ) W.Admissible hadm
+    (fun _ => W.admissible_interchange)
+    (fun _ _ _ f u v ha hw hf => W.freeLift_whisker_eq_zero Q χ f u v ha hw (hf _)) hrel hint i
 
 /-- The functor `P.Presented ⥤ Q.Presented` induced by a family of layer maps compatible with
 whiskering (`LayerMap.respects`): the class of a diagram `d` goes to `weight χ d • [φ i d]`
 (`LayerMap.lift_diag`). -/
 def lift {φ : ι → LayerMap S S'} (W : WhiskerData φ)
+    (hadm : ∀ r, W.Admissible (P.dom r))
     (hrel : ∀ i r, (freeLift R ((φ i).toPresented Q χ)).map (P.rel r) = 0)
     (hint : ∀ i (x : InterchangeData S) (hx : x.Valid),
       (freeLift R ((φ i).toPresented Q χ)).map (InterchangeData.rel R hx) = 0) (i : ι) :
     P.Presented ⥤ Q.Presented :=
-  P.lift (respects P W hrel hint i)
+  P.lift (respects P W hadm hrel hint i)
 
 section Lift
 
-variable {P} {φ : ι → LayerMap S S'} (W : WhiskerData φ)
+variable {P} {φ : ι → LayerMap S S'} (W : WhiskerData φ) (hadm : ∀ r, W.Admissible (P.dom r))
   (hrel : ∀ i r, (freeLift R ((φ i).toPresented Q χ)).map (P.rel r) = 0)
   (hint : ∀ i (x : InterchangeData S) (hx : x.Valid),
     (freeLift R ((φ i).toPresented Q χ)).map (InterchangeData.rel R hx) = 0) (i : ι)
 
-instance lift_additive : (lift P W hrel hint i).Additive := P.lift_additive _
+instance lift_additive : (lift P W hadm hrel hint i).Additive := P.lift_additive _
 
-instance lift_linear : (lift P W hrel hint i).Linear R := P.lift_linear _
+instance lift_linear : (lift P W hadm hrel hint i).Linear R := P.lift_linear _
 
-@[simp] theorem lift_obj (a : Obj S) : (lift P W hrel hint i).obj (P.obj a) = Q.obj ((φ i).obj a) :=
+@[simp] theorem lift_obj (a : Obj S) : (lift P W hadm hrel hint i).obj (P.obj a) = Q.obj ((φ i).obj a) :=
   rfl
 
 @[simp] theorem lift_diag {a b : Obj S} (d : a ⟶ b) :
-    (lift P W hrel hint i).map (P.diag d) = Diagram.weight χ d • Q.diag ((φ i).map d) :=
+    (lift P W hadm hrel hint i).map (P.diag d) = Diagram.weight χ d • Q.diag ((φ i).map d) :=
   P.lift_diag _ d
 
 theorem lift_lin {a b : Obj S} (f : LinDiagram R a b) :
-    (lift P W hrel hint i).map (P.lin f) = (freeLift R ((φ i).toPresented Q χ)).map f :=
+    (lift P W hadm hrel hint i).map (P.lin f) = (freeLift R ((φ i).toPresented Q χ)).map f :=
   P.lift_lin _ f
 
 end Lift
@@ -575,6 +610,60 @@ theorem toPresented_interchange_swap {x : InterchangeData S} (hx : x.Valid)
     freeLift_toPresented_of, e₁, e₂, Q.diag_ghDiagram hx', hs, InterchangeData.weight_hg,
     sub_eq_zero]
   simp only [Linear.smul_comp, Linear.comp_smul, smul_smul, x.sign_cast_mul_self_assoc]
+
+/-! ### Degrees -/
+
+section Degree
+
+variable {A : Type*} [AddCommMonoid A] (deg : S.Gen → A) (deg' : S'.Gen → A)
+
+/-- A layer map preserves degrees: the generator of the image of a well-formed layer has the
+degree of the generator of the layer. -/
+def PreservesDeg : Prop := ∀ {L : Layer S}, L.Valid → deg' (φ.layer L).gen = deg L.gen
+
+variable {φ deg deg'}
+
+theorem PreservesDeg.degree_map (h : φ.PreservesDeg deg deg') {a b : Obj S} (d : a ⟶ b) :
+    Diagram.degree deg' (φ.map d) = Diagram.degree deg d := by
+  simp only [Diagram.degree, layers_map, List.map_map]
+  congr 1
+  exact List.map_congr_left fun L hL => h ((Diagram.chain d).valid_of_mem hL)
+
+/-- Parity-preserving layer maps preserve the parity grading. -/
+theorem preservesDeg_parityDeg
+    (h : ∀ {L : Layer S}, L.Valid → S'.odd (φ.layer L).gen = S.odd L.gen) :
+    φ.PreservesDeg (Presentation.parityDeg S) (Presentation.parityDeg S') := fun hv => by
+  simp only [Presentation.parityDeg, h hv]
+
+theorem PreservesDeg.toPresented_mem_homDeg (h : φ.PreservesDeg deg deg') {a b : Obj S}
+    {f : LinDiagram R a b} {e : A} (hf : f ∈ LinDiagram.homDeg R deg a b e) :
+    (freeLift R (φ.toPresented Q χ)).map f ∈ Q.homDeg deg' (φ.obj a) (φ.obj b) e := by
+  rw [LinDiagram.homDeg, Finsupp.supported_eq_span_single] at hf
+  induction hf using Submodule.span_induction with
+  | mem y hy =>
+    obtain ⟨d, hd, rfl⟩ := hy
+    rw [freeLift_map_single, toPresented_map, smul_smul]
+    exact Submodule.smul_mem _ _ (Presentation.diag_mem_homDeg' ((h.degree_map d).trans hd))
+  | zero => rw [Functor.map_zero]; exact Submodule.zero_mem _
+  | add y z _ _ hy hz => rw [Functor.map_add]; exact Submodule.add_mem _ hy hz
+  | smul r y _ hy => rw [Functor.map_smul]; exact Submodule.smul_mem _ r hy
+
+variable {Q χ}
+
+/-- **Degree-preserving layer maps induce degree-preserving functors.** -/
+theorem lift_mem_homDeg {P : Presentation.{w, v} S R} {φ : ι → LayerMap S S'} (W : WhiskerData φ)
+    (hadm : ∀ r, W.Admissible (P.dom r))
+    (hrel : ∀ i r, (freeLift R ((φ i).toPresented Q χ)).map (P.rel r) = 0)
+    (hint : ∀ i (x : InterchangeData S) (hx : x.Valid),
+      (freeLift R ((φ i).toPresented Q χ)).map (InterchangeData.rel R hx) = 0) (i : ι)
+    (h : (φ i).PreservesDeg deg deg') {a b : Obj S} {x : P.obj a ⟶ P.obj b} {e : A}
+    (hx : x ∈ P.homDeg deg a b e) :
+    (lift P W hadm hrel hint i).map x ∈ Q.homDeg deg' ((φ i).obj a) ((φ i).obj b) e := by
+  obtain ⟨f, hf, rfl⟩ := Presentation.mem_homDeg_iff.mp hx
+  rw [lift_lin]
+  exact h.toPresented_mem_homDeg Q χ hf
+
+end Degree
 
 end Presented
 
