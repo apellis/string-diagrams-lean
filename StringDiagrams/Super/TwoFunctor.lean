@@ -159,7 +159,7 @@ theorem mapComp_naturality {a b c : B} {f f' : a ⟶ b} {g g' : b ⟶ c} (η : f
 variable (R B) in
 /-- The identity 2-superfunctor `𝕀`. -/
 @[simps]
-def id [TwoSupercategory R B] : TwoSuperfunctor R B B where
+abbrev id [TwoSupercategory R B] : TwoSuperfunctor R B B where
   obj a := a
   map f := f
   map₂ η := η
