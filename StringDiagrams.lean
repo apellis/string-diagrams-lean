@@ -49,6 +49,8 @@ import StringDiagrams.Super.PiTwo
 import StringDiagrams.Super.TwoFunctor
 import StringDiagrams.Super.GradedTwo
 import StringDiagrams.Super.GradedTwoEnvelope
+import StringDiagrams.Super.QTwoEnvelopeUniversal
+import StringDiagrams.Super.GradedTwoEnvelopeUniversal
 import StringDiagrams.Super.QPiTwoCategory
 import StringDiagrams.Super.DrinfeldCenter
 import StringDiagrams.Super.TwoFunctorComp
