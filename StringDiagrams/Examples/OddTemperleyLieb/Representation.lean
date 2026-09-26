@@ -1,5 +1,6 @@
 import StringDiagrams.Examples.OddTemperleyLieb.Basic
 import StringDiagrams.Examples.TemperleyLieb.Representation
+import StringDiagrams.Examples.OddTemperleyLieb.Dyck
 
 /-!
 # The representation `G` of the odd Temperley–Lieb supercategory (Lemma A.1)
@@ -108,22 +109,6 @@ theorem psign_del_le {p q : ℕ} (w : List (Fin 2)) (h : p ≤ q) :
     | succ p => cases w with
       | nil => simp [del]
       | cons x w => simp only [del, List.take_succ_cons, nOdd_cons]; rw [ih _ (by omega)]
-
-theorem ins_getD_del {p : ℕ} {w : List (Fin 2)} (h : p + 2 ≤ w.length) :
-    ins p (w.getD p 0) (w.getD (p + 1) 0) (del p w) = w := by
-  induction p generalizing w with
-  | zero =>
-    obtain ⟨x, y, w, rfl⟩ : ∃ x y w', w = x :: y :: w' := by
-      rcases w with _ | ⟨x, _ | ⟨y, w'⟩⟩
-      · simp at h
-      · simp at h
-      · exact ⟨x, y, w', rfl⟩
-    simp [ins, del]
-  | succ p ih => cases w with
-    | nil => simp at h
-    | cons x w =>
-      simp only [List.getD_cons_succ, del, ins]
-      rw [ih (by simp at h; omega)]
 
 theorem psign_del_ge {p q : ℕ} {w : List (Fin 2)} (h : p + 2 ≤ q) (hq : q ≤ w.length) :
     psign R q w =
