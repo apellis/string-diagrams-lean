@@ -746,6 +746,97 @@ def extendTwoNatTransEquiv : TwoNatTrans F G ≃ TwoNatTrans (extend F) (extend 
   left_inv := restrictTwoNatTrans_extendTwoNatTrans
   right_inv := extendTwoNatTrans_restrictTwoNatTrans
 
+/-! ## Remark 4.10 and Theorem 4.9 on morphism supercategories -/
+
+theorem extend_naturality_of_mem {θ θ' : TwoNatTrans F G} {p : ZMod 2}
+    (α : ∀ a : B, θ.X a ⟶ θ'.X a) (hα : ∀ a, α a ∈ parity (R := R) _ _ p)
+    (nat : ∀ {a b : B} (f : a ⟶ b), θ.x f ≫ α a ▷ G.map f = F.map f ◁ α b ≫ θ'.x f)
+    {a b : TwoEnvelope R B} (f : a ⟶ b) :
+    (extendTwoNatTrans θ).x f ≫ α a.as ▷ (extend G).map f =
+      (extend F).map f ◁ α b.as ≫ (extendTwoNatTrans θ').x f := by
+  simp only [extendTwoNatTrans_x, extendX, extend_map, Category.assoc]
+  have h₁ := super_interchange (R := R) (hα a.as) (ζF_inv_mem G f)
+  have h₂ := super_interchange (R := R) (ζF_hom_mem F f) (hα b.as)
+  rw [← koszulSign_smul_smul p f.par (θ.X a.as ◁ _ ≫ _), ← h₁, Linear.comp_smul,
+    Linear.comp_smul, reassoc_of% (nat f.obj), ← Category.assoc ((ζF F f).hom ▷ _),
+    h₂, Linear.smul_comp, smul_smul, koszulSign_comm, koszulSign_mul_self, one_smul]
+  simp only [Category.assoc]
+
+theorem extend_naturality {θ θ' : TwoNatTrans F G} (α : θ ⟶ θ') {a b : TwoEnvelope R B}
+    (f : a ⟶ b) :
+    (extendTwoNatTrans θ).x f ≫ α.app a.as ▷ (extend G).map f =
+      (extend F).map f ◁ α.app b.as ≫ (extendTwoNatTrans θ').x f := by
+  have h := fun p => extend_naturality_of_mem (TwoNatTrans.projHom p α).app
+    (fun a => proj_mem (R := R) p (α.app a)) (TwoNatTrans.projHom p α).naturality f
+  have e : ∀ a : B, α.app a = (TwoNatTrans.projHom 0 α).app a + (TwoNatTrans.projHom 1 α).app a :=
+    fun a => (proj_add_proj (R := R) (α.app a)).symm
+  rw [e, e, add_whiskerRight (R := R), whiskerLeft_add (R := R), Preadditive.comp_add,
+    Preadditive.add_comp, h 0, h 1]
+
+/-- **Remark 4.10.** The extension `α̃ : (X̃, x̃) ⇛ (Ỹ, ỹ)` of a supermodification
+`α : (X, x) ⇛ (Y, y)`: `α̃_λ = α_λ`. -/
+def extendSupermodification {θ θ' : TwoNatTrans F G} (α : θ ⟶ θ') :
+    extendTwoNatTrans θ ⟶ extendTwoNatTrans θ' where
+  app a := α.app a.as
+  naturality f := extend_naturality α f
+
+@[simp] theorem extendSupermodification_app {θ θ' : TwoNatTrans F G} (α : θ ⟶ θ')
+    (a : TwoEnvelope R B) : (extendSupermodification α).app a = α.app a.as := rfl
+
+variable (F G) in
+/-- **Theorem 4.9 / Remark 4.10.** The superfunctor
+`ℋom(ℝ, 𝕊) → ℋom(ℝ̃, 𝕊̃)`, `(X, x) ↦ (X̃, x̃)`, `α ↦ α̃`. -/
+@[simps]
+def extendHom : TwoNatTrans F G ⥤ TwoNatTrans (extend F) (extend G) where
+  obj := extendTwoNatTrans
+  map := extendSupermodification
+  map_id _ := TwoNatTrans.hom_ext fun _ => rfl
+  map_comp _ _ := TwoNatTrans.hom_ext fun _ => rfl
+
+instance : (extendHom F G).Additive where
+  map_add := TwoNatTrans.hom_ext fun _ => rfl
+
+instance : (extendHom F G).Linear R where
+  map_smul _ _ := TwoNatTrans.hom_ext fun _ => rfl
+
+instance : IsSuperfunctor R (extendHom F G) where
+  map_mem hα a := hα a.as
+
+instance : (extendHom F G).Faithful where
+  map_injective {θ θ'} α β h := TwoNatTrans.hom_ext fun a => by
+    have := congrArg (fun γ : extendTwoNatTrans θ ⟶ extendTwoNatTrans θ' => γ.app ⟨a⟩) h
+    exact this
+
+instance : (extendHom F G).Full where
+  map_surjective {θ θ'} γ := ⟨⟨fun a => γ.app ⟨a⟩, fun {a b} f => by
+      have := γ.naturality ((J R (a ⟶ b)).obj f : (⟨a⟩ : TwoEnvelope R B) ⟶ ⟨b⟩)
+      have h₁ : (extendTwoNatTrans θ).x
+          ((J R (a ⟶ b)).obj f : (⟨a⟩ : TwoEnvelope R B) ⟶ ⟨b⟩) = θ.x f :=
+        extendX_J (a := (⟨a⟩ : TwoEnvelope R B)) (b := ⟨b⟩) θ f
+      have h₂ : (extendTwoNatTrans θ').x
+          ((J R (a ⟶ b)).obj f : (⟨a⟩ : TwoEnvelope R B) ⟶ ⟨b⟩) = θ'.x f :=
+        extendX_J (a := (⟨a⟩ : TwoEnvelope R B)) (b := ⟨b⟩) θ' f
+      simp only [extendHom_obj] at this
+      rw [h₁, h₂] at this
+      exact this⟩,
+    TwoNatTrans.hom_ext fun _ => rfl⟩
+
+omit [TwoSupercategory R B] [∀ a b : C, PiSupercategory R (a ⟶ b)] in
+theorem eqToHom_mem {F' G' : TwoSuperfunctor R (TwoEnvelope R B) C} {θ θ' : TwoNatTrans F' G'}
+    (h : θ = θ') : (eqToIso h).hom ∈ parity (R := R) θ θ' 0 := by
+  subst h; exact id_mem _
+
+theorem extendHom_evenlyDense : EvenlyDense R (extendHom F G) := fun ψ =>
+  ⟨restrictTwoNatTrans ψ, eqToIso (extendTwoNatTrans_restrictTwoNatTrans ψ),
+    eqToHom_mem (extendTwoNatTrans_restrictTwoNatTrans ψ)⟩
+
+variable (F G) in
+/-- **Theorem 4.9 / Remark 4.10.** `(X, x) ↦ (X̃, x̃)`, `α ↦ α̃` is a superequivalence
+`ℋom(ℝ, 𝕊) → ℋom(ℝ̃, 𝕊̃)`; it is bijective on objects (`extendTwoNatTransEquiv`) and on
+morphisms. -/
+def extendHomSuperequivalence : Superequivalence R (extendHom F G) :=
+  Superequivalence.ofFullyFaithful _ extendHom_evenlyDense
+
 end TwoEnvelope
 
 end StringDiagrams
