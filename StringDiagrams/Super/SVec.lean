@@ -898,6 +898,34 @@ instance instPiSupercategory : PiSupercategory k (SVec k) :=
 
 theorem pi_obj (V : SVec k) : (PiSupercategory.pi (R := k)).obj V = piObj V := rfl
 
+/-- A linear map `V → W`, viewed as a linear map `Π V → Π W` (the same function). -/
+def piHom {V W : SVec k} : (V ⟶ W) →ₗ[k] (piObj V ⟶ piObj W) where
+  toFun f := f
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+
+@[simp] theorem piHom_comp {U V W : SVec k} (f : U ⟶ V) (g : V ⟶ W) :
+    piHom (f ≫ g) = piHom f ≫ piHom g := rfl
+
+@[simp] theorem piHom_id (V : SVec k) : piHom (𝟙 V) = 𝟙 (piObj V) := rfl
+
+@[simp] theorem piHom_apply {V W : SVec k} (f : V ⟶ W) (v : V) : piHom f v = f v := rfl
+
+/-- A linear map has the same parity as a map `V → W` and as a map `Π V → Π W`. -/
+theorem piHom_mem_iff {V W : SVec k} {p : ZMod 2} {f : V ⟶ W} :
+    piHom f ∈ parityHom (piObj V) (piObj W) p ↔ f ∈ parityHom V W p := by
+  constructor
+  · intro h q
+    have := h (q + 1)
+    rw [piObj_proj, piObj_proj] at this
+    have e1 : q + 1 + 1 = q := by rw [add_assoc, zmod2_one_add_one, add_zero]
+    have e2 : q + 1 + p + 1 = q + p := by rw [add_right_comm, e1]
+    rw [e1, e2] at this
+    exact this
+  · intro h q
+    rw [piObj_proj, piObj_proj, show q + p + 1 = q + 1 + p by rw [add_right_comm]]
+    exact h (q + 1)
+
 theorem ζ_eq (V : SVec k) : PiSupercategory.ζ (R := k) V = ζIso V := rfl
 
 /-- **Example 1.8.** `Π f = (-1)^{|f|} f` on the underlying linear maps. -/

@@ -24,6 +24,7 @@ import StringDiagrams.Super.SVec
 import StringDiagrams.Super.K0
 import StringDiagrams.Super.SKar
 import StringDiagrams.Super.Superalgebra
+import StringDiagrams.Super.Superbimodule
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
