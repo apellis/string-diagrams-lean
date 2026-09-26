@@ -71,6 +71,14 @@ Following Brundan–Ellis, *Monoidal supercategories* ([arXiv:1603.05928v3](http
 
 `StringDiagrams.Examples.PiEnvelope`: the Π-envelope of the odd Brauer supercategory; the odd cup and cap become even morphisms `Π⁰(n) → Π¹(n+2)` and `Π¹(n+2) → Π⁰(n)` satisfying the zigzag relation.
 
+### Superspaces, superalgebras and super Karoubi envelopes
+
+Following Brundan–Ellis, *Monoidal supercategories* ([arXiv:1603.05928v3](https://arxiv.org/abs/1603.05928)), Examples 1.2, 1.5, 1.8, 1.13, §1.5 and Example 1.17, over a commutative ground ring `k` (as in §2 of the paper).
+
+| Module | Contents |
+| --- | --- |
+| `StringDiagrams.Super.SVec` | Superspaces `SVec k` (a `k`-module with the projection onto its odd part; homogeneous components `part p`, `isInternal_part`; constructions `ofProd`, `ofIsCompl`) with all linear maps as morphisms. Example 1.2(i): `SVec k` is a supercategory (`instSupercategory`, parity components `homProj`). Example 1.5(i): a monoidal supercategory (`instMonoidalSupercategory`) with the Koszul sign rule `(1 ⊗ g)(v ⊗ w) = (-1)^{\|g\|\|v\|} v ⊗ g(w)` (`whiskerLeft_tmul`) and `(f ⊗ g)(v ⊗ w) = (-1)^{\|g\|\|v\|} f(v) ⊗ g(w)` for the paper's tensor product (`superTensorHom_tmul`). Example 1.8 (`A = B = k`): a Π-supercategory with `ζ_V` the identity function (`instPiSupercategory`), `Π f = (-1)^{\|f\|} f` (`pi_map_of_mem`), `ξ_V = -1` (`ξ_hom`). Example 1.13(i) (`A = k`): a monoidal Π-supercategory with `π = Π k` (`instMonoidalPiSupercategory`). |
+
 ### Example: the walking biadjunction
 
 `StringDiagrams.Examples.WalkingBiadjunction`: strands `E : a → b`, `F : b → a` with all four cups and caps and a dot on `E` whose two rotations agree; every 2-morphism is cyclic (`pivotal`), the dot slides along both cups, and the plain bubble equals the trace of `snakeDown ≫ snakeUp` (`bubble_eq_trace_snakes`), a consequence of trace cyclicity.
