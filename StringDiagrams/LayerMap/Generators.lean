@@ -68,19 +68,44 @@ structure ColourMap (S : Signature.{u₀, u₁, u₂}) (S' : Signature.{u₀', u
   colourSrc : ∀ c, S'.colourSrc (colour c) = region (S.colourSrc c)
   /-- Compatibility with the region on the right of a strand. -/
   colourTgt : ∀ c, S'.colourTgt (colour c) = region (S.colourTgt c)
+  /-- The image of a word: by default, the word of the images of its strands. (For the identity
+  relabelling one may take `id`, so that objects and diagrams keep their types.) -/
+  word : List S.Colour → List S'.Colour := fun w => w.map colour
+  /-- The image of a word is the word of the images of its strands. -/
+  word_eq : ∀ w, word w = w.map colour := by intro; rfl
 
 namespace ColourMap
 
 variable (κ : ColourMap S S')
 
+@[simp] theorem word_nil : κ.word [] = [] := by rw [κ.word_eq]; rfl
+
+@[simp] theorem word_append (w w' : List S.Colour) : κ.word (w ++ w') = κ.word w ++ κ.word w' := by
+  simp [κ.word_eq]
+
+theorem word_cons (c : S.Colour) (w : List S.Colour) : κ.word (c :: w) = κ.colour c :: κ.word w := by
+  simp [κ.word_eq]
+
+/-- The identity relabelling, with `word := id`. -/
+@[simps]
+protected def id (S : Signature.{u₀, u₁, u₂}) : ColourMap S S where
+  region := id
+  colour := id
+  colourSrc _ := rfl
+  colourTgt _ := rfl
+  word := id
+  word_eq w := (List.map_id w).symm
+
 theorem endR_map (r : S.Region) (w : List S.Colour) :
-    S'.endR (κ.region r) (w.map κ.colour) = κ.region (S.endR r w) := by
+    S'.endR (κ.region r) (κ.word w) = κ.region (S.endR r w) := by
+  rw [κ.word_eq]
   induction w generalizing r with
   | nil => rfl
   | cons c w ih => rw [List.map_cons, Signature.endR_cons, κ.colourTgt, ih]; rfl
 
 theorem ok_map {r : S.Region} {w : List S.Colour} (h : S.ok r w) :
-    S'.ok (κ.region r) (w.map κ.colour) := by
+    S'.ok (κ.region r) (κ.word w) := by
+  rw [κ.word_eq]
   induction w generalizing r with
   | nil => trivial
   | cons c w ih =>
@@ -88,19 +113,19 @@ theorem ok_map {r : S.Region} {w : List S.Colour} (h : S.ok r w) :
     exact ⟨by rw [κ.colourSrc, hc], by rw [κ.colourTgt]; exact ih hw⟩
 
 /-- The image of an object: the same word, relabelled. -/
-def obj (a : Obj S) : Obj S' := ⟨κ.region a.start, a.word.map κ.colour⟩
+def obj (a : Obj S) : Obj S' := ⟨κ.region a.start, κ.word a.word⟩
 
 @[simp] theorem obj_start (a : Obj S) : (κ.obj a).start = κ.region a.start := rfl
-@[simp] theorem obj_word (a : Obj S) : (κ.obj a).word = a.word.map κ.colour := rfl
+@[simp] theorem obj_word (a : Obj S) : (κ.obj a).word = κ.word a.word := rfl
 
 theorem obj_endR (a : Obj S) : (κ.obj a).endR = κ.region a.endR := κ.endR_map _ _
 
 theorem obj_whisker (a u : Obj S) (v : List S.Colour) :
-    κ.obj (a.whisker u v) = (κ.obj a).whisker (κ.obj u) (v.map κ.colour) := by
+    κ.obj (a.whisker u v) = (κ.obj a).whisker (κ.obj u) (κ.word v) := by
   simp [obj, Obj.whisker]
 
 theorem whiskerOK {a u : Obj S} {v : List S.Colour} (hw : a.WhiskerOK u v) :
-    (κ.obj a).WhiskerOK (κ.obj u) (v.map κ.colour) :=
+    (κ.obj a).WhiskerOK (κ.obj u) (κ.word v) :=
   ⟨κ.ok_map hw.1, by rw [obj_endR, hw.2.1]; rfl, by rw [obj_endR]; exact κ.ok_map hw.2.2⟩
 
 end ColourMap
@@ -114,9 +139,9 @@ structure SigMap (S : Signature.{u₀, u₁, u₂}) (S' : Signature.{u₀', u₁
   /-- The image of a generator. -/
   gen : S.Gen → S'.Gen
   /-- Bottom boundaries. -/
-  dom : ∀ g, S'.dom (gen g) = (S.dom g).map colour
+  dom : ∀ g, S'.dom (gen g) = word (S.dom g)
   /-- Top boundaries. -/
-  cod : ∀ g, S'.cod (gen g) = (S.cod g).map colour
+  cod : ∀ g, S'.cod (gen g) = word (S.cod g)
   /-- Left regions. -/
   left : ∀ g, S'.left (gen g) = region (S.left g)
   /-- Right regions. -/
@@ -128,12 +153,12 @@ variable (φ : SigMap S S')
 
 /-- The image of a layer: the same layer, relabelled. -/
 def layer (L : Layer S) : Layer S' :=
-  ⟨φ.region L.start, L.left.map φ.colour, φ.gen L.gen, L.right.map φ.colour⟩
+  ⟨φ.region L.start, φ.word L.left, φ.gen L.gen, φ.word L.right⟩
 
 theorem layer_valid {L : Layer S} (hv : L.Valid) : (φ.layer L).Valid where
   left_ok := φ.ok_map hv.left_ok
   left_end := by
-    show S'.endR (φ.region L.start) (L.left.map φ.colour) = S'.left (φ.gen L.gen)
+    show S'.endR (φ.region L.start) (φ.word L.left) = S'.left (φ.gen L.gen)
     rw [φ.endR_map, hv.left_end, φ.left]
   dom_ok := by
     show S'.ok (S'.left (φ.gen L.gen)) (S'.dom (φ.gen L.gen))
@@ -161,7 +186,7 @@ def toLayerMap : LayerMap S S' where
   cod_eq _ := Obj.ext rfl (by simp [layer, ColourMap.obj, Layer.cod, φ.cod])
 
 theorem layer_whisker (L : Layer S) (u : Obj S) (v : List S.Colour) :
-    φ.layer (L.whisker u v) = (φ.layer L).whisker (φ.obj u) (v.map φ.colour) := by
+    φ.layer (L.whisker u v) = (φ.layer L).whisker (φ.obj u) (φ.word v) := by
   simp [layer, Layer.whisker, ColourMap.obj]
 
 /-- A map of signatures commutes with whiskering, on all objects. -/
@@ -170,7 +195,7 @@ def whiskerData : LayerMap.WhiskerData fun _ : Unit => φ.toLayerMap where
   admissible_interchange _ := trivial
   idx _ _ _ _ := ()
   left _ _ u _ := φ.obj u
-  right _ _ _ v := v.map φ.colour
+  right _ _ _ v := φ.word v
   whiskerOK _ hw := φ.whiskerOK hw
   obj_whisker _ _ _ _ := (φ.obj_whisker _ _ _).symm
   layer_whisker _ _ _ _ _ := φ.layer_whisker _ _ _
@@ -182,7 +207,7 @@ theorem toPresented_interchange (hodd : ∀ g, S'.odd (φ.gen g) = S.odd g)
     {x : InterchangeData S} (hx : x.Valid) :
     (freeLift R (φ.toLayerMap.toPresented Q χ)).map (InterchangeData.rel R hx) = 0 :=
   φ.toLayerMap.toPresented_interchange Q χ hx ⟨φ.region x.start, φ.gen x.g,
-      x.mid.map φ.colour, φ.gen x.h⟩
+      φ.word x.mid, φ.gen x.h⟩
     (by simp [layer, InterchangeData.gh₁, φ.dom])
     (by simp [layer, InterchangeData.gh₂, φ.cod])
     (by simp [layer, InterchangeData.hg₁, φ.dom])
@@ -223,14 +248,14 @@ theorem lift_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) {u : Obj S} {v : List
     (hw : a.WhiskerOK u v) :
     (φ.lift P hodd hrel).map (P.whisk f u v) =
       eqToHom (congrArg Q.obj (φ.obj_whisker a u v)) ≫
-        Q.whisk ((φ.lift P hodd hrel).map f) (φ.obj u) (v.map φ.colour) ≫
+        Q.whisk ((φ.lift P hodd hrel).map f) (φ.obj u) (φ.word v) ≫
           eqToHom (congrArg Q.obj (φ.obj_whisker b u v)).symm := by
   obtain ⟨f, rfl⟩ := P.lin_surjective f
   rw [Presentation.whisk_lin, LinDiagram.whisk_of_ok _ hw, lift_lin, lift_lin]
   exact freeLift_map_mapDomain (F := φ.toLayerMap.toPresented Q χ)
     (G := φ.toLayerMap.toPresented Q χ) (fun d => Diagram.whisker d u v hw)
     { toFun := fun x => eqToHom (congrArg Q.obj (φ.obj_whisker a u v)) ≫
-        Q.whisk x (φ.obj u) (v.map φ.colour) ≫
+        Q.whisk x (φ.obj u) (φ.word v) ≫
           eqToHom (congrArg Q.obj (φ.obj_whisker b u v)).symm
       map_add' := fun x y => by
         simp only [Q.whisk_add, Preadditive.add_comp, Preadditive.comp_add]
@@ -250,9 +275,9 @@ structure SigFlip (S : Signature.{u₀, u₁, u₂}) (S' : Signature.{u₀', u�
   /-- The image of a generator. -/
   gen : S.Gen → S'.Gen
   /-- The bottom boundary of the image is the relabelled top boundary. -/
-  dom : ∀ g, S'.dom (gen g) = (S.cod g).map colour
+  dom : ∀ g, S'.dom (gen g) = word (S.cod g)
   /-- The top boundary of the image is the relabelled bottom boundary. -/
-  cod : ∀ g, S'.cod (gen g) = (S.dom g).map colour
+  cod : ∀ g, S'.cod (gen g) = word (S.dom g)
   /-- Left regions. -/
   left : ∀ g, S'.left (gen g) = region (S.left g)
   /-- Right regions. -/
@@ -265,12 +290,12 @@ variable (φ : SigFlip S S')
 /-- The image of a layer: the reflected generator, with the same (relabelled) strands on either
 side. -/
 def layer (L : Layer S) : Layer S' :=
-  ⟨φ.region L.start, L.left.map φ.colour, φ.gen L.gen, L.right.map φ.colour⟩
+  ⟨φ.region L.start, φ.word L.left, φ.gen L.gen, φ.word L.right⟩
 
 theorem layer_valid {L : Layer S} (hv : L.Valid) : (φ.layer L).Valid where
   left_ok := φ.ok_map hv.left_ok
   left_end := by
-    show S'.endR (φ.region L.start) (L.left.map φ.colour) = S'.left (φ.gen L.gen)
+    show S'.endR (φ.region L.start) (φ.word L.left) = S'.left (φ.gen L.gen)
     rw [φ.endR_map, hv.left_end, φ.left]
   dom_ok := by
     show S'.ok (S'.left (φ.gen L.gen)) (S'.dom (φ.gen L.gen))
@@ -298,7 +323,7 @@ def toOpLayerMap : OpLayerMap S S' where
   cod_eq _ := Obj.ext rfl (by simp [layer, ColourMap.obj, Layer.dom, Layer.cod, φ.cod])
 
 theorem layer_whisker (L : Layer S) (u : Obj S) (v : List S.Colour) :
-    φ.layer (L.whisker u v) = (φ.layer L).whisker (φ.obj u) (v.map φ.colour) := by
+    φ.layer (L.whisker u v) = (φ.layer L).whisker (φ.obj u) (φ.word v) := by
   simp [layer, Layer.whisker, ColourMap.obj]
 
 /-- A reflection of generators commutes with whiskering, on all objects. -/
@@ -307,7 +332,7 @@ def whiskerData : OpLayerMap.WhiskerData fun _ : Unit => φ.toOpLayerMap where
   admissible_interchange _ := trivial
   idx _ _ _ _ := ()
   left _ _ u _ := φ.obj u
-  right _ _ _ v := v.map φ.colour
+  right _ _ _ v := φ.word v
   whiskerOK _ hw _ hb := φ.whiskerOK ((Diagram.chain hb.some).whiskerOK hw)
   obj_whisker _ _ _ _ := (φ.obj_whisker _ _ _).symm
   layer_whisker _ _ _ _ _ := φ.layer_whisker _ _ _
@@ -319,7 +344,7 @@ theorem toPresented_interchange (hodd : ∀ g, S'.odd (φ.gen g) = S.odd g)
     {x : InterchangeData S} (hx : x.Valid) :
     (freeLift R (φ.toOpLayerMap.toPresented Q χ)).map (InterchangeData.rel R hx) = 0 :=
   φ.toOpLayerMap.toPresented_interchange_reflect Q χ hx ⟨φ.region x.start, φ.gen x.g,
-      x.mid.map φ.colour, φ.gen x.h⟩
+      φ.word x.mid, φ.gen x.h⟩
     (by simp [layer, InterchangeData.gh₂, InterchangeData.hg₁, φ.dom])
     (by simp [layer, InterchangeData.gh₁, InterchangeData.hg₂, φ.cod])
     (by simp [layer, InterchangeData.hg₂, InterchangeData.gh₁, φ.dom])
@@ -362,7 +387,7 @@ theorem lift_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) {u : Obj S} {v : List
     (hw : a.WhiskerOK u v) (hb : Nonempty (a ⟶ b)) :
     ((φ.lift P hodd hrel).map (P.whisk f u v)).unop =
       eqToHom (congrArg Q.obj (φ.obj_whisker b u v)) ≫
-        Q.whisk ((φ.lift P hodd hrel).map f).unop (φ.obj u) (v.map φ.colour) ≫
+        Q.whisk ((φ.lift P hodd hrel).map f).unop (φ.obj u) (φ.word v) ≫
           eqToHom (congrArg Q.obj (φ.obj_whisker a u v)).symm :=
   OpLayerMap.lift_whisk (P := P) φ.whiskerData (fun _ => trivial) (fun _ => hrel)
     (fun _ _ hx => φ.toPresented_interchange Q χ hodd hx) () f trivial hw hb

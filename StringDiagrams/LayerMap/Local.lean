@@ -314,19 +314,19 @@ def genDom (g : S.Gen) : Obj S' := κ.obj ⟨S.left g, S.dom g⟩
 def genCod (g : S.Gen) : Obj S' := κ.obj ⟨S.left g, S.cod g⟩
 
 theorem whisker_genDom (L : Layer S) :
-    (genDom κ L.gen).whisker (κ.obj ⟨L.start, L.left⟩) (L.right.map κ.colour) = κ.obj L.dom := by
+    (genDom κ L.gen).whisker (κ.obj ⟨L.start, L.left⟩) (κ.word L.right) = κ.obj L.dom := by
   simp [genDom, ColourMap.obj, Obj.whisker, Layer.dom]
 
 theorem whisker_genCod (L : Layer S) :
-    (genCod κ L.gen).whisker (κ.obj ⟨L.start, L.left⟩) (L.right.map κ.colour) = κ.obj L.cod := by
+    (genCod κ L.gen).whisker (κ.obj ⟨L.start, L.left⟩) (κ.word L.right) = κ.obj L.cod := by
   simp [genCod, ColourMap.obj, Obj.whisker, Layer.cod]
 
 theorem genDom_whiskerOK {L : Layer S} (hv : L.Valid) :
-    (genDom κ L.gen).WhiskerOK (κ.obj ⟨L.start, L.left⟩) (L.right.map κ.colour) := by
+    (genDom κ L.gen).WhiskerOK (κ.obj ⟨L.start, L.left⟩) (κ.word L.right) := by
   refine ⟨κ.ok_map hv.left_ok, ?_, ?_⟩
-  · show S'.endR (κ.region L.start) (L.left.map κ.colour) = κ.region (S.left L.gen)
+  · show S'.endR (κ.region L.start) (κ.word L.left) = κ.region (S.left L.gen)
     rw [κ.endR_map, hv.left_end]
-  · show S'.ok (S'.endR (κ.region (S.left L.gen)) ((S.dom L.gen).map κ.colour)) _
+  · show S'.ok (S'.endR (κ.region (S.left L.gen)) (κ.word (S.dom L.gen))) _
     rw [κ.endR_map, hv.dom_end]; exact κ.ok_map hv.right_ok
 
 variable (img : (g : S.Gen) → (Q.obj (genDom κ g) ⟶ Q.obj (genCod κ g)))
@@ -336,14 +336,14 @@ variable (img : (g : S.Gen) → (Q.obj (genDom κ g) ⟶ Q.obj (genCod κ g)))
 def ofGen : LocalMap S Q where
   obj := κ.obj
   layer L _ := eqToHom (congrArg Q.obj (whisker_genDom κ L)).symm ≫
-    Q.whisk (img L.gen) (κ.obj ⟨L.start, L.left⟩) (L.right.map κ.colour) ≫
+    Q.whisk (img L.gen) (κ.obj ⟨L.start, L.left⟩) (κ.word L.right) ≫
       eqToHom (congrArg Q.obj (whisker_genCod κ L))
 
 @[simp] theorem ofGen_obj (a : Obj S) : (ofGen κ img).obj a = κ.obj a := rfl
 
 theorem ofGen_layer (L : Layer S) (hv : L.Valid) :
     (ofGen κ img).layer L hv = eqToHom (congrArg Q.obj (whisker_genDom κ L)).symm ≫
-      Q.whisk (img L.gen) (κ.obj ⟨L.start, L.left⟩) (L.right.map κ.colour) ≫
+      Q.whisk (img L.gen) (κ.obj ⟨L.start, L.left⟩) (κ.word L.right) ≫
         eqToHom (congrArg Q.obj (whisker_genCod κ L)) := rfl
 
 /-- The local map given by images of generators commutes with whiskering, on all objects. -/
@@ -352,7 +352,7 @@ def ofGen_whiskerData : WhiskerData fun _ : Unit => ofGen κ img where
   admissible_interchange _ := trivial
   idx _ _ _ _ := ()
   left _ _ u _ := κ.obj u
-  right _ _ _ v := v.map κ.colour
+  right _ _ _ v := κ.word v
   whiskerOK _ hw _ hb := κ.whiskerOK ((Diagram.chain hb.some).whiskerOK hw)
   obj_whisker _ _ _ _ := (κ.obj_whisker _ _ _).symm
   layer_whisker := by
@@ -361,15 +361,15 @@ def ofGen_whiskerData : WhiskerData fun _ : Unit => ofGen κ img where
     have hwc : L.cod.WhiskerOK u v := Chain.whiskerOK (ls := [L]) ⟨hv, rfl, rfl⟩ hwL
     have hw₀ := genDom_whiskerOK κ hv
     have hw₁ : ((genDom κ L.gen).whisker (κ.obj ⟨L.start, L.left⟩)
-        (L.right.map κ.colour)).WhiskerOK (κ.obj u) (v.map κ.colour) := by
+        (κ.word L.right)).WhiskerOK (κ.obj u) (κ.word v) := by
       rw [whisker_genDom]; exact κ.whiskerOK hwL
     rw [ofGen_layer, ofGen_layer, Q.whisk_comp, Q.whisk_comp,
       whisk_eqToHom' (whisker_genDom κ L).symm _ _ (κ.whiskerOK hwL),
       whisk_eqToHom' (whisker_genCod κ L) _ _ (by rw [whisker_genCod]; exact κ.whiskerOK hwc),
       whisk_whisk' _ _ _ _ _ hw₀ hw₁,
       whisk_congr' (img L.gen) (u := (κ.obj u).tensor (κ.obj ⟨L.start, L.left⟩))
-        (v := L.right.map κ.colour ++ v.map κ.colour) (u' := κ.obj ⟨(L.whisker u v).start,
-        (L.whisker u v).left⟩) (v' := (L.whisker u v).right.map κ.colour)
+        (v := κ.word L.right ++ κ.word v) (u' := κ.obj ⟨(L.whisker u v).start,
+        (L.whisker u v).left⟩) (v' := κ.word (L.whisker u v).right)
         (by simp [ColourMap.obj, Obj.tensor, Layer.whisker]) (by simp [Layer.whisker])]
     simp only [Category.assoc, eqToHom_trans, eqToHom_trans_assoc]
     rfl
@@ -411,17 +411,17 @@ theorem ofGen_interchange
   let Dh := genDom κ x.h
   let Ch := genCod κ x.h
   have hMend : M.endR = κ.region (S.left x.h) := by
-    show S'.endR (κ.region (S.right x.g)) (x.mid.map κ.colour) = _
+    show S'.endR (κ.region (S.right x.g)) (κ.word x.mid) = _
     rw [κ.endR_map, e₀]
   have hMD : M.Composable Dh := ⟨κ.ok_map hmok, hMend, κ.ok_map hx.hg₁.dom_ok⟩
   have hMC : M.Composable Ch := ⟨κ.ok_map hmok, hMend, κ.ok_map hx.hg₁.cod_ok⟩
   have hgd : S.endR (S.left x.g) (S.dom x.g) = S.right x.g := hx.gh₁.dom_end
   have hgc : S.endR (S.left x.g) (S.cod x.g) = S.right x.g := hx.gh₁.cod_end
   have hAM : A.Composable M := ⟨κ.ok_map hx.gh₁.dom_ok, by
-    show S'.endR (κ.region (S.left x.g)) ((S.dom x.g).map κ.colour) = _
+    show S'.endR (κ.region (S.left x.g)) (κ.word (S.dom x.g)) = _
     rw [κ.endR_map, hgd]; rfl, κ.ok_map hmok⟩
   have hA'M : A'.Composable M := ⟨κ.ok_map hx.gh₁.cod_ok, by
-    show S'.endR (κ.region (S.left x.g)) ((S.cod x.g).map κ.colour) = _
+    show S'.endR (κ.region (S.left x.g)) (κ.word (S.cod x.g)) = _
     rw [κ.endR_map, hgc]; rfl, κ.ok_map hmok⟩
   have hA : A.start = r := rfl
   have hA' : A'.start = r := rfl
@@ -535,7 +535,7 @@ theorem liftGen_lin {a b : Obj S} (f : LinDiagram R a b) :
 theorem liftGen_layer (L : Layer S) (hv : L.Valid) :
     (liftGen κ img P himg hrel).map (P.diag (Diagram.ofLayer L hv)) =
       eqToHom (congrArg Q.obj (whisker_genDom κ L)).symm ≫
-        Q.whisk (img L.gen) (κ.obj ⟨L.start, L.left⟩) (L.right.map κ.colour) ≫
+        Q.whisk (img L.gen) (κ.obj ⟨L.start, L.left⟩) (κ.word L.right) ≫
           eqToHom (congrArg Q.obj (whisker_genCod κ L)) :=
   lift_layer _ _ _ _ _ L hv
 
@@ -544,7 +544,7 @@ theorem liftGen_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) {u : Obj S} {v : L
     (hw : a.WhiskerOK u v) (hb : Nonempty (a ⟶ b)) :
     (liftGen κ img P himg hrel).map (P.whisk f u v) =
       eqToHom (congrArg Q.obj (κ.obj_whisker a u v)) ≫
-        Q.whisk ((liftGen κ img P himg hrel).map f) (κ.obj u) (v.map κ.colour) ≫
+        Q.whisk ((liftGen κ img P himg hrel).map f) (κ.obj u) (κ.word v) ≫
           eqToHom (congrArg Q.obj (κ.obj_whisker b u v)).symm :=
   lift_whisk (P := P) (ofGen_whiskerData κ img) (fun _ => trivial) (fun _ => hrel)
     (fun _ _ hx => ofGen_interchange κ img himg hx) () f trivial hw hb
