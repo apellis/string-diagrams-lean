@@ -1,5 +1,31 @@
 import StringDiagrams.Biadjunction.Presented
 
+/-!
+# The pivotal extension of a presentation
+
+Given a signature `S` with a duality `D` on its colours (compatible with regions), the pivotal
+extension `S.pivotal D` has the same regions and colours, the original generators
+(`PivotalGen.gen`), and for every colour `c` a cup `1 ⟶ c c*` in the left region of `c` and a
+cap `c* c ⟶ 1` in the right region of `c` (`PivotalGen.cup`, `PivotalGen.cap`). The pivotal
+extension `P.pivotal D` of a presentation `P` imposes the relations of `P` (on the original
+diagrams, `LinDiagram.toPivotal`) and the two zigzag relations of every colour
+(`Pivotal.zigL`, `Pivotal.zigR`); further relations can be added with
+`Presentation.addRels`.
+
+For an involution (`c** = c`, `Signature.ColourInvolution`) and any presentation `Q` of the
+pivotal extension in which the zigzag relations hold (`Presentation.PivotalZigzags`):
+
+* every colour is biadjoint to its dual: `c ⊣ c*` by the cup and the cap of `c`, and `c* ⊣ c`
+  by the cup and the cap of `c*` (`Presentation.pivotalCupsCaps`,
+  `Presentation.pivotalBiadj`); hence every word is biadjoint to its dual word;
+* the cups and the caps are cyclic (`Presentation.pivotal_isCyclic_cup`,
+  `Presentation.pivotal_isCyclic_cap`), because the biadjunction of `c*` is the exchange of the
+  biadjunction of `c` (`Presentation.pivotalBiadj_symm_heq`);
+* **rotation invariance** (`Presentation.pivotal_isCyclic`): if every original generator is
+  cyclic for the biadjunctions of its boundary words, then every 2-morphism of the presented
+  bicategory is cyclic, and `Presentation.pivotalStructure` is a pivotal structure on it.
+-/
+
 noncomputable section
 
 namespace StringDiagrams

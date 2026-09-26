@@ -2,6 +2,57 @@ import StringDiagrams.Biadjunction.Words
 import StringDiagrams.Biadjunction.Linear
 import StringDiagrams.Biadjunction.Pivotal
 
+/-!
+# Biadjunctions in presented bicategories and rotation invariance
+
+This file connects presentations by generators and relations with the theory of biadjunctions,
+mates and cyclic 2-morphisms of `StringDiagrams.Biadjunction.Basic`, for an even signature with
+arbitrary regions (the presented bicategory `P.Bicat`).
+
+## Biadjunctions from cups and caps
+
+* `Presentation.biadjunctionOfZigzag`: two cups and two caps satisfying the four zigzag
+  identities give a biadjunction `x ⊣⊢ y`.
+* `Presentation.ColourCupsCaps`: for every colour `c`, cups and caps for `c ⊣ c*` and `c* ⊣ c`
+  (in their canonical position) satisfying the zigzag identities.
+  `Presentation.ColourCupsCaps.biadjunctions` places them at every position of the colour, and
+  therefore gives biadjunctions `x ⊣⊢ x*` for all words (`StringDiagrams.Biadjunction.Words`).
+
+## Sliding and mates of diagrams
+
+* `Biadjunction.left_unit_comp_whiskerRight`, `Biadjunction.whiskerLeft_comp_left_counit`,
+  `Biadjunction.right_unit_comp_whiskerLeft`, `Biadjunction.whiskerRight_comp_right_counit`:
+  sliding a 2-morphism `α : f ⟶ f'` along a cup or a cap turns it into its right or left mate
+  on the other strand (the pitchfork lemmas); for cyclic `α` both mates agree
+  (`Biadjunction.IsCyclic.right_unit_comp_whiskerLeft`, ...).
+* `Presentation.rightMate_diag`, `Presentation.leftMate_diag`: the mates of the class of a
+  diagram, for biadjunctions whose units and counits are classes of diagrams, are the classes of
+  the rotated diagrams `Presentation.rightRotateD`, `Presentation.leftRotateD`. Hence
+  cyclicity of a diagram is an equality of two explicit diagrams
+  (`Presentation.isCyclic_diag_iff`), which can be imposed as a relation
+  (`Presentation.isCyclic_diag_of_rel`).
+
+## Rotation invariance
+
+Let `B` be biadjunctions of all colours at all placements, and `biadj B x : x ⊣⊢ x*` the induced
+biadjunctions of words. Generators are 2-morphisms `Presentation.gen2 g` between their
+boundary words `Presentation.genDom g`, `Presentation.genCod g`.
+
+* `Presentation.isCyclic_biadj_comp`: the biadjunction of a composite `x ≫ y` agrees with the
+  composite of the biadjunctions, in the sense that the identity is cyclic for them.
+* `Presentation.isCyclic_of_generators` (**rotation invariance**): if every generator is cyclic
+  for the biadjunctions of its boundary words, then every 2-morphism `θ : x ⟶ x'` of `P.Bicat`
+  is cyclic for `biadj B x` and `biadj B x'`: its right mate and its left mate (the rotations of
+  `θ` by the cups and caps on the right and on the left) agree. The proof is an induction over
+  linear combinations of composites of layers (`Presentation.hom_induction_layers`), using the
+  closure of cyclic 2-morphisms under composition, whiskering, sums and scalar multiples
+  (`StringDiagrams.Biadjunction.Cyclic`, `StringDiagrams.Biadjunction.Linear`).
+* `Presentation.pivotalOfGenerators`: the resulting pivotal structure (`Pivotal P.Bicat`).
+
+The hom categories of `P.Bicat` are `R`-linear and whiskering is `R`-linear
+(`Presentation.Bicat.instLocallyLinear`).
+-/
+
 noncomputable section
 
 namespace StringDiagrams
@@ -188,6 +239,46 @@ theorem isCyclic_biadj_comp {l m n : P.Bicat} (x : l ⟶ m) (y : m ⟶ n) :
     have key := h₀.comp (h₁.comp (h₂.comp h₃))
     convert key using 1
     simp [Strict.associator_eqToIso]
+
+theorem _root_.StringDiagrams.Biadjunction.congr_left_unit {B : Type*} [Bicategory B] {a b : B}
+    {f f' : a ⟶ b} {g g' : b ⟶ a} (Q : f ⊣⊢ g) (hf : f = f') (hg : g = g') :
+    (Q.congr hf hg).left.unit = Q.left.unit ≫ eqToHom (by rw [hf, hg]) := by
+  subst hf hg; simp
+
+theorem _root_.StringDiagrams.Biadjunction.congr_left_counit {B : Type*} [Bicategory B] {a b : B}
+    {f f' : a ⟶ b} {g g' : b ⟶ a} (Q : f ⊣⊢ g) (hf : f = f') (hg : g = g') :
+    (Q.congr hf hg).left.counit = eqToHom (by rw [hf, hg]) ≫ Q.left.counit := by
+  subst hf hg; simp
+
+/-- The unit of the biadjunction of a word `c w` is nested: the cup of `c`, then the unit of the
+biadjunction of `w` inserted between `c` and `c*`. -/
+theorem biadjW_cons_left_unit (c : S.Colour) (w : List S.Colour) {l m : P.Bicat} (x : l ⟶ m)
+    (hx : x.obj.word = c :: w) :
+    (biadjW B (c :: w) x hx).left.unit =
+      ((B (P.headHom x c w hx) c rfl).left.unit ⊗≫
+        P.headHom x c w hx ◁ (biadj B (P.tailHom x c w hx)).left.unit ▷
+          P.dualHom D (P.headHom x c w hx) ⊗≫ 𝟙 _) ≫
+        eqToHom (show (P.headHom x c w hx ≫ P.tailHom x c w hx) ≫
+            (P.dualHom D (P.tailHom x c w hx) ≫ P.dualHom D (P.headHom x c w hx)) =
+              x ≫ P.dualHom D x by
+          rw [P.headHom_comp_tailHom, P.dualHom_tail_comp_head]) := by
+  simp only [biadjW, Biadjunction.congr_left_unit, Biadjunction.comp_left,
+    Bicategory.Adjunction.comp_unit, Bicategory.Adjunction.compUnit]
+  rfl
+
+/-- The counit of the biadjunction of a word `c w` is nested: the counit of the biadjunction of
+`w` inserted between `c*` and `c`, then the cap of `c`. -/
+theorem biadjW_cons_left_counit (c : S.Colour) (w : List S.Colour) {l m : P.Bicat} (x : l ⟶ m)
+    (hx : x.obj.word = c :: w) :
+    (biadjW B (c :: w) x hx).left.counit =
+      eqToHom (show P.dualHom D x ≫ x = (P.dualHom D (P.tailHom x c w hx) ≫
+          P.dualHom D (P.headHom x c w hx)) ≫ (P.headHom x c w hx ≫ P.tailHom x c w hx) by
+        rw [P.headHom_comp_tailHom, P.dualHom_tail_comp_head]) ≫
+      (𝟙 _ ⊗≫ P.dualHom D (P.tailHom x c w hx) ◁ (B (P.headHom x c w hx) c rfl).left.counit ▷
+          P.tailHom x c w hx ⊗≫ (biadj B (P.tailHom x c w hx)).left.counit) := by
+  simp only [biadjW, Biadjunction.congr_left_counit, Biadjunction.comp_left,
+    Bicategory.Adjunction.comp_counit, Bicategory.Adjunction.compCounit]
+  rfl
 
 theorem isCyclic_biadj_comp_symm {l m n : P.Bicat} (x : l ⟶ m) (y : m ⟶ n) :
     Biadjunction.IsCyclic (biadj B (x ≫ y)) ((biadj B x).comp (biadj B y)) (𝟙 _) := by

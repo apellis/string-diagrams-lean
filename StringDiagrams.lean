@@ -37,6 +37,11 @@ import StringDiagrams.Biadjunction.Linear
 import StringDiagrams.Biadjunction.Trace
 import StringDiagrams.Biadjunction.Pivotal
 import StringDiagrams.Biadjunction.Monoidal
+import StringDiagrams.Biadjunction.Zigzag
+import StringDiagrams.Biadjunction.Words
+import StringDiagrams.Biadjunction.Presented
+import StringDiagrams.Biadjunction.PivotalExtension
+import StringDiagrams.Examples.WalkingBiadjunction
 
 /-!
 # StringDiagrams

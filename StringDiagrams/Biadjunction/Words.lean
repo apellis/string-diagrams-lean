@@ -1,6 +1,29 @@
 import StringDiagrams.Biadjunction.Basic
 import StringDiagrams.Biadjunction.Zigzag
 
+/-!
+# Duals of words
+
+Let `D` be a duality on the colours of a signature, compatible with regions: the dual `c*` of a
+colour `c` runs from the right region of `c` to its left region (`Signature.ColourDuality`).
+The dual of a word `w = c₁ ⋯ c_k` is the reversed word of duals `w* = c_k* ⋯ c₁*`
+(`Signature.ColourDuality.dualWord`, `dualWord_eq`), and the dual of a 1-morphism
+`x : l ⟶ m` of the presented bicategory `P.Bicat` is the 1-morphism `x* : m ⟶ l` with the dual
+word (`Presentation.dualHom`); duality reverses composition (`Presentation.dualHom_comp`).
+
+Given biadjunctions `x ⊣⊢ x*` for all 1-morphisms `x` whose word is a single colour
+(`Presentation.ColourBiadjunctions`; they are required at every placement of the colour, so
+that no transport between different regions is ever needed), every 1-morphism is biadjoint to
+its dual (`Presentation.biadj`). The biadjunction of a word `c w` is the composite
+(`Biadjunction.comp`, built from Mathlib's `Bicategory.Adjunction.comp`) of the biadjunction of
+the colour `c` and the biadjunction of the word `w` (`Presentation.biadjW`); hence its units and
+counits are nested cups and caps (`Presentation.biadjW_cons_left_unit`). The biadjunction of the
+empty word has identities as units and counits (`Presentation.nilBiadj`).
+
+The chosen biadjunctions of colours are typically given by cups and caps
+(`Presentation.ColourCupsCaps`, in `StringDiagrams.Biadjunction.Presented`).
+-/
+
 noncomputable section
 
 namespace StringDiagrams

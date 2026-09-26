@@ -1,5 +1,28 @@
 import StringDiagrams.Biadjunction.PivotalExtension
 
+/-!
+# Example: the walking biadjunction with a cyclic dot
+
+Two regions `a`, `b`, strands `E : a → b` and `F : b → a` with `E* = F`, and one generator, a dot
+`E ⟶ E`. The pivotal extension adds the four cups and caps (the cup and the cap of `E` and of
+`F`) and the four zigzag relations; we add one more relation, `rotR = rotL`, saying that the two
+rotations of the dot to the strand `F` (by the cup and cap of `E ⊣ F`, and by those of `F ⊣ E`)
+agree.
+
+* `biadjEF`: the biadjunction `E ⊣⊢ F`, whose units and counits are the cups and caps
+  (`biadjEF_left_unit`, ...); words such as `E F E` are biadjoint to their dual words.
+* `dot_isCyclic`: the dot is cyclic, from the relation; `isCyclic`: hence, by rotation
+  invariance, every 2-morphism is cyclic, and `pivotal` is a pivotal structure.
+* `dotF_eq_rotR`, `dotF_eq_rotL`: the mate of the dot is the class of either rotated diagram.
+* `dot_slide_cup`, `dot_slide_cup'`: the dot slides along both cups to the same dot on `F`.
+* `dottedBubble`: a dotted bubble, an endomorphism of the empty word `𝟙 a`;
+  `bubble_eq_trace_snakes`: the plain `E`-bubble equals the trace of the endomorphism
+  `snakeDown ≫ snakeUp` of `E F E`, a consequence of rotation invariance (the trace of `α ≫ β`
+  equals the trace of `β ≫ α`) and the zigzag relation.
+
+The example is generic: there are no weights and no relations beyond zigzags and cyclicity.
+-/
+
 noncomputable section
 
 namespace StringDiagrams.WalkingBiadjunction
