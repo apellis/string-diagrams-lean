@@ -10,7 +10,7 @@ Lemma 4.7 and Theorem 4.9.
 
 Let `𝔄` be a 2-supercategory and `𝔅` a 2-supercategory whose morphism supercategories carry
 Π-supercategory structures (for a Π-2-supercategory `(𝔅, π, ζ)` these are `Π = π_μ -` with
-`ζ_F = ζ_μ F`; see `PiTwoSupercategory.homPi`). All constructions below only use the Π-supercategory
+`ζ_F = ζ_μ F`; see `PiTwoSupercategory.homPiLeft`). All constructions below only use the Π-supercategory
 structures of the morphism supercategories of `𝔅`, so they are stated in this generality.
 
 ## Lemma 4.7(i)

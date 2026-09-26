@@ -19,7 +19,7 @@ Theorem 4.9 in the non-strict setting (where composition of 2-natural transforma
 associative and unital only up to such isomorphisms).
 
 The extension of 2-natural transformations is functorial (`TwoEnvelope.extendTwoNatTrans_id`,
-`TwoEnvelope.extendTwoNatTrans_vcomp`). We also record `ℝ = ℝ̃ 𝕁` as an equality of 2-superfunctors (`TwoEnvelope.twoJ_comp_extend`,
+`TwoEnvelope.extendTwoNatTrans_vcomp`). `𝕁` is a strict 2-superfunctor (`TwoEnvelope.twoJ_isStrict`). We also record `ℝ = ℝ̃ 𝕁` as an equality of 2-superfunctors (`TwoEnvelope.twoJ_comp_extend`,
 Lemma 4.7(i)) and that the restriction `TwoEnvelope.restrict 𝕋` is the composite `𝕋 ∘ 𝕁`
 (`TwoEnvelope.restrict_eq_comp`).
 -/
@@ -152,6 +152,14 @@ theorem extendRestrictCounitIso_hom_mem :
 theorem extendRestrictUnitIso_hom_mem :
     (extendRestrictUnitIso T).hom ∈ parity (R := R) _ _ 0 :=
   fun _ => leftUnitor_hom_mem (R := R) _
+
+omit [TwoSupercategory R C] [∀ a b : C, PiSupercategory R (a ⟶ b)] in
+/-- `𝕁 : 𝔄 → 𝔄_π` is a strict 2-superfunctor. -/
+theorem twoJ_isStrict : (twoJ R B).IsStrict where
+  map_comp _ _ := rfl
+  map_id _ := rfl
+  mapComp_eq _ _ := Iso.ext rfl
+  mapId_eq _ := Iso.ext rfl
 
 omit [TwoSupercategory R B] [TwoSupercategory R C] [∀ a b : C, PiSupercategory R (a ⟶ b)] in
 /-- Two 2-superfunctors with the same data are equal. -/
