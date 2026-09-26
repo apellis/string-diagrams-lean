@@ -414,7 +414,99 @@ end Super
 
 end TwoNatTrans
 
+/-! ## Strict 2-superfunctors -/
+
+namespace TwoSuperfunctor
+
+/-- A 2-superfunctor is strict if its coherence maps `c` and `i` are identities (Brundan–Ellis,
+after Definition 2.2). -/
+structure IsStrict (F : TwoSuperfunctor R B C) : Prop where
+  map_comp : ∀ {a b c : B} (f : a ⟶ b) (g : b ⟶ c), F.map (f ≫ g) = F.map f ≫ F.map g
+  map_id : ∀ a : B, F.map (𝟙 a) = 𝟙 (F.obj a)
+  mapComp_eq : ∀ {a b c : B} (f : a ⟶ b) (g : b ⟶ c),
+    F.mapComp f g = eqToIso (map_comp f g).symm
+  mapId_eq : ∀ a : B, F.mapId a = eqToIso (map_id a).symm
+
+end TwoSuperfunctor
+
 end Defs
+
+/-! ## Superequivalences in a 2-supercategory -/
+
+namespace TwoSupercategory
+
+variable (R : Type w) [CommRing R] {B : Type u₁} [BicategoryStruct.{w₁, v₁} B]
+  [∀ a b : B, Preadditive (a ⟶ b)] [∀ a b : B, Linear R (a ⟶ b)]
+  [∀ a b : B, Supercategory R (a ⟶ b)]
+
+/-- A 1-morphism `F : λ → μ` in a 2-supercategory is a superequivalence if there is a
+1-morphism `G : μ → λ` with `GF ≅ 1_λ` and `FG ≅ 1_μ` via even 2-isomorphisms
+(Brundan–Ellis, Definition 2.2(i)). -/
+def IsSuperequivalence {a b : B} (f : a ⟶ b) : Prop :=
+  ∃ (g : b ⟶ a) (e₁ : f ≫ g ≅ 𝟙 a) (e₂ : g ≫ f ≅ 𝟙 b),
+    e₁.hom ∈ parity (R := R) (f ≫ g) (𝟙 a) 0 ∧ e₂.hom ∈ parity (R := R) (g ≫ f) (𝟙 b) 0
+
+end TwoSupercategory
+
+/-! ## Superequivalences in `𝔖ℭ𝔞𝔱` -/
+
+namespace SCat
+
+variable {R : Type w} [CommRing R]
+
+/-- An even natural isomorphism of superfunctors, as an even isomorphism in `ℋom(C, D)`. -/
+def isoOfEvenNatIso {C D : SCat.{w, v₁, u₁} R} {F G : C ⟶ D}
+    (e : F.toFunctor ≅ G.toFunctor)
+    (he : ∀ X, e.hom.app X ∈ parity (R := R) (F.obj X) (G.obj X) 0) : F ≅ G where
+  hom := SuperNatTrans.ofNatTrans e.hom he
+  inv := SuperNatTrans.ofNatTrans e.inv fun X => inv_mem (e.app X) (he X)
+  hom_inv_id := hom_ext (fun X => by simp [SuperNatTrans.ofNatTrans])
+    (fun X => by simp [SuperNatTrans.ofNatTrans])
+  inv_hom_id := hom_ext (fun X => by simp [SuperNatTrans.ofNatTrans])
+    (fun X => by simp [SuperNatTrans.ofNatTrans])
+
+/-- An even isomorphism in `ℋom(C, D)`, as a natural isomorphism of the underlying functors. -/
+def natIsoOfEvenIso {C D : SCat.{w, v₁, u₁} R} {F G : C ⟶ D} (e : F ≅ G)
+    (he : e.hom ∈ parity (R := R) F G 0) : F.toFunctor ≅ G.toFunctor :=
+  have he' : e.inv ∈ parity (R := R) G F 0 := inv_mem e he
+  have h1 : ∀ X, e.hom.app 1 X = 0 := fun X => congrFun he X
+  have h1' : ∀ X, e.inv.app 1 X = 0 := fun X => congrFun he' X
+  NatIso.ofComponents
+    (fun X =>
+      { hom := e.hom.app 0 X
+        inv := e.inv.app 0 X
+        hom_inv_id := by
+          have := congrArg (fun t => SuperNatTrans.app t 0 X) e.hom_inv_id
+          simp only [comp_app_zero, id_app_zero, h1, Limits.zero_comp, add_zero] at this
+          exact this
+        inv_hom_id := by
+          have := congrArg (fun t => SuperNatTrans.app t 0 X) e.inv_hom_id
+          simp only [comp_app_zero, id_app_zero, h1', Limits.zero_comp, add_zero] at this
+          exact this })
+    (fun f => (SuperNatTrans.toNatTrans e.hom).naturality f)
+
+/-- **Definition 1.1(iv) and Definition 2.2(i).** A superfunctor is a superequivalence of
+supercategories (`Supercategory.Superequivalence`) if and only if it is a superequivalence
+in the 2-supercategory `𝔖ℭ𝔞𝔱`. -/
+theorem isSuperequivalence_iff {C D : SCat.{w, v₁, u₁} R} (F : C ⟶ D) :
+    TwoSupercategory.IsSuperequivalence R F ↔ Nonempty (Superequivalence R F.toFunctor) := by
+  constructor
+  · rintro ⟨G, e₁, e₂, h₁, h₂⟩
+    exact ⟨{ inverse := G.toFunctor
+             unitIso := (natIsoOfEvenIso e₁ h₁).symm
+             counitIso := natIsoOfEvenIso e₂ h₂
+             unitIso_mem := fun X => e₁.inv.app_mem 0 X
+             counitIso_mem := fun X => e₂.hom.app_mem 0 X }⟩
+  · rintro ⟨s⟩
+    let G : D ⟶ C := ⟨s.inverse⟩
+    refine ⟨G, isoOfEvenNatIso (G := 𝟙 C) s.unitIso.symm
+      (fun X => inv_mem (s.unitIso.app X) (s.unitIso_mem X)),
+      isoOfEvenNatIso (F := G ≫ F) (G := 𝟙 D) s.counitIso s.counitIso_mem, ?_, ?_⟩ <;>
+    · rw [Superfunctor.mem_parity_iff]
+      funext X
+      simp [isoOfEvenNatIso, SuperNatTrans.ofNatTrans]
+
+end SCat
 
 end StringDiagrams
 

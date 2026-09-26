@@ -11,6 +11,9 @@ A Π-2-supercategory `(𝔄, π, ζ)` is a 2-supercategory with 1-morphisms `π_
 2-isomorphisms `ζ_λ : π_λ ⇒ 1_λ` (`StringDiagrams.PiTwoSupercategory`, Definition 3.1). It is
 strict if the underlying 2-supercategory is (`BicategoryStruct.Strict`).
 
+Each morphism supercategory `ℋom(λ, μ)` is a Π-supercategory with `Π := π_μ -`
+(`PiTwoSupercategory.homPiLeft`) or `Π := - π_λ` (`PiTwoSupercategory.homPiRight`).
+
 ## Lemma 3.2
 
 For a 1-morphism `F : λ → μ`, the paper defines (for strict `𝔄`)
@@ -233,6 +236,45 @@ theorem ξ_hom_mem (a : B) :
   have h := comp_mem (comp_mem (whiskerRight_mem (pi (R := R) a) (ζ_hom_mem (R := R) a))
     (leftUnitor_hom_mem (R := R) (pi (R := R) a))) (ζ_hom_mem (R := R) a)
   simpa [Category.assoc] using h
+
+/-! ### The Π-supercategories `ℋom(λ, μ)` -/
+
+variable (a b) in
+/-- Each morphism supercategory `ℋom(λ, μ)` of a Π-2-supercategory is a Π-supercategory with
+`Π := π_μ -` (i.e. `f ↦ f ≫ π_μ`) and `ζ_F := F ζ_μ` (followed by the unitor). -/
+def homPiLeft : PiSupercategory R (a ⟶ b) where
+  pi := postcomp R (pi (R := R) b)
+  ζ f := whiskerLeftIso (R := R) f (ζ (R := R) b) ≪≫ rightUnitor f
+  ζ_isSupernatural :=
+    { mem := fun f => by
+        simpa using comp_mem (whiskerLeft_mem f (ζ_hom_mem (R := R) b))
+          (rightUnitor_hom_mem (R := R) f)
+      naturality := fun {f g q η} hη => by
+        simp only [postcomp_obj, postcomp_map, Functor.id_obj, Functor.id_map, Iso.trans_hom,
+          whiskerLeftIso_hom, one_mul]
+        rw [← Category.assoc, super_interchange hη (ζ_hom_mem (R := R) b), Linear.smul_comp,
+          Category.assoc, rightUnitor_naturality R, koszulSign_smul (R := R), mul_one,
+          Category.assoc] }
+
+variable (a b) in
+/-- Each morphism supercategory `ℋom(λ, μ)` of a Π-2-supercategory is also a Π-supercategory
+with `Π := - π_λ` (i.e. `f ↦ π_λ ≫ f`) and `ζ_F := ζ_λ F` (followed by the unitor); by
+Lemma 3.2, `β_{μ,λ}` is an even supernatural isomorphism between the two parity-switching
+functors (`β_isSupernatural`). -/
+def homPiRight : PiSupercategory R (a ⟶ b) where
+  pi := precomp R (pi (R := R) a)
+  ζ f := whiskerRightIso (R := R) (ζ (R := R) a) f ≪≫ leftUnitor f
+  ζ_isSupernatural :=
+    { mem := fun f => by
+        simpa using comp_mem (whiskerRight_mem f (ζ_hom_mem (R := R) a))
+          (leftUnitor_hom_mem (R := R) f)
+      naturality := fun {f g q η} hη => by
+        simp only [precomp_obj, precomp_map, Functor.id_obj, Functor.id_map, Iso.trans_hom,
+          whiskerRightIso_hom, one_mul]
+        have h := super_interchange (R := R) (ζ_hom_mem (R := R) a) hη
+        rw [← Category.assoc, ← koszulSign_smul_smul 1 q (pi (R := R) a ◁ η ≫ _), ← h,
+          Linear.smul_comp, Category.assoc, leftUnitor_naturality R, koszulSign_smul (R := R),
+          Category.assoc, one_mul] }
 
 /-! ### Lemma 3.2 -/
 
