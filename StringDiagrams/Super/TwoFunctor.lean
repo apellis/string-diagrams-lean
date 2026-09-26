@@ -46,9 +46,10 @@ transformations are in `StringDiagrams.Super.TwoFunctorComp`.
 ## Elsewhere
 
 The category `2-𝔖ℭ𝔞𝔱` is in `StringDiagrams.Super.TwoSCat`, the 2-supercategory `𝔥𝔬𝔪(𝔄, 𝔅)`
-and 2-superequivalences of 2-supercategories in `StringDiagrams.Super.TwoHom`. The
+and 2-superequivalences of 2-supercategories in `StringDiagrams.Super.TwoHom`, and the
+coherence theorem for 2-supercategories in `StringDiagrams.Super.TwoStrictification`. The
 3-supercategory of 2-supercategories mentioned in Definition 2.2 (whose details the paper
-omits) and the coherence theorem for 2-supercategories are not formalized.
+omits) is not formalized.
 -/
 
 noncomputable section
