@@ -839,6 +839,394 @@ def extendHomSuperequivalence : Superequivalence R (extendHom F G) :=
 
 end TwoEnvelope
 
+/-! ## The canonical 2-superfunctor `𝕁` and restriction along it -/
+
+namespace TwoEnvelope
+
+open Envelope
+
+variable {R : Type w} [CommRing R]
+  {B : Type u₁} [BicategoryStruct.{w₁, v₁} B]
+  [∀ a b : B, Preadditive (a ⟶ b)] [∀ a b : B, Linear R (a ⟶ b)]
+  [∀ a b : B, Supercategory R (a ⟶ b)] [TwoSupercategory R B]
+
+/-- The 1-morphism `Π⁰F` of `𝔄_π`. -/
+def Jm {a b : B} (f : a ⟶ b) : (⟨a⟩ : TwoEnvelope R B) ⟶ ⟨b⟩ := Envelope.mk 0 f
+
+/-- The 2-morphism `x_0^0 : Π⁰F ⇒ Π⁰G` of `𝔄_π`. -/
+def J2 {a b : B} {f g : a ⟶ b} (η : f ⟶ g) : Jm (R := R) f ⟶ Jm g := Envelope.ofHom η
+
+omit [TwoSupercategory R B] in
+theorem Jm_eq {a b : B} (f : a ⟶ b) : Jm (R := R) f = (J R (a ⟶ b)).obj f := rfl
+
+omit [TwoSupercategory R B] in
+theorem J2_eq {a b : B} {f g : a ⟶ b} (η : f ⟶ g) : J2 (R := R) η = (J R (a ⟶ b)).map η := rfl
+
+omit [TwoSupercategory R B] in
+theorem J2_whiskerRight {a b c : B} {f g : a ⟶ b} (η : f ⟶ g) (h : b ⟶ c) :
+    J2 (R := R) η ▷ Jm h = J2 (η ▷ h) :=
+  hom_ext (TwoEnvelope.toHom_whiskerRight_of_par_zero _ _ rfl)
+
+omit [TwoSupercategory R B] in
+theorem J2_whiskerLeft {a b c : B} (f : a ⟶ b) {g h : b ⟶ c} (η : g ⟶ h) :
+    Jm (R := R) f ◁ J2 η = J2 (f ◁ η) :=
+  hom_ext (TwoEnvelope.toHom_whiskerLeft_of_par_zero _ rfl _)
+
+variable (R B) in
+/-- The canonical strict 2-superfunctor `𝕁 : 𝔄 → 𝔄_π` (after Lemma 4.5): the identity on
+objects, `F ↦ Π⁰F`, `x ↦ x_0^0`, with identity coherence maps. -/
+def twoJ : TwoSuperfunctor R B (TwoEnvelope R B) where
+  obj a := ⟨a⟩
+  map f := Jm f
+  map₂ η := J2 η
+  map₂_id _ := rfl
+  map₂_comp _ _ := rfl
+  map₂_add _ _ := rfl
+  map₂_smul _ _ := rfl
+  map₂_mem {a b _ _ _ _} hη := IsSuperfunctor.map_mem (F := J R (a ⟶ b)) hη
+  mapComp f g := isoOfIso (Iso.refl (f ≫ g))
+  mapId a := isoOfIso (Iso.refl (𝟙 a))
+  mapComp_hom_mem f g := by
+    rw [mem_parity_iff]
+    exact id_mem (f ≫ g)
+  mapId_hom_mem a := id_mem (𝟙 a)
+  mapComp_naturality_left η g := by
+    rw [J2_whiskerRight]
+    exact (Category.comp_id _).trans (Category.id_comp _).symm
+  mapComp_naturality_right f _ _ η := by
+    rw [J2_whiskerLeft]
+    exact (Category.comp_id _).trans (Category.id_comp _).symm
+  map₂_associator f g h := by
+    apply hom_ext
+    rw [toHom_comp, toHom_comp, toHom_comp, toHom_comp,
+      TwoEnvelope.toHom_whiskerLeft_of_par_zero _ rfl,
+      TwoEnvelope.toHom_whiskerRight_of_par_zero _ _ rfl]
+    show f ◁ 𝟙 (g ≫ h) ≫ 𝟙 _ ≫ (associator f g h).inv = (associator f g h).inv ≫ 𝟙 (f ≫ g) ▷ h ≫ 𝟙 _
+    rw [whiskerLeft_id (R := R), id_whiskerRight (R := R)]
+    simp
+  map₂_leftUnitor f := by
+    apply hom_ext
+    rw [toHom_comp, toHom_comp, TwoEnvelope.toHom_whiskerRight_of_par_zero _ _ rfl]
+    show 𝟙 (𝟙 _) ▷ f ≫ 𝟙 _ ≫ (leftUnitor f).hom = (leftUnitor f).hom
+    rw [id_whiskerRight (R := R)]
+    simp
+  map₂_rightUnitor f := by
+    apply hom_ext
+    rw [toHom_comp, toHom_comp, TwoEnvelope.toHom_whiskerLeft_of_par_zero _ rfl]
+    show f ◁ 𝟙 (𝟙 _) ≫ 𝟙 _ ≫ (rightUnitor f).hom = (rightUnitor f).hom
+    rw [whiskerLeft_id (R := R)]
+    simp
+
+variable {C : Type u₂} [BicategoryStruct.{w₂, v₂} C]
+  [∀ a b : C, Preadditive (a ⟶ b)] [∀ a b : C, Linear R (a ⟶ b)]
+  [∀ a b : C, Supercategory R (a ⟶ b)] [TwoSupercategory R C]
+
+/-- The restriction `𝕋𝕁 : 𝔄 → 𝔅` of a 2-superfunctor `𝕋 : 𝔄_π → 𝔅`. -/
+def restrict (T : TwoSuperfunctor R (TwoEnvelope R B) C) : TwoSuperfunctor R B C where
+  obj a := T.obj ⟨a⟩
+  map f := T.map (Jm f)
+  map₂ η := T.map₂ (J2 η)
+  map₂_id f := T.map₂_id (Jm f)
+  map₂_comp η θ := T.map₂_comp (J2 η) (J2 θ)
+  map₂_add η θ := T.map₂_add (J2 η) (J2 θ)
+  map₂_smul r η := T.map₂_smul r (J2 η)
+  map₂_mem {a b _ _ _ _} hη := T.map₂_mem (IsSuperfunctor.map_mem (F := J R (a ⟶ b)) hη)
+  mapComp f g := T.mapComp (Jm f) (Jm g)
+  mapId a := T.mapId ⟨a⟩
+  mapComp_hom_mem f g := T.mapComp_hom_mem (Jm f) (Jm g)
+  mapId_hom_mem a := T.mapId_hom_mem ⟨a⟩
+  mapComp_naturality_left η g := by
+    have := T.mapComp_naturality_left (J2 (R := R) η) (Jm g)
+    rw [J2_whiskerRight] at this
+    exact this
+  mapComp_naturality_right f _ _ η := by
+    have := T.mapComp_naturality_right (Jm (R := R) f) (J2 η)
+    rw [J2_whiskerLeft] at this
+    exact this
+  map₂_associator f g h := T.map₂_associator (Jm f) (Jm g) (Jm h)
+  map₂_leftUnitor f := T.map₂_leftUnitor (Jm f)
+  map₂_rightUnitor f := T.map₂_rightUnitor (Jm f)
+
+variable [∀ a b : C, PiSupercategory R (a ⟶ b)]
+
+section XComp
+
+variable {F' G' : TwoSuperfunctor R (TwoEnvelope R B) C} (X : ∀ a, F'.obj a ⟶ G'.obj a)
+  (x : ∀ {a b : TwoEnvelope R B} (f : a ⟶ b), F'.map f ≫ X b ⟶ X a ≫ G'.map f)
+  (x_mem : ∀ {a b : TwoEnvelope R B} (f : a ⟶ b), x f ∈ parity (R := R) _ _ 0)
+  (nat : ∀ {a b : TwoEnvelope R B} {f g : a ⟶ b} (η : f ⟶ g),
+    F'.map₂ η ▷ X b ≫ x g = x f ≫ X a ◁ G'.map₂ η)
+
+/-- The left-hand side of the first coherence diagram of Definition 2.2(iii). -/
+def xcompL {a b c : TwoEnvelope R B} (f : a ⟶ b) (g : b ⟶ c) :
+    (F'.map f ≫ F'.map g) ≫ X c ⟶ X a ≫ G'.map (f ≫ g) :=
+  (F'.mapComp f g).hom ▷ X c ≫ x (f ≫ g)
+
+/-- The right-hand side of the first coherence diagram of Definition 2.2(iii). -/
+def xcompR {a b c : TwoEnvelope R B} (f : a ⟶ b) (g : b ⟶ c) :
+    (F'.map f ≫ F'.map g) ≫ X c ⟶ X a ≫ G'.map (f ≫ g) :=
+  (associator (F'.map f) (F'.map g) (X c)).hom ≫ F'.map f ◁ x g ≫
+    (associator (F'.map f) (X b) (G'.map g)).inv ≫ x f ▷ G'.map g ≫
+      (associator (X a) (G'.map f) (G'.map g)).hom ≫ X a ◁ (G'.mapComp f g).hom
+
+omit [TwoSupercategory R B] [∀ a b : C, PiSupercategory R (a ⟶ b)] in
+include nat in
+theorem xcompL_nat₁ {a b c : TwoEnvelope R B} {f f' : a ⟶ b} (u : f ⟶ f') (g : b ⟶ c) :
+    (F'.map₂ u ▷ F'.map g) ▷ X c ≫ xcompL X x f' g = xcompL X x f g ≫ X a ◁ G'.map₂ (u ▷ g) := by
+  simp only [xcompL]
+  rw [comp_whiskerRight_comp R, F'.mapComp_naturality_left, ← comp_whiskerRight_comp R, nat]
+  simp only [Category.assoc]
+
+omit [TwoSupercategory R B] [∀ a b : C, PiSupercategory R (a ⟶ b)] in
+include x_mem nat in
+theorem xcompR_nat₁ {a b c : TwoEnvelope R B} {f f' : a ⟶ b} (u : f ⟶ f') (g : b ⟶ c) :
+    (F'.map₂ u ▷ F'.map g) ▷ X c ≫ xcompR X x f' g = xcompR X x f g ≫ X a ◁ G'.map₂ (u ▷ g) := by
+  simp only [xcompR]
+  rw [associator_naturality_left_assoc R,
+    reassoc_of% (interchange_even_right R (F'.map₂ u) (x_mem g)),
+    associator_inv_naturality_left_assoc R, comp_whiskerRight_comp R, nat,
+    ← comp_whiskerRight_comp R, associator_naturality_middle_assoc R,
+    ← whiskerLeft_comp (R := R), G'.mapComp_naturality_left, whiskerLeft_comp (R := R)]
+  simp only [Category.assoc]
+
+omit [TwoSupercategory R B] [∀ a b : C, PiSupercategory R (a ⟶ b)] in
+include nat in
+theorem xcompL_nat₂ {a b c : TwoEnvelope R B} (f : a ⟶ b) {g g' : b ⟶ c} (v : g ⟶ g') :
+    (F'.map f ◁ F'.map₂ v) ▷ X c ≫ xcompL X x f g' = xcompL X x f g ≫ X a ◁ G'.map₂ (f ◁ v) := by
+  simp only [xcompL]
+  rw [comp_whiskerRight_comp R, F'.mapComp_naturality_right, ← comp_whiskerRight_comp R, nat]
+  simp only [Category.assoc]
+
+omit [TwoSupercategory R B] [∀ a b : C, PiSupercategory R (a ⟶ b)] in
+include x_mem nat in
+theorem xcompR_nat₂ {a b c : TwoEnvelope R B} (f : a ⟶ b) {g g' : b ⟶ c} (v : g ⟶ g') :
+    (F'.map f ◁ F'.map₂ v) ▷ X c ≫ xcompR X x f g' = xcompR X x f g ≫ X a ◁ G'.map₂ (f ◁ v) := by
+  simp only [xcompR]
+  rw [associator_naturality_middle_assoc R, whiskerLeft_comp_comp R, nat,
+    ← whiskerLeft_comp_comp R, associator_inv_naturality_right_assoc R,
+    ← reassoc_of% (interchange_even_left R (x_mem f) (G'.map₂ v)),
+    associator_naturality_right_assoc R, ← whiskerLeft_comp (R := R),
+    G'.mapComp_naturality_right, whiskerLeft_comp (R := R)]
+  simp only [Category.assoc]
+
+include x_mem nat in
+/-- The first coherence diagram of Definition 2.2(iii) holds for a natural family of even
+2-morphisms between 2-superfunctors out of `𝔄_π` as soon as it holds for 1-morphisms `Π⁰F`,
+`Π⁰G`. -/
+theorem xcomp_of_J
+    (h : ∀ {a b c : B} (f : a ⟶ b) (g : b ⟶ c), xcompL X x (Jm (R := R) f) (Jm g) =
+      xcompR X x (Jm (R := R) f) (Jm g))
+    {a b c : TwoEnvelope R B} (f : a ⟶ b) (g : b ⟶ c) : xcompL X x f g = xcompR X x f g := by
+  have e₁ : Epi ((F'.map₂ (shiftIso f).hom ▷ F'.map g) ▷ X c) :=
+    (inferInstance : Epi (whiskerRightIso (R := R) (whiskerRightIso (R := R)
+      (F'.map₂Iso (shiftIso f)) _) _).hom)
+  refine eq_of_conj_hom _ e₁ _ (xcompL_nat₁ X x nat (shiftIso f).hom g)
+    (xcompR_nat₁ X x x_mem nat (shiftIso f).hom g) ?_
+  have e₂ : Epi ((F'.map ((J R _).obj f.obj) ◁ F'.map₂ (shiftIso g).hom) ▷ X c) :=
+    (inferInstance : Epi (whiskerRightIso (R := R) (whiskerLeftIso (R := R) _
+      (F'.map₂Iso (shiftIso g))) _).hom)
+  refine eq_of_conj_hom _ e₂ _ (xcompL_nat₂ X x nat _ (shiftIso g).hom)
+    (xcompR_nat₂ X x x_mem nat _ (shiftIso g).hom) ?_
+  exact h f.obj g.obj
+
+end XComp
+
+/-! ## Theorem 4.9, even density -/
+
+omit [TwoSupercategory R B] [∀ a b : C, PiSupercategory R (a ⟶ b)] in
+variable (R) in
+include R in
+/-- The coherence of the identity 2-natural transformation, with a 2-morphism `φ` attached. -/
+theorem unit_coherence {a b c : C} (f : a ⟶ b) (g : b ⟶ c) {h : a ⟶ c} (φ : f ≫ g ⟶ h) :
+    φ ▷ 𝟙 c ≫ (rightUnitor h).hom ≫ (leftUnitor h).inv =
+      (associator f g (𝟙 c)).hom ≫ f ◁ ((rightUnitor g).hom ≫ (leftUnitor g).inv) ≫
+        (associator f (𝟙 b) g).inv ≫ ((rightUnitor f).hom ≫ (leftUnitor f).inv) ▷ g ≫
+          (associator (𝟙 a) f g).hom ≫ 𝟙 a ◁ φ := by
+  have tri : (associator f (𝟙 b) g).inv ≫ (rightUnitor f).hom ▷ g = f ◁ (leftUnitor g).hom := by
+    rw [← TwoSupercategory.triangle (R := R), Iso.inv_hom_id_assoc]
+  rw [rightUnitor_naturality_assoc R, leftUnitor_inv_naturality R, whiskerLeft_comp (R := R),
+    comp_whiskerRight (R := R)]
+  simp only [Category.assoc]
+  rw [reassoc_of% tri, whiskerLeft_inv_hom'_assoc R, ← Category.assoc ((leftUnitor f).inv ▷ g),
+    ← leftUnitor_comp_inv R f g, ← Category.assoc (associator f g (𝟙 c)).hom,
+    ← rightUnitor_comp R f g]
+
+variable (T : TwoSuperfunctor R (TwoEnvelope R B) C)
+
+variable (T : TwoSuperfunctor R (TwoEnvelope R B) C)
+
+theorem extendRestrict_obj (a : TwoEnvelope R B) : (extend (restrict T)).obj a = T.obj a := rfl
+
+/-- The superfunctor `𝕋 : ℋom_{𝔄_π}(λ, μ) → ℋom_𝔅(𝕋λ, 𝕋μ)`, as a superfunctor out of the
+Π-envelope `ℋom_𝔄(λ, μ)_π`. -/
+abbrev homFunctor (a b : TwoEnvelope R B) : Envelope R (a.as ⟶ b.as) ⥤ (T.obj a ⟶ T.obj b) :=
+  T.mapFunctor a b
+
+instance (a b : TwoEnvelope R B) : (homFunctor T a b).Additive :=
+  inferInstanceAs (T.mapFunctor a b).Additive
+
+instance (a b : TwoEnvelope R B) : (homFunctor T a b).Linear R :=
+  inferInstanceAs ((T.mapFunctor a b).Linear R)
+
+instance (a b : TwoEnvelope R B) : IsSuperfunctor R (homFunctor T a b) :=
+  inferInstanceAs (IsSuperfunctor R (T.mapFunctor a b))
+
+/-- The even 2-isomorphism `(𝕋𝕁)~(ΠᵃF) ≅ 𝕋(ΠᵃF)` of Theorem 4.3 applied to the superfunctor
+`𝕋 : ℋom(λ, μ) → ℋom(𝕋λ, 𝕋μ)`. -/
+def extendRestrictApp {a b : TwoEnvelope R B} (f : a ⟶ b) :
+    (extend (restrict T)).map f ⟶ T.map f :=
+  (extendRestrictIso (homFunctor T a b)).hom.app f
+
+theorem extendRestrictApp_mem {a b : TwoEnvelope R B} (f : a ⟶ b) :
+    extendRestrictApp T f ∈ parity (R := R) _ _ 0 :=
+  extendRestrictIso_hom_mem (homFunctor T a b) f
+
+theorem extendRestrictApp_naturality {a b : TwoEnvelope R B} {f g : a ⟶ b} (η : f ⟶ g) :
+    (extend (restrict T)).map₂ η ≫ extendRestrictApp T g = extendRestrictApp T f ≫ T.map₂ η :=
+  (extendRestrictIso (homFunctor T a b)).hom.naturality η
+
+theorem extendRestrictApp_J {a b : TwoEnvelope R B} (f : a.as ⟶ b.as) :
+    extendRestrictApp T ((J R (a.as ⟶ b.as)).obj f : a ⟶ b) = 𝟙 _ :=
+  extendRestrictIso_hom_app_J (H := homFunctor T a b) f
+
+/-- The components `(𝕋𝕁)~F ≫ 1 ⟶ 1 ≫ 𝕋F` of the 2-natural isomorphism `(𝕋𝕁)~ ⇒ 𝕋`. -/
+def extendRestrictX {a b : TwoEnvelope R B} (f : a ⟶ b) :
+    (extend (restrict T)).map f ≫ 𝟙 (T.obj b) ⟶ 𝟙 (T.obj a) ≫ T.map f :=
+  (rightUnitor _).hom ≫ extendRestrictApp T f ≫ (leftUnitor _).inv
+
+theorem extendRestrictX_mem {a b : TwoEnvelope R B} (f : a ⟶ b) :
+    extendRestrictX T f ∈ parity (R := R) _ _ 0 := by
+  have := comp_mem (rightUnitor_hom_mem (R := R) _)
+    (comp_mem (extendRestrictApp_mem T f) (inv_mem _ (leftUnitor_hom_mem (R := R) _)))
+  simpa using this
+
+theorem extendRestrictX_naturality {a b : TwoEnvelope R B} {f g : a ⟶ b} (η : f ⟶ g) :
+    (extend (restrict T)).map₂ η ▷ 𝟙 (T.obj b) ≫ extendRestrictX T g =
+      extendRestrictX T f ≫ 𝟙 (T.obj a) ◁ T.map₂ η := by
+  simp only [extendRestrictX]
+  rw [rightUnitor_naturality_assoc R, reassoc_of% (extendRestrictApp_naturality T η),
+    leftUnitor_inv_naturality R]
+  simp only [Category.assoc]
+
+/-- **Theorem 4.9**, even density: every 2-superfunctor `𝕋 : 𝔄_π → 𝔅` is isomorphic to the
+extension `(𝕋𝕁)~` of its restriction, by the 2-natural transformation with identity
+1-morphisms and 2-morphisms the even isomorphisms of Theorem 4.3. -/
+def extendRestrictNatTrans : TwoNatTrans (extend (restrict T)) T where
+  X a := 𝟙 (T.obj a)
+  x f := extendRestrictX T f
+  x_mem f := extendRestrictX_mem T f
+  naturality η := extendRestrictX_naturality T η
+  x_comp f g := xcomp_of_J (F' := extend (restrict T)) (G' := T) (fun a => 𝟙 (T.obj a)) (fun f => extendRestrictX T f)
+    (fun f => extendRestrictX_mem T f) (fun η => extendRestrictX_naturality T η)
+    (fun {a b c} f g => by
+      have h₁ : (extendComp (restrict T) (Jm (R := R) f) (Jm g)).hom =
+          (T.mapComp (Jm f) (Jm g)).hom :=
+        extendComp_J (restrict T) (a := ⟨a⟩) (b := ⟨b⟩) (c := ⟨c⟩) f g
+      have h₂ : extendRestrictApp T (Jm (R := R) f ≫ Jm g) = 𝟙 _ :=
+        extendRestrictApp_J T (a := ⟨a⟩) (b := ⟨c⟩) (f ≫ g)
+      have h₃ : extendRestrictApp T (Jm (R := R) f) = 𝟙 _ :=
+        extendRestrictApp_J T (a := ⟨a⟩) (b := ⟨b⟩) f
+      have h₄ : extendRestrictApp T (Jm (R := R) g) = 𝟙 _ :=
+        extendRestrictApp_J T (a := ⟨b⟩) (b := ⟨c⟩) g
+      simp only [xcompL, xcompR, extendRestrictX, h₂, h₃, h₄, Category.id_comp]
+      erw [h₁]
+      exact unit_coherence R _ _ _) f g
+  x_id a := by
+    have h : extendRestrictApp T (𝟙 a) = 𝟙 _ := extendRestrictApp_J T (𝟙 a.as)
+    show _ ≫ _ ≫ _ ≫ (rightUnitor _).hom ≫ extendRestrictApp T (𝟙 a) ≫ (leftUnitor _).inv = _
+    rw [h, Category.id_comp, rightUnitor_naturality_assoc R]
+    erw [leftUnitor_inv_naturality R]
+    rw [unitors_inv_equal R]
+    simp only [Iso.hom_inv_id_assoc]
+    erw [unitors_inv_equal R (T.obj a), Iso.hom_inv_id_assoc]
+    rfl
+
+theorem extendRestrictNatTrans_isStrong : (extendRestrictNatTrans T).IsStrong := fun f => by
+  show IsIso ((rightUnitor _).hom ≫ extendRestrictApp T f ≫ (leftUnitor _).inv)
+  have : IsIso (extendRestrictApp T f) :=
+    inferInstanceAs (IsIso ((extendRestrictIso (homFunctor T _ _)).app f).hom)
+  infer_instance
+
+/-- The inverses `𝕋F ≅ (𝕋𝕁)~F` of the components of `extendRestrictApp`. -/
+def extendRestrictAppInv {a b : TwoEnvelope R B} (f : a ⟶ b) :
+    T.map f ⟶ (extend (restrict T)).map f :=
+  (extendRestrictIso (homFunctor T a b)).inv.app f
+
+theorem extendRestrictAppInv_J {a b : TwoEnvelope R B} (f : a.as ⟶ b.as) :
+    extendRestrictAppInv T ((J R (a.as ⟶ b.as)).obj f : a ⟶ b) = 𝟙 _ :=
+  extendRestrictIso_inv_app_J (H := homFunctor T a b) f
+
+/-- The components `𝕋F ≫ 1 ⟶ 1 ≫ (𝕋𝕁)~F` of the inverse 2-natural isomorphism. -/
+def extendRestrictInvX {a b : TwoEnvelope R B} (f : a ⟶ b) :
+    T.map f ≫ 𝟙 (T.obj b) ⟶ 𝟙 (T.obj a) ≫ (extend (restrict T)).map f :=
+  (rightUnitor _).hom ≫ extendRestrictAppInv T f ≫ (leftUnitor _).inv
+
+theorem extendRestrictInvX_mem {a b : TwoEnvelope R B} (f : a ⟶ b) :
+    extendRestrictInvX T f ∈ parity (R := R) _ _ 0 := by
+  have := comp_mem (rightUnitor_hom_mem (R := R) _)
+    (comp_mem (extendRestrictIso_inv_mem (H := homFunctor T a b) f)
+      (inv_mem _ (leftUnitor_hom_mem (R := R) _)))
+  simpa using this
+
+theorem extendRestrictInvX_naturality {a b : TwoEnvelope R B} {f g : a ⟶ b} (η : f ⟶ g) :
+    T.map₂ η ▷ 𝟙 (T.obj b) ≫ extendRestrictInvX T g =
+      extendRestrictInvX T f ≫ 𝟙 (T.obj a) ◁ (extend (restrict T)).map₂ η := by
+  simp only [extendRestrictInvX, extendRestrictAppInv]
+  rw [rightUnitor_naturality_assoc R]
+  erw [reassoc_of% ((extendRestrictIso (homFunctor T a b)).inv.naturality η)]
+  erw [leftUnitor_inv_naturality R]
+  simp only [Category.assoc]
+  rfl
+
+/-- **Theorem 4.9**, even density: the inverse 2-natural transformation `𝕋 ⇒ (𝕋𝕁)~`. -/
+def extendRestrictNatTransInv : TwoNatTrans T (extend (restrict T)) where
+  X a := 𝟙 (T.obj a)
+  x f := extendRestrictInvX T f
+  x_mem f := extendRestrictInvX_mem T f
+  naturality η := extendRestrictInvX_naturality T η
+  x_comp f g := xcomp_of_J (F' := T) (G' := extend (restrict T)) (fun a => 𝟙 (T.obj a))
+    (fun f => extendRestrictInvX T f)
+    (fun f => extendRestrictInvX_mem T f) (fun η => extendRestrictInvX_naturality T η)
+    (fun {a b c} f g => by
+      have h₁ : (extendComp (restrict T) (Jm (R := R) f) (Jm g)).hom =
+          (T.mapComp (Jm f) (Jm g)).hom :=
+        extendComp_J (restrict T) (a := ⟨a⟩) (b := ⟨b⟩) (c := ⟨c⟩) f g
+      have h₂ : extendRestrictAppInv T (Jm (R := R) f ≫ Jm g) = 𝟙 _ :=
+        extendRestrictAppInv_J T (a := ⟨a⟩) (b := ⟨c⟩) (f ≫ g)
+      have h₃ : extendRestrictAppInv T (Jm (R := R) f) = 𝟙 _ :=
+        extendRestrictAppInv_J T (a := ⟨a⟩) (b := ⟨b⟩) f
+      have h₄ : extendRestrictAppInv T (Jm (R := R) g) = 𝟙 _ :=
+        extendRestrictAppInv_J T (a := ⟨b⟩) (b := ⟨c⟩) g
+      simp only [xcompL, xcompR, extendRestrictInvX, h₂, h₃, h₄, Category.id_comp]
+      erw [h₁]
+      exact unit_coherence R _ _ _) f g
+  x_id a := by
+    have h : extendRestrictAppInv T (𝟙 a) = 𝟙 _ := extendRestrictAppInv_J T (𝟙 a.as)
+    show _ ≫ _ ≫ _ ≫ (rightUnitor _).hom ≫ extendRestrictAppInv T (𝟙 a) ≫ (leftUnitor _).inv = _
+    rw [h, Category.id_comp]
+    erw [rightUnitor_naturality_assoc R]
+    erw [leftUnitor_inv_naturality R]
+    rw [unitors_inv_equal R]
+    simp only [Iso.hom_inv_id_assoc]
+    rfl
+
+theorem extendRestrictNatTransInv_isStrong : (extendRestrictNatTransInv T).IsStrong := fun f => by
+  show IsIso ((rightUnitor _).hom ≫ extendRestrictAppInv T f ≫ (leftUnitor _).inv)
+  have : IsIso (extendRestrictAppInv T f) :=
+    inferInstanceAs (IsIso ((extendRestrictIso (homFunctor T _ _)).app f).inv)
+  infer_instance
+
+/-- The components of `extendRestrictNatTrans` and `extendRestrictNatTransInv` are mutually
+inverse up to the unitors: `x_F ≫ λ ≫ ρ⁻¹ ≫ x'_F = ρ ≫ λ⁻¹`. -/
+theorem extendRestrictX_comp_inv {a b : TwoEnvelope R B} (f : a ⟶ b) :
+    extendRestrictX T f ≫ (leftUnitor _).hom ≫ (rightUnitor _).inv ≫ extendRestrictInvX T f =
+      (rightUnitor _).hom ≫ (leftUnitor _).inv := by
+  simp only [extendRestrictX, extendRestrictInvX, extendRestrictApp, extendRestrictAppInv,
+    Category.assoc, Iso.inv_hom_id_assoc, Iso.hom_inv_id_assoc]
+  rw [← NatTrans.comp_app_assoc, Iso.hom_inv_id, NatTrans.id_app, Category.id_comp]
+
+end TwoEnvelope
+
 end StringDiagrams
 
 end

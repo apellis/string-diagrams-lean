@@ -22,6 +22,7 @@ import StringDiagrams.Super.MonoidalEnvelope
 import StringDiagrams.Super.MonoidalPi
 import StringDiagrams.Super.TwoEnvelope
 import StringDiagrams.Super.MonoidalUniversal
+import StringDiagrams.Super.TwoEnvelopeUniversal
 import StringDiagrams.Super.FunctorCategory
 import StringDiagrams.Super.SCat
 import StringDiagrams.Super.UnderlyingBicategory
