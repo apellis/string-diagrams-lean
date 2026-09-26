@@ -826,7 +826,156 @@ def yoneda : TwoSuperfunctor R B (TwoStrictification R B) where
         zmod2_one_ne_zero, TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
         Superfunctor.map, Functor.map_zero]
 
+@[simp] theorem yoneda_obj (a : B) : (yoneda R B).obj a = ⟨a⟩ := rfl
+
+@[simp] theorem yoneda_map {a b : B} (f : a ⟶ b) : (yoneda R B).map f = yonedaMap f := rfl
+
+@[simp] theorem yoneda_map₂ {a b : B} {f f' : a ⟶ b} (η : f ⟶ f') :
+    (yoneda R B).map₂ η = yonedaMap₂ η := rfl
+
+/-! ## `yoneda` is a local superequivalence -/
+
+section FullyFaithful
+
+variable {a b : B} {f f' : a ⟶ b}
+
+/-- A 2-morphism `θ : (- ≫ f) ⇒ (- ≫ f')` of the strictification is `- ◁ η` for
+`η = l_{f'} ∘ θ_a(1_a) ∘ l_f⁻¹` (componentwise in the parity). -/
+theorem yoneda_app_eq (θ : (yonedaMap (R := R) f : (⟨a⟩ : TwoStrictification R B) ⟶ ⟨b⟩) ⟶
+    yonedaMap f') (p : ZMod 2) {c : B} (u : c ⟶ a) :
+    (θ.1 c).app p u =
+      u ◁ ((leftUnitor f).inv ≫ (θ.1 a).app p (𝟙 a) ≫ (leftUnitor f').hom) := by
+  have tri : ∀ g : a ⟶ b,
+      u ◁ (leftUnitor g).hom = (associator u (𝟙 a) g).inv ≫ (rightUnitor u).hom ▷ g := by
+    intro g
+    rw [← TwoSupercategory.triangle (R := R), Iso.inv_hom_id_assoc]
+  have hn : (rightUnitor u).hom ▷ f ≫ (θ.1 c).app p u =
+      (θ.1 c).app p (u ≫ 𝟙 a) ≫ (rightUnitor u).hom ▷ f' := by
+    have := (θ.1 c).naturality p (rightUnitor u).hom
+      (TwoSupercategory.rightUnitor_hom_mem (R := R) u)
+    rwa [koszulSign_zero_right, one_smul] at this
+  have hc : (associator u (𝟙 a) f).inv ≫ (θ.1 c).app p (u ≫ 𝟙 a) =
+      u ◁ (θ.1 a).app p (𝟙 a) ≫ (associator u (𝟙 a) f').inv := θ.2 p u (𝟙 a)
+  have key : u ◁ (leftUnitor f).hom ≫ (θ.1 c).app p u =
+      u ◁ (θ.1 a).app p (𝟙 a) ≫ u ◁ (leftUnitor f').hom := by
+    rw [tri f, Category.assoc, hn, ← Category.assoc, hc, Category.assoc, ← tri f']
+  rw [TwoSupercategory.whiskerLeft_comp (R := R), TwoSupercategory.whiskerLeft_comp (R := R),
+    ← key, ← Category.assoc, TwoSupercategory.whiskerLeft_inv_hom (R := R), Category.id_comp]
+
+/-- The preimage of `θ : (- ≫ f) ⇒ (- ≫ f')` under `yoneda`. -/
+def yonedaPreimage (θ : (yonedaMap (R := R) f : (⟨a⟩ : TwoStrictification R B) ⟶ ⟨b⟩) ⟶
+    yonedaMap f') : f ⟶ f' :=
+  (leftUnitor f).inv ≫ ((θ.1 a).app 0 (𝟙 a) + (θ.1 a).app 1 (𝟙 a)) ≫ (leftUnitor f').hom
+
+theorem proj_yonedaPreimage
+    (θ : (yonedaMap (R := R) f : (⟨a⟩ : TwoStrictification R B) ⟶ ⟨b⟩) ⟶ yonedaMap f')
+    (p : ZMod 2) :
+    proj R p (yonedaPreimage θ) =
+      (leftUnitor f).inv ≫ (θ.1 a).app p (𝟙 a) ≫ (leftUnitor f').hom := by
+  have hmem : ∀ q, (leftUnitor f).inv ≫ (θ.1 a).app q (𝟙 a) ≫ (leftUnitor f').hom ∈
+      parity (R := R) f f' q := by
+    intro q
+    have := comp_mem (inv_mem _ (TwoSupercategory.leftUnitor_hom_mem (R := R) f))
+      (comp_mem ((θ.1 a).app_mem q (𝟙 a)) (TwoSupercategory.leftUnitor_hom_mem (R := R) f'))
+    simpa using this
+  have e : yonedaPreimage θ = (leftUnitor f).inv ≫ (θ.1 a).app 0 (𝟙 a) ≫ (leftUnitor f').hom +
+      (leftUnitor f).inv ≫ (θ.1 a).app 1 (𝟙 a) ≫ (leftUnitor f').hom := by
+    simp [yonedaPreimage, Preadditive.add_comp, Preadditive.comp_add]
+  rcases parity_eq_zero_or_one p with rfl | rfl
+  · exact proj_eq_of_add e (hmem 0) (hmem 1)
+  · rw [add_comm] at e
+    exact proj_eq_of_add e (hmem 1) (hmem 0)
+
+end FullyFaithful
+
+/-- **Brundan–Ellis, after Definition 2.2.** `yoneda` is fully faithful on morphism
+supercategories. -/
+def yonedaFullyFaithful (a b : B) : ((yoneda R B).mapFunctor a b).FullyFaithful where
+  preimage θ := yonedaPreimage θ
+  map_preimage θ := hom2_ext' fun c p u => by
+    change u ◁ proj R p (yonedaPreimage θ) = _
+    rw [proj_yonedaPreimage]
+    exact (yoneda_app_eq θ p u).symm
+  preimage_map {f f'} η := by
+    change (leftUnitor f).inv ≫ (𝟙 a ◁ proj R 0 η + 𝟙 a ◁ proj R 1 η) ≫ (leftUnitor f').hom = η
+    rw [← TwoSupercategory.whiskerLeft_add (R := R), proj_add_proj,
+      TwoSupercategory.leftUnitor_naturality R, Iso.inv_hom_id_assoc]
+
+instance (a b : B) : ((yoneda R B).mapFunctor a b).Full := (yonedaFullyFaithful a b).full
+
+instance (a b : B) : ((yoneda R B).mapFunctor a b).Faithful := (yonedaFullyFaithful a b).faithful
+
+/-- The even 2-isomorphism `- ≫ F_a(1_a) ≅ F`, with components `F(r_u) ∘ γ_{u,1}`. -/
+def yonedaObjIso {a b : B} (F : Hom1 (⟨a⟩ : TwoStrictification R B) ⟨b⟩) :
+    (yonedaMap (R := R) ((Hom1.F F a).obj (𝟙 a)) : Hom1 _ _) ≅ F :=
+  isoMk2 (fun c u => Hom1.γ F u (𝟙 a) ≪≫ (Hom1.F F c).mapIso (rightUnitor u))
+    (fun c u => by
+      simpa using comp_mem (Hom1.γ_mem F u (𝟙 a))
+        ((Hom1.sf F c).map_mem (TwoSupercategory.rightUnitor_hom_mem (R := R) u)))
+    (fun c {u u'} θ => by
+      change θ ▷ (Hom1.F F a).obj (𝟙 a) ≫ (Hom1.γ F u' (𝟙 a)).hom ≫
+          (Hom1.F F c).map (rightUnitor u').hom =
+        ((Hom1.γ F u (𝟙 a)).hom ≫ (Hom1.F F c).map (rightUnitor u).hom) ≫ (Hom1.F F c).map θ
+      rw [Hom1.γ_naturality_left_assoc, Category.assoc, ← Functor.map_comp, ← Functor.map_comp,
+        TwoSupercategory.rightUnitor_naturality R])
+    (fun {c d} h u => by
+      change (associator h u ((Hom1.F F a).obj (𝟙 a))).inv ≫ (Hom1.γ F (h ≫ u) (𝟙 a)).hom ≫
+          (Hom1.F F d).map (rightUnitor (h ≫ u)).hom =
+        h ◁ ((Hom1.γ F u (𝟙 a)).hom ≫ (Hom1.F F c).map (rightUnitor u).hom) ≫
+          (Hom1.γ F h u).hom
+      rw [← cancel_epi (associator h u ((Hom1.F F a).obj (𝟙 a))).hom, Iso.hom_inv_id_assoc,
+        TwoSupercategory.whiskerLeft_comp (R := R), Category.assoc,
+        Hom1.γ_naturality_right, Hom1.γ_assoc_assoc, ← Functor.map_comp,
+        TwoSupercategory.coherence_rightUnitor_comp R])
+
+theorem yonedaObjIso_hom_val_app {a b : B} (F : Hom1 (⟨a⟩ : TwoStrictification R B) ⟨b⟩)
+    (c : B) (p : ZMod 2) (u : c ⟶ a) :
+    (((yonedaObjIso F).hom).1 c).app p u =
+      if p = 0 then (Hom1.γ F u (𝟙 a)).hom ≫ (Hom1.F F c).map (rightUnitor u).hom else 0 :=
+  rfl
+
+theorem yonedaObjIso_hom_mem {a b : B} (F : Hom1 (⟨a⟩ : TwoStrictification R B) ⟨b⟩) :
+    (yonedaObjIso F).hom ∈ parity (R := R) _ _ 0 := fun c => by
+  rw [Superfunctor.mem_parity_iff]
+  funext u
+  rw [zero_add, yonedaObjIso_hom_val_app, if_neg zmod2_one_ne_zero]
+  rfl
+
+/-- **Brundan–Ellis, after Definition 2.2.** `yoneda` is evenly dense on morphism
+supercategories. -/
+theorem yoneda_evenlyDense (a b : B) : EvenlyDense R ((yoneda R B).mapFunctor a b) :=
+  fun F => ⟨(Hom1.F F a).obj (𝟙 a), yonedaObjIso F, yonedaObjIso_hom_mem F⟩
+
+/-- **Brundan–Ellis, after Definition 2.2.** `yoneda` induces superequivalences
+`ℋom_𝔄(a, b) → ℋom(a, b)` of morphism supercategories. -/
+def yonedaSuperequivalence (a b : B) : Superequivalence R ((yoneda R B).mapFunctor a b) :=
+  Superequivalence.ofFullyFaithful _ (yoneda_evenlyDense a b)
+
+/-- **Brundan–Ellis, after Definition 2.2.** `yoneda : 𝔄 → TwoStrictification R 𝔄` is a
+2-superequivalence in the second formulation of Definition 2.2: a superequivalence on each
+morphism supercategory, and bijective (in particular essentially surjective) on objects. -/
+theorem yoneda_isLocalTwoSuperequivalence : (yoneda R B).IsLocalTwoSuperequivalence where
+  hom a b := ⟨yonedaSuperequivalence a b⟩
+  essSurj c := ⟨c.as, TwoSupercategory.Superequivalent.refl (R := R) c⟩
+
 end TwoStrictification
+
+namespace TwoSupercategory
+
+/-- **Coherence theorem for 2-supercategories** (Brundan–Ellis, after Definition 2.2): every
+2-supercategory is 2-superequivalent to a strict 2-supercategory, in the second formulation of
+2-superequivalence of Definition 2.2 (a 2-superfunctor inducing superequivalences on morphism
+supercategories and essentially surjective up to superequivalence on objects). -/
+theorem exists_strict_localTwoSuperequivalent :
+    ∃ (C : Type u₁) (_ : BicategoryStruct.{max u₁ v₁ w₁, max u₁ v₁ w₁} C)
+      (_ : ∀ a b : C, Preadditive (a ⟶ b)) (_ : ∀ a b : C, Linear R (a ⟶ b))
+      (_ : ∀ a b : C, Supercategory R (a ⟶ b)) (_ : TwoSupercategory R C),
+      BicategoryStruct.Strict C ∧ TwoSuperfunctor.LocalTwoSuperequivalent R B C :=
+  ⟨TwoStrictification R B, inferInstance, inferInstance, inferInstance, inferInstance,
+    inferInstance, inferInstance,
+    ⟨TwoStrictification.yoneda R B, TwoStrictification.yoneda_isLocalTwoSuperequivalence⟩⟩
+
+end TwoSupercategory
 
 end StringDiagrams
 
