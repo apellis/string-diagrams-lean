@@ -94,6 +94,7 @@ variable (a b : B)
 /-- The inclusion of `K₀ (a ⟶ b)`, the summand `1_b K₀ 1_a`. -/
 def of : K₀ (a ⟶ b) →+ K₀Ring B := DirectSum.of (fun p : B × B => K₀ (p.1 ⟶ p.2)) (a, b)
 
+omit [PreadditiveBicategory B] in
 theorem of_injective : Function.Injective (of a b) := DirectSum.of_injective (a, b)
 
 variable {a b}
@@ -101,17 +102,21 @@ variable {a b}
 /-- The class `[f]` of a 1-morphism. -/
 def mk (f : a ⟶ b) : K₀Ring B := of a b (K₀.mk f)
 
+omit [PreadditiveBicategory B] in
 theorem mk_eq_mk_of_iso {f f' : a ⟶ b} (e : f ≅ f') : mk f = mk f' := by
   rw [mk, mk, K₀.mk_eq_mk_of_iso e]
 
+omit [PreadditiveBicategory B] in
 theorem mk_biprod (f f' : a ⟶ b) : mk (f ⊞ f') = mk f + mk f' := by
   rw [mk, mk, mk, K₀.mk_biprod, map_add]
 
+omit [PreadditiveBicategory B] in
 /-- Additive homomorphisms out of `K₀Ring B` are determined by their values on the summands. -/
 theorem addHom_ext {G : Type w₁} [AddCommGroup G] {φ ψ : K₀Ring B →+ G}
     (h : ∀ (a b : B) (x : K₀ (a ⟶ b)), φ (of a b x) = ψ (of a b x)) : φ = ψ :=
   DirectSum.addHom_ext fun p x => h p.1 p.2 x
 
+omit [PreadditiveBicategory B] in
 /-- Induction on elements of `K₀Ring B`. -/
 @[elab_as_elim]
 theorem induction_on {P : K₀Ring B → Prop} (x : K₀Ring B) (zero : P 0)
@@ -125,6 +130,7 @@ theorem induction_on {P : K₀Ring B → Prop} (x : K₀Ring B) (zero : P 0)
 def castHom {c d a : B} (h : d = a) : K₀ (c ⟶ d) →+ K₀ (c ⟶ a) := by
   subst h; exact AddMonoidHom.id _
 
+omit [PreadditiveBicategory B] in
 theorem castHom_rfl (c d : B) : castHom (c := c) (rfl : d = d) = AddMonoidHom.id _ := rfl
 
 variable (B) in
