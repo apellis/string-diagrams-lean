@@ -74,6 +74,23 @@ import StringDiagrams.Examples.PiEnvelope
 import StringDiagrams.Biadjunction.NestedCups
 import StringDiagrams.Biadjunction.PivotalInclusion
 import StringDiagrams.Examples.TwoStrandGenerator
+import StringDiagrams.Examples.OddTemperleyLieb.Basic
+import StringDiagrams.Examples.OddTemperleyLieb.Representation
+import StringDiagrams.Examples.OddTemperleyLieb.QuantumIntegers
+import StringDiagrams.Examples.OddTemperleyLieb.Dyck
+import StringDiagrams.Examples.OddTemperleyLieb.Words
+import StringDiagrams.Examples.OddTemperleyLieb.Canonical
+import StringDiagrams.Examples.OddTemperleyLieb.Independence
+import StringDiagrams.Examples.OddTemperleyLieb.Basis
+import StringDiagrams.Examples.OddTemperleyLieb.RightWhisker
+import StringDiagrams.Examples.OddTemperleyLieb.JonesWenzl
+import StringDiagrams.Examples.OddTemperleyLieb.HomSpaces
+import StringDiagrams.Examples.OddTemperleyLieb.Decomposition
+import StringDiagrams.Examples.OddTemperleyLieb.Splitting
+import StringDiagrams.Examples.OddTemperleyLieb.SKar
+import StringDiagrams.Examples.OddTemperleyLieb.KZero
+import StringDiagrams.Examples.OddTemperleyLieb.KZeroRing
+import StringDiagrams.Examples.OddTemperleyLieb.KZeroIso
 
 /-!
 # StringDiagrams
