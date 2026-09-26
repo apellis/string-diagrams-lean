@@ -397,6 +397,8 @@ theorem component_lof_of_ne {m n : ℤ} {X Y : S} (f : d.Fam R m X Y) (h : m ≠
     d.component n X Y (d.lof m X Y f) = 0 :=
   (DirectSum.component.of (M := fun m => d.Fam R m X Y) R n m f).trans (dif_neg h)
 
+variable {d}
+
 @[ext] theorem Hom.ext {X Y : S} {x y : d.Hom X Y}
     (h : ∀ m, d.component m X Y x = d.component m X Y y) : x = y :=
   DirectSum.ext (β := fun m => d.Fam R m X Y) h
@@ -415,6 +417,8 @@ theorem Hom.induction_on {X Y : S} {motive : d.Hom X Y → Prop} (x : d.Hom X Y)
 theorem Hom.linearMap_ext {X Y : S} {N : Type*} [AddCommGroup N] [Module R N]
     {φ ψ : d.Hom X Y →ₗ[R] N} (h : ∀ m f, φ (d.lof m X Y f) = ψ (d.lof m X Y f)) : φ = ψ :=
   DirectSum.linearMap_ext R fun m => LinearMap.ext fun f => h m f
+
+variable (d)
 
 theorem lof_congr {X Y : S} {i j : ℤ} (h : i = j) {a : d.Fam R i X Y} {b : d.Fam R j X Y}
     (hab : (a : d.FamAll X Y) = b) : d.lof i X Y a = d.lof j X Y b := by
@@ -467,6 +471,135 @@ theorem compL_assoc {W X Y Z : S} (x : d.Hom W X) (y : d.Hom X Y) (z : d.Hom Y Z
       | lof p h =>
         simp only [compL_lof_lof]
         exact d.lof_congr (add_assoc m n p) (by simp [famComp_assoc])
+
+theorem compL_lof_lof' {m n : ℤ} {X Y Z : S} (f : d.Fam R m X Y) (g : d.Fam R n Y Z) :
+    d.compL X Y Z (d.lof m X Y f) (d.lof n Y Z g) =
+      d.lof (m + n) X Z ⟨d.famComp m f.1 g.1, famComp_mem f.2 g.2⟩ :=
+  d.compL_lof_lof f g
+
+/-! ## Parity projections of families -/
+
+variable (R) in
+/-- The parity-`p` part of a family, entrywise. -/
+def famProj (p : ZMod 2) (m : ℤ) (X Y : S) : d.Fam R m X Y →ₗ[R] d.Fam R m X Y where
+  toFun f := ⟨fun i j => proj R p (f.1 i j), fun i j h => by
+      show proj R p (f.1 i j) = 0
+      rw [Fam.eq_zero f.2 h, map_zero],
+    fun i j => by
+      show proj R p (f.1 (i + 1) (j + 1)) = _ ≫ d.Q.map (proj R p (f.1 i j)) ≫ _
+      rw [Fam.compat f.2]
+      have h1 := proj_comp_of_mem_left (R := R) p (d.succ_inv_mem i X)
+        (d.Q.map (f.1 i j) ≫ (d.succ j).hom.app Y)
+      have h2 := proj_comp_of_mem_right (R := R) p (d.Q.map (f.1 i j)) (d.succ_hom_mem j Y)
+      rw [zero_add] at h1
+      rw [add_zero] at h2
+      rw [h1, h2, map_proj]⟩
+  map_add' f g := Subtype.ext (FamAll.ext fun i j => map_add _ _ _)
+  map_smul' r f := Subtype.ext (FamAll.ext fun i j => map_smul _ _ _)
+
+@[simp] theorem famProj_apply (p : ZMod 2) {m : ℤ} {X Y : S} (f : d.Fam R m X Y) (i j : ℤ) :
+    (d.famProj R p m X Y f).1 i j = proj R p (f.1 i j) := rfl
+
+variable (R) in
+/-- The parity-`p` part of a morphism. -/
+def projHom (p : ZMod 2) (X Y : S) : d.Hom X Y →ₗ[R] d.Hom X Y :=
+  DirectSum.toModule R ℤ (d.Hom X Y) fun m => d.lof m X Y ∘ₗ d.famProj R p m X Y
+
+theorem projHom_lof (p : ZMod 2) {m : ℤ} {X Y : S} (f : d.Fam R m X Y) :
+    d.projHom R p X Y (d.lof m X Y f) = d.lof m X Y (d.famProj R p m X Y f) := by
+  rw [projHom, lof]
+  erw [DirectSum.toModule_lof]
+  rfl
+
+theorem component_projHom (p : ZMod 2) (m : ℤ) {X Y : S} (x : d.Hom X Y) :
+    d.component m X Y (d.projHom R p X Y x) = d.famProj R p m X Y (d.component m X Y x) := by
+  induction x using Hom.induction_on with
+  | zero => simp
+  | lof n f =>
+    rw [projHom_lof]
+    by_cases h : n = m
+    · subst h; simp
+    · rw [d.component_lof_of_ne _ h, d.component_lof_of_ne _ h, map_zero]
+  | add x y hx hy => simp [hx, hy]
+
+variable (R) in
+/-- The morphisms of parity `p`: all entries of all components have parity `p`. -/
+def parityHom (X Y : S) (p : ZMod 2) : Submodule R (d.Hom X Y) where
+  carrier := {x | ∀ m i j, (d.component m X Y x).1 i j ∈ parity (R := R) _ _ p}
+  add_mem' hx hy m i j := by
+    simp only [map_add, Submodule.coe_add, FamAll.add_apply]
+    exact Submodule.add_mem _ (hx m i j) (hy m i j)
+  zero_mem' m i j := by simp only [map_zero, Submodule.coe_zero, FamAll.zero_apply]; exact Submodule.zero_mem _
+  smul_mem' r x hx m i j := by
+    simp only [map_smul, Submodule.coe_smul, FamAll.smul_apply]
+    exact Submodule.smul_mem _ _ (hx m i j)
+
+theorem projHom_mem (p : ZMod 2) {X Y : S} (x : d.Hom X Y) : d.projHom R p X Y x ∈ d.parityHom R X Y p :=
+  fun m i j => by rw [component_projHom, famProj_apply]; exact proj_mem _ _
+
+theorem projHom_of_mem {p : ZMod 2} {X Y : S} {x : d.Hom X Y} (hx : x ∈ d.parityHom R X Y p) :
+    d.projHom R p X Y x = x :=
+  Hom.ext fun m => Subtype.ext (FamAll.ext fun i j => by
+    rw [component_projHom, famProj_apply, proj_of_mem (hx m i j)])
+
+theorem projHom_add_projHom {X Y : S} (x : d.Hom X Y) :
+    d.projHom R 0 X Y x + d.projHom R 1 X Y x = x :=
+  Hom.ext fun m => Subtype.ext (FamAll.ext fun i j => by
+    rw [map_add, component_projHom, component_projHom]
+    exact proj_add_proj _)
+
+theorem compL_projHom_mem (p q : ZMod 2) {X Y Z : S} (x : d.Hom X Y) (y : d.Hom Y Z) :
+    d.compL X Y Z (d.projHom R p X Y x) (d.projHom R q Y Z y) ∈ d.parityHom R X Z (p + q) := by
+  induction x using Hom.induction_on with
+  | zero => simp only [map_zero, LinearMap.zero_apply]; exact Submodule.zero_mem _
+  | add x x' hx hx' => simp only [map_add, LinearMap.add_apply]; exact Submodule.add_mem _ hx hx'
+  | lof m f =>
+    induction y using Hom.induction_on with
+    | zero => simp only [map_zero]; exact Submodule.zero_mem _
+    | add y y' hy hy' => simp only [map_add]; exact Submodule.add_mem _ hy hy'
+    | lof n g =>
+      rw [projHom_lof, projHom_lof, compL_lof_lof']
+      intro k i l
+      by_cases h : m + n = k
+      · subst h
+        simp only [component_lof_self, famComp]
+        exact comp_mem (proj_mem _ _) (proj_mem _ _)
+      · rw [d.component_lof_of_ne _ h]; exact Submodule.zero_mem _
+
+theorem compL_mem {p q : ZMod 2} {X Y Z : S} {x : d.Hom X Y} {y : d.Hom Y Z}
+    (hx : x ∈ d.parityHom R X Y p) (hy : y ∈ d.parityHom R Y Z q) :
+    d.compL X Y Z x y ∈ d.parityHom R X Z (p + q) := by
+  rw [← d.projHom_of_mem hx, ← d.projHom_of_mem hy]
+  exact d.compL_projHom_mem p q x y
+
+/-! ## Degrees -/
+
+variable (R) in
+/-- The morphisms of degree `n`: the families of degree `n`. -/
+def degreeHom (X Y : S) (n : ℤ) : Submodule R (d.Hom X Y) := LinearMap.range (d.lof n X Y)
+
+theorem isInternal_degreeHom (X Y : S) : DirectSum.IsInternal (d.degreeHom R X Y) := by
+  rw [DirectSum.isInternal_submodule_iff_iSupIndep_and_iSup_eq_top]
+  constructor
+  · rw [iSupIndep_def]
+    intro n
+    rw [Submodule.disjoint_def]
+    intro x hx hx'
+    obtain ⟨f, rfl⟩ := hx
+    have h0 : d.component n X Y (d.lof n X Y f) = 0 := by
+      have hle : (⨆ j, ⨆ (_ : j ≠ n), d.degreeHom R X Y j) ≤ LinearMap.ker (d.component n X Y) := by
+        refine iSup_le fun j => iSup_le fun hj => ?_
+        rintro _ ⟨g, rfl⟩
+        exact d.component_lof_of_ne _ hj
+      exact hle hx'
+    rw [component_lof_self] at h0
+    rw [h0, map_zero]
+  · rw [eq_top_iff]
+    rintro x -
+    induction x using Hom.induction_on with
+    | zero => exact Submodule.zero_mem _
+    | lof m f => exact Submodule.mem_iSup_of_mem m ⟨f, rfl⟩
+    | add x y hx hy => exact Submodule.add_mem _ hx hy
 
 end ShiftData
 
