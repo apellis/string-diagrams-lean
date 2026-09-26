@@ -7,6 +7,10 @@ import StringDiagrams.Generation
 import StringDiagrams.Interchange
 import StringDiagrams.Grading
 import StringDiagrams.Super.Basic
+import StringDiagrams.Super.Functor
+import StringDiagrams.Super.Monoidal
+import StringDiagrams.Super.Bicategory
+import StringDiagrams.Super.Presented
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
