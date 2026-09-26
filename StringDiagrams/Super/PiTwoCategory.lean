@@ -245,9 +245,11 @@ open PiTwoCategory
 /-- A Π-2-functor structure on a pseudofunctor `F` (Brundan–Ellis, Definition 5.2(ii)):
 2-isomorphisms `j_λ : π_{Fλ} ≅ F π_λ` such that
 `F β_F ∘ c ∘ j(F -) = c ∘ (F -)j ∘ β_{F -}` and `F ξ_λ ∘ c ∘ jj = i ∘ ξ_{Fλ}`. Here `c` and `i`
-are the inverses of Mathlib's `mapComp` and `mapId`. The linearity of `F` on 2-morphisms is not
-part of this structure. -/
+are the inverses of Mathlib's `mapComp` and `mapId`. We include the `R`-linearity of `F` on
+2-morphisms (the paper's Π-2-functors are `k`-linear 2-functors). -/
 structure PiTwoFunctor (F : Pseudofunctor B C) where
+  map₂_add {a b : B} {f g : a ⟶ b} (η θ : f ⟶ g) : F.map₂ (η + θ) = F.map₂ η + F.map₂ θ
+  map₂_smul {a b : B} {f g : a ⟶ b} (r : R) (η : f ⟶ g) : F.map₂ (r • η) = r • F.map₂ η
   /-- The coherence 2-isomorphisms `j_λ : π_{Fλ} ≅ F π_λ`. -/
   j (a : B) : pi (R := R) (F.obj a) ≅ F.map (pi (R := R) a)
   /-- The first coherence diagram of Definition 5.2(ii). -/
@@ -468,6 +470,8 @@ theorem jξ_comm (a : A) :
 
 /-- **Brundan–Ellis, (5.4).** `E₂ ℝ` is a Π-2-functor with `j := (ℝζ)⁻¹ ∘ i ∘ ζ`. -/
 def toPiTwoFunctor : PiTwoFunctor R F.toPseudofunctor where
+  map₂_add η θ := Subtype.ext (F.map₂_add η.1 θ.1)
+  map₂_smul r η := Subtype.ext (F.map₂_smul r η.1)
   j a := Underlying.isoMk (F.jIso a.obj) (F.jIso_hom_mem a.obj)
   β_comm f := Subtype.ext (F.jβ_comm f.obj)
   ξ_comm a := Subtype.ext (F.jξ_comm a.obj)
