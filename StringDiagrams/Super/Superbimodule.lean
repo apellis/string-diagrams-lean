@@ -29,11 +29,10 @@ A superbimodule homomorphism is a linear map `f : V → W` with
   `Π V` the superspace `V` with the opposite grading and actions `a · v · b := (-1)^{|a|} a v b`
   (`piObj`, `piObj_lact_of_mem`), and `ζ_V : Π V → V` the identity function (`ζIso`).
 
-The monoidal structure on `A-SMod-A` of Examples 1.5(i) and 1.13(i) (tensor product over `A`)
-is formalized only for `A = k`, where `k-SMod-k` is `SVec k`
-(`StringDiagrams.Super.SVec`): Mathlib's tensor product of modules is over a commutative ring,
-and the balanced tensor product of bimodules over a noncommutative superalgebra is not
-available.
+The balanced tensor product of superbimodules is constructed in
+`StringDiagrams.Super.BalancedTensor`; the monoidal Π-supercategory `A-SMod-A` of
+Examples 1.5(i) and 1.13(i) is in `StringDiagrams.Super.BimoduleMonoidal`, the 2-supercategory
+`𝔖𝔅𝔦𝔪` in `StringDiagrams.Super.SBim`, and Remark 1.3 in `StringDiagrams.Super.BimoduleFunctor`.
 -/
 
 noncomputable section

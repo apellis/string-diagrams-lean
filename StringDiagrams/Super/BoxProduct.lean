@@ -249,6 +249,22 @@ theorem tmulHom_def {X Y : BoxProd k C D} (f : X.fst ⟶ Y.fst) (g : X.snd ⟶ Y
 
 theorem id_eq_tmulHom (X : BoxProd k C D) : 𝟙 X = tmulHom (𝟙 X.fst) (𝟙 X.snd) := rfl
 
+theorem tmulHom_add_left {X Y : BoxProd k C D} (f f' : X.fst ⟶ Y.fst) (g : X.snd ⟶ Y.snd) :
+    tmulHom (f + f') g = tmulHom f g + tmulHom f' g :=
+  add_tmul f f' g
+
+theorem tmulHom_add_right {X Y : BoxProd k C D} (f : X.fst ⟶ Y.fst) (g g' : X.snd ⟶ Y.snd) :
+    tmulHom f (g + g') = tmulHom f g + tmulHom f g' :=
+  tmul_add f g g'
+
+theorem tmulHom_smul_left {X Y : BoxProd k C D} (r : k) (f : X.fst ⟶ Y.fst) (g : X.snd ⟶ Y.snd) :
+    tmulHom (r • f) g = r • tmulHom f g :=
+  (smul_tmul' r f g).symm
+
+theorem tmulHom_smul_right {X Y : BoxProd k C D} (r : k) (f : X.fst ⟶ Y.fst) (g : X.snd ⟶ Y.snd) :
+    tmulHom f (r • g) = r • tmulHom f g :=
+  tmul_smul r f g
+
 /-- **The composition rule of `C ⊠ D`** (Brundan–Ellis, after Example 1.2): the paper's
 `(f ⊗ g) ∘ (h ⊗ l) = (-1)^{|g||h|} (f ∘ h) ⊗ (g ∘ l)` reads, in diagrammatic order,
 `(f ⊗ g) ≫ (h ⊗ l) = (-1)^{|f||l|} (f ≫ h) ⊗ (g ≫ l)` for homogeneous `f`, `l`. -/
