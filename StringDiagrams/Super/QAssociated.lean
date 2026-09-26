@@ -410,6 +410,94 @@ theorem val_famComp (m : ℤ) {Z : Associated R (GUnderlying R B)} (f : (dB R B)
   rw [val, val, val, famComp, Functor.map_comp]
   simp only [Category.assoc, Iso.hom_inv_id_assoc]
 
+variable (R B) in
+/-- `T` on families of degree `m`: `f ↦ τ_{-m} ∘ T(f_{0,-m})`. -/
+def Tfam (m : ℤ) (X Y : Associated R (GUnderlying R B)) :
+    (dB R B).Fam R m X Y →ₗ[R] (bobj X ⟶ bobj Y) where
+  toFun f := val f.1 0 (-m)
+  map_add' f g := by
+    simp only [val, Submodule.coe_add, FamAll.add_apply, Functor.map_add, Preadditive.add_comp,
+      Preadditive.comp_add]
+  map_smul' r f := by
+    simp only [val, Submodule.coe_smul, FamAll.smul_apply, Functor.map_smul, Linear.smul_comp,
+      Linear.comp_smul, RingHom.id_apply]
+
+variable (R B) in
+/-- `T` on morphisms, as a linear map. -/
+def TL (X Y : Associated R (GUnderlying R B)) : (dB R B).Hom X Y →ₗ[R] (bobj X ⟶ bobj Y) :=
+  DirectSum.toModule R ℤ (bobj X ⟶ bobj Y) fun m => Tfam R B m X Y
+
+theorem TL_lof {m : ℤ} (f : (dB R B).Fam R m X Y) :
+    TL R B X Y ((dB R B).lof m X Y f) = val f.1 0 (-m) := by
+  rw [TL, ShiftData.lof]
+  erw [DirectSum.toModule_lof]
+  rfl
+
+variable (R B) in
+/-- **`𝔻 ∘ 𝔼 ≅ I`.** The graded superfunctor `T_B : (B̲)^ ⥤ B`: a family of degree `m` goes to
+`τ_{-m} ∘ T(f_{0,-m})`, where `T` is the functor of Lemma 5.1 and `τ_{-m} : Q⁻ᵐ μ ≅ μ` is built
+from `σ`. -/
+def T : QAssociated R (GUnderlying R B) ⥤ B where
+  obj X := bobj X.obj
+  map {X Y} x := TL R B X.obj Y.obj x
+  map_id X := by
+    show TL R B _ _ ((dB R B).lof 0 _ _ _) = _
+    rw [TL_lof]
+    show val ((dB R B).idFam X.obj) 0 (-0) = 𝟙 _
+    rw [neg_zero, val, (dB R B).idFam_self, τ_zero]
+    simp
+  map_comp {X Y Z} x y := by
+    show TL R B _ _ ((dB R B).compL _ _ _ x y) = TL R B _ _ x ≫ TL R B _ _ y
+    induction x using Hom.induction_on with
+    | zero => simp
+    | add x x' hx hx' => simp only [map_add, LinearMap.add_apply, hx, hx', Preadditive.add_comp]
+    | lof m f =>
+      induction y using Hom.induction_on with
+      | zero => simp
+      | add y y' hy hy' => simp only [map_add, hy, hy', Preadditive.comp_add]
+      | lof n g =>
+        rw [compL_lof_lof, TL_lof, TL_lof, TL_lof, famCompₗ_apply, val_famComp,
+          val_eq g.2 (show 0 - m - -(m + n) = n by ring), zero_sub]
+
+theorem T_map_lof {X Y : QAssociated R (GUnderlying R B)} {m : ℤ} (f : (dB R B).Fam R m X.obj Y.obj) :
+    (T R B).map ((dB R B).lof m X.obj Y.obj f : X ⟶ Y) = val f.1 0 (-m) :=
+  TL_lof f
+
+instance : (T R B).Additive where
+  map_add {X Y x y} := LinearMap.map_add (TL R B X.obj Y.obj) x y
+
+instance : (T R B).Linear R where
+  map_smul {X Y} x r := LinearMap.map_smul (TL R B X.obj Y.obj) r x
+
+theorem val_mem {p : ZMod 2} {f : (dB R B).FamAll X Y} (i j : ℤ)
+    (hf : f i j ∈ parity (R := R) _ _ p) : val f i j ∈ parity (R := R) _ _ p := by
+  have := comp_mem (comp_mem (τ_inv_mem i X).1 (map_mem (TbF R B) hf)) (τ_hom_mem j Y).1
+  rw [zero_add, add_zero, Category.assoc] at this
+  exact this
+
+theorem val_mem_degree {f : (dB R B).FamAll X Y} (i j : ℤ) :
+    val f i j ∈ degree (R := R) (bobj X) (bobj Y) (i - j) := by
+  have := comp_mem_degree (comp_mem_degree (τ_inv_mem i X).2 (TbF_map_mem_degree (f i j)))
+    (τ_hom_mem j Y).2
+  rw [show i + 0 + -j = i - j by ring, Category.assoc] at this
+  exact this
+
+instance : IsGradedSuperfunctor R (T R B) where
+  map_mem {X Y p x} hx := by
+    rw [← (dB R B).projHom_of_mem hx]
+    clear hx
+    induction x using Hom.induction_on with
+    | zero => simp only [map_zero]; exact Submodule.zero_mem _
+    | add x x' hx hx' =>
+      rw [map_add, Functor.map_add]; exact Submodule.add_mem _ hx hx'
+    | lof m f =>
+      rw [projHom_lof, T_map_lof]
+      exact val_mem 0 (-m) (proj_mem _ _)
+  map_mem_degree {X Y n x} hx := by
+    obtain ⟨f, rfl⟩ := hx
+    rw [T_map_lof]
+    simpa using val_mem_degree (f := f.1) 0 (-n)
+
 end T
 
 end QAssociated
