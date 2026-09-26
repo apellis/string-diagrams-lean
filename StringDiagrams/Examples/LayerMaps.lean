@@ -1,4 +1,4 @@
-import StringDiagrams.Examples.TemperleyLieb
+import StringDiagrams.Examples.TemperleyLiebMonoidal
 import StringDiagrams.Examples.Exterior
 import StringDiagrams.LayerMap.Local
 
@@ -30,8 +30,6 @@ open CategoryTheory
 namespace StringDiagrams.TemperleyLieb
 
 variable (R : Type*) [CommRing R] (δ : R)
-
-instance : sig.IsEven := ⟨fun _ => rfl⟩
 
 /-! ## The reflection in a horizontal axis -/
 
