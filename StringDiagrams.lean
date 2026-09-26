@@ -50,6 +50,7 @@ import StringDiagrams.Biadjunction.Presented
 import StringDiagrams.Biadjunction.PivotalExtension
 import StringDiagrams.Examples.WalkingBiadjunction
 import StringDiagrams.Examples.OddBrauer
+import StringDiagrams.Examples.PiEnvelope
 
 /-!
 # StringDiagrams
