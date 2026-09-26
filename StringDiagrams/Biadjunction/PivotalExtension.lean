@@ -249,6 +249,118 @@ def pivotalCupsCaps (hz : Q.PivotalZigzags E.toColourDuality) :
       exact ⟨(E.tgt_dual c).symm, by rw [E.dual_dual]; rfl⟩)
     (hz (E.dual c)).2
 
+/-- The biadjunctions `c ⊣⊢ c*` of the colours of the pivotal extension, at every placement. -/
+abbrev pivotalBiadj (hz : Q.PivotalZigzags E.toColourDuality) :
+    ColourBiadjunctions Q E.toColourDuality.pivotal :=
+  (Q.pivotalCupsCaps E hz).biadjunctions
+
+variable (hz : Q.PivotalZigzags E.toColourDuality)
+
+/-- The biadjunction of `c*` is the exchange of the biadjunction of `c`. -/
+theorem pivotalBiadj_symm_heq (c : S.Colour) :
+    HEq (pivotalBiadj E Q hz (Q.colourHom c) c rfl).symm
+      (pivotalBiadj E Q hz (Q.dualColourHom E.toColourDuality.pivotal c) (E.dual c) rfl) := by
+  dsimp only [pivotalBiadj, ColourCupsCaps.biadjunctions, biadjunctionOfZigzag, Biadjunction.symm]
+  refine Biadjunction.heq_mk ?_ ?_ ?_
+  · exact Bicat.Hom.ext (Obj.ext rfl (by show [c] = [E.dual (E.dual c)]; rw [E.dual_dual]))
+  · refine adjunctionOfZigzag_heq rfl ?_ ?_ ?_ _ _ _ _
+    · exact Bicat.Hom.ext (Obj.ext rfl (by show [c] = [E.dual (E.dual c)]; rw [E.dual_dual]))
+    · simp [pivotalCupsCaps]
+    · simp [pivotalCupsCaps]
+  · refine adjunctionOfZigzag_heq ?_ rfl ?_ ?_ _ _ _ _
+    · exact Bicat.Hom.ext (Obj.ext rfl (by show [c] = [E.dual (E.dual c)]; rw [E.dual_dual]))
+    · simp [pivotalCupsCaps, cupD, E.dual_dual]
+    · simp [pivotalCupsCaps, capD, E.dual_dual]
+
+theorem pivotalBiadj_symm_isCyclic (c : S.Colour) :
+    Biadjunction.IsCyclic (pivotalBiadj E Q hz (Q.colourHom c) c rfl).symm
+      (pivotalBiadj E Q hz (Q.dualColourHom E.toColourDuality.pivotal c) (E.dual c) rfl) (𝟙 _) :=
+  isCyclic_eqToHom rfl (Bicat.Hom.ext (Obj.ext rfl (by
+    show [c] = [E.dual (E.dual c)]; rw [E.dual_dual]))) (pivotalBiadj_symm_heq E Q hz c)
+
+/-- The cups of the pivotal extension are cyclic. -/
+theorem pivotal_isCyclic_cup (c : S.Colour) (hg : (S.pivotal E.toColourDuality).GenValid (.cup c)) :
+    Biadjunction.IsCyclic (biadj (pivotalBiadj E Q hz) (Q.genDom (.cup c) hg))
+      (biadj (pivotalBiadj E Q hz) (Q.genCod (.cup c) hg)) (Q.gen2 (.cup c) hg) := by
+  set xc := Q.colourHom c
+  set yc := Q.dualColourHom E.toColourDuality.pivotal c
+  have e : biadj (pivotalBiadj E Q hz) (Q.genDom (.cup c) hg) = Biadjunction.id _ := nilBiadj_id _ rfl
+  rw [e]
+  have k₁ := isCyclic_left_unit (pivotalBiadj E Q hz xc c rfl)
+  have k₂ := (pivotalBiadj_symm_isCyclic E Q hz c).whiskerLeft (pivotalBiadj E Q hz xc c rfl)
+  have k₃ := (isCyclic_biadj_single (pivotalBiadj E Q hz) xc c rfl).inv.hcomp
+    (isCyclic_biadj_single (pivotalBiadj E Q hz) yc (E.dual c) rfl).inv
+  have k₄ := isCyclic_biadj_comp (pivotalBiadj E Q hz) xc yc
+  have k₅ := isCyclic_biadj_eqToHom (pivotalBiadj E Q hz) (show xc ≫ yc = Q.genCod (.cup c) hg from rfl)
+  have key := k₁.comp (k₂.comp (k₃.comp (k₄.comp k₅)))
+  simp only [IsIso.inv_id, Bicategory.id_whiskerRight, Bicategory.whiskerLeft_id,
+    Category.id_comp, Category.comp_id, eqToHom_refl] at key
+  have e₃ : (pivotalBiadj E Q hz xc c rfl).left.unit = Q.gen2 (.cup c) hg := by
+    show Q.diag _ = Q.diag _
+    exact Q.diag_eq_of_layers_eq rfl
+  have e₄ : (pivotalBiadj E Q hz xc c rfl).left.unit ≫ 𝟙 (xc ≫ yc) = Q.gen2 (.cup c) hg :=
+    (Category.comp_id _).trans e₃
+  rw [e₄] at key
+  exact key
+
+/-- The caps of the pivotal extension are cyclic. -/
+theorem pivotal_isCyclic_cap (c : S.Colour) (hg : (S.pivotal E.toColourDuality).GenValid (.cap c)) :
+    Biadjunction.IsCyclic (biadj (pivotalBiadj E Q hz) (Q.genDom (.cap c) hg))
+      (biadj (pivotalBiadj E Q hz) (Q.genCod (.cap c) hg)) (Q.gen2 (.cap c) hg) := by
+  set xc := Q.colourHom c
+  set yc := Q.dualColourHom E.toColourDuality.pivotal c
+  have e : biadj (pivotalBiadj E Q hz) (Q.genCod (.cap c) hg) = Biadjunction.id _ :=
+    nilBiadj_id _ rfl
+  rw [e]
+  have k₀ := isCyclic_biadj_eqToHom (pivotalBiadj E Q hz)
+    (show Q.genDom (.cap c) hg = yc ≫ xc from rfl)
+  have k₁ := isCyclic_biadj_comp_symm (pivotalBiadj E Q hz) yc xc
+  have k₂ := (isCyclic_biadj_single (pivotalBiadj E Q hz) yc (E.dual c) rfl).hcomp
+    (isCyclic_biadj_single (pivotalBiadj E Q hz) xc c rfl)
+  have k₃ := (pivotalBiadj_symm_isCyclic E Q hz c).inv.whiskerRight (pivotalBiadj E Q hz xc c rfl)
+  have k₄ := isCyclic_left_counit (pivotalBiadj E Q hz xc c rfl)
+  have key := k₀.comp (k₁.comp (k₂.comp (k₃.comp k₄)))
+  simp only [IsIso.inv_id, Bicategory.id_whiskerRight, Bicategory.whiskerLeft_id,
+    Category.id_comp, Category.comp_id, eqToHom_refl] at key
+  have e₃ : (pivotalBiadj E Q hz xc c rfl).left.counit = Q.gen2 (.cap c) hg := by
+    show Q.diag _ = Q.diag _
+    exact Q.diag_eq_of_layers_eq rfl
+  have e₄ : 𝟙 (Q.dualHom E.toColourDuality.pivotal (Q.colourHom c)) ▷ xc ≫
+      (pivotalBiadj E Q hz xc c rfl).left.counit = Q.gen2 (.cap c) hg := by
+    rw [Bicategory.id_whiskerRight]
+    exact (Category.id_comp _).trans e₃
+  rw [e₄] at key
+  exact key
+
+/-- **Rotation invariance in the pivotal extension.** If every original generator is cyclic
+for the biadjunctions of its boundary words (built from the cups and caps), then every
+2-morphism of the presented bicategory is cyclic: its two mates (rotations by the cups and caps
+on either side) agree. -/
+theorem pivotal_isCyclic
+    (hgen : ∀ (g : S.Gen) (hg : (S.pivotal E.toColourDuality).GenValid (.gen g)),
+      Biadjunction.IsCyclic (biadj (pivotalBiadj E Q hz) (Q.genDom (.gen g) hg))
+        (biadj (pivotalBiadj E Q hz) (Q.genCod (.gen g) hg)) (Q.gen2 (.gen g) hg))
+    {l m : Q.Bicat} {x x' : l ⟶ m} (θ : x ⟶ x') :
+    Biadjunction.IsCyclic (biadj (pivotalBiadj E Q hz) x) (biadj (pivotalBiadj E Q hz) x') θ :=
+  isCyclic_of_generators _ (fun g hg => by
+    cases g with
+    | gen g => exact hgen g hg
+    | cup c => exact pivotal_isCyclic_cup E Q hz c hg
+    | cap c => exact pivotal_isCyclic_cap E Q hz c hg) θ
+
+/-- The pivotal structure on the bicategory presented by `Q`, when every original generator is
+cyclic. -/
+def pivotalStructure
+    (hgen : ∀ (g : S.Gen) (hg : (S.pivotal E.toColourDuality).GenValid (.gen g)),
+      Biadjunction.IsCyclic (biadj (pivotalBiadj E Q hz) (Q.genDom (.gen g) hg))
+        (biadj (pivotalBiadj E Q hz) (Q.genCod (.gen g) hg)) (Q.gen2 (.gen g) hg)) :
+    StringDiagrams.Pivotal Q.Bicat :=
+  pivotalOfGenerators _ (fun g hg => by
+    cases g with
+    | gen g => exact hgen g hg
+    | cup c => exact pivotal_isCyclic_cup E Q hz c hg
+    | cap c => exact pivotal_isCyclic_cap E Q hz c hg)
+
 end Presentation
 
 end StringDiagrams

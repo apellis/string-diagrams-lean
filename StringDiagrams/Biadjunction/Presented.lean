@@ -26,6 +26,12 @@ theorem _root_.StringDiagrams.Biadjunction.congr_heq {B : Type*} [Bicategory B] 
     HEq (Q.congr hf hg) Q := by
   subst hf hg; rfl
 
+theorem _root_.StringDiagrams.Biadjunction.heq_mk {B : Type*} [Bicategory B] {a b : B}
+    {f : a ⟶ b} {g g' : b ⟶ a} (h : g = g') {L : f ⊣ g} {L' : f ⊣ g'} {R' : g ⊣ f}
+    {R'' : g' ⊣ f} (hL : HEq L L') (hR : HEq R' R'') :
+    HEq (Biadjunction.mk L R') (Biadjunction.mk L' R'') := by
+  subst h; cases eq_of_heq hL; cases eq_of_heq hR; rfl
+
 /-! ## Sliding 2-morphisms along cups and caps -/
 
 section Sliding
@@ -211,6 +217,22 @@ def biadjunctionOfZigzag (x : l ⟶ m) (y : m ⟶ l)
     (hr' : P.diag (P.rightZigzagD y x cup' cap') = 𝟙 _) : x ⊣⊢ y where
   left := adjunctionOfZigzag x y cup cap hl hr
   right := adjunctionOfZigzag y x cup' cap' hl' hr'
+
+/-- Adjunctions given by cups and caps with the same layers agree, along equalities of the
+1-morphisms. -/
+theorem adjunctionOfZigzag_heq {x x' : l ⟶ m} {y y' : m ⟶ l} (hx : x = x') (hy : y = y')
+    {cup : Obj.nil l.region ⟶ x.obj.tensor y.obj} {cap : y.obj.tensor x.obj ⟶ Obj.nil m.region}
+    {cup' : Obj.nil l.region ⟶ x'.obj.tensor y'.obj}
+    {cap' : y'.obj.tensor x'.obj ⟶ Obj.nil m.region}
+    (hcup : Diagram.layers cup = Diagram.layers cup') (hcap : Diagram.layers cap = Diagram.layers cap')
+    (hl : P.diag (P.leftZigzagD x y cup cap) = 𝟙 _) (hr : P.diag (P.rightZigzagD x y cup cap) = 𝟙 _)
+    (hl' : P.diag (P.leftZigzagD x' y' cup' cap') = 𝟙 _)
+    (hr' : P.diag (P.rightZigzagD x' y' cup' cap') = 𝟙 _) :
+    HEq (adjunctionOfZigzag x y cup cap hl hr) (adjunctionOfZigzag x' y' cup' cap' hl' hr') := by
+  subst hx hy
+  obtain rfl : cup = cup' := Diagram.ext hcup
+  obtain rfl : cap = cap' := Diagram.ext hcap
+  rfl
 
 omit [S.IsEven] in
 theorem diag_eq_id_of_layers {a a' : Obj S} (Z : a ⟶ a) (Z' : a' ⟶ a') (h : a = a')
@@ -445,6 +467,20 @@ theorem isCyclic_biadj_single {l m : P.Bicat} (x : l ⟶ m) (c : S.Colour) (hx :
     (colourBiadjunctions_heq B hhx c rfl hx)
   convert k₀.comp (k₁.comp k₂) using 1
   simp [Strict.rightUnitor_eqToIso]
+
+/-- For 1-morphisms with one-letter words, cyclicity for the biadjunctions of words is
+cyclicity for the chosen biadjunctions of the colours. -/
+theorem isCyclic_biadj_iff_single {l m : P.Bicat} {x x' : l ⟶ m} {c c' : S.Colour}
+    (hx : x.obj.word = [c]) (hx' : x'.obj.word = [c']) (θ : x ⟶ x') :
+    Biadjunction.IsCyclic (biadj B x) (biadj B x') θ ↔
+      Biadjunction.IsCyclic (B x c hx) (B x' c' hx') θ := by
+  constructor
+  · intro h
+    simpa using ((isCyclic_biadj_single B x c hx).inv.comp h).comp
+      (isCyclic_biadj_single B x' c' hx')
+  · intro h
+    simpa using ((isCyclic_biadj_single B x c hx).comp h).comp
+      (isCyclic_biadj_single B x' c' hx').inv
 
 end Single
 
