@@ -20,6 +20,9 @@ import StringDiagrams.Super.Underlying
 import StringDiagrams.Super.Associated
 import StringDiagrams.Super.MonoidalEnvelope
 import StringDiagrams.Super.MonoidalPi
+import StringDiagrams.Super.Graded
+import StringDiagrams.Super.QPi
+import StringDiagrams.Super.QEnvelope
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
