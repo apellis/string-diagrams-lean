@@ -19,10 +19,10 @@ Jones–Wenzl projector `f_n` on `Πᵃ n` (`jwObj`).
 
 These two facts are the semisimplicity of `SKar(STL(δ))` as an additive category: it is a
 Krull–Schmidt category whose indecomposable objects are the `P n a`, all of which have
-endomorphism algebra `k`, with no nonzero morphisms between non-isomorphic ones. (Mathlib has
-no notion of a semisimple abelian category, and no abelian structure on idempotent
-completions, so the statement "`SKar(STL(δ))` is a semisimple abelian category" is not
-formalized as such; see the module `KZero` for the Grothendieck ring.)
+endomorphism algebra `k`, with no nonzero morphisms between non-isomorphic ones. The module
+`Semisimple` deduces that `SKar(STL(δ))` is an abelian category in which the `P n a` are a
+complete set of pairwise non-isomorphic simple objects and every object is a finite direct sum
+of simple objects; see the module `KZero` for the Grothendieck ring.
 -/
 
 noncomputable section
