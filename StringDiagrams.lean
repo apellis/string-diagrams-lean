@@ -21,6 +21,7 @@ import StringDiagrams.Super.Associated
 import StringDiagrams.Super.MonoidalEnvelope
 import StringDiagrams.Super.MonoidalPi
 import StringDiagrams.Super.MonoidalAssociated
+import StringDiagrams.Super.AssociatedFunctorial
 import StringDiagrams.Super.FunctorCategory
 import StringDiagrams.Super.SCat
 import StringDiagrams.Super.UnderlyingBicategory
