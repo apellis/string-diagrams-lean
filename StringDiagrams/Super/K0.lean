@@ -8,6 +8,7 @@ import Mathlib.Algebra.Polynomial.Eval.Defs
 import Mathlib.RingTheory.Ideal.Quotient.Defs
 import Mathlib.RingTheory.Ideal.Span
 import Mathlib.Algebra.Module.Hom
+import Mathlib.CategoryTheory.Monoidal.Preadditive
 
 /-!
 # The split Grothendieck group, and the ring `Zπ`
@@ -176,6 +177,96 @@ theorem map_eq_of_iso {F G : C ⥤ D} [F.Additive] [G.Additive] (e : F ≅ G) : 
   hom_ext fun X => by rw [map_mk, map_mk, mk_eq_mk_of_iso (e.app X)]
 
 end Map
+
+/-! ## The ring structure for monoidal categories -/
+
+section Ring
+
+open MonoidalCategory
+
+variable [MonoidalCategory C] [MonoidalPreadditive C]
+
+/-- The multiplication `[X] · [Y] = [X ⊗ Y]` on `K₀` of a monoidal additive category. -/
+def mulHom : K₀ C →+ K₀ C →+ K₀ C :=
+  lift (fun X => lift (fun Y => mk (X ⊗ Y)) (fun _ _ e => mk_eq_mk_of_iso (whiskerLeftIso X e))
+      (fun Y Y' => (mk_eq_mk_of_iso (mapBiprodIso (tensorLeft X) Y Y')).trans (mk_biprod _ _)))
+    (fun X X' e => hom_ext fun Y => by
+      simp only [lift_mk]; exact mk_eq_mk_of_iso (whiskerRightIso e Y))
+    (fun X X' => hom_ext fun Y => by
+      simp only [lift_mk, AddMonoidHom.add_apply]
+      exact (mk_eq_mk_of_iso (mapBiprodIso (tensorRight Y) X X')).trans (mk_biprod _ _))
+
+instance : Mul (K₀ C) := ⟨fun x y => mulHom x y⟩
+
+instance : One (K₀ C) := ⟨mk (𝟙_ C)⟩
+
+theorem mul_def (x y : K₀ C) : x * y = mulHom x y := rfl
+
+@[simp] theorem mk_mul_mk (X Y : C) : mk X * mk Y = mk (X ⊗ Y) := by
+  simp [mul_def, mulHom]
+
+omit [MonoidalPreadditive C] in
+theorem one_def : (1 : K₀ C) = mk (𝟙_ C) := rfl
+
+protected theorem mul_add (x y z : K₀ C) : x * (y + z) = x * y + x * z := map_add (mulHom x) y z
+
+protected theorem add_mul (x y z : K₀ C) : (x + y) * z = x * z + y * z := by
+  simp only [mul_def, map_add, AddMonoidHom.add_apply]
+
+protected theorem mul_zero (x : K₀ C) : x * 0 = 0 := map_zero (mulHom x)
+
+protected theorem zero_mul (x : K₀ C) : 0 * x = 0 := by
+  simp only [mul_def, map_zero, AddMonoidHom.zero_apply]
+
+protected theorem mul_neg (x y : K₀ C) : x * -y = -(x * y) := map_neg (mulHom x) y
+
+protected theorem neg_mul (x y : K₀ C) : -x * y = -(x * y) := by
+  simp only [mul_def, map_neg, AddMonoidHom.neg_apply]
+
+protected theorem mul_assoc (x y z : K₀ C) : x * y * z = x * (y * z) := by
+  induction x using induction_on with
+  | mk X =>
+    induction y using induction_on with
+    | mk Y =>
+      induction z using induction_on with
+      | mk Z => simp only [mk_mul_mk]; exact mk_eq_mk_of_iso (α_ X Y Z)
+      | zero => simp only [K₀.mul_zero]
+      | add z z' h h' => simp only [K₀.mul_add, h, h']
+      | neg z h => simp only [K₀.mul_neg, h]
+    | zero => simp only [K₀.mul_zero, K₀.zero_mul]
+    | add y y' h h' => simp only [K₀.mul_add, K₀.add_mul, h, h']
+    | neg y h => simp only [K₀.mul_neg, K₀.neg_mul, h]
+  | zero => simp only [K₀.zero_mul]
+  | add x x' h h' => simp only [K₀.add_mul, h, h']
+  | neg x h => simp only [K₀.neg_mul, h]
+
+protected theorem one_mul (x : K₀ C) : 1 * x = x := by
+  induction x using induction_on with
+  | mk X => rw [one_def, mk_mul_mk]; exact mk_eq_mk_of_iso (λ_ X)
+  | zero => exact K₀.mul_zero 1
+  | add x x' h h' => rw [K₀.mul_add, h, h']
+  | neg x h => rw [K₀.mul_neg, h]
+
+protected theorem mul_one (x : K₀ C) : x * 1 = x := by
+  induction x using induction_on with
+  | mk X => rw [one_def, mk_mul_mk]; exact mk_eq_mk_of_iso (ρ_ X)
+  | zero => exact K₀.zero_mul 1
+  | add x x' h h' => rw [K₀.add_mul, h, h']
+  | neg x h => rw [K₀.neg_mul, h]
+
+/-- **Brundan–Ellis, §1.5.** For a monoidal additive category, `K₀` is a ring with
+`[V] · [W] = [V ⊗ W]` and unit `[𝟙]`. -/
+instance instRing : Ring (K₀ C) :=
+  { (inferInstance : AddCommGroup (K₀ C)) with
+    mul_assoc := K₀.mul_assoc
+    one_mul := K₀.one_mul
+    mul_one := K₀.mul_one
+    left_distrib := K₀.mul_add
+    right_distrib := K₀.add_mul
+    zero_mul := K₀.zero_mul
+    mul_zero := K₀.mul_zero }
+
+end Ring
 
 end K₀
 
