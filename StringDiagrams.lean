@@ -23,6 +23,10 @@ import StringDiagrams.Super.MonoidalPi
 import StringDiagrams.Super.Graded
 import StringDiagrams.Super.QPi
 import StringDiagrams.Super.QEnvelope
+import StringDiagrams.Super.FunctorCategory
+import StringDiagrams.Super.SCat
+import StringDiagrams.Super.UnderlyingBicategory
+import StringDiagrams.Super.PiTwo
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
 import StringDiagrams.Horizontal
