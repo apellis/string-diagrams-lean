@@ -60,6 +60,97 @@ variable (R : Type w) [CommRing R] (B : Type u₁) [BicategoryStruct.{w₁, v₁
   [∀ a b : B, Preadditive (a ⟶ b)] [∀ a b : B, Linear R (a ⟶ b)]
   [∀ a b : B, Supercategory R (a ⟶ b)] [TwoSupercategory R B]
 
+/-! ## Auxiliary coherence equations
+
+Equations between composites of the (even) coherence maps of a 2-supercategory, obtained from
+Mathlib's coherence theorem for the underlying bicategory (`Underlying2.instBicategory`). -/
+
+namespace TwoSupercategory
+
+variable {R B}
+
+/-- The simp set translating equations in `Underlying2 R B` into equations in `B`. -/
+local macro "underlying2_val" h:ident : tactic =>
+  `(tactic| (simp only [Underlying.comp_val, Underlying.id_val, Underlying2.comp₂_val,
+    Underlying2.id₂_val, Underlying2.whiskerLeft_val, Underlying2.whiskerRight_val,
+    Underlying2.associator_hom_val, Underlying2.associator_inv_val,
+    Underlying2.leftUnitor_hom_val, Underlying2.leftUnitor_inv_val,
+    Underlying2.rightUnitor_hom_val, Underlying2.rightUnitor_inv_val, Underlying2.comp_obj,
+    Underlying2.id_obj, Underlying2.hom1_obj] at $h:ident; exact $h:ident))
+
+variable (R)
+include R
+
+theorem coherence_yoneda_assoc {a b c d e : B} (k : e ⟶ d) (h : d ⟶ c) (u : c ⟶ a)
+    (f : a ⟶ b) :
+    (associator k h (u ≫ f)).hom ≫ k ◁ (associator h u f).inv ≫ (associator k (h ≫ u) f).inv =
+      (associator (k ≫ h) u f).inv ≫ (associator k h u).hom ▷ f := by
+  have hU : ∀ {a b c d e : Underlying2 R B} (k : e ⟶ d) (h : d ⟶ c) (u : c ⟶ a) (f : a ⟶ b),
+      (Bicategory.associator k h (u ≫ f)).hom ≫
+          Bicategory.whiskerLeft k (Bicategory.associator h u f).inv ≫
+            (Bicategory.associator k (h ≫ u) f).inv =
+        (Bicategory.associator (k ≫ h) u f).inv ≫
+          Bicategory.whiskerRight (Bicategory.associator k h u).hom f := by
+    intros; coherence
+  have h' := congrArg Subtype.val (hU (Underlying2.hom1 k) (Underlying2.hom1 h)
+    (Underlying2.hom1 u) (Underlying2.hom1 f))
+  underlying2_val h'
+
+theorem coherence_yoneda_mapComp {a b c d e : B} (h : e ⟶ d) (u : d ⟶ a) (f : a ⟶ b)
+    (g : b ⟶ c) :
+    (associator h (u ≫ f) g).inv ≫ (associator h u f).inv ▷ g ≫ (associator (h ≫ u) f g).hom =
+      h ◁ (associator u f g).hom ≫ (associator h u (f ≫ g)).inv := by
+  have hU : ∀ {a b c d e : Underlying2 R B} (h : e ⟶ d) (u : d ⟶ a) (f : a ⟶ b) (g : b ⟶ c),
+      (Bicategory.associator h (u ≫ f) g).inv ≫
+          Bicategory.whiskerRight (Bicategory.associator h u f).inv g ≫
+            (Bicategory.associator (h ≫ u) f g).hom =
+        Bicategory.whiskerLeft h (Bicategory.associator u f g).hom ≫
+          (Bicategory.associator h u (f ≫ g)).inv := by
+    intros; coherence
+  have h' := congrArg Subtype.val (hU (Underlying2.hom1 h) (Underlying2.hom1 u)
+    (Underlying2.hom1 f) (Underlying2.hom1 g))
+  underlying2_val h'
+
+theorem coherence_yoneda_associator {a b c d e : B} (u : e ⟶ a) (f : a ⟶ b) (g : b ⟶ c)
+    (h : c ⟶ d) :
+    (associator (u ≫ f) g h).hom ≫ (associator u f (g ≫ h)).hom ≫ u ◁ (associator f g h).inv =
+      (associator u f g).hom ▷ h ≫ (associator u (f ≫ g) h).hom := by
+  have hU : ∀ {a b c d e : Underlying2 R B} (u : e ⟶ a) (f : a ⟶ b) (g : b ⟶ c) (h : c ⟶ d),
+      (Bicategory.associator (u ≫ f) g h).hom ≫ (Bicategory.associator u f (g ≫ h)).hom ≫
+          Bicategory.whiskerLeft u (Bicategory.associator f g h).inv =
+        Bicategory.whiskerRight (Bicategory.associator u f g).hom h ≫
+          (Bicategory.associator u (f ≫ g) h).hom := by
+    intros; coherence
+  have h' := congrArg Subtype.val (hU (Underlying2.hom1 u) (Underlying2.hom1 f)
+    (Underlying2.hom1 g) (Underlying2.hom1 h))
+  underlying2_val h'
+
+theorem coherence_yoneda_leftUnitor {a b e : B} (u : e ⟶ a) (f : a ⟶ b) :
+    (rightUnitor u).inv ▷ f ≫ (associator u (𝟙 a) f).hom ≫ u ◁ (leftUnitor f).hom = 𝟙 _ := by
+  have hU : ∀ {a b e : Underlying2 R B} (u : e ⟶ a) (f : a ⟶ b),
+      Bicategory.whiskerRight (Bicategory.rightUnitor u).inv f ≫
+          (Bicategory.associator u (𝟙 a) f).hom ≫
+            Bicategory.whiskerLeft u (Bicategory.leftUnitor f).hom = 𝟙 _ := by
+    intros; coherence
+  have h' := congrArg Subtype.val (hU (Underlying2.hom1 u) (Underlying2.hom1 f))
+  underlying2_val h'
+
+theorem coherence_yoneda_rightUnitor {a b e : B} (u : e ⟶ a) (f : a ⟶ b) :
+    (rightUnitor (u ≫ f)).inv ≫ (associator u f (𝟙 b)).hom ≫ u ◁ (rightUnitor f).hom =
+      𝟙 _ := by
+  have hU : ∀ {a b e : Underlying2 R B} (u : e ⟶ a) (f : a ⟶ b),
+      (Bicategory.rightUnitor (u ≫ f)).inv ≫ (Bicategory.associator u f (𝟙 b)).hom ≫
+          Bicategory.whiskerLeft u (Bicategory.rightUnitor f).hom = 𝟙 _ := by
+    intros; coherence
+  have h' := congrArg Subtype.val (hU (Underlying2.hom1 u) (Underlying2.hom1 f))
+  underlying2_val h'
+
+theorem coherence_rightUnitor_comp {a b c : B} (h : c ⟶ b) (u : b ⟶ a) :
+    (associator h u (𝟙 a)).hom ≫ h ◁ (rightUnitor u).hom = (rightUnitor (h ≫ u)).hom := by
+  rw [TwoSupercategory.rightUnitor_comp R]
+
+end TwoSupercategory
+
 /-- The strictification of a 2-supercategory `𝔄`: it has the objects of `𝔄`. See the module
 documentation. -/
 @[ext]
@@ -444,6 +535,296 @@ instance instStrict : BicategoryStruct.Strict (TwoStrictification R B) where
   leftUnitor_eqToIso _ := rfl
   rightUnitor_eqToIso _ := rfl
   associator_eqToIso _ _ _ := rfl
+
+/-! ## Even 2-morphisms and 2-isomorphisms -/
+
+section Mk
+
+variable {a b : TwoStrictification R B} {F G : a ⟶ b}
+
+/-- An even 2-morphism given by a natural family of even 2-morphisms of `𝔄` compatible with
+the module structures. -/
+def homMk2 (x : ∀ (c : B) (u : c ⟶ a.as), (Hom1.F F c).obj u ⟶ (Hom1.F G c).obj u)
+    (mem : ∀ c u, x c u ∈ parity (R := R) _ _ 0)
+    (nat : ∀ (c : B) {u u' : c ⟶ a.as} (θ : u ⟶ u'),
+      (Hom1.F F c).map θ ≫ x c u' = x c u ≫ (Hom1.F G c).map θ)
+    (compat : ∀ {c d : B} (h : d ⟶ c) (u : c ⟶ a.as),
+      (Hom1.γ F h u).hom ≫ x d (h ≫ u) = h ◁ x c u ≫ (Hom1.γ G h u).hom) : F ⟶ G :=
+  ⟨fun c => SuperNatTrans.ofNatTrans (F := Hom1.F F c) (G := Hom1.F G c)
+      ⟨x c, fun _ _ θ => nat c θ⟩ (mem c),
+    fun p c d h u => by
+      rcases parity_eq_zero_or_one p with rfl | rfl
+      · simpa [SuperNatTrans.ofNatTrans] using compat h u
+      · simp [SuperNatTrans.ofNatTrans, TwoSupercategory.whiskerLeft_zero R]⟩
+
+section homMk2
+
+variable (x : ∀ (c : B) (u : c ⟶ a.as), (Hom1.F F c).obj u ⟶ (Hom1.F G c).obj u)
+  (mem : ∀ c u, x c u ∈ parity (R := R) _ _ 0)
+  (nat : ∀ (c : B) {u u' : c ⟶ a.as} (θ : u ⟶ u'),
+    (Hom1.F F c).map θ ≫ x c u' = x c u ≫ (Hom1.F G c).map θ)
+  (compat : ∀ {c d : B} (h : d ⟶ c) (u : c ⟶ a.as),
+    (Hom1.γ F h u).hom ≫ x d (h ≫ u) = h ◁ x c u ≫ (Hom1.γ G h u).hom)
+
+@[simp] theorem homMk2_val_app (c : B) (p : ZMod 2) (u : c ⟶ a.as) :
+    ((homMk2 x mem nat compat).1 c).app p u = if p = 0 then x c u else 0 := rfl
+
+theorem homMk2_mem : homMk2 x mem nat compat ∈ parity (R := R) F G 0 := fun c => by
+  rw [Superfunctor.mem_parity_iff]
+  funext u
+  simp [zmod2_one_ne_zero]
+
+end homMk2
+
+/-- An even 2-isomorphism given by a natural family of even 2-isomorphisms of `𝔄` compatible
+with the module structures. -/
+def isoMk2 (e : ∀ (c : B) (u : c ⟶ a.as), (Hom1.F F c).obj u ≅ (Hom1.F G c).obj u)
+    (mem : ∀ c u, (e c u).hom ∈ parity (R := R) _ _ 0)
+    (nat : ∀ (c : B) {u u' : c ⟶ a.as} (θ : u ⟶ u'),
+      (Hom1.F F c).map θ ≫ (e c u').hom = (e c u).hom ≫ (Hom1.F G c).map θ)
+    (compat : ∀ {c d : B} (h : d ⟶ c) (u : c ⟶ a.as),
+      (Hom1.γ F h u).hom ≫ (e d (h ≫ u)).hom = h ◁ (e c u).hom ≫ (Hom1.γ G h u).hom) :
+    F ≅ G where
+  hom := homMk2 (fun c u => (e c u).hom) mem nat compat
+  inv := homMk2 (fun c u => (e c u).inv) (fun c u => inv_mem _ (mem c u))
+    (fun c {u u'} θ => by
+      dsimp only
+      rw [← cancel_mono (e c u').hom, Category.assoc, Iso.inv_hom_id, Category.comp_id,
+        Category.assoc, nat, Iso.inv_hom_id_assoc])
+    (fun {c d} h u => by
+      calc (Hom1.γ G h u).hom ≫ (e d (h ≫ u)).inv
+          = (h ◁ (e c u).inv ≫ h ◁ (e c u).hom) ≫ (Hom1.γ G h u).hom ≫ (e d (h ≫ u)).inv := by
+            rw [TwoSupercategory.whiskerLeft_inv_hom (R := R), Category.id_comp]
+        _ = h ◁ (e c u).inv ≫ (Hom1.γ F h u).hom := by
+            rw [Category.assoc, ← reassoc_of% (compat h u), Iso.hom_inv_id, Category.comp_id])
+  hom_inv_id := hom2_ext' fun c p u => by
+    rcases parity_eq_zero_or_one p with rfl | rfl <;>
+      simp [Superfunctor.comp_app, zmod2_one_ne_zero,
+        SuperNatTrans.zmod2_one_add_one]
+  inv_hom_id := hom2_ext' fun c p u => by
+    rcases parity_eq_zero_or_one p with rfl | rfl <;>
+      simp [Superfunctor.comp_app, zmod2_one_ne_zero,
+        SuperNatTrans.zmod2_one_add_one]
+
+section isoMk2
+
+variable (e : ∀ (c : B) (u : c ⟶ a.as), (Hom1.F F c).obj u ≅ (Hom1.F G c).obj u)
+  (mem : ∀ c u, (e c u).hom ∈ parity (R := R) _ _ 0)
+  (nat : ∀ (c : B) {u u' : c ⟶ a.as} (θ : u ⟶ u'),
+    (Hom1.F F c).map θ ≫ (e c u').hom = (e c u).hom ≫ (Hom1.F G c).map θ)
+  (compat : ∀ {c d : B} (h : d ⟶ c) (u : c ⟶ a.as),
+    (Hom1.γ F h u).hom ≫ (e d (h ≫ u)).hom = h ◁ (e c u).hom ≫ (Hom1.γ G h u).hom)
+
+@[simp] theorem isoMk2_hom_val_app (c : B) (p : ZMod 2) (u : c ⟶ a.as) :
+    (((isoMk2 e mem nat compat).hom).1 c).app p u = if p = 0 then (e c u).hom else 0 := rfl
+
+theorem isoMk2_hom_mem : (isoMk2 e mem nat compat).hom ∈ parity (R := R) F G 0 :=
+  homMk2_mem (fun c u => (e c u).hom) mem nat compat
+
+end isoMk2
+
+end Mk
+
+/-! ## The Yoneda 2-superfunctor -/
+
+variable (R) in
+/-- Postcomposition `- ≫ f : ℋom(c, a) → ℋom(c, b)`. -/
+@[simps]
+def postcomp {a b : B} (f : a ⟶ b) (c : B) : (c ⟶ a) ⥤ (c ⟶ b) where
+  obj u := u ≫ f
+  map θ := θ ▷ f
+  map_id u := TwoSupercategory.id_whiskerRight (R := R) u f
+  map_comp θ θ' := TwoSupercategory.comp_whiskerRight (R := R) θ θ' f
+
+instance {a b : B} (f : a ⟶ b) (c : B) : (postcomp R f c).Additive where
+  map_add := TwoSupercategory.add_whiskerRight (R := R) _ _ _
+
+instance {a b : B} (f : a ⟶ b) (c : B) : (postcomp R f c).Linear R where
+  map_smul θ r := TwoSupercategory.smul_whiskerRight r θ _
+
+instance {a b : B} (f : a ⟶ b) (c : B) : IsSuperfunctor R (postcomp R f c) where
+  map_mem hθ := TwoSupercategory.whiskerRight_mem _ hθ
+
+variable (R) in
+/-- Precomposition `u ≫ - : ℋom(a, b) → ℋom(c, b)`. -/
+@[simps]
+def precomp {c a : B} (u : c ⟶ a) (b : B) : (a ⟶ b) ⥤ (c ⟶ b) where
+  obj f := u ≫ f
+  map η := u ◁ η
+  map_id f := TwoSupercategory.whiskerLeft_id (R := R) u f
+  map_comp η η' := TwoSupercategory.whiskerLeft_comp (R := R) u η η'
+
+instance {c a : B} (u : c ⟶ a) (b : B) : (precomp R u b).Additive where
+  map_add := TwoSupercategory.whiskerLeft_add (R := R) _ _ _
+
+instance {c a : B} (u : c ⟶ a) (b : B) : (precomp R u b).Linear R where
+  map_smul η r := TwoSupercategory.whiskerLeft_smul _ r η
+
+instance {c a : B} (u : c ⟶ a) (b : B) : IsSuperfunctor R (precomp R u b) where
+  map_mem hη := TwoSupercategory.whiskerLeft_mem _ hη
+
+theorem proj_whiskerRight' (p : ZMod 2) {c a b : B} {u u' : c ⟶ a} (θ : u ⟶ u') (f : a ⟶ b) :
+    proj R p (θ ▷ f) = proj R p θ ▷ f :=
+  (map_proj (postcomp R f c) p θ).symm
+
+theorem proj_whiskerLeft' (p : ZMod 2) {c a b : B} (u : c ⟶ a) {f f' : a ⟶ b} (η : f ⟶ f') :
+    proj R p (u ◁ η) = u ◁ proj R p η :=
+  (map_proj (precomp R u b) p η).symm
+
+/-- The 1-morphism `(- ≫ f, a⁻¹)` of the strictification attached to `f : a → b`. -/
+@[simps]
+def yonedaMap {a b : B} (f : a ⟶ b) : Hom1 (⟨a⟩ : TwoStrictification R B) ⟨b⟩ where
+  F c := postcomp R f c
+  γ h u := (associator h u f).symm
+  γ_mem h u := inv_mem _ (TwoSupercategory.associator_hom_mem (R := R) h u f)
+  γ_naturality_left η u := TwoSupercategory.associator_inv_naturality_left R η u f
+  γ_naturality_right {_ _} h {_ _} θ :=
+    TwoSupercategory.associator_inv_naturality_middle R h θ f
+  γ_assoc k h u := TwoSupercategory.coherence_yoneda_assoc R k h u f
+
+/-- For `η : f ⇒ f'`, the 2-morphism `- ◁ η`, whose component of parity `p` is `u ◁ η_p`. It
+is supernatural by the super interchange law. -/
+def yonedaMap₂ {a b : B} {f f' : a ⟶ b} (η : f ⟶ f') :
+    (yonedaMap (R := R) f : (⟨a⟩ : TwoStrictification R B) ⟶ ⟨b⟩) ⟶ yonedaMap f' :=
+  ⟨fun c =>
+    { app := fun p u => u ◁ proj R p η
+      app_mem := fun p u => TwoSupercategory.whiskerLeft_mem u (proj_mem p η)
+      naturality := fun p {u u'} {q} θ hθ => by
+        change θ ▷ f ≫ u' ◁ proj R p η = koszulSign p q • (u ◁ proj R p η ≫ θ ▷ f')
+        rw [TwoSupercategory.super_interchange hθ (proj_mem p η), koszulSign_comm] },
+    fun p c d h u =>
+      (TwoSupercategory.associator_inv_naturality_right R h u (proj R p η)).symm⟩
+
+@[simp] theorem yonedaMap₂_val_app {a b : B} {f f' : a ⟶ b} (η : f ⟶ f') (c : B) (p : ZMod 2)
+    (u : c ⟶ a) : ((yonedaMap₂ (R := R) η).1 c).app p u = u ◁ proj R p η := rfl
+
+/-- The coherence isomorphism `(- ≫ f) ≫ g ≅ - ≫ (f ≫ g)` of `yoneda`, with components
+`a_{-,f,g}`. -/
+def yonedaMapComp {a b c : B} (f : a ⟶ b) (g : b ⟶ c) :
+    comp1 (yonedaMap (R := R) f) (yonedaMap g) ≅ yonedaMap (f ≫ g) :=
+  isoMk2 (fun _ u => associator u f g)
+    (fun _ u => TwoSupercategory.associator_hom_mem (R := R) u f g)
+    (fun _ {_ _} θ => TwoSupercategory.associator_naturality_left R θ f g)
+    (fun {_ _} h u => by
+      change ((associator h (u ≫ f) g).inv ≫ (associator h u f).inv ▷ g) ≫
+          (associator (h ≫ u) f g).hom = h ◁ (associator u f g).hom ≫ (associator h u (f ≫ g)).inv
+      rw [Category.assoc]
+      exact TwoSupercategory.coherence_yoneda_mapComp R h u f g)
+
+/-- The coherence isomorphism `1 ≅ - ≫ 1_a` of `yoneda`, with components `r⁻¹`. -/
+def yonedaMapId (a : B) :
+    id1 (⟨a⟩ : TwoStrictification R B) ≅ yonedaMap (𝟙 a) :=
+  isoMk2 (fun _ u => (rightUnitor u).symm)
+    (fun _ u => inv_mem _ (TwoSupercategory.rightUnitor_hom_mem (R := R) u))
+    (fun _ {_ _} θ => TwoSupercategory.rightUnitor_inv_naturality R θ)
+    (fun {_ _} h u => by
+      change 𝟙 _ ≫ (rightUnitor (h ≫ u)).inv = h ◁ (rightUnitor u).inv ≫ (associator h u (𝟙 a)).inv
+      rw [Category.id_comp, TwoSupercategory.rightUnitor_comp_inv R])
+
+theorem yonedaMapComp_hom_val_app {a b c : B} (f : a ⟶ b) (g : b ⟶ c) (e : B) (p : ZMod 2)
+    (u : e ⟶ a) :
+    (((yonedaMapComp (R := R) f g).hom).1 e).app p u =
+      if p = 0 then (associator u f g).hom else 0 := rfl
+
+theorem yonedaMapId_hom_val_app (a e : B) (p : ZMod 2) (u : e ⟶ a) :
+    (((yonedaMapId (R := R) a).hom).1 e).app p u =
+      if p = 0 then (rightUnitor u).inv else 0 := rfl
+
+variable (R B) in
+/-- **Brundan–Ellis, after Definition 2.2.** The 2-superfunctor
+`yoneda : 𝔄 → TwoStrictification R 𝔄`: the identity on objects, `f ↦ (- ≫ f, a⁻¹)`,
+`η ↦ - ◁ η`, with coherence maps `c = a` and `i = r⁻¹`. -/
+def yoneda : TwoSuperfunctor R B (TwoStrictification R B) where
+  obj a := ⟨a⟩
+  map f := yonedaMap f
+  map₂ η := yonedaMap₂ η
+  map₂_id f := hom2_ext' fun c p u => by
+    rw [yonedaMap₂_val_app, proj_id]
+    rcases parity_eq_zero_or_one p with rfl | rfl
+    · simp only [if_pos, TwoSupercategory.whiskerLeft_id (R := R)]
+      rfl
+    · simp [zmod2_one_ne_zero, TwoSupercategory.whiskerLeft_zero R]
+  map₂_comp η θ := hom2_ext' fun c r u => by
+    rw [yonedaMap₂_val_app, Supercategory.proj_comp, comp2_val', Superfunctor.comp_app,
+      yonedaMap₂_val_app, yonedaMap₂_val_app, yonedaMap₂_val_app, yonedaMap₂_val_app,
+      TwoSupercategory.whiskerLeft_add (R := R), TwoSupercategory.whiskerLeft_comp (R := R),
+      TwoSupercategory.whiskerLeft_comp (R := R)]
+  map₂_add η θ := hom2_ext' fun c p u => by
+    change u ◁ proj R p (η + θ) = u ◁ proj R p η + u ◁ proj R p θ
+    rw [map_add, TwoSupercategory.whiskerLeft_add (R := R)]
+  map₂_smul r η := hom2_ext' fun c p u => by
+    change u ◁ proj R p (r • η) = r • (u ◁ proj R p η)
+    rw [map_smul, TwoSupercategory.whiskerLeft_smul]
+  map₂_mem {a b f g p η} hη c := by
+    rw [Superfunctor.mem_parity_iff]
+    funext u
+    change u ◁ proj R (p + 1) η = 0
+    rw [proj_of_mem_ne hη (zmod2_add_one_ne p).symm, TwoSupercategory.whiskerLeft_zero R]
+  mapComp := yonedaMapComp
+  mapId := yonedaMapId
+  mapComp_hom_mem f g c := by
+    rw [Superfunctor.mem_parity_iff]
+    funext u
+    simp [yonedaMapComp_hom_val_app, zmod2_one_ne_zero]
+  mapId_hom_mem a c := by
+    rw [Superfunctor.mem_parity_iff]
+    funext u
+    simp [yonedaMapId_hom_val_app, zmod2_one_ne_zero]
+  mapComp_naturality_left {a b c f f'} η g := hom2_ext' fun e r u => by
+    simp only [comp2_val', Superfunctor.comp_app, whiskerRight_val, Superfunctor.whiskerRight_app,
+      yonedaMapComp_hom_val_app, yonedaMap₂_val_app]
+    rcases parity_eq_zero_or_one r with rfl | rfl
+    · simp only [if_pos, zmod2_one_ne_zero, if_false, Limits.comp_zero, Limits.zero_comp,
+        add_zero, zero_add, proj_whiskerRight', Superfunctor.map, Functor.map_zero]
+      exact TwoSupercategory.associator_naturality_middle R u (proj R 0 η) g
+    · simp only [if_pos, zmod2_one_ne_zero, if_false, Limits.comp_zero, Limits.zero_comp,
+        add_zero, zero_add, proj_whiskerRight', SuperNatTrans.zmod2_one_add_one,
+        Superfunctor.map, Functor.map_zero]
+      exact TwoSupercategory.associator_naturality_middle R u (proj R 1 η) g
+  mapComp_naturality_right {a b c} f {g g'} η := hom2_ext' fun e r u => by
+    simp only [comp2_val', Superfunctor.comp_app, whiskerLeft_val, Superfunctor.whiskerLeft_app,
+      yonedaMapComp_hom_val_app, yonedaMap₂_val_app]
+    rcases parity_eq_zero_or_one r with rfl | rfl
+    · simp only [if_pos, zmod2_one_ne_zero, if_false, Limits.comp_zero, Limits.zero_comp,
+        add_zero, zero_add, proj_whiskerLeft', Superfunctor.map, Functor.map_zero]
+      exact TwoSupercategory.associator_naturality_right R u f (proj R 0 η)
+    · simp only [if_pos, zmod2_one_ne_zero, if_false, Limits.comp_zero, Limits.zero_comp,
+        add_zero, zero_add, proj_whiskerLeft', SuperNatTrans.zmod2_one_add_one,
+        Superfunctor.map, Functor.map_zero]
+      exact TwoSupercategory.associator_naturality_right R u f (proj R 1 η)
+  map₂_associator {a b c d} f g h := hom2_ext' fun e r u => by
+    have ha := Strictification.proj_of_even
+      (inv_mem _ (TwoSupercategory.associator_hom_mem (R := R) f g h))
+    rcases parity_eq_zero_or_one r with rfl | rfl
+    · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, ha, zmod2_one_ne_zero,
+        TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
+        Superfunctor.map, Functor.map_zero, TwoSupercategory.zero_whiskerRight R]
+      exact TwoSupercategory.coherence_yoneda_associator R u f g h
+    · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, ha, zmod2_one_ne_zero,
+        TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
+        Superfunctor.map, Functor.map_zero, TwoSupercategory.zero_whiskerRight R]
+  map₂_leftUnitor {a b} f := hom2_ext' fun e r u => by
+    have hl := Strictification.proj_of_even
+      (TwoSupercategory.leftUnitor_hom_mem (R := R) f)
+    rcases parity_eq_zero_or_one r with rfl | rfl
+    · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, yonedaMapId_hom_val_app, hl,
+        zmod2_one_ne_zero, TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
+        Superfunctor.map, Functor.map_zero, TwoSupercategory.zero_whiskerRight R]
+      exact TwoSupercategory.coherence_yoneda_leftUnitor R u f
+    · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, yonedaMapId_hom_val_app, hl,
+        zmod2_one_ne_zero, TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
+        Superfunctor.map, Functor.map_zero, TwoSupercategory.zero_whiskerRight R]
+  map₂_rightUnitor {a b} f := hom2_ext' fun e r u => by
+    have hr := Strictification.proj_of_even
+      (TwoSupercategory.rightUnitor_hom_mem (R := R) f)
+    rcases parity_eq_zero_or_one r with rfl | rfl
+    · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, yonedaMapId_hom_val_app, hr,
+        zmod2_one_ne_zero, TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
+        Superfunctor.map, Functor.map_zero, TwoSupercategory.zero_whiskerRight R]
+      exact TwoSupercategory.coherence_yoneda_rightUnitor R u f
+    · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, yonedaMapId_hom_val_app, hr,
+        zmod2_one_ne_zero, TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
+        Superfunctor.map, Functor.map_zero]
 
 end TwoStrictification
 
