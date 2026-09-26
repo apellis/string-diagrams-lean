@@ -123,6 +123,114 @@ def shiftData : ShiftData R (Associated R A) where
 
 end QAssociated
 
+/-- **The graded `(Q, Π)`-supercategory associated to a `(Q, Π)`-category** (the object part of
+the 2-functor `𝔻` in the proof of Theorem 6.13): the orbit supercategory of `Q̂` on the
+associated Π-supercategory. -/
+abbrev QAssociated (R : Type w) [CommRing R] (A : Type w₁) [Category.{w₂} A] [Preadditive A]
+    [Linear R A] [QPiCategory R A] :=
+  Orbit (QAssociated.shiftData R A)
+
+namespace QAssociated
+
+variable {R : Type w} [CommRing R] {A : Type w₁} [Category.{w₂} A] [Preadditive A] [Linear R A]
+  [QPiCategory R A]
+
+open Associated Orbit
+
+example : QPiSupercategory R (QAssociated R A) := inferInstance
+
+variable (R A) in
+/-- The identification of `A` with the underlying category of `QAssociated R A`
+(`𝔼 ∘ 𝔻 = I` on objects): `f ↦ ι(f, 0)`. -/
+def unit : A ⥤ GUnderlying R (QAssociated R A) :=
+  Associated.unit R A ⋙ Underlying.map (R := R) (ιZ (shiftData R A))
+
+variable (R A) in
+/-- The inverse identification: a morphism of degree zero is determined by its entry `(0, 0)`,
+whose even part is a morphism of `A`. -/
+def counit : GUnderlying R (QAssociated R A) ⥤ A :=
+  Underlying.map (R := R) (π₀ (shiftData R A)) ⋙ Associated.counit R A
+
+@[simp] theorem unit_obj (X : A) : (unit R A).obj X = ⟨⟨⟨⟨X⟩⟩⟩⟩ := rfl
+
+theorem unit_map_val {X Y : A} (f : X ⟶ Y) :
+    ((unit R A).map f).1.1 = (ι (shiftData R A)).map (homMk (X := ⟨X⟩) (Y := ⟨Y⟩) f 0) := rfl
+
+theorem unit_comp_counit : unit R A ⋙ counit R A = 𝟭 A :=
+  CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by
+    simp only [Functor.comp_obj, Functor.comp_map, Functor.id_obj, Functor.id_map, eqToHom_refl,
+      Category.comp_id, Category.id_comp]
+    show ((π₀ (shiftData R A)).map ((ιZ (shiftData R A)).map (homMk (X := ⟨X⟩) (Y := ⟨Y⟩) f 0))).1 = f
+    rw [ιZ_comp_π₀_map]; rfl
+
+theorem counit_comp_unit : counit R A ⋙ unit R A = 𝟭 _ :=
+  CategoryTheory.Functor.ext (fun _ => rfl) fun X Y x => by
+    simp only [Functor.comp_obj, Functor.comp_map, Functor.id_obj, Functor.id_map, eqToHom_refl,
+      Category.comp_id, Category.id_comp]
+    apply Underlying.hom_ext
+    show (ιZ (shiftData R A)).map (homMk ((π₀ (shiftData R A)).map x.1).1 0) = x.1
+    have h0 : ((π₀ (shiftData R A)).map x.1).2 = 0 :=
+      Associated.mem_parity_zero.1 (map_mem (π₀ (shiftData R A)) x.2)
+    rw [show homMk ((π₀ (shiftData R A)).map x.1).1 0 = (π₀ (shiftData R A)).map x.1 from
+      hom_ext rfl h0.symm, π₀_comp_ιZ_map]
+
+theorem unit_map_pi {X Y : A} (f : X ⟶ Y) :
+    (PiCategory.pi (R := R)).map ((unit R A).map f) = (unit R A).map ((PiCategory.pi (R := R)).map f) := by
+  apply Underlying.hom_ext; apply DegreeZero.hom_ext
+  show (PiSupercategory.pi (R := R)).map ((ι (shiftData R A)).map (homMk f 0)) =
+    (ι (shiftData R A)).map (homMk ((PiCategory.pi (R := R)).map f) 0)
+  rw [pi_map_ι]
+  congr 1
+  exact congrArg Subtype.val (Associated.unit_map_pi (R := R) (C := A) f)
+
+theorem unit_map_Q {X Y : A} (f : X ⟶ Y) :
+    (QPiCategory.Q (R := R)).map ((unit R A).map f) = (unit R A).map ((QPiCategory.Q (R := R)).map f) := by
+  apply Underlying.hom_ext; apply DegreeZero.hom_ext
+  show (QPiSupercategory.Q (R := R)).map ((ι (shiftData R A)).map (homMk f 0)) =
+    (ι (shiftData R A)).map (homMk ((QPiCategory.Q (R := R)).map f) 0)
+  rw [Q_map_ι]
+  congr 1
+  refine hom_ext rfl ?_
+  show ((Qhat R A).map (homMk f 0)).2 = 0
+  simp
+
+theorem ξ_unit (X : A) :
+    (PiCategory.ξApp (R := R) ((unit R A).obj X)).hom = (unit R A).map (PiCategory.ξApp (R := R) X).hom := by
+  apply Underlying.hom_ext
+  rw [Underlying.ξApp_hom_val]
+  apply DegreeZero.hom_ext
+  rw [DegreeZero.ξ_hom_val]
+  exact (ξ_hom_eq (d := shiftData R A) (⟨X⟩ : Associated R A)).trans
+    (congrArg (ι (shiftData R A)).map (Associated.ξ_hom (R := R) (C := A) ⟨X⟩))
+
+variable (R A) in
+/-- **`𝔼 ∘ 𝔻 = I`**: the identification `unit` is a `(Q, Π)`-functor with `β = 1` and
+`γ = 1`. -/
+def unitQPiFunctor : QPiFunctor R (unit R A) where
+  β := NatIso.ofComponents (fun X => Iso.refl _) fun f => by
+    simp only [Functor.comp_obj, Functor.comp_map, Iso.refl_hom, Category.comp_id,
+      Category.id_comp]
+    exact unit_map_pi f
+  comm X := by
+    simp only [NatIso.ofComponents_hom_app, Iso.refl_hom, CategoryTheory.Functor.map_id,
+      Category.id_comp]
+    have h := ξ_unit (R := R) (A := A) X
+    rw [PiCategory.ξApp_hom, PiCategory.ξApp_hom] at h
+    rw [h, ← Functor.map_comp, Iso.hom_inv_id_app]
+    exact (unit R A).map_id _
+  γ := NatIso.ofComponents (fun X => Iso.refl _) fun f => by
+    simp only [Functor.comp_obj, Functor.comp_map, Iso.refl_hom, Category.comp_id,
+      Category.id_comp]
+    exact unit_map_Q f
+
+@[simp] theorem unitQPiFunctor_β_hom_app (X : A) :
+    (unitQPiFunctor R A).β.hom.app X = 𝟙 _ := rfl
+
+@[simp] theorem unitQPiFunctor_γ_hom_app (X : A) :
+    (unitQPiFunctor R A).γ.hom.app X = 𝟙 _ := rfl
+
+end QAssociated
+
 end StringDiagrams
 
 end
