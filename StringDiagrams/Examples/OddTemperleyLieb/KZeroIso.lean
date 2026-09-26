@@ -29,23 +29,9 @@ open LaurentPolynomial
 
 /-! ## `Zπ` and `Zπ[x, x⁻¹]` -/
 
-/-- The evaluations `Zπ → ℤ`, `π ↦ ±1`. -/
-def evalZπ (s : ℤ) (hs : s ^ 2 = 1) : Zπ →+* ℤ :=
-  Ideal.Quotient.lift _ (Polynomial.evalRingHom s) (by
-    intro a ha
-    obtain ⟨c, rfl⟩ := Ideal.mem_span_singleton'.1 ha
-    simp [hs])
-
-theorem evalZπ_π (s : ℤ) (hs : s ^ 2 = 1) : evalZπ s hs Zπ.π = s := by
-  simp [evalZπ, Zπ.π]
-
 /-- `1` and `π` are linearly independent over `ℤ`. -/
-theorem Zπ.eq_zero_of_add_mul_π {a b : ℤ} (h : (a : Zπ) + (b : Zπ) * Zπ.π = 0) : a = 0 ∧ b = 0 := by
-  have h1 := congrArg (evalZπ 1 (by norm_num)) h
-  have h2 := congrArg (evalZπ (-1) (by norm_num)) h
-  rw [map_add, map_mul, map_intCast, map_intCast, evalZπ_π, map_zero] at h1 h2
-  simp only [Int.cast_id, mul_one, mul_neg] at h1 h2
-  omega
+theorem Zπ.eq_zero_of_add_mul_π {a b : ℤ} (h : (a : Zπ) + (b : Zπ) * Zπ.π = 0) : a = 0 ∧ b = 0 :=
+  Zπ.add_mul_π_injective (c := 0) (d := 0) (by rw [h]; simp)
 
 /-- The ring `Zπ[x, x⁻¹]`. -/
 abbrev LZ : Type := LaurentPolynomial Zπ
