@@ -97,19 +97,22 @@ variable {D : Type w₃} [Category.{w₄} D] [Preadditive D] [Linear R D] [Super
 
 /-- The restriction `F̲ : A̲ ⥤ B̲` of a superfunctor (Brundan–Ellis, Definition 1.1(v)). -/
 @[simps]
-def map (F : C ⥤ D) [PreservesParity R F] : Underlying R C ⥤ Underlying R D where
+def map (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] :
+    Underlying R C ⥤ Underlying R D where
   obj X := ⟨F.obj X.obj⟩
   map f := ⟨F.map f.1, Supercategory.map_mem F f.2⟩
   map_id X := Subtype.ext (F.map_id X.obj)
   map_comp f g := Subtype.ext (F.map_comp f.1 g.1)
 
-@[simp] theorem map_map_val (F : C ⥤ D) [PreservesParity R F] {X Y : Underlying R C}
+@[simp] theorem map_map_val (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F]
+    {X Y : Underlying R C}
     (f : X ⟶ Y) : ((map (R := R) F).map f).1 = F.map f.1 := rfl
 
-instance (F : C ⥤ D) [F.Additive] [PreservesParity R F] : (map (R := R) F).Additive where
+instance (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] :
+    (map (R := R) F).Additive where
   map_add := Subtype.ext F.map_add
 
-instance (F : C ⥤ D) [F.Additive] [F.Linear R] [PreservesParity R F] :
+instance (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] :
     (map (R := R) F).Linear R where
   map_smul f r := Subtype.ext (Functor.Linear.map_smul (F := F) f.1 r)
 
@@ -121,7 +124,8 @@ variable [PiSupercategory R C]
 
 /-- `ξ := ζζ` as an isomorphism of the underlying category. -/
 def ξUnd (X : Underlying R C) :
-    (map (R := R) (PiSupercategory.pi (R := R))).obj ((map (R := R) (PiSupercategory.pi (R := R))).obj X) ≅ X :=
+    (map (R := R) (PiSupercategory.pi (R := R))).obj
+      ((map (R := R) (PiSupercategory.pi (R := R))).obj X) ≅ X :=
   isoMk (PiSupercategory.ξ (R := R) X.obj) (PiSupercategory.ξ_hom_mem X.obj)
 
 /-- **Brundan–Ellis, (1.5) and Corollary 3.3(i).** The underlying category of a
@@ -150,7 +154,7 @@ variable [PiSupercategory R D]
 
 /-- **Brundan–Ellis, (1.5), (5.1) and Corollary 3.3(ii).** A superfunctor between
 Π-supercategories gives a Π-functor `(F̲, β_F)` between the underlying Π-categories. -/
-def piFunctor (F : C ⥤ D) [F.Additive] [F.Linear R] [PreservesParity R F] :
+def piFunctor (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] :
     PiFunctor R (map (R := R) F) where
   β := NatIso.ofComponents
     (fun X => isoMk (PiSupercategory.β R F X.obj) (PiSupercategory.β_hom_mem F X.obj))
@@ -158,19 +162,19 @@ def piFunctor (F : C ⥤ D) [F.Additive] [F.Linear R] [PreservesParity R F] :
   comm X := Subtype.ext (PiSupercategory.β_comm F X.obj)
 
 @[simp] theorem piFunctor_β_hom_app_val (F : C ⥤ D) [F.Additive] [F.Linear R]
-    [PreservesParity R F] (X : Underlying R C) :
+    [IsSuperfunctor R F] (X : Underlying R C) :
     ((piFunctor F).β.hom.app X).1 = (PiSupercategory.β R F X.obj).hom := rfl
 
 /-- **Corollary 3.3(iii).** An even supernatural transformation gives a Π-natural
 transformation of the underlying Π-functors. -/
-def natTrans {F G : C ⥤ D} [F.Additive] [F.Linear R] [PreservesParity R F] [G.Additive]
-    [G.Linear R] [PreservesParity R G] {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsSupernatural R 0 x) :
+def natTrans {F G : C ⥤ D} [F.Additive] [F.Linear R] [IsSuperfunctor R F] [G.Additive]
+    [G.Linear R] [IsSuperfunctor R G] {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsSupernatural R 0 x) :
     map (R := R) F ⟶ map (R := R) G where
   app X := ⟨x X.obj, hx.mem X.obj⟩
   naturality _ _ f := Subtype.ext (hx.naturality_zero f.1)
 
-theorem isPiNatural {F G : C ⥤ D} [F.Additive] [F.Linear R] [PreservesParity R F] [G.Additive]
-    [G.Linear R] [PreservesParity R G] {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsSupernatural R 0 x) :
+theorem isPiNatural {F G : C ⥤ D} [F.Additive] [F.Linear R] [IsSuperfunctor R F] [G.Additive]
+    [G.Linear R] [IsSuperfunctor R G] {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsSupernatural R 0 x) :
     PiFunctor.IsPiNatural R (piFunctor F) (piFunctor G) (natTrans hx) := fun X =>
   Subtype.ext (PiSupercategory.β_naturality_supernatural F G hx X.obj).symm
 

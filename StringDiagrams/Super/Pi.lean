@@ -47,13 +47,13 @@ class PiSupercategory (C : Type w₁) [Category.{w₂} C] [Preadditive C] [Linea
   pi : C ⥤ C
   [pi_additive : pi.Additive]
   [pi_linear : pi.Linear R]
-  [pi_preservesParity : PreservesParity R pi]
+  [pi_isSuperfunctor : IsSuperfunctor R pi]
   /-- The odd isomorphisms `ζ_X : Π X ≅ X`. -/
   ζ : ∀ X : C, pi.obj X ≅ X
   ζ_isSupernatural : IsSupernatural R 1 (F := pi) (G := 𝟭 C) fun X => (ζ X).hom
 
 attribute [instance] PiSupercategory.pi_additive PiSupercategory.pi_linear
-  PiSupercategory.pi_preservesParity
+  PiSupercategory.pi_isSuperfunctor
 
 namespace PiSupercategory
 
@@ -81,10 +81,10 @@ instance : (ofIsoFunctor (R := R) obj e).Linear R where
   map_smul _ _ := by simp
 
 theorem ofIsoFunctor_preservesParity (he : ∀ X, (e X).hom ∈ parity (R := R) (obj X) X 1) :
-    PreservesParity R (ofIsoFunctor (R := R) obj e) where
+    IsSuperfunctor R (ofIsoFunctor (R := R) obj e) where
   map_mem {X Y p f} hf := by
     have := comp_mem (comp_mem (he X) (twist_mem 1 hf)) (inv_mem _ (he Y))
-    rw [show (1 : ZMod 2) + p + 1 = p by rcases zmod2_cases p with rfl | rfl <;> rfl,
+    rw [show (1 : ZMod 2) + p + 1 = p by rcases parity_eq_zero_or_one p with rfl | rfl <;> rfl,
       Category.assoc] at this
     exact this
 
@@ -92,7 +92,7 @@ theorem ofIsoFunctor_preservesParity (he : ∀ X, (e X).hom ∈ parity (R := R) 
 by objects `obj X` and odd isomorphisms `e X : obj X ≅ X`. -/
 def ofIso (he : ∀ X, (e X).hom ∈ parity (R := R) (obj X) X 1) : PiSupercategory R C where
   pi := ofIsoFunctor (R := R) obj e
-  pi_preservesParity := ofIsoFunctor_preservesParity obj e he
+  pi_isSuperfunctor := ofIsoFunctor_preservesParity obj e he
   ζ := e
   ζ_isSupernatural := IsSupernatural.of_twist he fun f => by simp
 
@@ -167,7 +167,8 @@ theorem ξ_naturality {X Y : C} (f : X ⟶ Y) :
     Category.assoc, ζ_naturality (R := R) (twist R 1 f), twist_twist, Category.assoc]
 
 /-- **Corollary 3.3(i).** `ξ Π = Π ξ`. -/
-theorem ξ_pi (X : C) : (ξ (R := R) ((pi (R := R)).obj X)).hom = (pi (R := R)).map (ξ (R := R) X).hom := by
+theorem ξ_pi (X : C) :
+    (ξ (R := R) ((pi (R := R)).obj X)).hom = (pi (R := R)).map (ξ (R := R) X).hom := by
   have h : (ζ (R := R) ((pi (R := R)).obj X)).hom = -(pi (R := R)).map (ζ (R := R) X).hom := by
     rw [pi_map_ζ, neg_neg]
   rw [ξ_hom, ξ_hom, h, Functor.map_neg, Preadditive.neg_comp, Preadditive.comp_neg, neg_neg,
@@ -211,30 +212,31 @@ variable (F : C ⥤ D)
 
 /-- The literal formula of Corollary 3.3(ii): `β_F = -(ζ_B F ζ_A⁻¹)`, whose component at `X` is
 `-(Π(F(ζ_X⁻¹)) ≫ ζ_{F Π X})`. -/
-theorem β_hom_eq_neg [PreservesParity R F] (X : C) :
+theorem β_hom_eq_neg [F.Additive] [F.Linear R] [IsSuperfunctor R F] (X : C) :
     (β R F X).hom = -((pi (R := R)).map (F.map (ζ (R := R) X).inv) ≫
       (ζ (R := R) (F.obj ((pi (R := R)).obj X))).hom) := by
   rw [ζ_naturality_of_mem (map_mem F (ζ_inv_mem (R := R) X)), sign_one, neg_smul, one_smul,
     neg_neg, β_hom]
 
-theorem β_hom_mem [PreservesParity R F] (X : C) :
+theorem β_hom_mem [F.Additive] [F.Linear R] [IsSuperfunctor R F] (X : C) :
     (β R F X).hom ∈ parity (R := R) ((pi (R := R)).obj (F.obj X)) (F.obj ((pi (R := R)).obj X)) 0 :=
   comp_mem (ζ_hom_mem (F.obj X)) (map_mem F (ζ_inv_mem (R := R) X))
 
 /-- **Corollary 3.3(ii).** `β_F` is natural. -/
-theorem β_naturality [F.Additive] [F.Linear R] [PreservesParity R F] {X Y : C} (f : X ⟶ Y) :
+theorem β_naturality [F.Additive] [F.Linear R] [IsSuperfunctor R F] {X Y : C} (f : X ⟶ Y) :
     (pi (R := R)).map (F.map f) ≫ (β R F Y).hom = (β R F X).hom ≫ F.map ((pi (R := R)).map f) := by
   rw [β_hom, β_hom, ζ_naturality_assoc, Category.assoc, pi_map_eq, ← F.map_comp,
     Iso.inv_hom_id_assoc, F.map_comp, map_twist]
 
 /-- The natural isomorphism `β_F : F ⋙ Π ≅ Π ⋙ F`. -/
-def βIso [F.Additive] [F.Linear R] [PreservesParity R F] : F ⋙ pi (R := R) ≅ pi (R := R) ⋙ F :=
+def βIso [F.Additive] [F.Linear R] [IsSuperfunctor R F] : F ⋙ pi (R := R) ≅ pi (R := R) ⋙ F :=
   NatIso.ofComponents (fun X => β R F X) fun f => β_naturality F f
 
-@[simp] theorem βIso_hom_app [F.Additive] [F.Linear R] [PreservesParity R F] (X : C) : (βIso (R := R) F).hom.app X = (β R F X).hom := rfl
+@[simp] theorem βIso_hom_app [F.Additive] [F.Linear R] [IsSuperfunctor R F] (X : C) :
+    (βIso (R := R) F).hom.app X = (β R F X).hom := rfl
 
 /-- **Corollary 3.3(ii).** `ξ_B F ξ_A⁻¹ = β_F Π_A ∘ Π_B β_F`. -/
-theorem β_comm [F.Additive] [PreservesParity R F] (X : C) :
+theorem β_comm [F.Additive] [F.Linear R] [IsSuperfunctor R F] (X : C) :
     (ξ (R := R) (F.obj X)).hom ≫ F.map (ξ (R := R) X).inv =
       (pi (R := R)).map (β R F X).hom ≫ (β R F ((pi (R := R)).obj X)).hom := by
   have h := ζ_naturality_of_mem (R := R) (map_mem F (ζ_inv_mem (R := R) X))
@@ -265,7 +267,8 @@ theorem β_id (X : C) : (β R (𝟭 C) X).hom = 𝟙 _ := by
 theorem β_pi (X : C) : (β R (pi (R := R)) X).hom = -𝟙 _ := by
   have h : (ζ (R := R) ((pi (R := R)).obj X)).hom = -(pi (R := R)).map (ζ (R := R) X).hom := by
     rw [pi_map_ζ, neg_neg]
-  rw [β_hom, h, Preadditive.neg_comp, ← Functor.map_comp, Iso.hom_inv_id, CategoryTheory.Functor.map_id]
+  rw [β_hom, h, Preadditive.neg_comp, ← Functor.map_comp, Iso.hom_inv_id,
+      CategoryTheory.Functor.map_id]
 
 end PiSupercategory
 

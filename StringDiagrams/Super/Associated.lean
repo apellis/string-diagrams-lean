@@ -197,14 +197,14 @@ instance : Supercategory R (Associated R C) where
   parity := parityAssoc
   isInternal X Y := by
     rw [DirectSum.isInternal_submodule_iff_isCompl _ (i := 0) (j := 1) (by decide)
-      (by ext p; rcases zmod2_cases p with rfl | rfl <;> simp)]
+      (by ext p; rcases parity_eq_zero_or_one p with rfl | rfl <;> simp)]
     have h := LinearMap.isCompl_range_inl_inr (R := R) (M := X.obj ⟶ Y.obj)
       (M₂ := X.obj ⟶ (PiCategory.pi (R := R)).obj Y.obj)
     rw [LinearMap.range_inl, LinearMap.range_inr] at h
     simpa [parityAssoc, show ¬((1 : ZMod 2) = 0) by decide] using h
   id_mem X := mem_parityAssoc_zero.2 rfl
   comp_mem {X Y Z p q f g} hf hg := by
-    rcases zmod2_cases p with rfl | rfl <;> rcases zmod2_cases q with rfl | rfl
+    rcases parity_eq_zero_or_one p with rfl | rfl <;> rcases parity_eq_zero_or_one q with rfl | rfl
     · rw [mem_parityAssoc_zero] at hf hg; rw [add_zero, mem_parityAssoc_zero]; simp [hf, hg]
     · rw [mem_parityAssoc_zero] at hf; rw [mem_parityAssoc_one] at hg
       rw [zero_add, mem_parityAssoc_one]; simp [hf, hg]
@@ -339,7 +339,8 @@ theorem counit_comp_unit : counit R C ⋙ unit R C = 𝟭 _ :=
     exact Underlying.hom_ext (hom_ext rfl (mem_parity_zero.1 f.2).symm)
 
 theorem unit_map_pi {X Y : C} (f : X ⟶ Y) :
-    (PiCategory.pi (R := R)).map ((unit R C).map f) = (unit R C).map ((PiCategory.pi (R := R)).map f) :=
+    (PiCategory.pi (R := R)).map ((unit R C).map f) =
+      (unit R C).map ((PiCategory.pi (R := R)).map f) :=
   Underlying.hom_ext (hom_ext (pi_map_fst _) (by simp [pi_map_snd]))
 
 /-- `unit` commutes with `Π` on the nose. -/
@@ -396,7 +397,8 @@ def map {F : C ⥤ D} [F.Additive] (hF : PiFunctor R F) : Associated R C ⥤ Ass
         hF.β.inv.app _ ≫ (PiCategory.pi (R := R)).map (hF.β.inv.app Z.obj) ≫
           (PiCategory.ξApp (R := R) (F.obj Z.obj)).hom := by
       rw [PiCategory.ξApp_hom, PiCategory.ξApp_hom, ← cancel_epi
-        ((PiCategory.ξ (R := R)).hom.app (F.obj Z.obj) ≫ F.map ((PiCategory.ξ (R := R)).inv.app Z.obj))]
+        ((PiCategory.ξ (R := R)).hom.app (F.obj Z.obj) ≫
+          F.map ((PiCategory.ξ (R := R)).inv.app Z.obj))]
       rw [Category.assoc, ← F.map_comp, Iso.inv_hom_id_app]
       simp only [CategoryTheory.Functor.map_id, Category.comp_id, Category.assoc]
       rw [reassoc_of% c]
@@ -417,9 +419,10 @@ instance {F : C ⥤ D} [F.Additive] (hF : PiFunctor R F) : (map hF).Additive whe
 instance {F : C ⥤ D} [F.Additive] [F.Linear R] (hF : PiFunctor R F) : (map hF).Linear R where
   map_smul _ _ := by ext <;> simp
 
-instance {F : C ⥤ D} [F.Additive] (hF : PiFunctor R F) : PreservesParity R (map hF) where
+instance {F : C ⥤ D} [F.Additive] [F.Linear R] (hF : PiFunctor R F) :
+    IsSuperfunctor R (map hF) where
   map_mem {X Y p f} hf := by
-    rcases zmod2_cases p with rfl | rfl
+    rcases parity_eq_zero_or_one p with rfl | rfl
     · rw [mem_parity_zero] at hf ⊢; simp [hf]
     · rw [mem_parity_one] at hf ⊢; simp [hf]
 
@@ -449,7 +452,8 @@ def T : Associated R (Underlying R A) ⥤ A where
   map_id X := by simp
   map_comp {X Y Z} f g := by
     have h1 := PiSupercategory.ζ_naturality (R := R) g.1.1
-    have h2 := PiSupercategory.ζ_naturality (R := R) (g.2.1 ≫ (PiSupercategory.ζ (R := R) Z.obj.obj).hom)
+    have h2 := PiSupercategory.ζ_naturality (R := R)
+      (g.2.1 ≫ (PiSupercategory.ζ (R := R) Z.obj.obj).hom)
     rw [twist_one_of_mem g.1.2, sign_zero, one_smul] at h1
     rw [twist_one_of_mem (comp_mem g.2.2 (PiSupercategory.ζ_hom_mem (R := R) Z.obj.obj)),
       zero_add, sign_one, neg_one_smul, Functor.map_comp, Category.assoc] at h2
@@ -466,9 +470,9 @@ instance : (T R A).Additive where
 instance : (T R A).Linear R where
   map_smul _ _ := by simp [smul_add]
 
-instance : PreservesParity R (T R A) where
+instance : IsSuperfunctor R (T R A) where
   map_mem {X Y p f} hf := by
-    rcases zmod2_cases p with rfl | rfl
+    rcases parity_eq_zero_or_one p with rfl | rfl
     · rw [mem_parity_zero] at hf
       simp only [T_map, hf, Underlying.zero_val, Limits.zero_comp, add_zero]
       exact f.1.2
@@ -521,7 +525,8 @@ theorem T_comp_Tinv : T R A ⋙ Tinv R A = 𝟭 _ :=
 
 /-- `T_A` carries `ζ` of `(A̲)^` to `ζ` of `A`. -/
 theorem T_map_ζ (X : Associated R (Underlying R A)) :
-    (T R A).map (PiSupercategory.ζ (R := R) X).hom = (PiSupercategory.ζ (R := R) X.obj.obj).hom := by
+    (T R A).map (PiSupercategory.ζ (R := R) X).hom =
+      (PiSupercategory.ζ (R := R) X.obj.obj).hom := by
   simp [ζ_hom, ζIso]
 
 variable {B : Type w₃} [Category.{w₄} B] [Preadditive B] [Linear R B] [Supercategory R B]
@@ -529,7 +534,7 @@ variable {B : Type w₃} [Category.{w₄} B] [Preadditive B] [Linear R B] [Super
 
 /-- **Lemma 5.1**, naturality of `T`: `F ∘ T_A = T_B ∘ (F̲)^` for a superfunctor `F` between
 Π-supercategories. -/
-theorem T_naturality (F : A ⥤ B) [F.Additive] [F.Linear R] [PreservesParity R F] :
+theorem T_naturality (F : A ⥤ B) [F.Additive] [F.Linear R] [IsSuperfunctor R F] :
     map (Underlying.piFunctor (R := R) F) ⋙ T R B = T R A ⋙ F :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by
     simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp]

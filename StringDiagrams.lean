@@ -7,6 +7,10 @@ import StringDiagrams.Generation
 import StringDiagrams.Interchange
 import StringDiagrams.Grading
 import StringDiagrams.Super.Basic
+import StringDiagrams.Super.Functor
+import StringDiagrams.Super.Monoidal
+import StringDiagrams.Super.Bicategory
+import StringDiagrams.Super.Presented
 import StringDiagrams.Super.Parity
 import StringDiagrams.Super.Supernatural
 import StringDiagrams.Super.PiCategory
@@ -45,6 +49,7 @@ import StringDiagrams.Biadjunction.Words
 import StringDiagrams.Biadjunction.Presented
 import StringDiagrams.Biadjunction.PivotalExtension
 import StringDiagrams.Examples.WalkingBiadjunction
+import StringDiagrams.Examples.OddBrauer
 
 /-!
 # StringDiagrams

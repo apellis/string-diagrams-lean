@@ -2,17 +2,19 @@ import StringDiagrams.Super.Parity
 import Mathlib.CategoryTheory.Linear.LinearFunctor
 
 /-!
-# Parity-preserving functors and supernatural transformations
+# Homogeneous supernatural transformations and superequivalences
 
 Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v3,
 Definition 1.1(ii)–(iv), in the unpacked form of `StringDiagrams.Supercategory`:
 
-* a superfunctor is an `R`-linear functor `F` (`[F.Additive] [F.Linear R]`) preserving parities
-  (`Supercategory.PreservesParity R F`);
-* a supernatural transformation of parity `p` between superfunctors is a family of morphisms of
+* superfunctors are `Supercategory.IsSuperfunctor` (`StringDiagrams.Super.Functor`); we add
+  their compatibility with parity components and the twist (`map_proj`, `map_twist`), and that
+  faithful superfunctors reflect parity (`mem_of_map_mem`);
+* a *homogeneous* supernatural transformation of parity `p` is a family of morphisms of
   parity `p` satisfying `x_μ ∘ F f = (-1)^{p|f|} G f ∘ x_λ` for homogeneous `f`
-  (`Supercategory.IsSupernatural R p x`); a general supernatural transformation is a family
-  whose parity components are supernatural (`Supercategory.IsSupernaturalTrans`);
+  (`Supercategory.IsSupernatural R p x`). This is exactly one homogeneous component of a
+  `Supercategory.SuperNatTrans`: `SuperNatTrans.isSupernatural` and
+  `IsSupernatural.toSuperNatTrans` (`isSupernatural_iff`) translate between the two;
 * a superfunctor is evenly dense if every object of the target is evenly isomorphic to an
   object in its image, and a superequivalence if it has a quasi-inverse superfunctor with even
   unit and counit isomorphisms (`Supercategory.Superequivalence`).
@@ -37,27 +39,15 @@ variable {R : Type w} [CommRing R]
   {D : Type w₃} [Category.{w₄} D] [Preadditive D] [Linear R D] [Supercategory R D]
   {E : Type w₅} [Category.{w₆} E] [Preadditive E] [Linear R E] [Supercategory R E]
 
-variable (R) in
-/-- A functor between supercategories preserves parities (Brundan–Ellis, Definition 1.1(ii),
-together with `R`-linearity). -/
-class PreservesParity (F : C ⥤ D) : Prop where
-  map_mem : ∀ {X Y : C} {p : ZMod 2} {f : X ⟶ Y}, f ∈ parity (R := R) X Y p →
-    F.map f ∈ parity (R := R) (F.obj X) (F.obj Y) p
-
-theorem map_mem (F : C ⥤ D) [PreservesParity R F] {X Y : C} {p : ZMod 2} {f : X ⟶ Y}
-    (hf : f ∈ parity (R := R) X Y p) : F.map f ∈ parity (R := R) (F.obj X) (F.obj Y) p :=
-  PreservesParity.map_mem hf
-
-instance PreservesParity.id : PreservesParity R (𝟭 C) where
-  map_mem hf := hf
-
-instance PreservesParity.comp (F : C ⥤ D) (G : D ⥤ E) [PreservesParity R F]
-    [PreservesParity R G] : PreservesParity R (F ⋙ G) where
-  map_mem hf := Supercategory.map_mem (R := R) G (Supercategory.map_mem (R := R) F hf)
+/-- A superfunctor preserves parities (`IsSuperfunctor.map_mem`). -/
+theorem map_mem (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] {X Y : C}
+    {p : ZMod 2} {f : X ⟶ Y} (hf : f ∈ parity (R := R) X Y p) :
+    F.map f ∈ parity (R := R) (F.obj X) (F.obj Y) p :=
+  IsSuperfunctor.map_mem hf
 
 section Superfunctor
 
-theorem map_proj (F : C ⥤ D) [F.Additive] [PreservesParity R F] (p : ZMod 2) {X Y : C}
+theorem map_proj (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] (p : ZMod 2) {X Y : C}
     (f : X ⟶ Y) :
     F.map (proj R p f) = proj R p (F.map f) := by
   refine induction_on (R := R) f (by simp) (fun q g hg => ?_) (fun g h hg hh => ?_)
@@ -66,7 +56,7 @@ theorem map_proj (F : C ⥤ D) [F.Additive] [PreservesParity R F] (p : ZMod 2) {
     · rw [proj_of_mem_ne hg h, proj_of_mem_ne (map_mem F hg) h, F.map_zero]
   · rw [map_add, F.map_add, hg, hh, F.map_add, map_add]
 
-theorem map_twist (F : C ⥤ D) [F.Additive] [F.Linear R] [PreservesParity R F] (p : ZMod 2)
+theorem map_twist (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] (p : ZMod 2)
     {X Y : C} (f : X ⟶ Y) :
     F.map (twist R p f) = twist R p (F.map f) := by
   rw [twist_apply, twist_apply, F.map_add, F.map_smul, map_proj, map_proj]
@@ -84,18 +74,52 @@ structure IsSupernatural (p : ZMod 2) {F G : C ⥤ D} (x : ∀ X, F.obj X ⟶ G.
   naturality : ∀ {X Y : C} {q : ZMod 2} {f : X ⟶ Y}, f ∈ parity (R := R) X Y q →
     F.map f ≫ x Y = sign R (p * q) • (x X ≫ G.map f)
 
-variable (R) in
-/-- A (not necessarily homogeneous) supernatural transformation: both parity components are
-supernatural (Brundan–Ellis, Definition 1.1(iii)). -/
-def IsSupernaturalTrans {F G : C ⥤ D} (x : ∀ X, F.obj X ⟶ G.obj X) : Prop :=
-  ∀ p, IsSupernatural R p fun X => proj R p (x X)
+/-- The homogeneous components of a supernatural transformation are homogeneous supernatural
+transformations. -/
+theorem SuperNatTrans.isSupernatural {F G : C ⥤ D} (t : SuperNatTrans R F G) (p : ZMod 2) :
+    IsSupernatural R p (t.app p) where
+  mem := t.app_mem p
+  naturality hf := by rw [t.naturality p _ hf, koszulSign_smul (R := R)]
+
+/-- A homogeneous supernatural transformation of parity `p`, as a `SuperNatTrans` whose
+component of parity `p + 1` vanishes. -/
+def IsSupernatural.toSuperNatTrans {F G : C ⥤ D} {p : ZMod 2} {x : ∀ X, F.obj X ⟶ G.obj X}
+    (hx : IsSupernatural R p x) : SuperNatTrans R F G where
+  app q X := if q = p then x X else 0
+  app_mem q X := by
+    split_ifs with h
+    · subst h; exact hx.mem X
+    · exact Submodule.zero_mem _
+  naturality q X Y r f hf := by
+    split_ifs with h
+    · subst h; rw [hx.naturality hf, koszulSign_smul (R := R)]
+    · simp
+
+theorem IsSupernatural.toSuperNatTrans_app {F G : C ⥤ D} {p : ZMod 2}
+    {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsSupernatural R p x) :
+    hx.toSuperNatTrans.app p = x := by
+  funext X; simp [toSuperNatTrans]
+
+theorem IsSupernatural.toSuperNatTrans_isHomogeneous {F G : C ⥤ D} {p : ZMod 2}
+    {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsSupernatural R p x) :
+    hx.toSuperNatTrans.IsHomogeneous p := fun q hq => by
+  funext X; simp [toSuperNatTrans, hq]
+
+/-- `IsSupernatural R p x` says exactly that `x` is the parity-`p` component of a
+supernatural transformation that is homogeneous of parity `p`. -/
+theorem isSupernatural_iff {F G : C ⥤ D} {p : ZMod 2} {x : ∀ X, F.obj X ⟶ G.obj X} :
+    IsSupernatural R p x ↔
+      ∃ t : SuperNatTrans R F G, t.IsHomogeneous p ∧ t.app p = x :=
+  ⟨fun hx => ⟨hx.toSuperNatTrans, hx.toSuperNatTrans_isHomogeneous, hx.toSuperNatTrans_app⟩,
+    fun ⟨t, _, ht⟩ => ht ▸ t.isSupernatural p⟩
 
 section
 
 variable {F G H : C ⥤ D}
 
 /-- The supernaturality condition for arbitrary (inhomogeneous) morphisms. -/
-theorem IsSupernatural.naturality_twist [F.Additive] [G.Additive] [G.Linear R] {p : ZMod 2} {x : ∀ X, F.obj X ⟶ G.obj X}
+theorem IsSupernatural.naturality_twist [F.Additive] [G.Additive] [G.Linear R] {p : ZMod 2}
+    {x : ∀ X, F.obj X ⟶ G.obj X}
     (hx : IsSupernatural R p x) {X Y : C} (f : X ⟶ Y) :
     F.map f ≫ x Y = x X ≫ G.map (twist R p f) := by
   refine induction_on (R := R) f (by simp) (fun q g hg => ?_) (fun g h hg hh => ?_)
@@ -110,13 +134,15 @@ theorem IsSupernatural.of_twist [G.Linear R] {p : ZMod 2} {x : ∀ X, F.obj X �
   naturality hf := by rw [nat, twist_of_mem p hf, G.map_smul, Linear.comp_smul]
 
 /-- Even supernatural transformations are natural. -/
-theorem IsSupernatural.naturality_zero [F.Additive] [G.Additive] [G.Linear R] {x : ∀ X, F.obj X ⟶ G.obj X}
+theorem IsSupernatural.naturality_zero [F.Additive] [G.Additive] [G.Linear R]
+    {x : ∀ X, F.obj X ⟶ G.obj X}
     (hx : IsSupernatural R 0 x) {X Y : C} (f : X ⟶ Y) : F.map f ≫ x Y = x X ≫ G.map f := by
   rw [hx.naturality_twist, twist_zero]
 
 /-- The natural transformation underlying an even supernatural transformation. -/
 @[simps]
-def IsSupernatural.toNatTrans [F.Additive] [G.Additive] [G.Linear R] {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsSupernatural R 0 x) :
+def IsSupernatural.toNatTrans [F.Additive] [G.Additive] [G.Linear R] {x : ∀ X, F.obj X ⟶ G.obj X}
+    (hx : IsSupernatural R 0 x) :
     F ⟶ G where
   app := x
   naturality _ _ f := hx.naturality_zero f
@@ -142,7 +168,7 @@ theorem IsSupernatural.comp [F.Additive] [G.Additive] [G.Linear R] [H.Additive] 
 /-- Whiskering a supernatural transformation by a superfunctor on the outside. -/
 theorem IsSupernatural.whiskerRight [F.Additive] [G.Additive] [G.Linear R] {p : ZMod 2}
     {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsSupernatural R p x) (K : D ⥤ E) [K.Additive]
-    [K.Linear R] [PreservesParity R K] :
+    [K.Linear R] [IsSuperfunctor R K] :
     IsSupernatural R p (F := F ⋙ K) (G := G ⋙ K) fun X => K.map (x X) where
   mem X := Supercategory.map_mem K (hx.mem X)
   naturality hf := by
@@ -152,7 +178,7 @@ theorem IsSupernatural.whiskerRight [F.Additive] [G.Additive] [G.Linear R] {p : 
 /-- Whiskering a supernatural transformation by a superfunctor on the inside. -/
 theorem IsSupernatural.whiskerLeft {B : Type*} [Category B] [Preadditive B] [Linear R B]
     [Supercategory R B] {p : ZMod 2} {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsSupernatural R p x)
-    (K : B ⥤ C) [PreservesParity R K] :
+    (K : B ⥤ C) [K.Additive] [K.Linear R] [IsSuperfunctor R K] :
     IsSupernatural R p (F := K ⋙ F) (G := K ⋙ G) fun X => x (K.obj X) where
   mem X := hx.mem (K.obj X)
   naturality hf := hx.naturality (Supercategory.map_mem K hf)
@@ -161,13 +187,13 @@ end
 
 /-! ## Faithful superfunctors reflect parity -/
 
-theorem mem_of_map_mem (F : C ⥤ D) [F.Additive] [PreservesParity R F] [F.Faithful]
+theorem mem_of_map_mem (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] [F.Faithful]
     {X Y : C} {p : ZMod 2} {f : X ⟶ Y} (hf : F.map f ∈ parity (R := R) (F.obj X) (F.obj Y) p) :
     f ∈ parity (R := R) X Y p := by
   have h0 : proj R (p + 1) f = 0 := F.map_injective (by
     rw [map_proj, F.map_zero, proj_of_mem_ne hf (Ne.symm (zmod2_add_one_ne p))])
   have h := proj_add_proj (R := R) f
-  rcases zmod2_cases p with rfl | rfl
+  rcases parity_eq_zero_or_one p with rfl | rfl
   · rw [show (0 : ZMod 2) + 1 = 1 from rfl] at h0
     rw [h0, add_zero] at h; exact h ▸ proj_mem _ _
   · rw [show (1 : ZMod 2) + 1 = 0 from rfl] at h0
@@ -190,7 +216,7 @@ structure Superequivalence (F : C ⥤ D) where
   inverse : D ⥤ C
   [inverse_additive : inverse.Additive]
   [inverse_linear : inverse.Linear R]
-  [inverse_preservesParity : PreservesParity R inverse]
+  [inverse_isSuperfunctor : IsSuperfunctor R inverse]
   /-- The unit isomorphism. -/
   unitIso : 𝟭 C ≅ F ⋙ inverse
   /-- The counit isomorphism. -/
@@ -199,7 +225,7 @@ structure Superequivalence (F : C ⥤ D) where
   counitIso_mem : ∀ Y, counitIso.hom.app Y ∈ parity (R := R) (F.obj (inverse.obj Y)) Y 0
 
 attribute [instance] Superequivalence.inverse_additive Superequivalence.inverse_linear
-  Superequivalence.inverse_preservesParity
+  Superequivalence.inverse_isSuperfunctor
 
 /-- A superequivalence is evenly dense. -/
 theorem Superequivalence.evenlyDense {F : C ⥤ D} (e : Superequivalence R F) :
@@ -207,7 +233,7 @@ theorem Superequivalence.evenlyDense {F : C ⥤ D} (e : Superequivalence R F) :
 
 section OfFullyFaithful
 
-variable (F : C ⥤ D) [F.Additive] [F.Linear R] [PreservesParity R F] [F.Full] [F.Faithful]
+variable (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] [F.Full] [F.Faithful]
   (hF : EvenlyDense R F)
 
 /-- The object chosen by even density. -/
@@ -217,7 +243,7 @@ def EvenlyDense.obj (Y : D) : C := (hF Y).choose
 def EvenlyDense.iso (Y : D) : F.obj (hF.obj F Y) ≅ Y := (hF Y).choose_spec.choose
 
 omit [Preadditive C] [Linear R C] [Supercategory R C] [F.Additive] [F.Linear R]
-  [PreservesParity R F] [F.Full] [F.Faithful] in
+  [IsSuperfunctor R F] [F.Full] [F.Faithful] in
 theorem EvenlyDense.iso_mem (Y : D) :
     (hF.iso F Y).hom ∈ parity (R := R) (F.obj (hF.obj F Y)) Y 0 :=
   (hF Y).choose_spec.choose_spec
@@ -236,7 +262,7 @@ instance EvenlyDense.inverse_additive : (hF.inverse F).Additive where
 instance EvenlyDense.inverse_linear : (hF.inverse F).Linear R where
   map_smul _ _ := F.map_injective (by simp [F.map_smul])
 
-instance EvenlyDense.inverse_preservesParity : PreservesParity R (hF.inverse F) where
+instance EvenlyDense.inverse_isSuperfunctor : IsSuperfunctor R (hF.inverse F) where
   map_mem {Y Y' p g} hg := by
     apply mem_of_map_mem F
     rw [EvenlyDense.inverse_map, F.map_preimage]
