@@ -67,6 +67,7 @@ import StringDiagrams.Super.SVecQuotient
 import StringDiagrams.Super.BalancedTensor
 import StringDiagrams.Super.BimoduleMonoidal
 import StringDiagrams.Super.SBim
+import StringDiagrams.Super.GSBim
 import StringDiagrams.Super.KaroubiMonoidal
 import StringDiagrams.Super.SKarMonoidal
 import StringDiagrams.Super.EndMonoidal
