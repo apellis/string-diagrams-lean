@@ -411,7 +411,8 @@ theorem γ_Q (X : C) : (γ R 𝐐 X).hom = 𝟙 _ := by
 
 /-- The compatibility of `γ_F` with `β`: `γ_F Π ∘ Q' β_F ∘ β_{Q'} F = F β_Q ∘ β_F Q ∘ Π' γ_F`
 in `Hom(Π' Q' F, F Q Π)` (this identity is needed in Theorem 6.13; it is not listed among the
-axioms of a `(Q, Π)`-functor in Definition 6.12(ii), see `QPiFunctor.IsCompatible`). -/
+axioms of a `(Q, Π)`-functor in the printed Definition 6.12(ii), and it is the axiom added to
+the definition adopted in `StringDiagrams.QPiFunctor`, see `QPiFunctorData.IsCompatible`). -/
 theorem β_γ_compat (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] (X : C) :
     (PiSupercategory.β R (Q (R := R) (C := D)) (F.obj X)).hom ≫
         (Q (R := R)).map (PiSupercategory.β R F X).hom ≫ (γ R F ((PiSupercategory.pi (R := R)).obj X)).hom =
