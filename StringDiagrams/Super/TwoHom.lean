@@ -51,7 +51,7 @@ noncomputable section
 namespace StringDiagrams
 
 open CategoryTheory Supercategory BicategoryStruct TwoSupercategory
-open scoped Oplax.OplaxTrans
+open scoped Oplax.OplaxTrans Oplax.OplaxTrans.OplaxFunctor
 
 universe w₁ v₁ u₁ w₂ v₂ u₂ w
 
@@ -88,9 +88,11 @@ def isoOfOplaxModificationIso {θ θ' : TwoNatTrans F G} (e : θ.toOplaxTrans �
   hom := homOfOplaxModification e.hom.as
   inv := homOfOplaxModification e.inv.as
   hom_inv_id := hom_ext fun a =>
-    congrArg (fun Γ => Subtype.val (Oplax.OplaxTrans.Modification.app (Oplax.OplaxTrans.Hom.as Γ) ⟨a⟩)) e.hom_inv_id
+    congrArg (fun Γ => Subtype.val
+      (Oplax.OplaxTrans.Modification.app (Oplax.OplaxTrans.Hom.as Γ) ⟨a⟩)) e.hom_inv_id
   inv_hom_id := hom_ext fun a =>
-    congrArg (fun Γ => Subtype.val (Oplax.OplaxTrans.Modification.app (Oplax.OplaxTrans.Hom.as Γ) ⟨a⟩)) e.inv_hom_id
+    congrArg (fun Γ => Subtype.val
+      (Oplax.OplaxTrans.Modification.app (Oplax.OplaxTrans.Hom.as Γ) ⟨a⟩)) e.inv_hom_id
 
 /-! ### Whiskerings of supermodifications -/
 
@@ -138,48 +140,39 @@ def whiskerRight {θ θ' : TwoNatTrans F G} (α : θ ⟶ θ') (ψ : TwoNatTrans 
 
 /-! ### Coherence maps -/
 
-set_option backward.isDefEq.respectTransparency false in
 /-- The associator of `𝔥𝔬𝔪(𝔄, 𝔅)`, with components the associators of `𝔅`. -/
 def associator (θ : TwoNatTrans F G) (ψ : TwoNatTrans G H) (φ : TwoNatTrans H I) :
     vcomp (vcomp θ ψ) φ ≅ vcomp θ (vcomp ψ φ) :=
   isoOfOplaxModificationIso (θ := vcomp (vcomp θ ψ) φ) (θ' := vcomp θ (vcomp ψ φ))
     (Bicategory.associator θ.toOplaxTrans ψ.toOplaxTrans φ.toOplaxTrans)
 
-set_option backward.isDefEq.respectTransparency false in
 /-- The left unitor of `𝔥𝔬𝔪(𝔄, 𝔅)`, with components the left unitors of `𝔅`. -/
 def leftUnitor (θ : TwoNatTrans F G) : vcomp (id F) θ ≅ θ :=
   isoOfOplaxModificationIso (θ := vcomp (id F) θ) (θ' := θ) (Bicategory.leftUnitor θ.toOplaxTrans)
 
-set_option backward.isDefEq.respectTransparency false in
 /-- The right unitor of `𝔥𝔬𝔪(𝔄, 𝔅)`, with components the right unitors of `𝔅`. -/
 def rightUnitor (θ : TwoNatTrans F G) : vcomp θ (id G) ≅ θ :=
   isoOfOplaxModificationIso (θ := vcomp θ (id G)) (θ' := θ) (Bicategory.rightUnitor θ.toOplaxTrans)
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem associator_hom_app (θ : TwoNatTrans F G) (ψ : TwoNatTrans G H)
     (φ : TwoNatTrans H I) (a : B) :
     (associator θ ψ φ).hom.app a = (BicategoryStruct.associator (θ.X a) (ψ.X a) (φ.X a)).hom :=
   rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem associator_inv_app (θ : TwoNatTrans F G) (ψ : TwoNatTrans G H)
     (φ : TwoNatTrans H I) (a : B) :
     (associator θ ψ φ).inv.app a = (BicategoryStruct.associator (θ.X a) (ψ.X a) (φ.X a)).inv :=
   rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem leftUnitor_hom_app (θ : TwoNatTrans F G) (a : B) :
     (leftUnitor θ).hom.app a = (BicategoryStruct.leftUnitor (θ.X a)).hom := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem leftUnitor_inv_app (θ : TwoNatTrans F G) (a : B) :
     (leftUnitor θ).inv.app a = (BicategoryStruct.leftUnitor (θ.X a)).inv := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem rightUnitor_hom_app (θ : TwoNatTrans F G) (a : B) :
     (rightUnitor θ).hom.app a = (BicategoryStruct.rightUnitor (θ.X a)).hom := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem rightUnitor_inv_app (θ : TwoNatTrans F G) (a : B) :
     (rightUnitor θ).inv.app a = (BicategoryStruct.rightUnitor (θ.X a)).inv := rfl
 
@@ -232,27 +225,21 @@ theorem comp_def (θ : F ⟶ G) (ψ : G ⟶ H) : θ ≫ ψ = TwoNatTrans.vcomp �
 @[simp] theorem whiskerRight_app {θ θ' : F ⟶ G} (α : θ ⟶ θ') (ψ : G ⟶ H) (a : B) :
     (α ▷ ψ).app a = α.app a ▷ ψ.X a := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem associator_hom_app (θ : F ⟶ G) (ψ : G ⟶ H) (φ : H ⟶ I) (a : B) :
     (associator θ ψ φ).hom.app a = (associator (θ.X a) (ψ.X a) (φ.X a)).hom := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem associator_inv_app (θ : F ⟶ G) (ψ : G ⟶ H) (φ : H ⟶ I) (a : B) :
     (associator θ ψ φ).inv.app a = (associator (θ.X a) (ψ.X a) (φ.X a)).inv := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem leftUnitor_hom_app (θ : F ⟶ G) (a : B) :
     (leftUnitor θ).hom.app a = (leftUnitor (θ.X a)).hom := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem leftUnitor_inv_app (θ : F ⟶ G) (a : B) :
     (leftUnitor θ).inv.app a = (leftUnitor (θ.X a)).inv := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem rightUnitor_hom_app (θ : F ⟶ G) (a : B) :
     (rightUnitor θ).hom.app a = (rightUnitor (θ.X a)).hom := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem rightUnitor_inv_app (θ : F ⟶ G) (a : B) :
     (rightUnitor θ).inv.app a = (rightUnitor (θ.X a)).inv := rfl
 
@@ -260,7 +247,6 @@ theorem mem_parity_iff {θ θ' : F ⟶ G} {p : ZMod 2} {α : θ ⟶ θ'} :
     α ∈ parity (R := R) θ θ' p ↔ ∀ a, α.app a ∈ parity (R := R) (θ.X a) (θ'.X a) p :=
   Iff.rfl
 
-set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, Definition 2.2(iv).** 2-superfunctors `𝔄 → 𝔅`, 2-natural transformations
 and supermodifications form a 2-supercategory `𝔥𝔬𝔪(𝔄, 𝔅)`. -/
 instance instTwoSupercategory : TwoSupercategory R (TwoSuperfunctor R B C) where
