@@ -82,9 +82,11 @@ theorem layer_ext {L₁ L₂ : Layer sig} (hl : L₁.left.length = L₂.left.len
 /-- The dot with `i` strands to its left, on `n` strands. -/
 def lay (n i : ℕ) : Layer sig := ⟨(), List.replicate i (), .dot, List.replicate (n - i - 1) ()⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem lay_dom {n i : ℕ} (h : i < n) : (lay n i).dom = strands n :=
   obj_ext (by simp [lay, Layer.dom, strands, sig]; omega)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem lay_cod {n i : ℕ} (h : i < n) : (lay n i).cod = strands n :=
   obj_ext (by simp [lay, Layer.cod, strands, sig]; omega)
 
@@ -113,11 +115,12 @@ abbrev FD.obj (n : ℕ) : FD R := (pres R).obj (strands n)
 def x (n i : ℕ) : End (FD.obj R n) :=
   if h : i < n then (pres R).diag (dlay h) else 0
 
-theorem x_def {n i : ℕ} (h : i < n) : x R n i = (pres R).diag (dlay h) := dif_pos h
+theorem x_def {n i : ℕ} (h : i < n) : x R n i = (pres R).diag (dlay h) := dite_eq_left h
 
 /-- `i` strands, used to whisker on the left. -/
 def shift (i : ℕ) : Obj sig := ⟨(), List.replicate i ()⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Dots on strands `i < j` commute: the interchange law with two even generators. -/
 theorem x_mul_x_comm_of_lt {n i j : ℕ} (hij : i < j) : x R n i * x R n j = x R n j * x R n i := by
   by_cases hj : j < n
@@ -148,7 +151,7 @@ theorem x_mul_x_comm_of_lt {n i j : ℕ} (hij : i < j) : x R n i * x R n j = x R
         InterchangeData.hg₂, sig]
       omega
     rw [e₂, e₁, key]
-  · simp only [x, dif_neg hj]; simp
+  · simp only [x, dite_eq_right hj]; simp
 
 /-- Dots on distinct strands commute. -/
 theorem x_mul_x_comm {n i j : ℕ} (hij : i ≠ j) : x R n i * x R n j = x R n j * x R n i := by
@@ -161,6 +164,7 @@ theorem x_mul_x_comm {n i j : ℕ} (hij : i ≠ j) : x R n i * x R n j = x R n j
 example : MonoidalCategory (FD R) := inferInstance
 example : MonoidalLinear R (FD R) := inferInstance
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Tensor product of objects adds numbers of strands. -/
 theorem FD.obj_tensor (m n : ℕ) : FD.obj R m ⊗ FD.obj R n = FD.obj R (m + n) := by
   rw [FD.obj, FD.obj, Presentation.obj_tensor]
@@ -184,6 +188,7 @@ theorem whiskerLeft_x : FD.obj R 1 ◁ x R 1 0 = x R 2 1 := by
   apply Presentation.diag_eq_of_layers_eq
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Right whiskering of a dot at symbolic width. -/
 theorem x_whiskerRight_strands {n i : ℕ} (h : i < n) (m : ℕ) :
     x R n i ▷ FD.obj R m = eqToHom (FD.obj_tensor R n m) ≫ x R (n + m) i ≫
@@ -196,6 +201,7 @@ theorem x_whiskerRight_strands {n i : ℕ} (h : i < n) (m : ℕ) :
     List.cons.injEq, and_true]
   exact layer_ext (by simp [lay, Layer.wr]) (by simp [lay, Layer.wr, strands]; omega)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Dots on neighbouring strands commute, from the interchange law of the monoidal
 structure. -/
 theorem x_mul_x_comm_two : x R 2 0 * x R 2 1 = x R 2 1 * x R 2 0 := by

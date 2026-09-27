@@ -79,7 +79,7 @@ of Mathlib's `MonoidalCategory` other than `tensor_comp`, functoriality of the w
 the super interchange law for homogeneous morphisms, linearity and evenness of the
 whiskerings, and evenness of the coherence maps. See the module documentation. -/
 class MonoidalSupercategory [MonoidalCategoryStruct C] : Prop where
-  tensorHom_def {X₁ Y₁ X₂ Y₂ : C} (f : X₁ ⟶ Y₁) (g : X₂ ⟶ Y₂) : f ⊗ g = f ▷ X₂ ≫ Y₁ ◁ g
+  tensorHom_def {X₁ Y₁ X₂ Y₂ : C} (f : X₁ ⟶ Y₁) (g : X₂ ⟶ Y₂) : f ⊗ₘ g = f ▷ X₂ ≫ Y₁ ◁ g
   whiskerLeft_id (X Y : C) : X ◁ 𝟙 Y = 𝟙 (X ⊗ Y)
   id_whiskerRight (X Y : C) : 𝟙 X ▷ Y = 𝟙 (X ⊗ Y)
   whiskerLeft_comp (X : C) {Y Z W : C} (f : Y ⟶ Z) (g : Z ⟶ W) :
@@ -99,7 +99,7 @@ class MonoidalSupercategory [MonoidalCategoryStruct C] : Prop where
     f ∈ parity (R := R) X X' p → g ∈ parity (R := R) Y Y' q →
       f ▷ Y ≫ X' ◁ g = koszulSign p q • (X ◁ g ≫ f ▷ Y')
   associator_naturality {X₁ X₂ X₃ Y₁ Y₂ Y₃ : C} (f₁ : X₁ ⟶ Y₁) (f₂ : X₂ ⟶ Y₂) (f₃ : X₃ ⟶ Y₃) :
-    ((f₁ ⊗ f₂) ⊗ f₃) ≫ (α_ Y₁ Y₂ Y₃).hom = (α_ X₁ X₂ X₃).hom ≫ (f₁ ⊗ (f₂ ⊗ f₃))
+    ((f₁ ⊗ₘ f₂) ⊗ₘ f₃) ≫ (α_ Y₁ Y₂ Y₃).hom = (α_ X₁ X₂ X₃).hom ≫ (f₁ ⊗ₘ (f₂ ⊗ₘ f₃))
   leftUnitor_naturality {X Y : C} (f : X ⟶ Y) :
     𝟙_ C ◁ f ≫ (λ_ Y).hom = (λ_ X).hom ≫ f
   rightUnitor_naturality {X Y : C} (f : X ⟶ Y) :
@@ -154,17 +154,17 @@ theorem neg_whiskerRight {X Y : C} (f : X ⟶ Y) (Z : C) : (-f) ▷ Z = -(f ▷ 
 
 theorem whiskerLeft_zsmul (X : C) {Y Z : C} (n : ℤ) (f : Y ⟶ Z) : X ◁ (n • f) = n • (X ◁ f) := by
   induction n using Int.induction_on with
-  | hz => simp [whiskerLeft_zero R]
-  | hp n ih => simp only [add_smul, one_smul, whiskerLeft_add (R := R), ih]
-  | hn n ih =>
+  | zero => simp [whiskerLeft_zero R]
+  | succ n ih => simp only [add_smul, one_smul, whiskerLeft_add (R := R), ih]
+  | pred n ih =>
     rw [sub_smul, sub_smul, sub_eq_add_neg, sub_eq_add_neg, one_smul, one_smul,
       whiskerLeft_add (R := R), ih, whiskerLeft_neg R]
 
 theorem zsmul_whiskerRight {X Y : C} (n : ℤ) (f : X ⟶ Y) (Z : C) : (n • f) ▷ Z = n • (f ▷ Z) := by
   induction n using Int.induction_on with
-  | hz => simp [zero_whiskerRight R]
-  | hp n ih => simp only [add_smul, one_smul, add_whiskerRight (R := R), ih]
-  | hn n ih =>
+  | zero => simp [zero_whiskerRight R]
+  | succ n ih => simp only [add_smul, one_smul, add_whiskerRight (R := R), ih]
+  | pred n ih =>
     rw [sub_smul, sub_smul, sub_eq_add_neg, sub_eq_add_neg, one_smul, one_smul,
       add_whiskerRight (R := R), ih, neg_whiskerRight R]
 
@@ -172,7 +172,7 @@ end Linear
 
 variable (R) in
 include R in
-theorem tensor_id (X Y : C) : 𝟙 X ⊗ 𝟙 Y = 𝟙 (X ⊗ Y) := by
+theorem tensor_id (X Y : C) : 𝟙 X ⊗ₘ 𝟙 Y = 𝟙 (X ⊗ Y) := by
   rw [tensorHom_def (R := R), id_whiskerRight (R := R), whiskerLeft_id (R := R),
     Category.comp_id]
 
@@ -192,14 +192,14 @@ theorem superTensorHom_mem {X₁ Y₁ X₂ Y₂ : C} {p q : ZMod 2} {f : X₁ �
 
 theorem tensorHom_mem {X₁ Y₁ X₂ Y₂ : C} {p q : ZMod 2} {f : X₁ ⟶ Y₁} {g : X₂ ⟶ Y₂}
     (hf : f ∈ parity (R := R) X₁ Y₁ p) (hg : g ∈ parity (R := R) X₂ Y₂ q) :
-    f ⊗ g ∈ parity (R := R) (X₁ ⊗ X₂) (Y₁ ⊗ Y₂) (p + q) := by
+    f ⊗ₘ g ∈ parity (R := R) (X₁ ⊗ X₂) (Y₁ ⊗ Y₂) (p + q) := by
   rw [tensorHom_def (R := R)]
   exact comp_mem (whiskerRight_mem X₂ hf) (whiskerLeft_mem Y₁ hg)
 
 /-- Mathlib's `tensorHom` and the paper's tensor product differ by the Koszul sign. -/
 theorem tensorHom_eq_superTensorHom {X₁ Y₁ X₂ Y₂ : C} {p q : ZMod 2} {f : X₁ ⟶ Y₁}
     {g : X₂ ⟶ Y₂} (hf : f ∈ parity (R := R) X₁ Y₁ p) (hg : g ∈ parity (R := R) X₂ Y₂ q) :
-    f ⊗ g = koszulSign p q • superTensorHom f g := by
+    f ⊗ₘ g = koszulSign p q • superTensorHom f g := by
   rw [tensorHom_def (R := R), super_interchange hf hg, superTensorHom]
 
 /-- **The super interchange law** (Brundan–Ellis (1.1)): for homogeneous morphisms,
@@ -219,7 +219,7 @@ theorem superTensorHom_comp_superTensorHom {X₁ Y₁ Z₁ X₂ Y₂ Z₂ : C} {
 theorem tensorHom_comp_tensorHom {X₁ Y₁ Z₁ X₂ Y₂ Z₂ : C} {pf pk : ZMod 2}
     (h : X₁ ⟶ Y₁) (k : X₂ ⟶ Y₂) (f : Y₁ ⟶ Z₁) (g : Y₂ ⟶ Z₂)
     (hf : f ∈ parity (R := R) Y₁ Z₁ pf) (hk : k ∈ parity (R := R) X₂ Y₂ pk) :
-    (h ⊗ k) ≫ (f ⊗ g) = koszulSign pf pk • ((h ≫ f) ⊗ (k ≫ g)) := by
+    (h ⊗ₘ k) ≫ (f ⊗ₘ g) = koszulSign pf pk • ((h ≫ f) ⊗ₘ (k ≫ g)) := by
   simp only [tensorHom_def (R := R), Category.assoc]
   rw [← Category.assoc (Y₁ ◁ k), ← koszulSign_smul_smul pf pk (Y₁ ◁ k ≫ f ▷ Y₂),
     ← super_interchange hf hk, Linear.smul_comp, Linear.comp_smul, whiskerLeft_comp (R := R),
@@ -278,8 +278,9 @@ Mathlib, with the same data. -/
 @[reducible]
 def toMonoidalCategory (h : NoOdd R C) : MonoidalCategory C where
   tensorHom_def f g := tensorHom_def (R := R) f g
-  tensor_id := tensor_id R
-  tensor_comp {X₁ Y₁ Z₁ X₂ Y₂ Z₂} f₁ f₂ g₁ g₂ := by
+  id_tensorHom_id := tensor_id R
+  tensorHom_comp_tensorHom {X₁ Y₁ Z₁ X₂ Y₂ Z₂} f₁ f₂ g₁ g₂ := by
+    symm
     simp only [tensorHom_def (R := R), whiskerLeft_comp (R := R), comp_whiskerRight (R := R),
       Category.assoc]
     rw [← Category.assoc (g₁ ▷ X₂), ← whisker_exchange_of_noOdd h g₁ f₂]
@@ -425,7 +426,7 @@ structure MonoidalNatTrans {F G : C ⥤ D} [F.Additive] [F.Linear R] [IsSuperfun
   toNatTrans : F ⟶ G
   app_mem : ∀ X, toNatTrans.app X ∈ parity (R := R) (F.obj X) (G.obj X) 0
   tensor : ∀ X Y : C, (cF.μIso X Y).hom ≫ toNatTrans.app (X ⊗ Y) =
-    (toNatTrans.app X ⊗ toNatTrans.app Y) ≫ (cG.μIso X Y).hom
+    (toNatTrans.app X ⊗ₘ toNatTrans.app Y) ≫ (cG.μIso X Y).hom
   unit : cF.εIso.hom ≫ toNatTrans.app (𝟙_ C) = cG.εIso.hom
 
 namespace MonoidalNatTrans

@@ -51,7 +51,7 @@ theorem Diagram.degree_parityDeg {a b : Obj S} (f : a ⟶ b) :
     rw [Diagram.oddCountList_cons, List.map_cons, List.sum_cons, ih, Nat.cast_add]
     congr 1
     by_cases hL : S.odd L.gen <;>
-      simp [Presentation.parityDeg, Diagram.oddCountList, List.filter_cons, hL]
+      simp [Presentation.parityDeg, Diagram.oddCountList, hL]
 
 /-- The Koszul sign of two diagrams of parities `p` and `q`. -/
 theorem Diagram.neg_one_pow_oddCount {a b a' b' : Obj S} (f : a ⟶ b) (g : a' ⟶ b')
@@ -132,8 +132,7 @@ theorem wRAt_comp_wL_super {a a' b b' : Obj S} {r : S.Region} (h : a.Composable 
   · refine homDeg_induction (motive := fun g => P.wRAt r (P.diag d) b ha ha' ≫ P.wL a' g =
       koszulSign p q • (P.wL a g ≫ P.wRAt r (P.diag d) b' ha ha'))
       (fun e he => ?_) (by simp [wL_zero]) (fun g g' hg hg' => ?_) (fun x g hg => ?_) hg
-    · dsimp only
-      rw [P.wRAt_diag_comp_wL_diag h d e, Diagram.neg_one_pow_oddCount d e hd he]
+    · rw [P.wRAt_diag_comp_wL_diag h d e, Diagram.neg_one_pow_oddCount d e hd he]
     · simp only [wL_add, Preadditive.add_comp, Preadditive.comp_add, hg, hg', smul_add]
     · simp only [wL_smul, Linear.smul_comp, Linear.comp_smul, hg, smul_comm x]
   · simp only [wRAt_add, Preadditive.add_comp, Preadditive.comp_add, hf, hf', smul_add]
@@ -166,8 +165,7 @@ theorem wR_comp_wL_super {a a' b b' : Obj S} {p q : ZMod 2} {f : P.obj a ⟶ P.o
   · refine homDeg_induction (motive := fun g => P.wR (P.diag d) b ≫ P.wL a' g =
       koszulSign p q • (P.wL a g ≫ P.wR (P.diag d) b'))
       (fun e he => ?_) (by simp [wL_zero]) (fun g g' hg hg' => ?_) (fun x g hg => ?_) hg
-    · dsimp only
-      rw [wR_diag, wR_diag, wL_diag, wL_diag, ← diag_comp, ← diag_comp,
+    · rw [wR_diag, wR_diag, wL_diag, wL_diag, ← diag_comp, ← diag_comp,
         P.diag_interchange_diagrams, Diagram.neg_one_pow_oddCount d e hd he]
     · simp only [wL_add, Preadditive.add_comp, Preadditive.comp_add, hg, hg', smul_add]
     · simp only [wL_smul, Linear.smul_comp, Linear.comp_smul, hg, smul_comm x]
@@ -219,6 +217,7 @@ instance isStrict : MonoidalSupercategory.IsStrict P.Presented where
   leftUnitor_eq X := P.leftUnitor_eq X
   rightUnitor_eq X := P.rightUnitor_eq X
 
+set_option backward.isDefEq.respectTransparency false in
 omit [Subsingleton S.Region] [Inhabited S.Region] in
 /-- For an even signature there are no odd morphisms. -/
 theorem noOdd_of_isEven [S.IsEven] :
@@ -278,6 +277,7 @@ instance homLinearSuper (l m : P.Bicat) : Linear R (l ⟶ m) where
 
 /-- The hom supercategories of `P.Bicat`, for a parity-homogeneous presentation: the parity
 of a 2-morphism is its parity in `P.Presented`. -/
+@[instance_reducible]
 def supercategory (hP : P.IsParityHomogeneous) (l m : P.Bicat) : Supercategory R (l ⟶ m) where
   parity a b := P.homDeg (parityDeg S) (Hom.obj a) (Hom.obj b)
   isInternal a b := isInternal_homDeg hP (Hom.obj a) (Hom.obj b)

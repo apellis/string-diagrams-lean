@@ -35,6 +35,7 @@ variable {R : Type w} [CommRing R] (P : Presentation.{w, v} S R)
 theorem nil_composable (r : S.Region) : (Obj.nil r).Composable (Obj.nil r) :=
   ⟨trivial, rfl, trivial⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Right whiskering by the empty word of the same region is the identity on endomorphisms of
 the empty word. -/
 theorem wRAt_nil_nil (r : S.Region) (f : P.obj (Obj.nil r) ⟶ P.obj (Obj.nil r)) :
@@ -42,6 +43,7 @@ theorem wRAt_nil_nil (r : S.Region) (f : P.obj (Obj.nil r) ⟶ P.obj (Obj.nil r)
   rw [P.wRAt_nil (s := r) (r := r) f trivial rfl rfl rfl]
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Left whiskering by the empty word of the same region is the identity on endomorphisms of
 the empty word. -/
 theorem wL_nil_nil (r : S.Region) (g : P.obj (Obj.nil r) ⟶ P.obj (Obj.nil r)) :

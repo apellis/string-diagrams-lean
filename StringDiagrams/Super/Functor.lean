@@ -80,10 +80,10 @@ theorem koszulSign_eq_one_or (p q : ZMod 2) : koszulSign p q = 1 ∨ (p = 1 ∧ 
 /-- The Koszul sign of two natural numbers, viewed as parities, is `(-1)^(n m)`. -/
 theorem koszulSign_natCast (n m : ℕ) : koszulSign (n : ZMod 2) (m : ZMod 2) = (-1) ^ (n * m) := by
   rcases Nat.even_or_odd n with hn | hn <;> rcases Nat.even_or_odd m with hm | hm
-  · rw [(ZMod.eq_zero_iff_even.mpr hn), koszulSign_zero_left, (hn.mul_right m).neg_one_pow]
-  · rw [(ZMod.eq_zero_iff_even.mpr hn), koszulSign_zero_left, (hn.mul_right m).neg_one_pow]
-  · rw [(ZMod.eq_zero_iff_even.mpr hm), koszulSign_zero_right, (hm.mul_left n).neg_one_pow]
-  · rw [(ZMod.eq_one_iff_odd.mpr hn), (ZMod.eq_one_iff_odd.mpr hm), koszulSign_one_one,
+  · rw [(ZMod.natCast_eq_zero_iff_even.mpr hn), koszulSign_zero_left, (hn.mul_right m).neg_one_pow]
+  · rw [(ZMod.natCast_eq_zero_iff_even.mpr hn), koszulSign_zero_left, (hn.mul_right m).neg_one_pow]
+  · rw [(ZMod.natCast_eq_zero_iff_even.mpr hm), koszulSign_zero_right, (hm.mul_left n).neg_one_pow]
+  · rw [(ZMod.natCast_eq_one_iff_odd.mpr hn), (ZMod.natCast_eq_one_iff_odd.mpr hm), koszulSign_one_one,
       (hn.mul hm).neg_one_pow]
 
 theorem koszulSign_smul_smul {M : Type*} [AddCommGroup M] (p q : ZMod 2) (x : M) :

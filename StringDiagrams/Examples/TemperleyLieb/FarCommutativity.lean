@@ -24,6 +24,7 @@ open CategoryTheory
 
 variable {R : Type*} [CommRing R] (δ : R)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The interchange law of `pres R δ` for two diagrams with the layers of the two sides of an
 interchange: `L` (on the left) below `M` (on the right), and `M` below `L`. -/
 theorem diag_eq_of_swap {a b : Obj sig} {f f' : a ⟶ b} (L M : Layer sig)
@@ -37,7 +38,7 @@ theorem diag_eq_of_swap {a b : Obj sig} {f f' : a ⟶ b} (L M : Layer sig)
   rw [chain_nil, Layer.wl_cod] at hb
   subst ha hb
   have key := (pres R δ).diag_swap_layers L M
-  simp only [Diagram.oddCountList, sig, Bool.false_eq_true, decide_false, List.filter_cons,
+  simp only [Diagram.oddCountList, sig, Bool.false_eq_true, List.filter_cons,
     List.filter_nil, ite_false, List.length_nil, mul_zero, pow_zero, one_smul] at key
   exact (Presentation.diag_eq_of_layers_eq _ (by rw [hf]; rfl)).trans
     (key.trans (Presentation.diag_eq_of_layers_eq _ (by rw [hf']; rfl)))
@@ -45,6 +46,7 @@ theorem diag_eq_of_swap {a b : Obj sig} {f f' : a ⟶ b} (L M : Layer sig)
 /-- A layer with `l` strands on the left and `r` on the right. -/
 abbrev gl (l : ℕ) (g : Gen) (r : ℕ) : Layer sig := ⟨(), List.replicate l (), g, List.replicate r ()⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two caps: `cap_j` then `cap_i` equals `cap_i` then `cap_{j-2}`, for `i + 2 ≤ j`. -/
 @[reassoc]
 theorem cap_cap_interchange {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
@@ -56,6 +58,7 @@ theorem cap_cap_interchange {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2)
   apply diag_eq_of_swap δ (gl i .cap 0) (gl (j - 2 - i) .cap (n + 2 - j)) <;>
     simp [dcap, lay, Layer.wr, Layer.wl, Layer.dom, Layer.cod, sig] <;> omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two cups: `cup_{j-2}` then `cup_i` equals `cup_i` then `cup_j`, for `i + 2 ≤ j`. -/
 @[reassoc]
 theorem cup_cup_interchange {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
@@ -68,6 +71,7 @@ theorem cup_cup_interchange {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2)
   apply diag_eq_of_swap δ (gl i .cup 0) (gl (j - 2 - i) .cup (n + 2 - j)) <;>
     simp [dcup, lay, Layer.wr, Layer.wl, Layer.dom, Layer.cod, sig] <;> omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cup on the right passing a cap on the left: `cup_j` then `cap_i` equals `cap_i` then
 `cup_{j-2}`, for `i + 2 ≤ j`. -/
 @[reassoc]
@@ -81,6 +85,7 @@ theorem cap_cup_interchange {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2)
   apply diag_eq_of_swap δ (gl i .cap 0) (gl (j - 2 - i) .cup (n + 2 - j)) <;>
     simp [dcup, dcap, lay, Layer.wr, Layer.wl, Layer.dom, Layer.cod, sig] <;> omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cap on the right passing a cup on the left: `cap_{j-2}` then `cup_i` equals `cup_i` then
 `cap_j`, for `i + 2 ≤ j`. -/
 @[reassoc]

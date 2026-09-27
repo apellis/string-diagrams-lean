@@ -82,7 +82,7 @@ class BicategoryStruct (B : Type u) extends CategoryStruct.{v} B where
   /-- The right unitor. -/
   rightUnitor {a b : B} (f : a ⟶ b) : f ≫ 𝟙 b ≅ f
 
-attribute [instance] BicategoryStruct.homCategory
+attribute [instance_reducible, instance] BicategoryStruct.homCategory
 
 namespace BicategoryStruct
 

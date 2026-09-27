@@ -60,9 +60,11 @@ theorem obj_ext {a b : Obj sig} (h : a.word.length = b.word.length) : a = b :=
 /-- The dot with `i` strands to its left, on `n` strands. -/
 def lay (n i : ℕ) : Layer sig := ⟨(), List.replicate i (), .dot, List.replicate (n - i - 1) ()⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem lay_dom {n i : ℕ} (h : i < n) : (lay n i).dom = strands n :=
   obj_ext (by simp [lay, Layer.dom, strands, sig]; omega)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem lay_cod {n i : ℕ} (h : i < n) : (lay n i).cod = strands n :=
   obj_ext (by simp [lay, Layer.cod, strands, sig]; omega)
 
@@ -83,11 +85,12 @@ def pres : Presentation sig R where
 def x (n i : ℕ) : End ((pres R).obj (strands n)) :=
   if h : i < n then (pres R).diag (dlay h) else 0
 
-theorem x_def {n i : ℕ} (h : i < n) : x R n i = (pres R).diag (dlay h) := dif_pos h
+theorem x_def {n i : ℕ} (h : i < n) : x R n i = (pres R).diag (dlay h) := dite_eq_left h
 
 /-- `i` strands, used to whisker on the left. -/
 def shift (i : ℕ) : Obj sig := ⟨(), List.replicate i ()⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem x_mul_x_self (n i : ℕ) : x R n i * x R n i = 0 := by
   by_cases h : i < n
   · have key := (pres R).lin_rel_cast () (shift i) (List.replicate (n - i - 1) ())
@@ -99,8 +102,9 @@ theorem x_mul_x_self (n i : ℕ) : x R n i * x R n i = 0 := by
     rw [x_def R h, End.mul_def, ← Presentation.diag_comp, ← key]
     apply Presentation.diag_eq_of_layers_eq
     simp [dlay, lay, shift, Layer.whisker]
-  · rw [x, dif_neg h, mul_zero]
+  · rw [x, dite_eq_right h, mul_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Distinct dots anticommute: the super interchange law with two odd generators. -/
 theorem x_mul_x_anticomm {n i j : ℕ} (hij : i < j) : x R n i * x R n j = -(x R n j * x R n i) := by
   by_cases hj : j < n
@@ -131,7 +135,7 @@ theorem x_mul_x_anticomm {n i j : ℕ} (hij : i < j) : x R n i * x R n j = -(x R
         InterchangeData.hg₂, sig]
       omega
     rw [e₂, e₁, key, neg_neg]
-  · simp only [x, dif_neg hj]; simp
+  · simp only [x, dite_eq_right hj]; simp
 
 end StringDiagrams.Exterior
 

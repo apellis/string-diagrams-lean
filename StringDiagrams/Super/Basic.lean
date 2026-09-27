@@ -96,6 +96,7 @@ variable {P}
 /-- The presented category of a presentation with parity-homogeneous relations is a
 supercategory: the parity of the class of a diagram is its number of odd generators modulo
 `2`. -/
+@[instance_reducible]
 def supercategory (hP : P.IsParityHomogeneous) : Supercategory R P.Presented where
   parity X Y := P.homDeg (parityDeg S) X.as Y.as
   isInternal X Y := isInternal_homDeg hP X.as Y.as

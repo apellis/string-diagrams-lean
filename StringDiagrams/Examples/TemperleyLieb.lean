@@ -69,12 +69,14 @@ theorem obj_ext {a b : Obj sig} (h : a.word.length = b.word.length) : a = b :=
 /-- The generator `g` with `i` strands to its left and `m - i` to its right. -/
 def lay (m i : ℕ) (g : Gen) : Layer sig := ⟨(), List.replicate i (), g, List.replicate (m - i) ()⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cup with `i` strands to its left, from `m` to `m + 2` strands. -/
 def dcup {m i : ℕ} (h : i ≤ m) : strands m ⟶ strands (m + 2) :=
   Diagram.layer (lay m i .cup) (Layer.valid_of_subsingleton _)
     (obj_ext (by simp [lay, Layer.dom, strands, sig]; omega))
     (obj_ext (by simp [lay, Layer.cod, strands, sig]; omega))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cap with `i` strands to its left, from `m + 2` to `m` strands. -/
 def dcap {m i : ℕ} (h : i ≤ m) : strands (m + 2) ⟶ strands m :=
   Diagram.layer (lay m i .cap) (Layer.valid_of_subsingleton _)
@@ -116,6 +118,7 @@ variable {R}
 /-- `i` strands, used to whisker on the left. -/
 def shift (i : ℕ) : Obj sig := ⟨(), List.replicate i ()⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whisker_strands {w i n : ℕ} (h : i + w ≤ n) :
     (strands w).whisker (shift i) (List.replicate (n - i - w) ()) = strands n :=
   obj_ext (by simp [strands, shift, Obj.whisker]; omega)
@@ -126,6 +129,7 @@ theorem relation_at (r : Rel) {n i : ℕ} (h : i + r.width ≤ n) :
       (whisker_strands h) (whisker_strands h)) = 0 :=
   (pres R δ).lin_rel_cast r (shift i) _ _ _ _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The loop relation at position `i` in width `m`. -/
 theorem loop_at {m i : ℕ} (h : i ≤ m) :
     (pres R δ).diag (dcup h) ≫ (pres R δ).diag (dcap h) = δ • 𝟙 _ := by
@@ -139,6 +143,7 @@ theorem loop_at {m i : ℕ} (h : i ≤ m) :
     simp [dcup, dcap, lay, shift, Layer.whisker, Rel.width, sig]
   · congr 1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The zigzag relation `cup_{i+1} ≫ cap_i = 1` in width `m`. -/
 theorem zigzagA_at {m i : ℕ} (h : i + 1 ≤ m) :
     (pres R δ).diag (dcup (i := i + 1) h) ≫ (pres R δ).diag (dcap (i := i) (by omega)) = 𝟙 _ := by
@@ -150,6 +155,7 @@ theorem zigzagA_at {m i : ℕ} (h : i + 1 ≤ m) :
   · simp [dcup, dcap, lay, shift, Layer.whisker, Rel.width, sig]; omega
   · rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The zigzag relation `cup_i ≫ cap_{i+1} = 1` in width `m`. -/
 theorem zigzagB_at {m i : ℕ} (h : i + 1 ≤ m) :
     (pres R δ).diag (dcup (i := i) (by omega)) ≫ (pres R δ).diag (dcap (i := i + 1) h) = 𝟙 _ := by
@@ -168,7 +174,7 @@ def e (m i : ℕ) : End ((pres R δ).obj (strands (m + 2))) :=
   if h : i ≤ m then (pres R δ).diag (dcap h) ≫ (pres R δ).diag (dcup h) else 0
 
 theorem e_def {m i : ℕ} (h : i ≤ m) :
-    e δ m i = (pres R δ).diag (dcap h) ≫ (pres R δ).diag (dcup h) := dif_pos h
+    e δ m i = (pres R δ).diag (dcap h) ≫ (pres R δ).diag (dcup h) := dite_eq_left h
 
 theorem e_mul_self (m i : ℕ) : e δ m i * e δ m i = δ • e δ m i := by
   by_cases h : i ≤ m
