@@ -210,7 +210,7 @@ instance : (J R C).Linear R where
 instance : IsGradedSuperfunctor R (J R C) where
   map_mem hf := hf
   map_mem_degree {X Y n f} hf := by
-    rw [mem_degree_iff]; simpa using hf
+    rw [mem_degree_iff]; simpa using! hf
 instance : (J R C).Full where
   map_surjective f := ⟨toHom f, rfl⟩
 instance : (J R C).Faithful where
@@ -227,7 +227,7 @@ theorem shiftIso_hom_mem_degree (X : QEnvelope R C) :
     (shiftIso X).hom ∈ degree (R := R) ((J R C).obj X.obj) X X.shift := by
   rw [mem_degree_iff]
   show 𝟙 X.obj ∈ _
-  simpa using id_mem_degree (R := R) X.obj
+  simpa using! id_mem_degree (R := R) X.obj
 
 /-! ### The universal property of the `Q`-envelope -/
 
@@ -251,9 +251,11 @@ def extend : QEnvelope R C ⥤ B where
 
 variable [F.Additive] [F.Linear R] [IsGradedSuperfunctor R F]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (extend R F).Additive where
   map_add := by simp [Preadditive.add_comp, Preadditive.comp_add]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (extend R F).Linear R where
   map_smul _ _ := by simp
 
@@ -261,17 +263,19 @@ instance : IsGradedSuperfunctor R (extend R F) where
   map_mem {X Y p f} hf := by
     have := comp_mem (comp_mem (σPow_hom_mem (R := R) X.shift (F.obj X.obj)) (map_mem F hf))
       (σPow_inv_mem (R := R) Y.shift (F.obj Y.obj))
-    simpa using this
+    simpa using! this
   map_mem_degree {X Y n f} hf := by
     have := comp_mem_degree (comp_mem_degree (σPow_hom_mem_degree (R := R) X.shift (F.obj X.obj))
       (map_mem_degree F hf)) (σPow_inv_mem_degree (R := R) Y.shift (F.obj Y.obj))
     rw [show -X.shift + (n + (X.shift - Y.shift)) + Y.shift = n by ring] at this
-    simpa using this
+    simpa using! this
 
 omit [Preadditive C] [Linear R C] [Supercategory R C] [GradedSupercategory R C] [F.Additive]
   [F.Linear R] [IsGradedSuperfunctor R F] in
 theorem J_comp_extend : J R C ⋙ extend R F = F :=
-  CategoryTheory.Functor.ext (fun _ => rfl) (fun X Y f => by simp)
+  CategoryTheory.Functor.ext (fun _ => rfl) (fun X Y f => by
+    change (σPow R 0 (F.obj X)).hom ≫ F.map f ≫ (σPow R 0 (F.obj Y)).inv = 𝟙 _ ≫ F.map f ≫ 𝟙 _
+    simp)
 
 variable {R F}
 
@@ -283,6 +287,7 @@ def extendNat (x : ∀ X, F.obj X ⟶ G.obj X) (X : QEnvelope R C) :
     (extend R F).obj X ⟶ (extend R G).obj X :=
   (σPow R X.shift (F.obj X.obj)).hom ≫ x X.obj ≫ (σPow R X.shift (G.obj X.obj)).inv
 
+set_option backward.isDefEq.respectTransparency false in
 omit [GradedSupercategory R C] in
 omit [F.Additive] [F.Linear R] [IsGradedSuperfunctor R F] in
 theorem isGradedSupernatural_extendNat [G.Linear R] {p : ZMod 2} {n : ℤ}
@@ -291,10 +296,9 @@ theorem isGradedSupernatural_extendNat [G.Linear R] {p : ZMod 2} {n : ℤ}
   mem X := by
     have := comp_mem (comp_mem (σPow_hom_mem (R := R) X.shift (F.obj X.obj)) (hx.mem X.obj))
       (σPow_inv_mem (R := R) X.shift (G.obj X.obj))
-    simpa [extendNat] using this
+    simpa [extendNat] using! this
   naturality {X Y q f} hf := by
-    simp only [extend_obj, extend_map, extendNat, Category.assoc, Iso.inv_hom_id_assoc,
-      Linear.comp_smul, Linear.smul_comp]
+    simp only [extend_map, extendNat, Category.assoc, Iso.inv_hom_id_assoc]
     rw [reassoc_of% (hx.naturality (f := toHom f) hf), Linear.smul_comp, Linear.comp_smul]
     simp only [Category.assoc]
   mem_degree X := by
@@ -302,13 +306,14 @@ theorem isGradedSupernatural_extendNat [G.Linear R] {p : ZMod 2} {n : ℤ}
       (σPow_hom_mem_degree (R := R) X.shift (F.obj X.obj)) (hx.mem_degree X.obj))
       (σPow_inv_mem_degree (R := R) X.shift (G.obj X.obj))
     rw [show -X.shift + n + X.shift = n by ring] at this
-    simpa [extendNat] using this
+    simpa [extendNat] using! this
 
 omit [Preadditive C] [Linear R C] [Supercategory R C] [GradedSupercategory R C] [F.Additive]
   [F.Linear R] [IsGradedSuperfunctor R F] in
 @[simp] theorem extendNat_J (x : ∀ X, F.obj X ⟶ G.obj X) (X : C) :
     extendNat R F G x ((J R C).obj X) = x X := by
-  simp [extendNat]
+  change (σPow R 0 (F.obj X)).hom ≫ x X ≫ (σPow R 0 (G.obj X)).inv = x X
+  simp
 
 omit [F.Additive] [F.Linear R] [IsGradedSuperfunctor R F] [QPiSupercategory R B]
   [GradedSupercategory R B] [GradedSupercategory R C] in
@@ -333,28 +338,33 @@ theorem isGradedSupernatural_restrict {H K : QEnvelope R C ⥤ B} {p : ZMod 2} {
       fun X => y ((J R C).obj X) :=
   hy.whiskerLeft (J R C)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The even isomorphisms `σ^m ≫ H((1_λ)_0^m) : Q^m(H Q⁰ λ) ≅ H(Q^m λ)`, of degree `0`. -/
 def extendRestrictIso (H : QEnvelope R C ⥤ B) [H.Additive] [H.Linear R]
     [IsGradedSuperfunctor R H] : extend R (J R C ⋙ H) ≅ H :=
   NatIso.ofComponents (fun X => σPow R X.shift (H.obj ((J R C).obj X.obj)) ≪≫
       H.mapIso (shiftIso X))
     (fun {X Y} f => by
-      simp only [extend_obj, Functor.comp_obj, extend_map, Functor.comp_map, Iso.trans_hom,
+      simp only [Functor.comp_obj, extend_map, Functor.comp_map, Iso.trans_hom,
         Functor.mapIso_hom, Category.assoc, Iso.inv_hom_id_assoc]
       rw [← H.map_comp, ← H.map_comp]
       congr 2
-      exact hom_ext (by simp [shiftIso]))
+      refine hom_ext ?_
+      simp [shiftIso]
+      exact (Category.comp_id _).trans (Category.id_comp _).symm)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extendRestrictIso_hom_mem (H : QEnvelope R C ⥤ B) [H.Additive] [H.Linear R]
     [IsGradedSuperfunctor R H] (X : QEnvelope R C) :
     (extendRestrictIso H).hom.app X ∈ parity (R := R) _ (H.obj X) 0 := by
-  simpa [extendRestrictIso] using comp_mem (σPow_hom_mem (R := R) X.shift _)
+  simpa [extendRestrictIso] using! comp_mem (σPow_hom_mem (R := R) X.shift _)
     (map_mem H (shiftIso_hom_mem (R := R) X))
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extendRestrictIso_hom_mem_degree (H : QEnvelope R C ⥤ B) [H.Additive] [H.Linear R]
     [IsGradedSuperfunctor R H] (X : QEnvelope R C) :
     (extendRestrictIso H).hom.app X ∈ degree (R := R) _ (H.obj X) 0 := by
-  simpa [extendRestrictIso] using comp_mem_degree (σPow_hom_mem_degree (R := R) X.shift _)
+  simpa [extendRestrictIso] using! comp_mem_degree (σPow_hom_mem_degree (R := R) X.shift _)
     (map_mem_degree H (shiftIso_hom_mem_degree (R := R) X))
 
 end Universal
@@ -446,7 +456,7 @@ instance (F : D ⥤ B) [F.Additive] [F.Linear R] [IsGradedSuperfunctor R F] :
   map_mem_degree {X Y n f} hf := by
     have := comp_mem_degree (comp_mem_degree (ζPow_hom_mem_degree X.par (F.obj X.obj))
       (map_mem_degree F hf)) (ζPow_inv_mem_degree Y.par (F.obj Y.obj))
-    simpa using this
+    simpa using! this
 
 omit [Preadditive D] [Linear R D] [Supercategory R D] [GradedSupercategory R D] in
 theorem extendNat_mem_degree {F G : D ⥤ B} {p : ZMod 2} {n : ℤ} {x : ∀ X, F.obj X ⟶ G.obj X}
@@ -455,7 +465,7 @@ theorem extendNat_mem_degree {F G : D ⥤ B} {p : ZMod 2} {n : ℤ} {x : ∀ X, 
   have := comp_mem_degree (comp_mem_degree (ζPow_hom_mem_degree X.par (F.obj X.obj)) (hx X.obj))
     (ζPow_inv_mem_degree X.par (G.obj X.obj))
   simp only [zero_add, add_zero] at this
-  exact Submodule.smul_mem _ _ (by simpa [Category.assoc] using this)
+  exact Submodule.smul_mem _ _ (by simpa [Category.assoc] using! this)
 
 /-- The extension of an even isomorphism `G ≅ G'` to an even isomorphism `G̃ ≅ G̃'`. -/
 def extendIso {G G' : D ⥤ B} [G.Additive] [G.Linear R] [IsSuperfunctor R G] [G'.Additive]
@@ -629,19 +639,19 @@ theorem QPiComplete.exists_iso (h : QPiComplete R C) (m : ℤ) :
     ∀ (a : ZMod 2) (X : C), ∃ (Y : C) (e : Y ≅ X),
       e.hom ∈ parity (R := R) Y X a ∧ e.hom ∈ degree (R := R) Y X m := by
   induction m using Int.induction_on with
-  | hz =>
+  | zero =>
     intro a X
     rcases parity_eq_zero_or_one a with rfl | rfl
     · exact ⟨X, Iso.refl X, id_mem X, id_mem_degree X⟩
     · exact (h X).2.2
-  | hp k ih =>
+  | succ k ih =>
     intro a X
     obtain ⟨Y, e, he, he'⟩ := ih a X
     obtain ⟨Z, e₂, he₂, he₂'⟩ := (h Y).1
     refine ⟨Z, e₂ ≪≫ e, ?_, ?_⟩
     · simpa using comp_mem he₂ he
     · simpa [add_comm] using comp_mem_degree he₂' he'
-  | hn k ih =>
+  | pred k ih =>
     intro a X
     obtain ⟨Y, e, he, he'⟩ := ih a X
     obtain ⟨Z, e₂, he₂, he₂'⟩ := (h Y).2.1
@@ -660,9 +670,9 @@ theorem J_gradedEvenlyDense_iff : GradedEvenlyDense R (J R C) ↔ QPiComplete R 
       obtain ⟨Y, e, he, he'⟩ := h (QPiEnvelope.mk m a X)
       refine ⟨Y, QEnvelope.isoToIso (Envelope.isoToIso e), ?_, ?_⟩
       · rw [Envelope.mem_parity_iff] at he
-        simpa using he
+        simpa using! he
       · rw [Envelope.mem_degree_iff, QEnvelope.mem_degree_iff] at he'
-        simpa using he'
+        simpa using! he'
     refine ⟨?_, ?_, ?_⟩
     · simpa using key (-1) 0
     · simpa using key 1 0
@@ -733,10 +743,12 @@ theorem isGradedSupernatural_extendNat {p : ZMod 2} {n : ℤ} {x : ∀ X, F.obj 
 
 omit [F.Additive] [F.Linear R] [IsGradedSuperfunctor R F] [G.Additive] [G.Linear R]
   [IsGradedSuperfunctor R G] in
+set_option backward.isDefEq.respectTransparency false in
 omit [Preadditive C] [Linear R C] [Supercategory R C] [GradedSupercategory R C] in
 @[simp] theorem extendNat_J (p : ZMod 2) (x : ∀ X, F.obj X ⟶ G.obj X) (X : C) :
     extendNat R F G p x ⟨0, ⟨0, X⟩⟩ = x X := by
   simp [extendNat, Envelope.extendNat, QEnvelope.extendNat]
+  exact Category.id_comp _
 
 omit [GradedSupercategory R C] in
 omit [GradedSupercategory R B] [QPiSupercategory R B] in
@@ -775,8 +787,9 @@ theorem restrict_bijective (p : ZMod 2) (n : ℤ) :
       have h1 := J_comp_extend (R := R) F
       have h2 := J_comp_extend (R := R) G
       exact ⟨⟨fun X => x.2.mem X, fun hf => by
-          have := x.2.naturality (map_mem (J R C) hf)
-          simpa using this⟩, fun X => x.2.mem_degree X⟩
+          have := x.2.naturality hf
+          rw [eq_of_heq (Functor.hcongr_hom h1 _), eq_of_heq (Functor.hcongr_hom h2 _)] at this
+          exact this⟩, fun X => x.2.mem_degree X⟩
     exact ⟨⟨extendNat R F G p x.1, isGradedSupernatural_extendNat hx⟩,
       Subtype.ext (funext fun X => extendNat_J p x.1 X)⟩
 
@@ -817,7 +830,7 @@ theorem extendRestrictIso_hom_mem (H : QPiEnvelope R C ⥤ B) [H.Additive] [H.Li
     (QEnvelope.extendRestrictIso (Envelope.J R _ ⋙ H)).hom
     (QEnvelope.extendRestrictIso_hom_mem _))).mem X
   have h2 := Envelope.extendRestrictIso_hom_mem H X
-  simpa using comp_mem h1 h2
+  simpa using! comp_mem h1 h2
 
 theorem extendRestrictIso_hom_mem_degree (H : QPiEnvelope R C ⥤ B) [H.Additive] [H.Linear R]
     [IsGradedSuperfunctor R H] (X : QPiEnvelope R C) :
@@ -829,8 +842,8 @@ theorem extendRestrictIso_hom_mem_degree (H : QPiEnvelope R C ⥤ B) [H.Additive
     have := comp_mem_degree (Envelope.ζPow_hom_mem_degree (R := R) X.par
       (H.obj ((Envelope.J R _).obj X.obj))) (map_mem_degree H
       (Envelope.shiftIso_hom_mem_degree (R := R) X))
-    simpa [Envelope.extendRestrictIso] using this
-  simpa using comp_mem_degree h1 h2
+    simpa [Envelope.extendRestrictIso] using! this
+  simpa using! comp_mem_degree h1 h2
 
 end Universal
 
