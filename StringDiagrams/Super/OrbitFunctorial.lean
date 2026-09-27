@@ -33,9 +33,9 @@ universe w v u v₁ u₁ v₂ u₂
 theorem Int.forall_of_step {P : ℤ → Prop} (h0 : P 0) (step : ∀ i, P (i + 1) ↔ P i) (i : ℤ) :
     P i := by
   induction i using Int.induction_on with
-  | hz => exact h0
-  | hp k ih => exact (step k).2 ih
-  | hn k ih => exact (step (-(k : ℤ) - 1)).1 (by rw [show -(k : ℤ) - 1 + 1 = -k by ring]; exact ih)
+  | zero => exact h0
+  | succ k ih => exact (step k).2 ih
+  | pred k ih => exact (step (-(k : ℤ) - 1)).1 (by rw [show -(k : ℤ) - 1 + 1 = -k by ring]; exact ih)
 
 namespace ShiftFunctor
 
@@ -64,8 +64,8 @@ def id : ShiftFunctor R d d where
 /-- The composite of morphisms of shift data, with `γ_{ΨΦ} = Ψ(γ_Φ) ∘ γ_Ψ Φ`. -/
 def comp (Φ : ShiftFunctor R d d') (Ψ : ShiftFunctor R d' d'') : ShiftFunctor R d d'' where
   F := Φ.F ⋙ Ψ.F
-  γ := (Functor.associator _ _ _).symm ≪≫ isoWhiskerLeft Φ.F Ψ.γ ≪≫ Functor.associator _ _ _ ≪≫
-    isoWhiskerRight Φ.γ Ψ.F ≪≫ Functor.associator _ _ _
+  γ := (Functor.associator _ _ _).symm ≪≫ Functor.isoWhiskerLeft Φ.F Ψ.γ ≪≫ Functor.associator _ _ _ ≪≫
+    Functor.isoWhiskerRight Φ.γ Ψ.F ≪≫ Functor.associator _ _ _
   γ_mem X := by
     have := comp_mem (Ψ.γ_mem (Φ.F.obj X)) (map_mem Ψ.F (Φ.γ_mem X))
     simpa using this
@@ -87,13 +87,14 @@ theorem Γ_zero_hom_app (Φ : ShiftFunctor R d d') (X : S) : (Φ.Γ 0).hom.app X
   show 𝟙 _ ≫ 𝟙 _ = _
   exact Category.id_comp _
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Γ_zero_inv_app (Φ : ShiftFunctor R d d') (X : S) : (Φ.Γ 0).inv.app X = 𝟙 _ := by
   rw [← cancel_epi ((Φ.Γ 0).hom.app X), Iso.hom_inv_id_app, Γ_zero_hom_app, Category.comp_id]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Γ_id_hom_app (i : ℤ) (X : S) : ((id d).Γ i).hom.app X = 𝟙 ((d.pow i).obj X) := by
   refine Int.forall_of_step (P := fun i => ((id d).Γ i).hom.app X = 𝟙 ((d.pow i).obj X))
     (Γ_zero_hom_app _ X) (fun i => ?_) i
-  dsimp only
   rw [Γ_succ_hom_app]
   constructor
   · intro h
@@ -104,6 +105,7 @@ theorem Γ_id_hom_app (i : ℤ) (X : S) : ((id d).Γ i).hom.app X = 𝟙 ((d.pow
     rw [h]
     simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Γ_id_inv_app (i : ℤ) (X : S) : ((id d).Γ i).inv.app X = 𝟙 ((d.pow i).obj X) := by
   rw [← cancel_epi (((id d).Γ i).hom.app X), Iso.hom_inv_id_app, Γ_id_hom_app]
   exact (Category.id_comp _).symm
@@ -112,10 +114,8 @@ theorem Γ_comp_hom_app (Φ : ShiftFunctor R d d') (Ψ : ShiftFunctor R d' d'') 
     ((Φ.comp Ψ).Γ i).hom.app X = (Ψ.Γ i).hom.app (Φ.F.obj X) ≫ Ψ.F.map ((Φ.Γ i).hom.app X) := by
   refine Int.forall_of_step (P := fun i => ((Φ.comp Ψ).Γ i).hom.app X =
     (Ψ.Γ i).hom.app (Φ.F.obj X) ≫ Ψ.F.map ((Φ.Γ i).hom.app X)) ?_ (fun i => ?_) i
-  · dsimp only
-    rw [Γ_zero_hom_app, Γ_zero_hom_app, Γ_zero_hom_app]; simp
-  · dsimp only
-    have key : (Ψ.Γ (i + 1)).hom.app (Φ.F.obj X) ≫ Ψ.F.map ((Φ.Γ (i + 1)).hom.app X) =
+  · rw [Γ_zero_hom_app, Γ_zero_hom_app, Γ_zero_hom_app]; simp
+  · have key : (Ψ.Γ (i + 1)).hom.app (Φ.F.obj X) ≫ Ψ.F.map ((Φ.Γ (i + 1)).hom.app X) =
         (d''.succ i).inv.app (Ψ.F.obj (Φ.F.obj X)) ≫
           d''.Q.map ((Ψ.Γ i).hom.app (Φ.F.obj X) ≫ Ψ.F.map ((Φ.Γ i).hom.app X)) ≫
             (Φ.comp Ψ).γ.hom.app ((d.pow i).obj X) ≫ (Φ.comp Ψ).F.map ((d.succ i).hom.app X) := by
@@ -132,6 +132,7 @@ theorem Γ_comp_hom_app (Φ : ShiftFunctor R d d') (Ψ : ShiftFunctor R d' d'') 
       exact d''.Q.map_injective ((cancel_mono _).1 ((cancel_epi _).1 h))
     · intro h; rw [h]; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Γ_comp_inv_app (Φ : ShiftFunctor R d d') (Ψ : ShiftFunctor R d' d'') (i : ℤ) (X : S) :
     ((Φ.comp Ψ).Γ i).inv.app X = Ψ.F.map ((Φ.Γ i).inv.app X) ≫ (Ψ.Γ i).inv.app (Φ.F.obj X) := by
   rw [← cancel_epi (((Φ.comp Ψ).Γ i).hom.app X), Iso.hom_inv_id_app, Γ_comp_hom_app]
@@ -166,15 +167,14 @@ def self : ShiftFunctor R d d where
 
 @[simp] theorem self_γ_hom_app (X : S) : (self d).γ.hom.app X = 𝟙 _ := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `Γⁱ` of `(Q, 1)` is the comparison `Qⁱ Q ≅ Qⁱ⁺¹ ≅ Q Qⁱ`. -/
 theorem Γ_self_hom_app (i : ℤ) (X : S) :
     ((self d).Γ i).hom.app X ≫ (d.succ i).hom.app X = (d.comm i).hom.app X := by
   refine Int.forall_of_step (P := fun i => ((self d).Γ i).hom.app X ≫ (d.succ i).hom.app X =
     (d.comm i).hom.app X) ?_ (fun i => ?_) i
-  · dsimp only
-    rw [Γ_zero_hom_app, comm_zero_hom_app, Category.id_comp]; rfl
-  · dsimp only
-    rw [Γ_succ_hom_app, comm_succ]
+  · rw [Γ_zero_hom_app, comm_zero_hom_app, Category.id_comp]; rfl
+  · rw [Γ_succ_hom_app, comm_succ]
     simp only [self_F, self_γ_hom_app, Functor.comp_obj, Category.id_comp, Category.assoc,
       cancel_epi]
     constructor
@@ -197,10 +197,8 @@ theorem Γ_hom_app_comp_of_even {Φ Ψ : ShiftFunctor R d d'} (x : ∀ X, Φ.F.o
     (Φ.Γ i).hom.app X ≫ x ((d.pow i).obj X) = (d'.pow i).map (x X) ≫ (Ψ.Γ i).hom.app X := by
   refine Int.forall_of_step (P := fun i => (Φ.Γ i).hom.app X ≫ x ((d.pow i).obj X) =
     (d'.pow i).map (x X) ≫ (Ψ.Γ i).hom.app X) ?_ (fun i => ?_) i
-  · dsimp only
-    rw [Γ_zero_hom_app, Γ_zero_hom_app]; simp
-  · dsimp only
-    have e1 : (Φ.Γ (i + 1)).hom.app X ≫ x ((d.pow (i + 1)).obj X) =
+  · rw [Γ_zero_hom_app, Γ_zero_hom_app]; simp
+  · have e1 : (Φ.Γ (i + 1)).hom.app X ≫ x ((d.pow (i + 1)).obj X) =
         (d'.succ i).inv.app (Φ.F.obj X) ≫
           d'.Q.map ((Φ.Γ i).hom.app X ≫ x ((d.pow i).obj X)) ≫
             Ψ.γ.hom.app ((d.pow i).obj X) ≫ Ψ.F.map ((d.succ i).hom.app X) := by
@@ -244,6 +242,7 @@ variable {R : Type w} [CommRing R]
 
 /-! ## Functoriality of `Orbit.map` -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_map_comp (Φ : ShiftFunctor R d d') (Ψ : ShiftFunctor R d' d'') {X Y : Orbit d}
     (x : X ⟶ Y) : (map Ψ).map ((map Φ).map x) = (map (Φ.comp Ψ)).map x := by
   induction x using Hom.induction_on with
@@ -255,12 +254,14 @@ theorem map_map_comp (Φ : ShiftFunctor R d d') (Ψ : ShiftFunctor R d' d'') {X 
     congr 1
     exact Subtype.ext (famMap_comp Φ Ψ f.1).symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_comp (Φ : ShiftFunctor R d d') (Ψ : ShiftFunctor R d' d'') :
     map (Φ.comp Ψ) = map Φ ⋙ map Ψ :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y x => by
     simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp]
     exact (map_map_comp Φ Ψ x).symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_map_id {X Y : Orbit d} (x : X ⟶ Y) : (map (ShiftFunctor.id d)).map x = x := by
   induction x using Hom.induction_on with
   | zero => simp
@@ -270,6 +271,7 @@ theorem map_map_id {X Y : Orbit d} (x : X ⟶ Y) : (map (ShiftFunctor.id d)).map
     congr 1
     exact Subtype.ext (famMap_id f.1)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_id : map (ShiftFunctor.id d) = 𝟭 (Orbit d) :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y x => by
     simp only [Functor.id_map, eqToHom_refl, Category.comp_id, Category.id_comp]
@@ -291,6 +293,7 @@ theorem map_congr {Φ Ψ : ShiftFunctor R d d'} (hF : Φ.F = Ψ.F)
         simpa using hγ X
       rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `Orbit.map Φ` on the morphisms of degree zero coming from `S` (`Orbit.ι_comp_map`,
 componentwise). -/
 theorem map_ι_map (Φ : ShiftFunctor R d d') {X Y : S} (g : X ⟶ Y) :
@@ -324,6 +327,7 @@ theorem _root_.StringDiagrams.ShiftData.succ_zero_hom_app (X : S) :
 theorem _root_.StringDiagrams.ShiftData.succ_zero_inv_app (X : S) :
     (d.succ 0).inv.app X = 𝟙 (d.Q.obj X) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_σIso_hom (Φ : ShiftFunctor R d d') (X : Orbit d) :
     (map Φ).map (σIso X).hom =
       (ι d').map (Φ.γ.inv.app X.obj) ≫ (σIso (⟨Φ.F.obj X.obj⟩ : Orbit d')).hom := by
@@ -340,7 +344,9 @@ theorem map_σIso_hom (Φ : ShiftFunctor R d d') (X : Orbit d) :
     succ_zero_inv_app]
   simp
   erw [CategoryTheory.Functor.map_id, Category.id_comp]
+  exact (Category.comp_id _).symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_σIso_inv (Φ : ShiftFunctor R d d') (X : Orbit d) :
     (map Φ).map (σIso X).inv =
       (σIso (⟨Φ.F.obj X.obj⟩ : Orbit d')).inv ≫ (ι d').map (Φ.γ.hom.app X.obj) := by
@@ -349,6 +355,7 @@ theorem map_σIso_inv (Φ : ShiftFunctor R d d') (X : Orbit d) :
     ← Functor.map_comp, Iso.inv_hom_id_app, CategoryTheory.Functor.map_id]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `σ` is natural with respect to the functor `Orbit.map (ShiftFunctor.self d)` induced by
 `(Q, 1)`; equivalently, this functor is the functor `Q` of the orbit supercategory. -/
 theorem map_self_comp_σIso_hom {X Y : Orbit d} (z : X ⟶ Y) :
@@ -373,12 +380,13 @@ theorem map_self_comp_σIso_hom {X Y : Orbit d} (z : X ⟶ Y) :
           (d.comm i).hom.app X.obj ≫ f.1 (i + 1) (i - m + 1)
       rw [Fam.compat f.2, ← Γ_self_hom_app, ← Γ_self_hom_app]
       simp only [Category.assoc, Iso.inv_hom_id_app_assoc, Iso.hom_inv_id_app_assoc]
-    · have h1 : d.famσ Y.obj (i - m) k = 0 := by rw [famσ, dif_neg (by omega)]
+    · have h1 : d.famσ Y.obj (i - m) k = 0 := by rw [famσ, dite_eq_right (by omega)]
       have h2 : f.1 (i - -1) k = 0 := Fam.eq_zero f.2 (by omega)
       rw [h1, h2, Limits.comp_zero, Limits.comp_zero]
 
 /-! ## Supernatural transformations -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Supernatural transformations of orbit functors.** A homogeneous supernatural
 transformation `x : F ⇒ G` of parity `p` compatible with `γ` induces a supernatural
 transformation `ι x : F̃ ⇒ G̃` of parity `p`: for a morphism `z` of parity `q` of the orbit
