@@ -48,7 +48,7 @@ theorem orthogonalSchurGenerators_jwObj : OrthogonalSchurGenerators k (jwFamily 
   hom_eq_zero {x y} hxy f :=
     hom_jwObj_eq_zero q hq (by
       by_contra h
-      push_neg at h
+      push Not at h
       exact hxy (Prod.ext h.1 h.2)) f
   exists_iso_bsum Z := by
     obtain ⟨L, hL, e⟩ := exists_iso_bsum_jwObj q hq Z
@@ -57,6 +57,7 @@ theorem orthogonalSchurGenerators_jwObj : OrthogonalSchurGenerators k (jwFamily 
       exact ⟨(n, a), rfl⟩, e⟩
 
 /-- **Brundan–Ellis, Theorem 1.18 = Theorem A.3.** `SKar(STL(δ))` is an abelian category. -/
+@[instance_reducible]
 def abelian : Abelian (SKar k (STL k δq)) := (orthogonalSchurGenerators_jwObj q hq).abelian
 
 /-- **Theorem A.3.** The objects `P n a = (f_n)^a_a` are simple. -/
