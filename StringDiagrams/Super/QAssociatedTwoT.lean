@@ -38,6 +38,7 @@ variable {R : Type w} [CommRing R] {B : Type u₁} [BicategoryStruct.{w₁, v₁
 variable (R B) in
 /-- **Lemma 6.6.** A graded `(Q, Π)`-2-supercategory carries the central invertible family
 `(q, q⁻¹, ii, jj, γ)`. -/
+@[instance_reducible]
 def centralShift : CentralShift R B where
   q a := q (R := R) a
   qinv a := qinv (R := R) a
@@ -59,23 +60,25 @@ open CentralShift
 
 theorem centralShift_q (a : B) : CentralShift.q (R := R) a = QPiTwoSupercategory.q (R := R) a := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R) in
 /-- The trivialization `σ_F := F σ_μ` of the shift datum `- q_μ` on `ℋom_𝔅(λ, μ)`. -/
 def homTriv (a b : B) : (homShift R a b).Trivialization where
   σ f := whiskerLeftIso (R := R) f (σ (R := R) b) ≪≫ rightUnitor f
   σ_mem f := by
-    simpa using comp_mem (whiskerLeft_mem f (σ_hom_mem (R := R) b)) (rightUnitor_hom_mem (R := R) f)
+    simpa using!
+      comp_mem (whiskerLeft_mem f (σ_hom_mem (R := R) b)) (rightUnitor_hom_mem (R := R) f)
   σ_mem_degree f := by
-    simpa using comp_mem_degree (GradedTwoSupercategory.whiskerLeft_mem_degree f
+    simpa using! comp_mem_degree (GradedTwoSupercategory.whiskerLeft_mem_degree f
       (σ_hom_mem_degree (R := R) b)) (GradedTwoSupercategory.rightUnitor_hom_mem_degree (R := R) f)
   σ_naturality {f g} η := by
-    simp only [homShift_Q, postcomp_obj, postcomp_map, Iso.trans_hom, whiskerLeftIso_hom]
+    simp only [homShift_Q, postcomp_map, Iso.trans_hom, whiskerLeftIso_hom]
     have e := whisker_exchange_of_even_right (R := R) η (σ_hom_mem (R := R) b)
     erw [← Category.assoc, e, Category.assoc, rightUnitor_naturality R, Category.assoc]
   counit_mem_degree f := by
     change (CentralShift.counitIso (R := R) a b).hom.app f ∈ _
     rw [counitIso_hom_app]
-    simpa using comp_mem_degree (comp_mem_degree
+    simpa using! comp_mem_degree (comp_mem_degree
       (GradedTwoSupercategory.associator_hom_mem_degree (R := R) f _ _)
       (GradedTwoSupercategory.whiskerLeft_mem_degree f (jj_hom_mem_degree (R := R) b)))
       (GradedTwoSupercategory.rightUnitor_hom_mem_degree (R := R) f)
@@ -83,15 +86,18 @@ def homTriv (a b : B) : (homShift R a b).Trivialization where
 theorem homTriv_σ_hom {a b : B} (f : a ⟶ b) :
     ((homTriv R a b).σ f).hom = f ◁ (σ (R := R) b).hom ≫ (rightUnitor f).hom := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Horizontal composition with a 1-morphism on the left is compatible with the
 trivializations `σ`. -/
 theorem preShift_trivCompat {a b : B} (c : B) (f : a ⟶ b) :
     Orbit.IsTrivCompatible (homTriv R b c) (homTriv R a c) (preShift R c f) := fun X => by
-  simp only [preShift_γ_inv_app, homTriv_σ_hom, preShift_F, precomp_obj, precomp_map,
+  simp only [preShift_γ_inv_app, homTriv_σ_hom, preShift_F, precomp_map,
     whiskerLeft_comp' R]
   change (associator f X (q (R := R) c)).inv ≫ (f ≫ X) ◁ (σ (R := R) c).hom ≫ _ = _
   rw [← associator_inv_naturality_right_assoc R, whiskerLeft_rightUnitor R]
+  rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Horizontal composition with a 1-morphism on the right is compatible with the
 trivializations `σ`. -/
 theorem postShift_trivCompat (a : B) {b c : B} (h : b ⟶ c) :
@@ -100,7 +106,7 @@ theorem postShift_trivCompat (a : B) {b c : B} (h : b ⟶ c) :
       (σ (R := R) b).hom ▷ h ≫ (leftUnitor h).hom := by
     rw [Iso.inv_comp_eq, reassoc_of% (γ_hom_comp_σ (R := R) h)]
     simp
-  simp only [postShift_γ_inv_app, homTriv_σ_hom, postShift_F, postcomp_obj, postcomp_map,
+  simp only [postShift_γ_inv_app, homTriv_σ_hom, postShift_F, postcomp_map,
     γR_inv, Category.assoc]
   change _ ≫ X ◁ (γ (R := R) h).inv ≫ (associator X h (q (R := R) c)).inv ≫
     (X ≫ h) ◁ (σ (R := R) c).hom ≫ (rightUnitor (X ≫ h)).hom = _
@@ -184,46 +190,53 @@ theorem TF_whiskerLeft {a b c : 𝔄} (f : a ⟶ b) {g h : b ⟶ c} (x : g ⟶ h
   erw [Category.id_comp, Category.comp_id] at e
   exact (congrArg Subtype.val e).symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem TF_associator_hom {a b c d : 𝔄} (f : a ⟶ b) (g : b ⟶ c) (h : c ⟶ d) :
     (TF R B a d).map (associator f g h).hom =
       (associator ((TF R B a b).obj f) ((TF R B b c).obj g) ((TF R B c d).obj h)).hom := by
   simp [TF_map, Associated2.T_map₂]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem TF_associator_inv {a b c d : 𝔄} (f : a ⟶ b) (g : b ⟶ c) (h : c ⟶ d) :
     (TF R B a d).map (associator f g h).inv =
       (associator ((TF R B a b).obj f) ((TF R B b c).obj g) ((TF R B c d).obj h)).inv := by
   simp [TF_map, Associated2.T_map₂]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem TF_leftUnitor_hom {a b : 𝔄} (f : a ⟶ b) :
     (TF R B a b).map (leftUnitor f).hom = (leftUnitor ((TF R B a b).obj f)).hom := by
   simp [TF_map, Associated2.T_map₂]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem TF_leftUnitor_inv {a b : 𝔄} (f : a ⟶ b) :
     (TF R B a b).map (leftUnitor f).inv = (leftUnitor ((TF R B a b).obj f)).inv := by
   simp [TF_map, Associated2.T_map₂]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem TF_rightUnitor_hom {a b : 𝔄} (f : a ⟶ b) :
     (TF R B a b).map (rightUnitor f).hom = (rightUnitor ((TF R B a b).obj f)).hom := by
   simp [TF_map, Associated2.T_map₂]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem TF_γ {a b : 𝔄} (f : a ⟶ b) :
     (TF R B a b).map (CentralShift.γ (R := R) f).hom =
       (QPiTwoSupercategory.γ (R := R) ((TF R B a b).obj f)).hom := by
   simp [TF_map, Associated2.T_map₂, Associated2.centralShift_γ_eq]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R B) in
 /-- `TF` as a morphism of shift data `(- q_μ) → (- q_μ)`, with `γ = 1`. -/
 def TΦ (a b : 𝔄) : ShiftFunctor R (homShift R a b) (homShift R (bo a) (bo b)) where
   F := TF R B a b
   γ := NatIso.ofComponents (fun _ => Iso.refl _)
     (fun {f g} x => by
-      simp only [Functor.comp_obj, Functor.comp_map, homShift_Q, postcomp_obj, postcomp_map,
+      simp only [Functor.comp_obj, Functor.comp_map, homShift_Q, postcomp_map,
         Iso.refl_hom, Category.comp_id, Category.id_comp]
       exact (TF_whiskerRight x (CentralShift.q (R := R) b)).symm)
   γ_mem _ := id_mem _
@@ -249,6 +262,7 @@ theorem TF_γR {a b c : 𝔄} (g : a ⟶ b) (h : b ⟶ c) :
     TF_associator_inv, TF_γ]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_post_comp {a : 𝔄} {b c : 𝔄} (h : b ⟶ c) :
     Orbit.map ((postShift R a h).comp (TΦ R B a c)) =
       Orbit.map ((TΦ R B a b).comp (postShift R (bo a) ((TF R B b c).obj h))) := by
@@ -261,6 +275,7 @@ theorem map_post_comp {a : 𝔄} {b c : 𝔄} (h : b ⟶ c) :
     rw [TF_γR, postcomp_map]
     erw [id_whiskerRight (R := R), Category.comp_id]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_pre_comp {a b : 𝔄} (c : 𝔄) (f : a ⟶ b) :
     Orbit.map ((preShift R c f).comp (TΦ R B a c)) =
       Orbit.map ((TΦ R B b c).comp (preShift R (bo c) ((TF R B a b).obj f))) := by
@@ -276,6 +291,7 @@ theorem map_pre_comp {a b : 𝔄} (c : 𝔄) (f : a ⟶ b) :
 
 variable {a b c : QAssociated2 R (GUnderlying2 R B)}
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Thom_whiskerRight {f g : a ⟶ b} (x : f ⟶ g) (h : b ⟶ c) :
     (Thom R B a.obj c.obj).map (x ▷ h) =
       (Thom R B a.obj b.obj).map x ▷ (TF R B b.obj c.obj).obj h.obj := by
@@ -288,6 +304,7 @@ theorem Thom_whiskerRight {f g : a ⟶ b} (x : f ⟶ g) (h : b ⟶ c) :
   rw [← map_map_comp, eval_map_map (postShift_trivCompat (R := R) _ _)]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Thom_whiskerLeft (f : a ⟶ b) {g h : b ⟶ c} (x : g ⟶ h) :
     (Thom R B a.obj c.obj).map (f ◁ x) =
       (TF R B a.obj b.obj).obj f.obj ◁ (Thom R B b.obj c.obj).map x := by
@@ -321,6 +338,7 @@ theorem Thom_ι_map {a b : 𝔄} {f g : a ⟶ b} (x : f ⟶ g) :
 theorem TΦ_γ_hom_mem_degree {a b : 𝔄} (f : a ⟶ b) :
     (TΦ R B a b).γ.hom.app f ∈ degree (R := R) _ _ 0 := id_mem_degree _
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R B) in
 /-- **`𝔻 ∘ 𝔼 ≅ 𝕀` on objects.** The 2-superfunctor `𝕋_𝔅 : (𝔅̲)^ → 𝔅`: the identity on objects
 and 1-morphisms, `Thom` on 2-morphisms, with identity coherence maps. -/
@@ -391,6 +409,7 @@ theorem T_map₂_bijective (f g : a ⟶ b) :
   ⟨fun _ _ h => Thom_map_injective (a := a.obj) (b := b.obj) h,
     fun h => Thom_map_surjective (a := a.obj) (b := b.obj) h⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `𝕋_𝔅` carries `ζ` to `ζ`. -/
 theorem T_map₂_ζ (a : QAssociated2 R (GUnderlying2 R B)) :
     (T R B).map₂ (PiTwoSupercategory.ζ (R := R) a).hom =
@@ -398,6 +417,7 @@ theorem T_map₂_ζ (a : QAssociated2 R (GUnderlying2 R B)) :
   rw [T_map₂, Orbit2.ζ_hom_def, Thom_ι_map, TF_map]
   exact congrArg Subtype.val (Associated2.T_map₂_ζ (R := R) (A := DegreeZero2 R B) a.obj)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `𝕋_𝔅` carries `σ` to `σ`. -/
 theorem T_map₂_σ (a : QAssociated2 R (GUnderlying2 R B)) :
     (T R B).map₂ (QPiTwoSupercategory.σ (R := R) a).hom =
