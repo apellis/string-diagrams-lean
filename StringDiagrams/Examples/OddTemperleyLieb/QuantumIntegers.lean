@@ -157,13 +157,13 @@ theorem qbracket_mul (m n : ℕ) :
 `A⟦t⟧`. -/
 theorem qbracket_genFun_mul :
     PowerSeries.mk (fun n => qbracket x π (n + 1)) *
-      (1 - PowerSeries.C A (qbracket x π 2) * PowerSeries.X +
-        PowerSeries.C A π * PowerSeries.X ^ 2) = 1 := by
+      (1 - PowerSeries.C (qbracket x π 2) * PowerSeries.X +
+        PowerSeries.C π * PowerSeries.X ^ 2) = 1 := by
   ext k
   rw [mul_add, mul_sub, mul_one, map_add, map_sub, PowerSeries.coeff_one]
-  rw [show PowerSeries.C A (qbracket x π 2) * PowerSeries.X =
-    PowerSeries.X * PowerSeries.C A (qbracket x π 2) from mul_comm _ _,
-    show PowerSeries.C A π * PowerSeries.X ^ 2 = PowerSeries.X ^ 2 * PowerSeries.C A π from
+  rw [show PowerSeries.C (qbracket x π 2) * PowerSeries.X =
+    PowerSeries.X * PowerSeries.C (qbracket x π 2) from mul_comm _ _,
+    show PowerSeries.C π * PowerSeries.X ^ 2 = PowerSeries.X ^ 2 * PowerSeries.C π from
       mul_comm _ _, ← mul_assoc, ← mul_assoc]
   rw [PowerSeries.coeff_mul_C, PowerSeries.coeff_mul_C]
   match k with
@@ -173,15 +173,15 @@ theorem qbracket_genFun_mul :
     rw [PowerSeries.coeff_succ_mul_X, PowerSeries.coeff_mk, PowerSeries.coeff_mk,
       show PowerSeries.X ^ 2 = PowerSeries.X * PowerSeries.X from sq _, ← mul_assoc,
       PowerSeries.coeff_succ_mul_X, PowerSeries.coeff_succ_mul_X, PowerSeries.coeff_mk]
-    simp only [show k + 2 ≠ 0 by omega, if_false]
+    simp only [show k + 2 ≠ 0 by omega, ite_false]
     have := qbracket_succ_mul_two x π (k + 1)
     linear_combination -this
 
 /-- (1.12), in the form with `[n]`: `(Σ_{n ≥ 0} [n]_{x,π} tⁿ) · (1 - [2]_{x,π} t + π t²) = t`. -/
 theorem qbracket_genFun_mul' :
     PowerSeries.mk (fun n => qbracket x π n) *
-      (1 - PowerSeries.C A (qbracket x π 2) * PowerSeries.X +
-        PowerSeries.C A π * PowerSeries.X ^ 2) = PowerSeries.X := by
+      (1 - PowerSeries.C (qbracket x π 2) * PowerSeries.X +
+        PowerSeries.C π * PowerSeries.X ^ 2) = PowerSeries.X := by
   have : PowerSeries.mk (fun n => qbracket x π n) =
       PowerSeries.X * PowerSeries.mk (fun n => qbracket x π (n + 1)) := by
     ext k

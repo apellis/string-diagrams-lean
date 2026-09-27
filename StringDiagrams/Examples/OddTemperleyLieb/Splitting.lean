@@ -67,6 +67,7 @@ def fromBsum {A : 𝒞} : (l : List (Piece A)) → (bsum (l.map Piece.obj) ⟶ A
   | [] => 0
   | p :: l => biprod.desc p.b (fromBsum l)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem toBsum_comp_fromBsum {A : 𝒞} (l : List (Piece A)) :
     toBsum l ≫ fromBsum l = (l.map fun p => p.a ≫ p.b).sum := by
   induction l with
@@ -83,6 +84,7 @@ def Orthogonal {A : 𝒞} : List (Piece A) → Prop
   | [] => True
   | p :: l => p.b ≫ p.a = 𝟙 _ ∧ (∀ q ∈ l, p.b ≫ q.a = 0 ∧ q.b ≫ p.a = 0) ∧ Orthogonal l
 
+set_option backward.isDefEq.respectTransparency false in
 theorem fromBsum_comp_toBsum {A : 𝒞} (l : List (Piece A)) (h : Orthogonal l) :
     fromBsum l ≫ toBsum l = 𝟙 _ := by
   induction l with
@@ -105,6 +107,7 @@ theorem fromBsum_comp_toBsum {A : 𝒞} (l : List (Piece A)) (h : Orthogonal l) 
         refine biprod.hom_ext' _ _ ?_ ?_
         · simp [fromBsum, (h2 q (by simp)).2]
         · simpa [fromBsum] using ih' fun r hr => h2 r (by simp [hr])
+    change fromBsum (p :: l) ≫ toBsum (p :: l) = 𝟙 (p.obj ⊞ bsum (l.map Piece.obj))
     refine biprod.hom_ext' _ _ ?_ ?_ <;> refine biprod.hom_ext _ _ ?_ ?_
     · simp [toBsum, fromBsum, h1]
     · simp [toBsum, fromBsum, e1]
@@ -126,6 +129,7 @@ variable {k : Type*} [Field k] [Linear k 𝒞] [IsIdempotentComplete 𝒞]
 /-- An object whose endomorphisms are scalars. -/
 def IsSchur (P : 𝒞) : Prop := ∀ f : P ⟶ P, ∃ c : k, f = c • 𝟙 P
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Splitting.** A retract of an iterated biproduct of Schur objects is isomorphic to the
 iterated biproduct of a sublist. -/
 theorem iso_bsum_of_retract (L : List 𝒞) (hL : ∀ P ∈ L, IsSchur (k := k) P) :
@@ -204,7 +208,7 @@ theorem iso_bsum_of_retract (L : List 𝒞) (hL : ∀ P ∈ L, IsSchur (k := k) 
           simp only [Preadditive.sub_comp, Preadditive.comp_sub, Category.id_comp,
             Category.assoc]
           rw [hστ', e3, hie, Limits.comp_zero, sub_zero])
-      refine ⟨P :: L', hL'.cons₂ P, ⟨?_⟩⟩
+      refine ⟨P :: L', hL'.cons_cons P, ⟨?_⟩⟩
       have hmid : biprod.desc s i' ≫ biprod.lift r e' = 𝟙 (P ⊞ Z') := by
         refine biprod.hom_ext' _ _ ?_ ?_ <;> refine biprod.hom_ext _ _ ?_ ?_
         · simp [hsr]
