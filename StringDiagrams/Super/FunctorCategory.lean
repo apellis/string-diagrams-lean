@@ -295,10 +295,10 @@ def parityHom (p : ZMod 2) : Submodule R (F ⟶ G) where
   carrier := {x | x.app (p + 1) = 0}
   zero_mem' := rfl
   add_mem' {x y} hx hy := by
-    simp only [Set.mem_setOf_eq] at *
+    simp only [Set.mem_ofPred_eq] at *
     funext X; simp [congrFun hx X, congrFun hy X]
   smul_mem' r x hx := by
-    simp only [Set.mem_setOf_eq] at *
+    simp only [Set.mem_ofPred_eq] at *
     funext X; simp [congrFun hx X]
 
 theorem mem_parityHom {p : ZMod 2} {x : F ⟶ G} : x ∈ parityHom F G p ↔ x.app (p + 1) = 0 :=
@@ -318,6 +318,7 @@ theorem component_mem (p : ZMod 2) (x : F ⟶ G) : component p x ∈ parityHom F
 theorem component_add_component (x : F ⟶ G) : component 0 x + component 1 x = x :=
   hom_ext_parity (fun X => by simp [component_app]) (fun X => by simp [component_app])
 
+set_option backward.isDefEq.respectTransparency false in
 instance : Supercategory R (Superfunctor R C D) where
   parity := parityHom
   isInternal F G := by
@@ -327,7 +328,7 @@ instance : Supercategory R (Superfunctor R C D) where
     · rw [Submodule.disjoint_def]
       intro x h0 h1
       rw [mem_parityHom] at h0 h1
-      exact hom_ext_parity (fun X => by simpa using congrFun h1 X)
+      exact hom_ext_parity (fun X => by simpa [SuperNatTrans.zmod2_one_add_one] using congrFun h1 X)
         (fun X => by simpa using congrFun h0 X)
     · rw [codisjoint_iff, eq_top_iff]
       intro x _
@@ -339,7 +340,6 @@ instance : Supercategory R (Superfunctor R C D) where
     funext X
     have hx' := congrFun hx X
     have hy' := congrFun hy X
-    simp only at hx' hy'
     rw [comp_app]
     rcases parity_eq_zero_or_one p with rfl | rfl <;>
       rcases parity_eq_zero_or_one q with rfl | rfl <;>
@@ -403,6 +403,7 @@ def whiskerLeft (F : Superfunctor R C D) (y : G' ⟶ K') : F.comp G' ⟶ F.comp 
   app_mem p X := y.app_mem p (F.obj X)
   naturality p _ _ _ f hf := y.naturality p (F.map f) (F.map_mem hf)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Whiskering on the outside: for `x : F ⇒ H` between superfunctors `C → D` and
 `G : D → E`, the supernatural transformation `Gx : GF ⇒ GH` with `(Gx)_λ = G(x_λ)`. -/
 @[simps]
@@ -410,7 +411,8 @@ def whiskerRight (x : F ⟶ H) (G : Superfunctor R D E) : F.comp G ⟶ H.comp G 
   app p X := G.map (x.app p X)
   app_mem p X := G.map_mem (x.app_mem p X)
   naturality p X Y q f hf := by
-    simp only [comp_toFunctor, Functor.comp_map]
+    change G.toFunctor.map (F.toFunctor.map f) ≫ G.toFunctor.map (x.app p Y) =
+      koszulSign p q • (G.toFunctor.map (x.app p X) ≫ G.toFunctor.map (H.toFunctor.map f))
     rw [← G.toFunctor.map_comp, x.naturality p f hf, Functor.map_zsmul, G.toFunctor.map_comp]
 
 /-- Horizontal composition (Brundan–Ellis, Section 2): for `x : F ⇒ H` and `y : G ⇒ K`,
@@ -418,6 +420,7 @@ def whiskerRight (x : F ⟶ H) (G : Superfunctor R D E) : F.comp G ⟶ H.comp G 
 def hcomp (x : F ⟶ H) (y : G' ⟶ K') : F.comp G' ⟶ H.comp K' :=
   whiskerRight x G' ≫ whiskerLeft H y
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The component formula `(yx)_λ = y_{Hλ} ∘ G x_λ`, for the total morphisms
 `x_λ = x_{λ,0} + x_{λ,1}`. -/
 theorem hcomp_total (x : F ⟶ H) (y : G' ⟶ K') (X : C) :
@@ -429,6 +432,7 @@ theorem hcomp_total (x : F ⟶ H) (y : G' ⟶ K') (X : C) :
     whiskerLeft F (𝟙 G) = 𝟙 (F.comp G) :=
   hom_ext_parity (fun _ => rfl) (fun _ => rfl)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem whiskerLeft_comp (F : Superfunctor R C D) {G K L : Superfunctor R D E}
     (y : G ⟶ K) (z : K ⟶ L) : whiskerLeft F (y ≫ z) = whiskerLeft F y ≫ whiskerLeft F z :=
   hom_ext_parity (fun _ => by simp) (fun _ => by simp)
@@ -437,6 +441,7 @@ theorem hcomp_total (x : F ⟶ H) (y : G' ⟶ K') (X : C) :
     whiskerRight (𝟙 F) G = 𝟙 (F.comp G) :=
   hom_ext_parity (fun _ => G.toFunctor.map_id _) (fun _ => G.toFunctor.map_zero _ _)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem comp_whiskerRight (x : F ⟶ H) (z : H ⟶ K) (G : Superfunctor R D E) :
     whiskerRight (x ≫ z) G = whiskerRight x G ≫ whiskerRight z G :=
   hom_ext_parity (fun _ => by simp) (fun _ => by simp)
@@ -444,6 +449,7 @@ theorem hcomp_total (x : F ⟶ H) (y : G' ⟶ K') (X : C) :
 theorem whiskerLeft_add (F : Superfunctor R C D) (y z : G' ⟶ K') :
     whiskerLeft F (y + z) = whiskerLeft F y + whiskerLeft F z := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem add_whiskerRight (x z : F ⟶ H) (G : Superfunctor R D E) :
     whiskerRight (x + z) G = whiskerRight x G + whiskerRight z G :=
   hom_ext fun _ _ => by simp
@@ -451,6 +457,7 @@ theorem add_whiskerRight (x z : F ⟶ H) (G : Superfunctor R D E) :
 theorem whiskerLeft_smul (F : Superfunctor R C D) (r : R) (y : G' ⟶ K') :
     whiskerLeft F (r • y) = r • whiskerLeft F y := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem smul_whiskerRight (r : R) (x : F ⟶ H) (G : Superfunctor R D E) :
     whiskerRight (r • x) G = r • whiskerRight x G :=
   hom_ext fun _ _ => by simp
@@ -461,11 +468,13 @@ theorem whiskerLeft_mem (F : Superfunctor R C D) {p : ZMod 2} {y : G' ⟶ K'}
   rw [mem_parity_iff] at hy ⊢
   funext X; exact congrFun hy (F.obj X)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whiskerRight_mem {p : ZMod 2} {x : F ⟶ H} (hx : x ∈ parity (R := R) F H p)
     (G : Superfunctor R D E) : whiskerRight x G ∈ parity (R := R) (F.comp G) (H.comp G) p := by
   rw [mem_parity_iff] at hx ⊢
   funext X; simp [congrFun hx X]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The super interchange law** for supernatural transformations (Brundan–Ellis,
 Section 2): `yH ∘ Gx = (-1)^{|x||y|} Kx ∘ yF` for homogeneous `x : F ⇒ H` and
 `y : G ⇒ K`. -/
@@ -480,7 +489,7 @@ theorem whisker_exchange {p q : ZMod 2} {x : F ⟶ H} {y : G' ⟶ K'}
   have hy0 : ∀ b, b ≠ q → ∀ X, y.app b X = 0 := fun b hb X => app_eq_zero_of_mem hy hb X
   apply hom_ext
   intro r X
-  simp only [comp_app, whiskerRight_app, whiskerLeft_app, zsmul_app, key, ← smul_add]
+  simp only [comp_app, whiskerRight_app, whiskerLeft_app, zsmul_app, key]
   rcases parity_eq_zero_or_one p with rfl | rfl <;>
     rcases parity_eq_zero_or_one q with rfl | rfl <;>
     rcases parity_eq_zero_or_one r with rfl | rfl <;>
