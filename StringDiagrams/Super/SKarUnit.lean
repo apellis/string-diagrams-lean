@@ -124,10 +124,9 @@ theorem mem_freeObj_part_iff (M : Mat_ (D k)) {q : ZMod 2} {v : M.ι → k} :
   rw [SVec.mem_part_iff]
   constructor
   · intro h i hi
-    rw [← h, freeObj_proj_apply, if_neg hi]
+    rw [← h, freeObj_proj_apply, ite_eq_right hi]
   · intro h
     funext i
-    change (freeObj M).proj q v i = v i
     rw [freeObj_proj_apply]
     split_ifs with hi
     · rfl
@@ -306,7 +305,7 @@ theorem fullMap_eq_zero_of_ne {i : P.X.ι} {j : Q.X.ι} (h : par (P.X.X i) ≠ p
   have h1 : (Pi.single i 1 : P.X.ι → k) ∈ (freeObj P.X).part (par (P.X.X i)) := by
     rw [mem_freeObj_part_iff]
     intro i' hi'
-    rw [Pi.single_apply, if_neg]
+    rw [Pi.single_apply, ite_eq_right]
     rintro rfl; exact hi' rfl
   have h2 := SVec.apply_mem_part (matHom_mem P.p) h1
   simp only [add_zero] at h2
@@ -341,6 +340,7 @@ theorem matHom_fullMatrix (v : P.X.ι → k) : matHom (fullMatrix g) v = fullMap
     funext j'; rw [Pi.single_apply]; simp [eq_comm]
   rw [this]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem fullMap_p (v : P.X.ι → k) : fullMap g (matHom P.p v) = fullMap g v := by
   rw [fullMap_apply, fullMap_apply]
   congr 3
@@ -411,9 +411,11 @@ theorem imgSubmodule_eq (P : SKar k (UnitSupercat k)) :
 theorem pi_obj_p (P : SKar k (UnitSupercat k)) :
     ((PiCategory.pi (R := k)).obj P).p = (PiCategory.pi (R := k)).map P.p := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem imgSubmodule_pi (P : SKar k (UnitSupercat k)) :
     imgSubmodule ((PiCategory.pi (R := k)).obj P) = imgSubmodule P := by
   rw [imgSubmodule_eq, imgSubmodule_eq, pi_obj_p, scalMat_pi]
+  rfl
 
 /-- The object `(Π^{aᵢ + 1} ⋆)ᵢ`. -/
 abbrev shiftMat (M : Mat_ (D k)) : Mat_ (D k) := ⟨M.ι, fun i => ⟨⟨par (M.X i) + 1, ()⟩⟩⟩
@@ -484,6 +486,7 @@ theorem freeObj_part_pi (P : SKar K (UnitSupercat K)) (q : ZMod 2) :
   ext v
   exact mem_freeObj_shiftMat_part_iff P.X
 
+set_option backward.isDefEq.respectTransparency false in
 theorem dim_pi (P : SKar K (UnitSupercat K)) (q : ZMod 2) :
     dim ((PiCategory.pi (R := K)).obj P) q = dim P (q + 1) := by
   rw [dim_eq_finrank, dim_eq_finrank]
@@ -505,7 +508,7 @@ theorem dim_toKaroubi (M : Mat_ (D K)) (q : ZMod 2) :
   refine LinearEquiv.finrank_eq
     { toFun := fun w i => w.1.1 i.1
       invFun := fun u => ⟨⟨fun i => if h : par (M.X i) = q then u ⟨i, h⟩ else 0, hall _⟩,
-        (SVec.mem_sub_part_iff _ _ _).2 ((mem_freeObj_part_iff M).2 fun i hi => dif_neg hi)⟩
+        (SVec.mem_sub_part_iff _ _ _).2 ((mem_freeObj_part_iff M).2 fun i hi => dite_eq_right hi)⟩
       map_add' := fun _ _ => rfl
       map_smul' := fun _ _ => rfl
       left_inv := fun w => ?_
@@ -517,7 +520,7 @@ theorem dim_toKaroubi (M : Mat_ (D K)) (q : ZMod 2) :
     · rfl
     · exact ((mem_freeObj_part_iff M).1 ((SVec.mem_sub_part_iff _ _ _).1 w.2) i h).symm
   · funext i
-    exact dif_pos i.2
+    exact dite_eq_left i.2
 
 variable (K) in
 /-- The object `Πᵃ ⋆` of `SKar(I)`. -/
@@ -600,7 +603,8 @@ theorem K₀Dim_one : K₀Dim K 1 = 1 := by rw [one_eq_mk_obj_zero, K₀Dim_obj_
 theorem K₀Dim_smul (c : Zπ) (x : K₀ (SKar K (UnitSupercat K))) :
     K₀Dim K (c • x) = c * K₀Dim K x := by
   obtain ⟨a, b, rfl⟩ := Zπ.exists_eq_add_mul_π c
-  rw [add_smul, MulAction.mul_smul, SKar.π_smul_eq, Int.cast_smul_eq_zsmul, Int.cast_smul_eq_zsmul,
+  rw [add_smul (a : Zπ) ((b : Zπ) * Zπ.π) x, mul_smul (b : Zπ) Zπ.π x, SKar.π_smul_eq,
+    Int.cast_smul_eq_zsmul, Int.cast_smul_eq_zsmul,
     map_add, map_zsmul, map_zsmul, K₀Dim_piInvolution, zsmul_eq_mul, zsmul_eq_mul]
   ring
 
