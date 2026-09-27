@@ -171,16 +171,18 @@ def extendμInv (X Y : Envelope R A) : (F̃).obj (X ⊗ Y) ⟶ (F̃).obj X ⊗ (
     F.obj X.obj ◁ (ζPow R Y.par (F.obj Y.obj)).inv ≫
       (ζPow R X.par (F.obj X.obj)).inv ▷ (F̃).obj Y
 
+set_option backward.isDefEq.respectTransparency false in
 omit [MonoidalSupercategory R A] in
 theorem extendμ_extendμInv (X Y : Envelope R A) : extendμ cF X Y ≫ extendμInv cF X Y = 𝟙 _ := by
   simp only [extendμ, extendμInv, Category.assoc, Iso.inv_hom_id_assoc, Iso.hom_inv_id_assoc,
     whiskerLeft_hom_inv'_assoc R, hom_inv_whiskerRight' R]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 omit [MonoidalSupercategory R A] in
 theorem extendμInv_extendμ (X Y : Envelope R A) : extendμInv cF X Y ≫ extendμ cF X Y = 𝟙 _ := by
   simp only [extendμ, extendμInv, Category.assoc, inv_hom_whiskerRight'_assoc R,
-    whiskerLeft_inv_hom'_assoc R, Iso.inv_hom_id_assoc, Iso.inv_hom_id, Iso.hom_inv_id_assoc,
+    whiskerLeft_inv_hom'_assoc R, Iso.inv_hom_id_assoc,
     Iso.hom_inv_id]
 
 /-- The coherence isomorphism `c̃`. -/
@@ -206,6 +208,7 @@ theorem extendμ_mem (X Y : Envelope R A) :
   rw [e] at this
   exact this
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extendμ_naturality_left {X X' : Envelope R A} (u : X ⟶ X') (Y : Envelope R A) :
     (F̃).map u ▷ (F̃).obj Y ≫ extendμ cF X' Y = extendμ cF X Y ≫ (F̃).map (u ▷ Y) := by
   refine induction_on' (R := R) u ?_ (fun r u hu => ?_) (fun u v hu hv => ?_)
@@ -213,16 +216,18 @@ theorem extendμ_naturality_left {X X' : Envelope R A} (u : X ⟶ X') (Y : Envel
       Functor.map_zero, Limits.zero_comp, Limits.comp_zero]
   · have hi := MonoidalSupercategory.super_interchange (map_mem F hu)
       (ζPow_hom_mem (R := R) Y.par (F.obj Y.obj))
-    simp only [extend_map, extend_obj, extendμ, tensorObj_obj, tensorObj_par]
+    simp only [extend_map, extendμ, tensorObj_obj, tensorObj_par]
     rw [toHom_whiskerRight_of_mem hu Y, Functor.map_smul]
     simp only [MonoidalSupercategory.comp_whiskerRight (R := R), Category.assoc,
       inv_hom_whiskerRight'_assoc R, Iso.inv_hom_id_assoc, Linear.smul_comp, Linear.comp_smul]
-    rw [reassoc_of% hi, Linear.smul_comp, Linear.comp_smul, Category.assoc,
+    erw [reassoc_of% hi]
+    rw [Linear.smul_comp, Linear.comp_smul, Category.assoc,
       reassoc_of% (cF.μ_natural_left _ _),
       koszulSign_smul (R := R), mul_comm]
   · rw [Functor.map_add, MonoidalSupercategory.add_whiskerRight (R := R), add_whiskerRight',
       Functor.map_add, Preadditive.add_comp, Preadditive.comp_add, hu, hv]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extendμ_naturality_right (X : Envelope R A) {Y Y' : Envelope R A} (v : Y ⟶ Y') :
     (F̃).obj X ◁ (F̃).map v ≫ extendμ cF X Y' = extendμ cF X Y ≫ (F̃).map (X ◁ v) := by
   refine induction_on' (R := R) v ?_ (fun r v hv => ?_) (fun u v hu hv => ?_)
@@ -236,8 +241,9 @@ theorem extendμ_naturality_right (X : Envelope R A) {Y Y' : Envelope R A} (v : 
       (ζPow_hom_mem (R := R) X.par (F.obj X.obj)) hw
     have hi' := congrArg (fun t => koszulSign X.par (Y.par + r + Y'.par) • t) hi
     simp only [koszulSign_smul_smul] at hi'
-    simp only [extend_map, extend_obj, extendμ, tensorObj_obj, tensorObj_par]
-    rw [toHom_whiskerLeft_of_mem X hv, Functor.map_smul, reassoc_of% hi'.symm]
+    simp only [extend_map, extendμ, tensorObj_obj, tensorObj_par]
+    rw [toHom_whiskerLeft_of_mem X hv, Functor.map_smul]
+    erw [reassoc_of% hi'.symm]
     simp only [MonoidalSupercategory.whiskerLeft_comp (R := R), Category.assoc,
       whiskerLeft_inv_hom'_assoc R, Iso.inv_hom_id_assoc, Linear.smul_comp, Linear.comp_smul]
     rw [reassoc_of% (cF.μ_natural_right _ _), koszulSign_smul (R := R)]
@@ -363,6 +369,7 @@ theorem assocL_eq_assocR (X Y Z : Envelope R A) : assocL cF X Y Z = assocR cF X 
   rw [e]
   exact cF.associativity X.obj Y.obj Z.obj
 
+set_option backward.isDefEq.respectTransparency false in
 theorem leftUnitality (X : Envelope R A) :
     (λ_ ((F̃).obj X)).hom = cF.εIso.hom ▷ (F̃).obj X ≫ extendμ cF (𝟙_ _) X ≫ (F̃).map (λ_ X).hom := by
   have nat : ∀ {X X' : Envelope R A} (u : X ⟶ X'),
@@ -385,6 +392,7 @@ theorem leftUnitality (X : Envelope R A) :
   rw [e1, e2]
   exact cF.left_unitality X.obj
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rightUnitality (X : Envelope R A) :
     (ρ_ ((F̃).obj X)).hom = (F̃).obj X ◁ cF.εIso.hom ≫ extendμ cF X (𝟙_ _) ≫ (F̃).map (ρ_ X).hom := by
   have nat : ∀ {X X' : Envelope R A} (u : X ⟶ X'),
@@ -452,18 +460,18 @@ theorem tensor_of_tensor_J {F G : Envelope R A ⥤ B} [F.Additive] [F.Linear R]
     (hφ : ∀ X, φ.app X ∈ parity (R := R) (F.obj X) (G.obj X) 0)
     (h : ∀ x y : A, (cF.μIso ((J R A).obj x) ((J R A).obj y)).hom ≫
         φ.app ((J R A).obj x ⊗ (J R A).obj y) =
-      (φ.app ((J R A).obj x) ⊗ φ.app ((J R A).obj y)) ≫
+      (φ.app ((J R A).obj x) ⊗ₘ φ.app ((J R A).obj y)) ≫
         (cG.μIso ((J R A).obj x) ((J R A).obj y)).hom)
     (X Y : Envelope R A) :
-    (cF.μIso X Y).hom ≫ φ.app (X ⊗ Y) = (φ.app X ⊗ φ.app Y) ≫ (cG.μIso X Y).hom := by
+    (cF.μIso X Y).hom ≫ φ.app (X ⊗ Y) = (φ.app X ⊗ₘ φ.app Y) ≫ (cG.μIso X Y).hom := by
   have nat₁ : ∀ {X X' : Envelope R A} (u : X ⟶ X') (Y : Envelope R A),
       F.map u ▷ F.obj Y ≫ (cF.μIso X' Y).hom ≫ φ.app (X' ⊗ Y) =
         ((cF.μIso X Y).hom ≫ φ.app (X ⊗ Y)) ≫ G.map (u ▷ Y) := by
     intro X X' u Y
     rw [reassoc_of% (cF.μ_natural_left u Y), φ.naturality, Category.assoc]
   have nat₁' : ∀ {X X' : Envelope R A} (u : X ⟶ X') (Y : Envelope R A),
-      F.map u ▷ F.obj Y ≫ (φ.app X' ⊗ φ.app Y) ≫ (cG.μIso X' Y).hom =
-        ((φ.app X ⊗ φ.app Y) ≫ (cG.μIso X Y).hom) ≫ G.map (u ▷ Y) := by
+      F.map u ▷ F.obj Y ≫ (φ.app X' ⊗ₘ φ.app Y) ≫ (cG.μIso X' Y).hom =
+        ((φ.app X ⊗ₘ φ.app Y) ≫ (cG.μIso X Y).hom) ≫ G.map (u ▷ Y) := by
     intro X X' u Y
     rw [MonoidalSupercategory.tensorHom_def (R := R), MonoidalSupercategory.tensorHom_def (R := R),
       Category.assoc, ← Category.assoc (F.map u ▷ F.obj Y),
@@ -477,8 +485,8 @@ theorem tensor_of_tensor_J {F G : Envelope R A ⥤ B} [F.Additive] [F.Linear R]
     intro X Y Y' v
     rw [reassoc_of% (cF.μ_natural_right X v), φ.naturality, Category.assoc]
   have nat₂' : ∀ (X : Envelope R A) {Y Y' : Envelope R A} (v : Y ⟶ Y'),
-      F.obj X ◁ F.map v ≫ (φ.app X ⊗ φ.app Y') ≫ (cG.μIso X Y').hom =
-        ((φ.app X ⊗ φ.app Y) ≫ (cG.μIso X Y).hom) ≫ G.map (X ◁ v) := by
+      F.obj X ◁ F.map v ≫ (φ.app X ⊗ₘ φ.app Y') ≫ (cG.μIso X Y').hom =
+        ((φ.app X ⊗ₘ φ.app Y) ≫ (cG.μIso X Y).hom) ≫ G.map (X ◁ v) := by
     intro X Y Y' v
     rw [MonoidalSupercategory.tensorHom_def (R := R), MonoidalSupercategory.tensorHom_def (R := R),
       Category.assoc, ← reassoc_of% (interchange_even_left' R (hφ X) (F.map v)),
@@ -618,7 +626,7 @@ theorem restrictMonoidal_bijective :
   refine ⟨fun y y' h => monoidalNatTrans_ext fun z => ?_, fun x =>
     ⟨extendMonoidalNatTrans x, monoidalNatTrans_eq fun z => ?_⟩⟩
   · have := congrArg (fun t : MonoidalNatTrans R cF cG => t.toNatTrans.app z) h
-    simpa using this
+    simpa using! this
   · rw [restrictMonoidalNatTrans_app, extendMonoidalNatTrans_app_J]
 
 
@@ -627,8 +635,9 @@ theorem extendMonoidalNatTrans_id :
     extendMonoidalNatTrans (MonoidalNatTrans.id cF) = MonoidalNatTrans.id (extendMonoidal cF) :=
   monoidalNatTrans_eq fun X => by
     have := congrFun (extendNat_id R F) X
-    simpa [extendMonoidalNatTrans, MonoidalNatTrans.id] using this
+    simpa [extendMonoidalNatTrans, MonoidalNatTrans.id] using! this
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 1.15 (first half), functoriality.** `(y ∘ x)~ = ỹ ∘ x̃`. -/
 theorem extendMonoidalNatTrans_comp {H : A ⥤ B} [H.Additive] [H.Linear R] [IsSuperfunctor R H]
     {cH : MonoidalSuperfunctor R H} (x : MonoidalNatTrans R cF cG)
@@ -698,6 +707,7 @@ theorem extendRestrictIso_hom_app_J (x : A) :
 
 omit [MonoidalCategoryStruct A] [MonoidalSupercategory R A] [MonoidalCategoryStruct B]
   [MonoidalSupercategory R B] in
+set_option backward.isDefEq.respectTransparency false in
 theorem extendRestrictIso_inv_app_J (x : A) :
     (extendRestrictIso H).inv.app ((J R A).obj x) = 𝟙 _ := by
   have := (extendRestrictIso H).hom_inv_id_app ((J R A).obj x)
@@ -711,6 +721,7 @@ theorem extendRestrictIso_inv_mem (X : Envelope R A) :
   have := inv_mem ((extendRestrictIso H).app X) (extendRestrictIso_hom_mem H X)
   exact this
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 1.15 (first half), even density.** The even isomorphism `(H J)~ ≅ H` of
 Theorem 4.3 is a monoidal natural transformation. -/
 def extendRestrictMonoidalHom (cH : MonoidalSuperfunctor R H) :
@@ -729,6 +740,7 @@ def extendRestrictMonoidalHom (cH : MonoidalSuperfunctor R H) :
     rw [e, Category.comp_id]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The inverse of `extendRestrictMonoidalHom`. -/
 def extendRestrictMonoidalInv (cH : MonoidalSuperfunctor R H) :
     MonoidalNatTrans R cH (extendMonoidal (restrictMonoidal cH)) where
