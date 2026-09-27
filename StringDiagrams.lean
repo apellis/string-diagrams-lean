@@ -190,6 +190,7 @@ import StringDiagrams.Chord.NormalForm
 import StringDiagrams.Chord.Realisation
 import StringDiagrams.Chord.Matching
 import StringDiagrams.Chord.Interpretation
+import StringDiagrams.Chord.Presented
 
 /-!
 # StringDiagrams
