@@ -105,9 +105,9 @@ variable (k) in
 /-- The grading of `k` concentrated in even parity. -/
 def trivialGrading : ZMod 2 → Submodule k k := fun p => if p = 0 then ⊤ else ⊥
 
-@[simp] theorem trivialGrading_zero : trivialGrading k 0 = ⊤ := if_pos rfl
+@[simp] theorem trivialGrading_zero : trivialGrading k 0 = ⊤ := ite_eq_left rfl
 
-@[simp] theorem trivialGrading_one : trivialGrading k 1 = ⊥ := if_neg (by decide)
+@[simp] theorem trivialGrading_one : trivialGrading k 1 = ⊥ := ite_eq_right (by decide)
 
 instance : SetLike.GradedMonoid (trivialGrading k) where
   one_mem := by simp
@@ -154,7 +154,7 @@ instance instMonoidalCategoryStruct : MonoidalCategoryStruct (UnitSupercat k) wh
   rightUnitor _ := Iso.refl _
 
 theorem tensorHom_eq {X₁ Y₁ X₂ Y₂ : UnitSupercat k} (f : X₁ ⟶ Y₁) (g : X₂ ⟶ Y₂) :
-    toElem (f ⊗ g) = toElem f * toElem g := by
+    toElem (f ⊗ₘ g) = toElem f * toElem g := by
   change toElem g * toElem f = _
   exact mul_comm _ _
 
@@ -199,6 +199,7 @@ instance instIsStrict : MonoidalSupercategory.IsStrict (UnitSupercat k) where
   leftUnitor_eq _ := rfl
   rightUnitor_eq _ := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, Example 1.17(ii).** The strict monoidal supercategory structure on `I` is
 unique: any strict monoidal supercategory structure on `I` (with its given supercategory
 structure) is the one above. -/
@@ -267,12 +268,14 @@ def toSVec : UnitSupercat k ⥤ SVec k where
       (toElem g • LinearMap.id) ∘ₗ (toElem f • LinearMap.id)
     ext; simp [mul_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (toSVec k).Additive where
   map_add {_ _ f g} := by
     change ((toElem f + toElem g) • LinearMap.id : k →ₗ[k] k) =
       toElem f • LinearMap.id + toElem g • LinearMap.id
     rw [add_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (toSVec k).Linear k where
   map_smul f r := by
     change ((r • toElem f) • LinearMap.id : k →ₗ[k] k) = r • toElem f • LinearMap.id
