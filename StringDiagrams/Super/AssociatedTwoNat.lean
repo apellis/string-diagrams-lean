@@ -67,6 +67,7 @@ def natHom (a b : B) :
   app f := η.naturality f
   naturality _ _ θ := η.naturality_naturality θ
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, (5.6).** The components of a Π-2-natural transformation form a Π-natural
 transformation (this is where the axiom of Definition 5.2(iii) is used). -/
 theorem natHom_isPiNatural (hη : hF.IsPiTwoNatural hG η) (a b : B) :
@@ -83,8 +84,8 @@ theorem natHom_isPiNatural (hη : hF.IsPiTwoNatural hG η) (a b : B) :
     simp only [Category.assoc, Bicategory.whiskerLeft_inv_hom, Category.comp_id]
     rw [e, Bicategory.inv_hom_whiskerRight_assoc]
   simp only [natHom, PiFunctor.comp_β, NatIso.ofComponents_hom_app, Iso.trans_hom, Iso.app_hom,
-    Functor.mapIso_hom, Functor.comp_obj, homFunctor_obj, homFunctor_map, postcomp_obj,
-    postcomp_map, precomp_obj, precomp_map, postcompPi_β_hom_app, precompPi_β_hom_app,
+    Functor.mapIso_hom, Functor.comp_obj,
+    postcomp_map, precomp_map, postcompPi_β_hom_app, precompPi_β_hom_app,
     homPi_β_hom_app, βHom_hom, pi_obj, pi_map, βR_hom, Bicategory.comp_whiskerRight,
     Category.assoc]
   rw [hc]
@@ -95,13 +96,16 @@ theorem natHom_isPiNatural (hη : hF.IsPiTwoNatural hG η) (a b : B) :
       (α_ (F.map f) (η.app b) (𝛑 (G.obj b))).hom ≫
         F.map f ◁ ((𝛃 (η.app b)).hom ≫ (hF.j b).hom ▷ η.app b ≫ η.naturality (𝛑 b)) := by
     bicategory
-  rw [reassoc_of% c1, hη b]
+  erw [reassoc_of% c1]
+  rw [hη b]
   have c2 : (α_ (F.map f) (η.app b) (𝛑 (G.obj b))).hom ≫ F.map f ◁ η.app b ◁ (hG.j b).hom ≫
       (α_ (F.map f) (η.app b) (G.map (𝛑 b))).inv =
       (F.map f ≫ η.app b) ◁ (hG.j b).hom := by bicategory
   rw [reassoc_of% c2, whisker_exchange_assoc, associator_naturality_right_assoc,
     Bicategory.whiskerLeft_comp]
+  rfl
 
+set_option backward.isDefEq.respectTransparency false in
 open Associated2 in
 variable (hF hG) in
 /-- **Brundan–Ellis, (5.6), `𝔻₂` on Π-2-natural transformations.** A Π-2-natural transformation
@@ -125,37 +129,38 @@ def mapTwoNat (hη : hF.IsPiTwoNatural hG η) : TwoNatTrans hF.mapTwo hG.mapTwo 
         mapTwo_mapComp, Associated.evenIso_hom, Associated.homMk_fst, Associated.homMk_snd,
         associator_hom_fst, associator_hom_snd, associator_inv_fst, associator_inv_snd,
         Iso.symm_hom, PreadditiveBicategory.zero_whiskerRight,
-        PreadditiveBicategory.whiskerLeft_zero, Limits.zero_comp, sub_zero, Category.assoc,
-        mapTwo_map_obj, comp_obj]
+        PreadditiveBicategory.whiskerLeft_zero, Limits.zero_comp, sub_zero,
+        comp_obj]
       rw [← cancel_mono (η.app a.obj ◁ (G.mapComp f.obj g.obj).hom)]
       simp only [Category.assoc, Bicategory.whiskerLeft_inv_hom, Category.comp_id]
       rw [e, Bicategory.inv_hom_whiskerRight_assoc]
+      rfl
     · simp only [comp₂_snd, whiskerLeft_fst, whiskerRight_fst, whiskerLeft_snd, whiskerRight_snd,
         mapTwo_mapComp, Associated.evenIso_hom, Associated.homMk_fst, Associated.homMk_snd,
         associator_hom_fst, associator_hom_snd, associator_inv_fst, associator_inv_snd,
         Iso.symm_hom, PreadditiveBicategory.zero_whiskerRight,
         PreadditiveBicategory.whiskerLeft_zero, Limits.zero_comp, Limits.comp_zero, add_zero,
-        zero_add, pi_map]
+        pi_map]
   x_id a := by
     apply hom₂_ext
     · have e := η.naturality_id a.obj
       simp only [Pseudofunctor.toOplax_mapId, Pseudofunctor.toOplax_toPrelaxFunctor] at e
-      simp only [comp₂_fst, whiskerLeft_fst, whiskerRight_fst, whiskerLeft_snd, whiskerRight_snd,
+      simp only [comp₂_fst, whiskerLeft_fst, whiskerRight_fst, whiskerRight_snd,
         mapTwo_mapId, Associated.evenIso_hom, Associated.homMk_fst, Associated.homMk_snd,
         leftUnitor_inv_fst, leftUnitor_inv_snd, rightUnitor_hom_fst, rightUnitor_hom_snd,
         Iso.symm_hom, PreadditiveBicategory.zero_whiskerRight,
-        PreadditiveBicategory.whiskerLeft_zero, Limits.zero_comp, sub_zero, Category.assoc,
-        mapTwo_map_obj, id_obj, mapTwo_obj_obj]
+        Limits.zero_comp, sub_zero,
+        id_obj]
       rw [← cancel_mono (η.app a.obj ◁ (G.mapId a.obj).hom)]
-      simp only [Category.assoc, Bicategory.whiskerLeft_inv_hom, Category.comp_id]
+      simp only [Category.assoc, Bicategory.whiskerLeft_inv_hom]
       rw [e]
       simp
-    · simp only [comp₂_snd, whiskerLeft_fst, whiskerRight_fst, whiskerLeft_snd, whiskerRight_snd,
+    · simp only [comp₂_snd, whiskerRight_fst, whiskerLeft_snd, whiskerRight_snd,
         mapTwo_mapId, Associated.evenIso_hom, Associated.homMk_fst, Associated.homMk_snd,
         leftUnitor_inv_fst, leftUnitor_inv_snd, rightUnitor_hom_fst, rightUnitor_hom_snd,
         Iso.symm_hom, PreadditiveBicategory.zero_whiskerRight,
         PreadditiveBicategory.whiskerLeft_zero, Limits.zero_comp, Limits.comp_zero, add_zero,
-        zero_add, pi_map]
+        pi_map]
 
 /-- **Theorem 5.5, `𝔼₂ ∘ 𝔻₂ = 𝕀` on 2-morphisms.** The components of `𝔼₂(𝔻₂(Y, y))` are those of
 `(Y, y)`, under the identification `Associated2.unit` of Lemma 5.4. -/
@@ -181,6 +186,7 @@ variable {R : Type w} [CommRing R] {A : Type u₁} [BicategoryStruct.{w₁, v₁
   [∀ a b : A', Supercategory R (a ⟶ b)] [TwoSupercategory R A'] [PiTwoSupercategory R A']
   {G G' : TwoSuperfunctor R A A'}
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 5.5, naturality of `𝕋` in 2-morphisms.** For a 2-natural transformation
 `(X, x) : ℝ ⇒ 𝕊`, `𝕋_{𝔄'} (𝔻₂ 𝔼₂ (X, x)) = (X, x) 𝕋_𝔄`: the components `X_λ` agree (by
 definition) and `𝕋_{𝔄'}` sends `ŷ_F = (x_F, 0)` to `x_F`. -/
@@ -272,14 +278,19 @@ theorem IsPiTwoNatural.vcomp {η : Oplax.OplaxTrans F.toOplax G.toOplax}
   rw [c2, hθ a]
   bicategory
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 5.5, `𝔻₂` preserves identities.** -/
 theorem mapTwoNat_id (hF : PiTwoFunctor R F) :
     mapTwoNat hF hF (isPiTwoNatural_id hF) = TwoNatTrans.id hF.mapTwo := by
   refine TwoNatTrans.ext_of_eq rfl fun f => ?_
   simp only [eqToHom_refl, Category.comp_id, Category.id_comp, mapTwoNat_x,
     Oplax.OplaxTrans.id, TwoNatTrans.id_x]
-  apply Associated2.hom₂_ext <;> simp
+  apply Associated2.hom₂_ext
+  · simp
+    rfl
+  · simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 5.5, `𝔻₂` preserves vertical composition.** -/
 theorem mapTwoNat_vcomp {η : Oplax.OplaxTrans F.toOplax G.toOplax}
     {θ : Oplax.OplaxTrans G.toOplax H.toOplax} (hη : hF.IsPiTwoNatural hG η)
@@ -294,14 +305,15 @@ theorem mapTwoNat_vcomp {η : Oplax.OplaxTrans F.toOplax G.toOplax}
       Associated2.associator_hom_snd, Associated2.associator_inv_fst,
       Associated2.associator_inv_snd, Associated.homMk_fst, Associated.homMk_snd,
       PreadditiveBicategory.zero_whiskerRight, PreadditiveBicategory.whiskerLeft_zero,
-      Limits.zero_comp, Limits.comp_zero, sub_zero, Category.assoc, mapTwo_map_obj,
-      Associated2.comp_obj, mapTwoNat_X_obj, Pseudofunctor.toOplax_toPrelaxFunctor]
+      Limits.zero_comp, Limits.comp_zero, sub_zero,
+      Associated2.comp_obj, Pseudofunctor.toOplax_toPrelaxFunctor]
+    rfl
   · simp only [Associated2.comp₂_snd, Associated2.whiskerLeft_fst, Associated2.whiskerLeft_snd,
       Associated2.whiskerRight_fst, Associated2.whiskerRight_snd, Associated2.associator_hom_fst,
       Associated2.associator_hom_snd, Associated2.associator_inv_fst,
       Associated2.associator_inv_snd, Associated.homMk_fst, Associated.homMk_snd,
       PreadditiveBicategory.zero_whiskerRight, PreadditiveBicategory.whiskerLeft_zero,
-      Limits.zero_comp, Limits.comp_zero, add_zero, zero_add, pi_map]
+      Limits.zero_comp, Limits.comp_zero, add_zero, pi_map]
 
 end PiTwoFunctor
 
