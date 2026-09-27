@@ -81,6 +81,7 @@ instance : SetLike.GradedMonoid 𝒢.bideg where
   mul_mem _ _ _ _ ha hb := ⟨SetLike.GradedMul.mul_mem ha.1 hb.1, SetLike.GradedMul.mul_mem ha.2 hb.2⟩
 
 /-- A graded superalgebra is a `ℤ × ℤ/2`-graded algebra. -/
+@[instance_reducible]
 def gradedAlgebraBideg : GradedAlgebra 𝒢.bideg :=
   { (inferInstance : SetLike.GradedMonoid 𝒢.bideg), 𝒢.isInternal_bideg.chooseDecomposition with }
 
