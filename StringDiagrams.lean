@@ -122,6 +122,10 @@ import StringDiagrams.IndexedInterpretation
 import StringDiagrams.Linear.MatEnd
 import StringDiagrams.Mathlib.CategoryTheory.Linear.Opposite
 import StringDiagrams.Mathlib.CategoryTheory.Linear.End
+import StringDiagrams.LayerMap.Basic
+import StringDiagrams.LayerMap.Op
+import StringDiagrams.LayerMap.Generators
+import StringDiagrams.LayerMap.Local
 import StringDiagrams.DSL.Basic
 import StringDiagrams.Render.SVG
 import StringDiagrams.Render.TikZ
@@ -135,6 +139,7 @@ import StringDiagrams.Examples.TemperleyLieb.Representation
 import StringDiagrams.Tactic.WordRw
 import StringDiagrams.Examples.Grading
 import StringDiagrams.Examples.TemperleyLiebMonoidal
+import StringDiagrams.Examples.LayerMaps
 import StringDiagrams.Examples.WeightedBubbles
 import StringDiagrams.Examples.QPiCompat
 import StringDiagrams.Biadjunction.Basic
