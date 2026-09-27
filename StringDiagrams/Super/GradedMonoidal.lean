@@ -53,7 +53,7 @@ theorem superTensorHom_mem_degree {X X' Y Y' : C} {m n : ℤ} {f : X ⟶ X'} {g 
 
 theorem tensorHom_mem_degree {X X' Y Y' : C} {m n : ℤ} {f : X ⟶ X'} {g : Y ⟶ Y'}
     (hf : f ∈ degree (R := R) X X' m) (hg : g ∈ degree (R := R) Y Y' n) :
-    f ⊗ g ∈ degree (R := R) (X ⊗ Y) (X' ⊗ Y') (m + n) := by
+    f ⊗ₘ g ∈ degree (R := R) (X ⊗ Y) (X' ⊗ Y') (m + n) := by
   rw [MonoidalSupercategory.tensorHom_def (R := R)]
   exact comp_mem_degree (whiskerRight_mem_degree Y hf) (whiskerLeft_mem_degree X' hg)
 
