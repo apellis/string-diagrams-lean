@@ -83,9 +83,9 @@ variable (V : SVec k)
 /-- The projection `V → V_p` onto the component of parity `p`. -/
 def proj (p : ZMod 2) : V →ₗ[k] V := if p = 0 then LinearMap.id - V.odd else V.odd
 
-theorem proj_zero : V.proj 0 = LinearMap.id - V.odd := if_pos rfl
+theorem proj_zero : V.proj 0 = LinearMap.id - V.odd := ite_eq_left rfl
 
-theorem proj_one : V.proj 1 = V.odd := if_neg (by decide)
+theorem proj_one : V.proj 1 = V.odd := ite_eq_right (by decide)
 
 theorem odd_apply_odd (v : V) : V.odd (V.odd v) = V.odd v :=
   LinearMap.congr_fun V.odd_comp_odd v
@@ -177,10 +177,12 @@ def ofProd (V₀ V₁ : Type u) [AddCommGroup V₀] [Module k V₀] [AddCommGrou
   odd := LinearMap.inr k V₀ V₁ ∘ₗ LinearMap.snd k V₀ V₁
   odd_comp_odd := by ext <;> simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem ofProd_mem_part_zero {V₀ V₁ : Type u} [AddCommGroup V₀] [Module k V₀] [AddCommGroup V₁]
     [Module k V₁] (v : V₀) : ((v, 0) : ofProd (k := k) V₀ V₁) ∈ (ofProd (k := k) V₀ V₁).part 0 := by
   rw [mem_part_zero_iff]; simp [ofProd]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem ofProd_mem_part_one {V₀ V₁ : Type u} [AddCommGroup V₀] [Module k V₀] [AddCommGroup V₁]
     [Module k V₁] (v : V₁) : ((0, v) : ofProd (k := k) V₀ V₁) ∈ (ofProd (k := k) V₀ V₁).part 1 := by
   rw [mem_part_one_iff]; simp [ofProd]
@@ -190,11 +192,12 @@ theorem ofProd_mem_part_one {V₀ V₁ : Type u} [AddCommGroup V₀] [Module k V
 def ofIsCompl (M : Type u) [AddCommGroup M] [Module k M] (M₀ M₁ : Submodule k M)
     (h : IsCompl M₀ M₁) : SVec k where
   carrier := M
-  odd := M₁.subtype ∘ₗ Submodule.linearProjOfIsCompl M₁ M₀ h.symm
+  odd := M₁.subtype ∘ₗ Submodule.projectionOnto M₁ M₀ h.symm
   odd_comp_odd := by
     ext v
     simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem ofIsCompl_part_one (M : Type u) [AddCommGroup M] [Module k M] (M₀ M₁ : Submodule k M)
     (h : IsCompl M₀ M₁) : (ofIsCompl M M₀ M₁ h).part 1 = M₁ := by
   ext v
@@ -202,15 +205,16 @@ theorem ofIsCompl_part_one (M : Type u) [AddCommGroup M] [Module k M] (M₀ M₁
   simp only [ofIsCompl, LinearMap.coe_comp, Function.comp_apply, Submodule.coe_subtype]
   constructor
   · intro hv; rw [← hv]; exact Submodule.coe_mem _
-  · intro hv; rw [Submodule.linearProjOfIsCompl_apply_left h.symm ⟨v, hv⟩]
+  · intro hv; rw [Submodule.projectionOnto_apply_left h.symm ⟨v, hv⟩]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem ofIsCompl_part_zero (M : Type u) [AddCommGroup M] [Module k M] (M₀ M₁ : Submodule k M)
     (h : IsCompl M₀ M₁) : (ofIsCompl M M₀ M₁ h).part 0 = M₀ := by
   ext v
   rw [mem_part_zero_iff]
   simp only [ofIsCompl, LinearMap.coe_comp, Function.comp_apply, Submodule.coe_subtype,
     ZeroMemClass.coe_eq_zero]
-  exact Submodule.linearProjOfIsCompl_apply_eq_zero_iff h.symm
+  exact Submodule.projectionOnto_apply_eq_zero_iff h.symm
 
 
 /-! ## The supercategory `SVec` -/
@@ -287,11 +291,11 @@ instance : Linear k (SVec k) where
 def parityHom (V W : SVec k) (p : ZMod 2) : Submodule k (V ⟶ W) where
   carrier := {f | ∀ q, toLinearMap f ∘ₗ V.proj q = W.proj (q + p) ∘ₗ toLinearMap f}
   add_mem' {f g} hf hg q := by
-    simp only [Set.mem_setOf_eq, toLinearMap_add, LinearMap.add_comp, LinearMap.comp_add] at *
+    simp only [Set.mem_ofPred_eq, toLinearMap_add, LinearMap.add_comp, LinearMap.comp_add] at *
     rw [hf, hg]
   zero_mem' q := by ext; simp [toLinearMap]
   smul_mem' r f hf q := by
-    simp only [Set.mem_setOf_eq, toLinearMap_smul, LinearMap.smul_comp, LinearMap.comp_smul] at *
+    simp only [Set.mem_ofPred_eq, toLinearMap_smul, LinearMap.smul_comp, LinearMap.comp_smul] at *
     rw [hf]
 
 theorem mem_parityHom_iff {V W : SVec k} {p : ZMod 2} {f : V ⟶ W} :
@@ -320,7 +324,7 @@ theorem mem_parityHom_of_apply_mem {V W : SVec k} {p : ZMod 2} {f : V ⟶ W}
     rcases parity_eq_zero_or_one p with rfl | rfl <;>
       rcases parity_eq_zero_or_one q with rfl | rfl <;> decide
   conv_rhs => rw [← proj_apply_add' V q v]
-  rw [map_add, map_add, (mem_part_iff _).1 hv, proj_apply_of_mem_part _ hv', if_neg hne, add_zero]
+  rw [map_add, map_add, (mem_part_iff _).1 hv, proj_apply_of_mem_part _ hv', ite_eq_right hne, add_zero]
 
 /-- The component of parity `p` of a linear map: `f_p = ∑_q proj_{q+p} ∘ f ∘ proj_q`. -/
 def homProj (p : ZMod 2) {V W : SVec k} : (V ⟶ W) →ₗ[k] (V ⟶ W) where
@@ -395,7 +399,7 @@ theorem proj_eq_homProj (p : ZMod 2) {V W : SVec k} (f : V ⟶ W) :
   rcases parity_eq_zero_or_one p with rfl | rfl
   · exact proj_eq_of_add (homProj_add_homProj f).symm (homProj_mem 0 f) (homProj_mem 1 f)
   · exact proj_eq_of_add ((add_comm _ _).trans (homProj_add_homProj f)).symm
-      (homProj_mem 1 f) (by simpa using homProj_mem 0 f)
+      (homProj_mem 1 f) (by simpa using! homProj_mem 0 f)
 
 theorem homProj_eq_of_add {p : ZMod 2} {V W : SVec k} {f g h : V ⟶ W} (e : f = g + h)
     (hg : g ∈ parityHom V W p) (hh : h ∈ parityHom V W (p + 1)) : homProj p f = g := by
@@ -596,7 +600,7 @@ theorem whiskerLeft_mem (V : SVec k) {W W' : SVec k} {b : ZMod 2} {g : W ⟶ W'}
 
 theorem whiskerRight_mem {V V' : SVec k} {a : ZMod 2} {f : V ⟶ V'} (hf : f ∈ parityHom V V' a)
     (W : SVec k) : whiskerRight f W ∈ parityHom (tensorObj V W) (tensorObj V' W) a := by
-  simpa using map_mem hf (instSupercategory.id_mem W)
+  simpa using! map_mem hf (instSupercategory.id_mem W)
 
 theorem whiskerLeft_comp (V : SVec k) {W W' W'' : SVec k} (f : W ⟶ W') (g : W' ⟶ W'') :
     whiskerLeft V (f ≫ g) = whiskerLeft V f ≫ whiskerLeft V g := by
@@ -695,12 +699,12 @@ theorem associator_mem (U V W : SVec k) :
   apply TensorProduct.ext_threefold
   intro u v w
   simp only [add_zero, LinearMap.comp_apply, associator, isoOfLinearEquiv_hom, toLinearMap_ofHom,
-    LinearEquiv.coe_coe, tensorObj_proj_tmul, add_tmul, map_add, assoc_tmul, tmul_add]
+    LinearEquiv.coe_coe, assoc_tmul]
   repeat rw [tensorObj_proj_tmul]
   simp only [add_tmul, tmul_add, map_add, assoc_tmul]
   rcases parity_eq_zero_or_one q with rfl | rfl
-  · simp only [zero_add, add_zero, zmod2_one_add_one]; abel
-  · simp only [zero_add, add_zero, zmod2_one_add_one, ← add_assoc]; abel
+  · simp only [add_zero, zmod2_one_add_one]; abel
+  · simp only [add_zero, zmod2_one_add_one, ← add_assoc]; abel
 
 theorem leftUnitor_mem (V : SVec k) : (leftUnitor V).hom ∈ parityHom (tensorObj unit V) V 0 := by
   intro q
@@ -859,7 +863,7 @@ theorem superTensorHom_tmul {V V' W W' : SVec k} (f : V ⟶ V') {p q : ZMod 2} {
 theorem tensorHom_tmul {V V' W W' : SVec k} {a b : ZMod 2} {f : V ⟶ V'} {g : W ⟶ W'}
     (hf : f ∈ parity (R := k) V V' a) (hg : g ∈ parity (R := k) W W' b) {p : ZMod 2} {v : V}
     (hv : v ∈ V.part p) (w : W) :
-    (f ⊗ g) (v ⊗ₜ w) = sign k ((p + a) * b) • (f v ⊗ₜ g w) := by
+    (f ⊗ₘ g) (v ⊗ₜ w) = sign k ((p + a) * b) • (f v ⊗ₜ g w) := by
   change (V' ◁ g) ((f ▷ W) (v ⊗ₜ w)) = _
   rw [whiskerRight_tmul', whiskerLeft_tmul' hg (apply_mem_part hf hv)]
 
@@ -873,12 +877,14 @@ def piObj (V : SVec k) : SVec k where
     ext v
     simp [odd_apply_odd]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem piObj_proj (V : SVec k) (p : ZMod 2) : (piObj V).proj p = V.proj (p + 1) := by
   rcases parity_eq_zero_or_one p with rfl | rfl
   · rw [proj_zero, zero_add, proj_one]
     ext v; simp [piObj]
   · rw [proj_one, zmod2_one_add_one, proj_zero]; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem piObj_part (V : SVec k) (p : ZMod 2) : (piObj V).part p = V.part (p + 1) := by
   simp only [part, piObj_proj]
 
@@ -969,8 +975,8 @@ theorem sub_odd_apply (v : U) : ((sub V U hU).odd v : V) = V.odd v := rfl
 
 theorem sub_proj_apply (q : ZMod 2) (v : U) : ((sub V U hU).proj q v : V) = V.proj q v := by
   rcases parity_eq_zero_or_one q with rfl | rfl
-  · simp [proj_zero, sub_odd_apply]
-  · simp [proj_one, sub_odd_apply]
+  · simp [proj_zero]
+  · simp [proj_one]
 
 theorem mem_sub_part_iff {q : ZMod 2} {v : U} : v ∈ (sub V U hU).part q ↔ (v : V) ∈ V.part q := by
   rw [mem_part_iff, mem_part_iff, ← sub_proj_apply V U hU, Subtype.ext_iff]
@@ -1024,7 +1030,7 @@ def partMap {V W : SVec k} (f : V ⟶ W) (hf : f ∈ parityHom V W 0) (q : ZMod 
 components. -/
 def partEquivOfIso {V W : SVec k} (e : V ≅ W) (he : e.hom ∈ parityHom V W 0) (q : ZMod 2) :
     V.part q ≃ₗ[k] W.part q :=
-  LinearEquiv.ofLinear (partMap e.hom he q) (partMap e.inv (inv_mem e he) q)
+  LinearEquiv.ofLinearMap (partMap e.hom he q) (partMap e.inv (inv_mem e he) q)
     (by ext v; simp [← comp_apply]) (by ext v; simp [← comp_apply])
 
 /-- Superspaces with isomorphic homogeneous components are evenly isomorphic. -/
