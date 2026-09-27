@@ -109,6 +109,7 @@ theorem id_apply_of_ne (M : a ⟶ b) (i j : M.ι) (h : i ≠ j) : (𝟙 M : M �
 
 @[simp] theorem zero_apply {M N : a ⟶ b} (i j) : (0 : M ⟶ N) i j = 0 := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The associator, a permutation matrix. -/
 @[simps]
 def associator (M : a ⟶ b) (N : b ⟶ c) (P : c ⟶ d) : (M ≫ N) ≫ P ≅ M ≫ N ≫ P where
@@ -124,6 +125,7 @@ def associator (M : a ⟶ b) (N : b ⟶ c) (P : c ⟶ d) : (M ≫ N) ≫ P ≅ M
     exact permMat_eq_id _ (fun _ => rfl) _ fun _ => by
       rw [eqToHom_refl, Category.comp_id]; exact Iso.inv_hom_id _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The left unitor, a permutation matrix. -/
 @[simps]
 def leftUnitor (M : a ⟶ b) : 𝟙 a ≫ M ≅ M where
@@ -138,6 +140,7 @@ def leftUnitor (M : a ⟶ b) : 𝟙 a ≫ M ≅ M where
     exact permMat_eq_id _ (fun _ => rfl) _ fun _ => by
       rw [eqToHom_refl, Category.comp_id]; exact Iso.inv_hom_id _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The right unitor, a permutation matrix. -/
 @[simps]
 def rightUnitor (M : a ⟶ b) : M ≫ 𝟙 b ≅ M where
@@ -197,6 +200,7 @@ theorem hcomp_permMat {ι κ ι' κ' : Type} [Fintype ι] [Fintype κ] [Fintype 
       (e.prodCongr e') (fun x => hcomp₂ (φ x.1) (ψ x.2))
       (i := (x₁, x₂)) (j := (y₁, y₂)) (fun h => h₁ (congrArg Prod.fst h))).symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem hcomp_id_id (M : a ⟶ b) (N : b ⟶ c) : hcomp (𝟙 M) (𝟙 N) = 𝟙 (M ≫ N) := by
   rw [id_eq_permMat' M, id_eq_permMat' N, hcomp_permMat]
   exact permMat_eq_id _ (fun _ => rfl) _ fun _ => by simp [hcomp₂]
@@ -227,6 +231,7 @@ end Hcomp
 
 /-! ## The bicategory -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The additive envelope of a bicategory is a bicategory.** -/
 instance instBicategory : Bicategory (MatBicat B) :=
   Bicategory.ofHcomp hcomp associator leftUnitor rightUnitor hcomp_id_id
@@ -303,6 +308,7 @@ theorem leftUnitor_eq (M : a ⟶ b) : λ_ M = leftUnitor M := rfl
 
 theorem rightUnitor_eq (M : a ⟶ b) : ρ_ M = rightUnitor M := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The whiskering of a permutation matrix is a permutation matrix. -/
 theorem whiskerLeft_permMat (M : a ⟶ b) {ι κ : Type} [Fintype ι] [Fintype κ]
     {X : ι → (b.obj ⟶ c.obj)} {Y : κ → (b.obj ⟶ c.obj)} (e : ι ≃ κ) (φ : ∀ i, X i ⟶ Y (e i)) :
@@ -311,8 +317,9 @@ theorem whiskerLeft_permMat (M : a ⟶ b) {ι κ : Type} [Fintype ι] [Fintype �
         ((Equiv.refl M.ι).prodCongr e) (fun x => M.X x.1 ◁ φ x.2) := by
   rw [whiskerLeft_eq, id_eq_permMat' M, hcomp_permMat]
   exact permMat_congr (fun _ => rfl) _ _ fun x => by
-    rw [eqToHom_refl, Category.comp_id]; simp [hcomp₂]
+    rw [eqToHom_refl, Category.comp_id]; simp [hcomp₂]; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The whiskering of a permutation matrix is a permutation matrix. -/
 theorem permMat_whiskerRight {ι κ : Type} [Fintype ι] [Fintype κ]
     {X : ι → (a.obj ⟶ b.obj)} {Y : κ → (a.obj ⟶ b.obj)} (e : ι ≃ κ) (φ : ∀ i, X i ⟶ Y (e i))
@@ -395,6 +402,7 @@ theorem neg_permMat {ι κ : Type} [Fintype ι] [Fintype κ] {X : ι → (a.obj 
     -permMat (D := a.obj ⟶ b.obj) e φ = permMat e (fun i => -φ i) :=
   (permMat_neg e φ).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The natural isomorphism `F q ≅ q' F` of the additive envelope determined entrywise by
 natural isomorphisms `F ≫ q ≅ q' ≫ F` in `B` (for `q = π`, `q'` etc.). -/
 @[simps]
@@ -455,6 +463,7 @@ local notation "𝛑" => PiTwoCategory.pi (R := R)
 local notation "𝛃" => PiTwoCategory.β (R := R)
 local notation "𝛏" => PiTwoCategory.ξ (R := R)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, §6.** The additive envelope of a Π-2-category is a Π-2-category, with
 `π_λ` the one-by-one matrix and `β`, `ξ` extended entrywise. -/
 instance instPiTwoCategory : PiTwoCategory R (MatBicat B) where
@@ -514,6 +523,7 @@ local notation "𝐪" => QPiTwoCategory.q (R := R)
 local notation "𝐪⁻¹" => QPiTwoCategory.qinv (R := R)
 local notation "𝛄" => QPiTwoCategory.γ (R := R)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, §6.** The additive envelope of a `(Q, Π)`-2-category is a
 `(Q, Π)`-2-category, with `q_λ`, `q_λ⁻¹` the one-by-one matrices and `γ`, `ii`, `jj`
 extended entrywise. -/

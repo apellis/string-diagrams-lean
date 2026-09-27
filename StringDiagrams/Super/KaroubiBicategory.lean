@@ -135,8 +135,8 @@ variable {a b c d : KarBicat B}
 /-- Horizontal composition of 2-morphisms: the horizontal composite in `B`. -/
 def hcomp {P P' : a ⟶ b} {Q Q' : b ⟶ c} (η : P ⟶ P') (θ : Q ⟶ Q') : P ≫ Q ⟶ P' ≫ Q' :=
   ⟨hcomp₂ η.f θ.f, by
-    show hcomp₂ η.f θ.f = hcomp₂ P.p Q.p ≫ hcomp₂ η.f θ.f ≫ hcomp₂ P'.p Q'.p
-    rw [← hcomp₂_comp, ← hcomp₂_comp, ← η.comm, ← θ.comm]⟩
+    show hcomp₂ P.p Q.p ≫ hcomp₂ η.f θ.f ≫ hcomp₂ P'.p Q'.p = hcomp₂ η.f θ.f
+    rw [← hcomp₂_comp, ← hcomp₂_comp, η.comm, θ.comm]⟩
 
 theorem hcomp_f' {P P' : a ⟶ b} {Q Q' : b ⟶ c} (η : P ⟶ P') (θ : Q ⟶ Q') :
     (hcomp η θ).f = hcomp₂ η.f θ.f := rfl
@@ -164,7 +164,7 @@ theorem hcomp_id_mkHom' (P : a ⟶ b) {Q Q' : b ⟶ c} (φ : Q.X ⟶ Q'.X) (h : 
         Category.comp_id]) :=
   Idempotents.Karoubi.hom_ext _ _ (by
     show hcomp₂ P.p (φ ≫ Q'.p) = P.X ◁ φ ≫ hcomp₂ P.p Q'.p
-    simp only [hcomp₂, Bicategory.whiskerLeft_comp, Category.assoc]
+    simp only [hcomp₂, Bicategory.whiskerLeft_comp]
     rw [whisker_exchange_assoc])
 
 theorem assoc_comm (P : a ⟶ b) (Q : b ⟶ c) (S : c ⟶ d) :
@@ -217,30 +217,25 @@ theorem rightUnitor_hom' (P : a ⟶ b) :
   Bicategory.ofHcomp hcomp associator leftUnitor rightUnitor hcomp_id_id
     (fun η η' θ θ' => hcomp_comp η θ η' θ')
     (fun η θ ι => Idempotents.Karoubi.hom_ext _ _ (by
-      dsimp only
       rw [associator_hom', associator_hom', comp_mkHom_f, mkHom_comp_f, hcomp_f', hcomp_f',
         hcomp_f', hcomp_f', ← Category.assoc, hcomp₂_hcomp₂_associator, Category.assoc]
       exact congrArg _ (Idempotents.Karoubi.comp_p (hcomp η (hcomp θ ι)))))
     (fun η => Idempotents.Karoubi.hom_ext _ _ (by
-      dsimp only
       rw [leftUnitor_hom', leftUnitor_hom', comp_mkHom_f, mkHom_comp_f, hcomp_f']
       change hcomp₂ (𝟙 (𝟙 _)) η.f ≫ _ = _
       rw [hcomp₂_id_left, ← Category.assoc, leftUnitor_naturality, Category.assoc,
         Idempotents.Karoubi.comp_p]))
     (fun η => Idempotents.Karoubi.hom_ext _ _ (by
-      dsimp only
       rw [rightUnitor_hom', rightUnitor_hom', comp_mkHom_f, mkHom_comp_f, hcomp_f']
       change hcomp₂ η.f (𝟙 (𝟙 _)) ≫ _ = _
       rw [hcomp₂_id_right, ← Category.assoc, rightUnitor_naturality, Category.assoc,
         Idempotents.Karoubi.comp_p]))
     (fun P Q S T => by
-      dsimp only
       rw [associator_hom', associator_hom', associator_hom', associator_hom', associator_hom',
         hcomp_mkHom_id', hcomp_id_mkHom', mkHom_comp_mkHom, mkHom_comp_mkHom, mkHom_comp_mkHom]
       refine mkHom_congr _ _ ?_
       exact Bicategory.pentagon _ _ _ _)
     (fun P Q => by
-      dsimp only
       rw [associator_hom', leftUnitor_hom', rightUnitor_hom', hcomp_mkHom_id', hcomp_id_mkHom',
         mkHom_comp_mkHom]
       refine mkHom_congr _ _ ?_
@@ -502,7 +497,7 @@ theorem βIso_id (a : KarBicat B) :
 theorem βIso_pi (a : KarBicat B) : (βIso (of (𝛑 a.obj))).hom = -𝟙 _ := by
   apply Idempotents.Karoubi.hom_ext
   rw [βIso_hom, mkHom_f, neg_f, id_f]
-  simp only [comp_p, comp_X, of_p, of_X, hcomp₂_id_id, Category.comp_id]
+  simp only [comp_p, comp_X, of_X, hcomp₂_id_id, Category.comp_id]
   exact PiTwoCategory.β_pi (R := R) a.obj
 
 theorem ξ_comm_aux (P : a ⟶ b) :
