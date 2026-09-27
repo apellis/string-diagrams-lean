@@ -24,6 +24,7 @@ variable {R : Type*} [CommRing R] {δ : R}
 
 /-! ## Right whiskering by one strand -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem strands_tensor_one (a : ℕ) : (strands a).tensor (strands 1) = strands (a + 1) :=
   obj_ext (by simp [strands, Obj.tensor])
 
@@ -58,6 +59,7 @@ theorem wR1_sub {a b : ℕ} (x y : X R δ a ⟶ X R δ b) :
 theorem wR1_id (a : ℕ) : wR1 R δ (𝟙 (X R δ a)) = 𝟙 _ := by
   simp [wR1, Presentation.wR_id]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem wR1_cup {a i : ℕ} (h : i ≤ a) : wR1 R δ (cup R δ a i) = cup R δ (a + 1) i := by
   rw [cup_def h, cup_def (by omega), wR1, Presentation.wR_diag,
     (pres R δ).diag_eq_of_layers_eq' (Diagram.whiskerR (dcup h) (strands 1))
@@ -67,6 +69,7 @@ theorem wR1_cup {a i : ℕ} (h : i ≤ a) : wR1 R δ (cup R δ a i) = cup R δ (
       List.cons.injEq, and_true]
     exact Layer.ext rfl rfl rfl (list_unit_ext (by simp [Layer.wr, strands]; omega))
 
+set_option backward.isDefEq.respectTransparency false in
 theorem wR1_cap {a i : ℕ} (h : i ≤ a) : wR1 R δ (cap R δ a i) = cap R δ (a + 1) i := by
   rw [cap_def h, cap_def (by omega), wR1, Presentation.wR_diag,
     (pres R δ).diag_eq_of_layers_eq' (Diagram.whiskerR (dcap h) (strands 1))
@@ -192,14 +195,13 @@ theorem evenSpan_induction {a b : ℕ} {p : (X R δ a ⟶ X R δ b) → Prop}
 theorem comp_mem_evenSpan {a b c : ℕ} {x : X R δ a ⟶ X R δ b} {y : X R δ b ⟶ X R δ c}
     (hx : x ∈ evenSpan R δ a b) (hy : y ∈ evenSpan R δ b c) : x ≫ y ∈ evenSpan R δ a c := by
   refine evenSpan_induction (p := fun x => x ≫ y ∈ evenSpan R δ a c) (fun u hu hb he => ?_)
-    (by dsimp only; rw [Limits.zero_comp]; exact Submodule.zero_mem _)
-    (fun x z hx hz => by dsimp only at *; rw [Preadditive.add_comp]; exact Submodule.add_mem _ hx hz)
-    (fun r x hx => by dsimp only at *; rw [Linear.smul_comp]; exact Submodule.smul_mem _ r hx) hx
+    (by rw [Limits.zero_comp]; exact Submodule.zero_mem _)
+    (fun x z hx hz => by rw [Preadditive.add_comp]; exact Submodule.add_mem _ hx hz)
+    (fun r x hx => by rw [Linear.smul_comp]; exact Submodule.smul_mem _ r hx) hx
   refine evenSpan_induction (p := fun y => evW R δ a u b ≫ y ∈ evenSpan R δ a c)
-    (fun v hv hc hve => ?_) (by dsimp only; rw [Limits.comp_zero]; exact Submodule.zero_mem _)
-    (fun y z hy hz => by dsimp only at *; rw [Preadditive.comp_add]; exact Submodule.add_mem _ hy hz)
-    (fun r y hy => by dsimp only at *; rw [Linear.comp_smul]; exact Submodule.smul_mem _ r hy) hy
-  dsimp only
+    (fun v hv hc hve => ?_) (by rw [Limits.comp_zero]; exact Submodule.zero_mem _)
+    (fun y z hy hz => by rw [Preadditive.comp_add]; exact Submodule.add_mem _ hy hz)
+    (fun r y hy => by rw [Linear.comp_smul]; exact Submodule.smul_mem _ r hy) hy
   rw [← evW_append a u v hb]
   refine evW_mem_evenSpan (valid_append.mpr ⟨hu, hb ▸ hv⟩) (by rw [ht_append, hb, hc]) ?_
   rw [List.length_append]; exact he.add hve
@@ -207,10 +209,9 @@ theorem comp_mem_evenSpan {a b c : ℕ} {x : X R δ a ⟶ X R δ b} {y : X R δ 
 theorem wR1_mem_evenSpan {a b : ℕ} {x : X R δ a ⟶ X R δ b} (hx : x ∈ evenSpan R δ a b) :
     wR1 R δ x ∈ evenSpan R δ (a + 1) (b + 1) := by
   refine evenSpan_induction (p := fun x => wR1 R δ x ∈ evenSpan R δ (a + 1) (b + 1))
-    (fun u hu hb he => ?_) (by dsimp only; rw [wR1_zero]; exact Submodule.zero_mem _)
-    (fun x y hx hy => by dsimp only at *; rw [wR1_add]; exact Submodule.add_mem _ hx hy)
-    (fun r x hx => by dsimp only at *; rw [wR1_smul]; exact Submodule.smul_mem _ r hx) hx
-  dsimp only
+    (fun u hu hb he => ?_) (by rw [wR1_zero]; exact Submodule.zero_mem _)
+    (fun x y hx hy => by rw [wR1_add]; exact Submodule.add_mem _ hx hy)
+    (fun r x hx => by rw [wR1_smul]; exact Submodule.smul_mem _ r hx) hx
   rw [wR1_evW hu]
   exact evW_mem_evenSpan (valid_add hu 1) (by rw [ht_add hu, hb]) he
 
@@ -220,11 +221,10 @@ theorem comp_cup_right {a b : ℕ} {x : X R δ a ⟶ X R δ b} (hx : x ∈ evenS
   refine evenSpan_induction (p := fun x => x ≫ cup R δ b b = cup R δ a a ≫ wR1 R δ (wR1 R δ x))
     (fun u hu hb he => ?_) (by simp [wR1_zero])
     (fun x y hx hy => by
-      dsimp only at *; simp only [Preadditive.add_comp, hx, hy, wR1_add, Preadditive.comp_add])
+      simp only [Preadditive.add_comp, hx, hy, wR1_add, Preadditive.comp_add])
     (fun r x hx => by
-      dsimp only at *; simp only [Linear.smul_comp, hx, wR1_smul, Linear.comp_smul]) hx
-  · dsimp only
-    rw [wR1_evW hu, wR1_evW (valid_add hu 1)]
+      simp only [Linear.smul_comp, hx, wR1_smul, Linear.comp_smul]) hx
+  · rw [wR1_evW hu, wR1_evW (valid_add hu 1)]
     have h1 := evW_slideCup (R := R) (δ := δ) u hu [] (b + 2)
     rw [hb, evW_append a u _ hb, evW_cup, evW_nil_self, Category.comp_id, he.neg_one_pow,
       one_smul, List.append_nil, evW_cup] at h1
@@ -236,11 +236,10 @@ theorem wR2_comp_cap_right {a b : ℕ} {x : X R δ a ⟶ X R δ b} (hx : x ∈ e
   refine evenSpan_induction (p := fun x => wR1 R δ (wR1 R δ x) ≫ cap R δ b b = cap R δ a a ≫ x)
     (fun u hu hb he => ?_) (by simp [wR1_zero])
     (fun x y hx hy => by
-      dsimp only at *; simp only [Preadditive.comp_add, hx, hy, wR1_add, Preadditive.add_comp])
+      simp only [Preadditive.comp_add, hx, hy, wR1_add, Preadditive.add_comp])
     (fun r x hx => by
-      dsimp only at *; simp only [Linear.comp_smul, hx, wR1_smul, Linear.smul_comp]) hx
-  · dsimp only
-    rw [wR1_evW hu, wR1_evW (valid_add hu 1)]
+      simp only [Linear.comp_smul, hx, wR1_smul, Linear.smul_comp]) hx
+  · rw [wR1_evW hu, wR1_evW (valid_add hu 1)]
     have h1 := evW_slideCap (R := R) (δ := δ) u hu [] b
     rw [hb, evW_append (a + 2) u _ (b := b + 2) (by rw [ht_add hu, hb]), evW_cap, evW_nil_self,
       Category.comp_id, he.neg_one_pow, one_smul, List.append_nil, evW_cap] at h1
