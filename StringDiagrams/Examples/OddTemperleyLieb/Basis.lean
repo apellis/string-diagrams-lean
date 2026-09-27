@@ -281,14 +281,14 @@ theorem linearIndependent_and_span_of_representatives {m n : ℕ}
 /-- **Theorem A.2**, as a basis of `Hom(m, n)` indexed by the crossingless matchings. -/
 def basisOfRepresentatives {m n : ℕ} {r : CrossinglessMatching m n → (strands m ⟶ strands n)}
     (hr : IsRepresentatives r) :
-    Basis (CrossinglessMatching m n) R (X R (delta q) m ⟶ X R (delta q) n) :=
-  Basis.mk (linearIndependent_and_span_of_representatives q hr).1
+    Module.Basis (CrossinglessMatching m n) R (X R (delta q) m ⟶ X R (delta q) n) :=
+  Module.Basis.mk (linearIndependent_and_span_of_representatives q hr).1
     (linearIndependent_and_span_of_representatives q hr).2.ge
 
 @[simp] theorem basisOfRepresentatives_apply {m n : ℕ}
     {r : CrossinglessMatching m n → (strands m ⟶ strands n)} (hr : IsRepresentatives r)
     (M : CrossinglessMatching m n) :
-    basisOfRepresentatives q hr M = (pres R (delta q)).diag (r M) := Basis.mk_apply _ _ _
+    basisOfRepresentatives q hr M = (pres R (delta q)).diag (r M) := Module.Basis.mk_apply _ _ _
 
 /-! ## Existence of representatives -/
 
@@ -304,8 +304,8 @@ theorem dyck_split {w : List (Fin 2)} (hw : IsDyck w) {n : ℕ} (hl : w.length =
   have hd : del p w = List.replicate p 0 ++ r := by rw [hr, del_rep]
   refine ⟨by omega, ?_, by rw [hd]; simp; omega, by rw [hd, hr, ins_rep]⟩
   have := hw.del_pair (p := p) (by omega)
-    (by rw [hr]; simp [getD_rep_add p 0 0 (0 :: 1 :: r)])
-    (by rw [hr]; simp [getD_rep_add p 1 0 (0 :: 1 :: r)])
+    (by rw [hr]; simp)
+    (by rw [hr]; simp)
   exact this
 
 /-- The word of the canonical cup diagram. -/
@@ -338,6 +338,7 @@ def wordDiagram : (a : ℕ) → (u : List Step) → Valid a u → (strands a ⟶
   | a, .cap i :: u, h => eqToHom (congrArg strands (by have := h.1; omega : a = a - 2 + 2)) ≫
       dcap (m := a - 2) (i := i) (by have := h.1; omega) ≫ wordDiagram (a - 2) u h.2
 
+set_option backward.isDefEq.respectTransparency false in
 theorem steps_wordDiagram (a : ℕ) (u : List Step) (h : Valid a u) :
     steps (wordDiagram a u h) = u := by
   induction u generalizing a with
@@ -390,6 +391,7 @@ theorem steps_repDiagram {m n : ℕ} (M : CrossinglessMatching m n) :
   rw [← steps_wordDiagram m (repWord M) (valid_repWord M)]
   simp [steps, repDiagram, Diagram.layers_comp, Diagram.layers_eqToHom]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The rational numbers with `q = 2` are used to show that the bent-back canonical cup diagrams
 realize their crossingless matchings: the tracking of arcs does not depend on the ground ring. -/
 theorem trackW_repWord {m n : ℕ} (M : CrossinglessMatching m n) :
@@ -415,7 +417,7 @@ theorem trackW_repWord {m n : ℕ} (M : CrossinglessMatching m n) :
     have := (linearIndependent_iff'.mp hli) {M, M'}
       (fun j => if j = M then 1 else -(s * delta q₀ ^ ℓ)) (by
         rw [Finset.sum_pair hne]
-        simp only [if_true, one_smul, if_neg (Ne.symm hne), neg_smul]
+        simp only [ite_true, one_smul, ite_eq_right (Ne.symm hne), neg_smul]
         rw [← hsv, add_neg_cancel]) M (by simp)
     simp at this
   have hℓ : ℓ = 0 := by
@@ -424,7 +426,6 @@ theorem trackW_repWord {m n : ℕ} (M : CrossinglessMatching m n) :
       rw [sub_smul, one_smul, ← hsv, sub_self]
     have h0 := (linearIndependent_iff'.mp hli) {M} (fun _ => 1 - s * delta q₀ ^ ℓ)
       (by simpa using hsv') M (by simp)
-    simp only at h0
     have hδ : delta q₀ = -(3 / 2) := by simp [delta, q₀]; norm_num
     have habs : |s * delta q₀ ^ ℓ| = 1 := by rw [← sub_eq_zero.mp h0]; simp
     rw [abs_mul, abs_pow, hδ, abs_neg, abs_of_pos (by norm_num : (0 : ℚ) < 3 / 2)] at habs
@@ -450,7 +451,8 @@ theorem exists_representatives (m n : ℕ) :
   ⟨_, isRepresentatives_repDiagram m n⟩
 
 /-- The canonical basis of `Hom(m, n)`: the bent-back canonical cup diagrams. -/
-def basisRep (m n : ℕ) : Basis (CrossinglessMatching m n) R (X R (delta q) m ⟶ X R (delta q) n) :=
+def basisRep (m n : ℕ) :
+    Module.Basis (CrossinglessMatching m n) R (X R (delta q) m ⟶ X R (delta q) n) :=
   basisOfRepresentatives q (isRepresentatives_repDiagram m n)
 
 /-- **Theorem A.2**, with the standing hypotheses of Appendix A: `k` a field of characteristic
@@ -474,7 +476,7 @@ theorem mem_allWords {N : ℕ} {w : List (Fin 2)} : w ∈ allWords N ↔ w.lengt
   induction N generalizing w with
   | zero => simp [allWords]
   | succ N ih =>
-    simp only [allWords, List.mem_flatMap, List.mem_cons, List.mem_singleton,
+    simp only [allWords, List.mem_flatMap, List.mem_cons,
       List.not_mem_nil, or_false]
     constructor
     · rintro ⟨v, hv, rfl | rfl⟩ <;> simp [ih.mp hv]
