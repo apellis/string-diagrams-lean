@@ -115,6 +115,7 @@ def cokernelIsColimit {g : Y ⟶ X} (h : f ≫ g ≫ f = f) {C : 𝒞} (i : C �
     (fun {_} k _ m hm => by show m = i ≫ k; rw [← hm, ← Category.assoc, hir, Category.id_comp])
 
 /-- A regular monomorphism is the kernel of `𝟙 Y - g ≫ f`. -/
+@[instance_reducible]
 def normalMono {g : Y ⟶ X} (h : f ≫ g ≫ f = f) [Mono f] : NormalMono f where
   Z := Y
   g := 𝟙 Y - g ≫ f
@@ -130,6 +131,7 @@ def normalMono {g : Y ⟶ X} (h : f ≫ g ≫ f = f) [Mono f] : NormalMono f whe
         rw [← hm, Category.assoc, comp_eq_id_of_mono h, Category.comp_id])
 
 /-- A regular epimorphism is the cokernel of `𝟙 X - f ≫ g`. -/
+@[instance_reducible]
 def normalEpi {g : Y ⟶ X} (h : f ≫ g ≫ f = f) [Epi f] : NormalEpi f where
   W := X
   g := 𝟙 X - f ≫ g
@@ -183,6 +185,7 @@ theorem isNormalEpiCategory_of_isVNRegular (H : ∀ {X Y : 𝒞} (f : X ⟶ Y), 
 variable (𝒞) in
 /-- **A preadditive category with finite products in which idempotents split and every morphism
 is von Neumann regular is abelian.** -/
+@[instance_reducible]
 def abelianOfVNRegular [HasFiniteProducts 𝒞] [IsIdempotentComplete 𝒞]
     (H : ∀ {X Y : 𝒞} (f : X ⟶ Y), IsVNRegular f) : Abelian 𝒞 :=
   letI := hasKernels_of_isVNRegular 𝒞 H
@@ -246,6 +249,7 @@ theorem comp_apply_eq {X Y : 𝒞} (φ : ∀ i, (S i ⟶ X) →ₗ[k] (S i ⟶ Y
     rw [Linear.smul_comp, Category.id_comp, Linear.smul_comp, Category.id_comp, map_smul]
   · rw [hS.hom_eq_zero hij u, zero_comp, zero_comp, map_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 omit hS [Field k] [Linear k 𝒞] in
 /-- Morphisms out of a biproduct of generators are determined by the maps they induce on the
 `Hom(S i, -)`. -/
@@ -268,6 +272,7 @@ theorem hom_ext_of_gen {X Y : 𝒞} {f f' : X ⟶ Y}
   exact hom_ext_bsum L hL fun i u => by
     rw [← Category.assoc, ← Category.assoc]; exact h i (u ≫ e.inv)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Every family of linear maps `Hom(S i, bsum L) → Hom(S i, Y)` is induced by a morphism. -/
 theorem exists_hom_bsum {Y : 𝒞} (L : List 𝒞) (hL : ∀ P ∈ L, ∃ i, P = S i)
     (φ : ∀ i, (S i ⟶ bsum L) →ₗ[k] (S i ⟶ Y)) :
@@ -315,6 +320,7 @@ theorem isVNRegular_of_gen {X Y : 𝒞} (f : X ⟶ Y) : IsVNRegular f := by
   exact h
 
 /-- **A `k`-linear idempotent complete category with orthogonal Schur generators is abelian.** -/
+@[instance_reducible]
 def abelian [IsIdempotentComplete 𝒞] : Abelian 𝒞 :=
   haveI : HasFiniteProducts 𝒞 := hasFiniteProducts_of_has_binary_and_terminal
   abelianOfVNRegular 𝒞 fun f => hS.isVNRegular_of_gen f
