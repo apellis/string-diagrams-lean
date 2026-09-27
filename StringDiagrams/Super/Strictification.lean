@@ -126,7 +126,7 @@ theorem coherence_pentagon_inv (X Y Z W : A) :
   have hU : ∀ X Y Z W : Underlying R A,
     (α_ X (Y ⊗ Z) W).hom ≫ X ◁ (α_ Y Z W).hom ≫ (α_ X Y (Z ⊗ W)).inv =
       (α_ X Y Z).inv ▷ W ≫ (α_ (X ⊗ Y) Z W).hom := by
-    intros; coherence
+    intros; monoidal
   have h := congrArg Subtype.val (hU ⟨X⟩ ⟨Y⟩ ⟨Z⟩ ⟨W⟩)
   underlying_val h
 
@@ -137,7 +137,7 @@ theorem coherence_pentagon_inv' (X Y Z W : A) :
   have hU : ∀ X Y Z W : Underlying R A,
     (α_ X Y (Z ⊗ W)).inv ≫ (α_ (X ⊗ Y) Z W).inv ≫ (α_ X Y Z).hom ▷ W =
       X ◁ (α_ Y Z W).inv ≫ (α_ X (Y ⊗ Z) W).inv := by
-    intros; coherence
+    intros; monoidal
   have h := congrArg Subtype.val (hU ⟨X⟩ ⟨Y⟩ ⟨Z⟩ ⟨W⟩)
   underlying_val h
 
@@ -146,7 +146,7 @@ theorem coherence_leftUnitor_inv_tensor (Z W : A) :
     (λ_ (Z ⊗ W)).inv = (λ_ Z).inv ▷ W ≫ (α_ (𝟙_ A) Z W).hom := by
   have hU : ∀ Z W : Underlying R A,
     (λ_ (Z ⊗ W)).inv = (λ_ Z).inv ▷ W ≫ (α_ (𝟙_ _) Z W).hom := by
-    intros; coherence
+    intros; monoidal
   have h := congrArg Subtype.val (hU ⟨Z⟩ ⟨W⟩)
   underlying_val h
 
@@ -155,7 +155,7 @@ theorem coherence_left_unitality (X Y : A) :
     (λ_ (X ⊗ Y)).inv ≫ (α_ (𝟙_ A) X Y).inv ≫ (λ_ X).hom ▷ Y = 𝟙 _ := by
   have hU : ∀ X Y : Underlying R A,
     (λ_ (X ⊗ Y)).inv ≫ (α_ (𝟙_ _) X Y).inv ≫ (λ_ X).hom ▷ Y = 𝟙 _ := by
-    intros; coherence
+    intros; monoidal
   have h := congrArg Subtype.val (hU ⟨X⟩ ⟨Y⟩)
   underlying_val h
 
@@ -164,25 +164,25 @@ theorem coherence_right_unitality (X Y : A) :
     X ◁ (λ_ Y).inv ≫ (α_ X (𝟙_ A) Y).inv ≫ (ρ_ X).hom ▷ Y = 𝟙 _ := by
   have hU : ∀ X Y : Underlying R A,
     X ◁ (λ_ Y).inv ≫ (α_ X (𝟙_ _) Y).inv ≫ (ρ_ X).hom ▷ Y = 𝟙 _ := by
-    intros; coherence
+    intros; monoidal
   have h := congrArg Subtype.val (hU ⟨X⟩ ⟨Y⟩)
   underlying_val h
 
 include R in
 theorem coherence_rightUnitor_inv_tensor (X Y : A) :
-    (ρ_ (X ⊗ Y)).inv = ((ρ_ X).inv ⊗ (ρ_ Y).inv) ≫ (α_ X (𝟙_ A) (Y ⊗ 𝟙_ A)).hom ≫
+    (ρ_ (X ⊗ Y)).inv = ((ρ_ X).inv ⊗ₘ (ρ_ Y).inv) ≫ (α_ X (𝟙_ A) (Y ⊗ 𝟙_ A)).hom ≫
       X ◁ (λ_ (Y ⊗ 𝟙_ A)).hom ≫ (α_ X Y (𝟙_ A)).inv := by
   have hU : ∀ X Y : Underlying R A,
-    (ρ_ (X ⊗ Y)).inv = ((ρ_ X).inv ⊗ (ρ_ Y).inv) ≫ (α_ X (𝟙_ _) (Y ⊗ 𝟙_ _)).hom ≫
+    (ρ_ (X ⊗ Y)).inv = ((ρ_ X).inv ⊗ₘ (ρ_ Y).inv) ≫ (α_ X (𝟙_ _) (Y ⊗ 𝟙_ _)).hom ≫
       X ◁ (λ_ (Y ⊗ 𝟙_ _)).hom ≫ (α_ X Y (𝟙_ _)).inv := by
-    intros; coherence
+    intros; monoidal
   have h := congrArg Subtype.val (hU ⟨X⟩ ⟨Y⟩)
   underlying_val h
 
 include R in
 theorem coherence_leftUnitor_inv_unit : (λ_ (𝟙_ A)).inv = (ρ_ (𝟙_ A)).inv := by
   have h := congrArg Subtype.val
-    (show (λ_ (𝟙_ (Underlying R A))).inv = (ρ_ (𝟙_ (Underlying R A))).inv by coherence)
+    (show (λ_ (𝟙_ (Underlying R A))).inv = (ρ_ (𝟙_ (Underlying R A))).inv by monoidal)
   underlying_val h
 
 end Coherence
@@ -357,7 +357,7 @@ instance : Supercategory R (Strictification R A) where
       intro x h0 h1
       have h0' := (Superfunctor.mem_parity_iff (p := 0)).1 (mem_parityHom.1 h0)
       have h1' := (Superfunctor.mem_parity_iff (p := 1)).1 (mem_parityHom.1 h1)
-      exact Subtype.ext (hom_ext_parity (fun X => by simpa using congrFun h1' X)
+      exact Subtype.ext (hom_ext_parity (fun X => by simpa using! congrFun h1' X)
         (fun X => by simpa using congrFun h0' X))
     · rw [codisjoint_iff, eq_top_iff]
       intro x _
@@ -410,6 +410,7 @@ def tensorUnit : Strictification R A where
   γ_naturality_right X {_ _} g := by simp
   γ_assoc X Y Z := by simp [MonoidalSupercategory.id_whiskerRight (R := R)]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `F ◁ y := F(y_-)`. -/
 def whiskerLeft (M : Strictification R A) {N N' : Strictification R A} (y : N ⟶ N') :
     tensorObj M N ⟶ tensorObj M N' :=
@@ -419,6 +420,7 @@ def whiskerLeft (M : Strictification R A) {N N' : Strictification R A} (y : N �
       Category.assoc]
     rw [← Functor.map_comp, hom_compat, Functor.map_comp, ← M.γ_naturality_left_assoc]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `x ▷ G := x_{G-}`. -/
 def whiskerRight {M M' : Strictification R A} (x : M ⟶ M') (N : Strictification R A) :
     tensorObj M N ⟶ tensorObj M' N :=
@@ -431,15 +433,18 @@ def whiskerRight {M M' : Strictification R A} (x : M ⟶ M') (N : Strictificatio
     erw [h]
     rw [← Category.assoc, hom_compat, Category.assoc]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem tensorObj_assoc (M N P : Strictification R A) :
     tensorObj (tensorObj M N) P = tensorObj M (tensorObj N P) :=
-  ext_of_heq rfl fun X Y => heq_of_eq (by simp [Functor.map_comp])
+  ext_of_heq rfl fun X Y => heq_of_eq (by simp; rfl)
 
 theorem unit_tensorObj (M : Strictification R A) : tensorObj tensorUnit M = M :=
-  ext_of_heq rfl fun X Y => heq_of_eq (by simp)
+  ext_of_heq rfl fun X Y => heq_of_eq (by simp; exact Category.id_comp _)
 
 theorem tensorObj_unit (M : Strictification R A) : tensorObj M tensorUnit = M :=
-  ext_of_heq rfl fun X Y => heq_of_eq (by simp)
+  ext_of_heq rfl fun X Y => heq_of_eq (by
+    simp
+    exact (congrArg _ (M.toFunctor.map_id _)).trans (Category.comp_id _))
 
 instance instMonoidalCategoryStruct : MonoidalCategoryStruct (Strictification R A) where
   tensorObj := tensorObj
@@ -475,7 +480,7 @@ theorem tensorUnit_toSuperfunctor :
     (N : Strictification R A) : (x ▷ N).1 = Superfunctor.whiskerLeft N.toSuperfunctor x.1 := rfl
 
 theorem tensorHom_val {M M' N N' : Strictification R A} (f : M ⟶ M') (g : N ⟶ N') :
-    (f ⊗ g).1 = Superfunctor.whiskerLeft N.toSuperfunctor f.1 ≫
+    (f ⊗ₘ g).1 = Superfunctor.whiskerLeft N.toSuperfunctor f.1 ≫
       Superfunctor.whiskerRight g.1 M'.toSuperfunctor := rfl
 
 theorem eqToHom_val {M N : Strictification R A} (h : M = N) :
@@ -508,6 +513,7 @@ theorem eqToHom_val {M N : Strictification R A} (h : M = N) :
   change (eqToHom (tensorObj_unit M).symm).1 = _
   rw [eqToHom_val]; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, after Definition 1.4.** The strictification is a monoidal
 supercategory. -/
 instance instMonoidalSupercategory : MonoidalSupercategory R (Strictification R A) where
@@ -597,7 +603,7 @@ variable {M N : Strictification R A} (x : ∀ X, M.toFunctor.obj X ⟶ N.toFunct
 theorem homMk_mem : homMk x mem nat compat ∈ parity (R := R) M N 0 := by
   rw [mem_parity_iff, Superfunctor.mem_parity_iff]
   funext X
-  simp [zmod2_one_ne_zero]
+  simp
 
 end homMk
 
@@ -611,7 +617,6 @@ def isoMk {M N : Strictification R A} (e : ∀ X, M.toFunctor.obj X ≅ N.toFunc
   hom := homMk (fun X => (e X).hom) mem nat compat
   inv := homMk (fun X => (e X).inv) (fun X => inv_mem _ (mem X))
     (fun {X Y} f => by
-      dsimp only
       rw [← cancel_mono (e Y).hom, Category.assoc, Iso.inv_hom_id, Category.comp_id,
         Category.assoc, nat, Iso.inv_hom_id_assoc])
     (fun X Y => by
@@ -624,9 +629,9 @@ def isoMk {M N : Strictification R A} (e : ∀ X, M.toFunctor.obj X ≅ N.toFunc
         _ = (e X).inv ▷ Y ≫ (M.γ X Y).hom := by
             rw [Category.assoc, ← reassoc_of% (compat X Y), Iso.hom_inv_id, Category.comp_id])
   hom_inv_id := hom_ext (Superfunctor.hom_ext_parity (fun X => by simp)
-    (fun X => by simp [zmod2_one_ne_zero]))
+    (fun X => by simp))
   inv_hom_id := hom_ext (Superfunctor.hom_ext_parity (fun X => by simp)
-    (fun X => by simp [zmod2_one_ne_zero]))
+    (fun X => by simp))
 
 section isoMk
 
@@ -712,6 +717,7 @@ def leftMulHom {X X' : A} (f : X ⟶ X') :
     change X ◁ g ≫ proj R p f ▷ Y' = koszulSign p q • (proj R p f ▷ Y ≫ X' ◁ g)
     rw [MonoidalSupercategory.super_interchange (proj_mem p f) hg, koszulSign_smul_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R A) in
 /-- **Brundan–Ellis, after Definition 1.4.** The superfunctor
 `ι : A → Strictification R A`, `X ↦ (X ⊗ -, a_{X,-,-})`, `f ↦ f ⊗ 1_-`. -/
@@ -724,7 +730,8 @@ def ι : A ⥤ Strictification R A where
     rw [proj_id]
     rcases parity_eq_zero_or_one p with rfl | rfl
     · simp [MonoidalSupercategory.id_whiskerRight (R := R)]
-    · simp [zmod2_one_ne_zero, MonoidalSupercategory.zero_whiskerRight R])
+      rfl
+    · simp [MonoidalSupercategory.zero_whiskerRight R])
   map_comp f g := hom_ext (Superfunctor.hom_ext fun r Y => by
     change proj R r (f ≫ g) ▷ Y =
       proj R 0 f ▷ Y ≫ proj R r g ▷ Y + proj R 1 f ▷ Y ≫ proj R (r + 1) g ▷ Y
@@ -764,6 +771,7 @@ theorem ι_hom_compat (p : ZMod 2) (Y Z : A) :
     (α_ X Y Z).hom ≫ θ.1.app p (Y ⊗ Z) = θ.1.app p Y ▷ Z ≫ (α_ X' Y Z).hom :=
   θ.2 p Y Z
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A morphism `θ : X ⊗ - ⇒ X' ⊗ -` of right module superfunctors is `f ⊗ 1_-` for
 `f = r_{X'} ∘ θ_1 ∘ r_X⁻¹` (componentwise in the parity). -/
 theorem ι_app_eq (p : ZMod 2) (Y : A) :
@@ -784,6 +792,7 @@ theorem ι_app_eq (p : ZMod 2) (Y : A) :
 def ιPreimage : X ⟶ X' :=
   (ρ_ X).inv ≫ (θ.1.app 0 (𝟙_ A) + θ.1.app 1 (𝟙_ A)) ≫ (ρ_ X').hom
 
+set_option backward.isDefEq.respectTransparency false in
 theorem proj_ιPreimage (p : ZMod 2) :
     proj R p (ιPreimage θ) = (ρ_ X).inv ≫ θ.1.app p (𝟙_ A) ≫ (ρ_ X').hom := by
   have hmem : ∀ q, (ρ_ X).inv ≫ θ.1.app q (𝟙_ A) ≫ (ρ_ X').hom ∈ parity (R := R) X X' q := by
@@ -827,7 +836,7 @@ theorem ιObjIso_compat (M : Strictification R A) (Y Z : A) :
 def ιObjIso (M : Strictification R A) : (ι R A).obj (M.toFunctor.obj (𝟙_ A)) ≅ M :=
   isoMk (fun Y => M.γ (𝟙_ A) Y ≪≫ M.toFunctor.mapIso (λ_ Y))
     (fun Y => by
-      simpa using comp_mem (M.γ_mem (𝟙_ A) Y)
+      simpa using! comp_mem (M.γ_mem (𝟙_ A) Y)
         (map_mem M.toFunctor (MonoidalSupercategory.leftUnitor_hom_mem (R := R) Y)))
     (fun {Y Y'} g => by
       change M.toFunctor.obj (𝟙_ A) ◁ g ≫ (M.γ (𝟙_ A) Y').hom ≫ M.toFunctor.map (λ_ Y').hom =
@@ -840,12 +849,13 @@ theorem ιObjIso_hom_val_app (M : Strictification R A) (p : ZMod 2) (Y : A) :
     (ιObjIso M).hom.1.app p Y =
       if p = 0 then (M.γ (𝟙_ A) Y).hom ≫ M.toFunctor.map (λ_ Y).hom else 0 := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem ιObjIso_hom_mem (M : Strictification R A) :
     (ιObjIso M).hom ∈ parity (R := R) _ _ 0 := by
   rw [mem_parity_iff, Superfunctor.mem_parity_iff]
   funext Y
   rw [ιObjIso_hom_val_app]
-  simp [zmod2_one_ne_zero]
+  simp
 
 /-- **Brundan–Ellis, after Definition 1.4.** `ι` is evenly dense: every right module
 superfunctor `F` is evenly isomorphic to `F(1) ⊗ -`. -/
@@ -871,7 +881,7 @@ theorem comp_isoMk_hom_val_app (x : M ⟶ N) (e : ∀ X, N.toFunctor.obj X ≅ P
     (x ≫ (isoMk e mem nat compat).hom).1.app r X = x.1.app r X ≫ (e X).hom := by
   rw [comp_val, comp_app]
   rcases parity_eq_zero_or_one r with rfl | rfl <;>
-    simp [zmod2_one_ne_zero, SuperNatTrans.zmod2_one_add_one]
+    simp [SuperNatTrans.zmod2_one_add_one]
 
 theorem isoMk_hom_comp_val_app (e : ∀ X, M.toFunctor.obj X ≅ N.toFunctor.obj X)
     (mem : ∀ X, (e X).hom ∈ parity (R := R) _ _ 0)
@@ -881,7 +891,7 @@ theorem isoMk_hom_comp_val_app (e : ∀ X, M.toFunctor.obj X ≅ N.toFunctor.obj
     ((isoMk e mem nat compat).hom ≫ x).1.app r X = (e X).hom ≫ x.1.app r X := by
   rw [comp_val, comp_app]
   rcases parity_eq_zero_or_one r with rfl | rfl <;>
-    simp [zmod2_one_ne_zero, SuperNatTrans.zmod2_one_add_one]
+    simp [SuperNatTrans.zmod2_one_add_one]
 
 end Components
 
@@ -912,6 +922,7 @@ theorem proj_of_even {X Y : A} {f : X ⟶ Y} (hf : f ∈ parity (R := R) X Y 0) 
   · subst h; exact proj_of_mem hf
   · exact proj_of_mem_ne hf (Ne.symm h)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, after Definition 1.4.** `ι : A → Strictification R A` is a monoidal
 superfunctor, with coherence maps `c_{X,Y} = a⁻¹_{X,Y,-}` and `i = l⁻¹`. -/
 def ιMonoidal : MonoidalSuperfunctor R (ι R A) where
@@ -930,24 +941,21 @@ def ιMonoidal : MonoidalSuperfunctor R (ι R A) where
   associativity X Y Z := hom_ext (Superfunctor.hom_ext fun r W => by
     have ha := proj_of_even (MonoidalSupercategory.associator_hom_mem (R := R) X Y Z)
     rcases parity_eq_zero_or_one r with rfl | rfl
-    · simp [ιμIso, ha, zmod2_one_ne_zero, MonoidalSupercategory.zero_whiskerRight R,
-        MonoidalSupercategory.whiskerLeft_zero R]
+    · simp [ιμIso, ha, MonoidalSupercategory.zero_whiskerRight R]
       exact MonoidalSupercategory.coherence_pentagon_inv' R X Y Z W
-    · simp [ιμIso, ha, zmod2_one_ne_zero, MonoidalSupercategory.zero_whiskerRight R,
-        MonoidalSupercategory.whiskerLeft_zero R])
+    · simp [ιμIso, ha, MonoidalSupercategory.zero_whiskerRight R])
   left_unitality X := hom_ext (Superfunctor.hom_ext fun r Y => by
     have hl := proj_of_even (MonoidalSupercategory.leftUnitor_hom_mem (R := R) X)
     rcases parity_eq_zero_or_one r with rfl | rfl
-    · simp [ιμIso, ιεIso, hl, zmod2_one_ne_zero, MonoidalSupercategory.zero_whiskerRight R]
+    · simp [ιμIso, ιεIso, hl, MonoidalSupercategory.zero_whiskerRight R]
       exact (MonoidalSupercategory.coherence_left_unitality R X Y).symm
-    · simp [ιμIso, ιεIso, hl, zmod2_one_ne_zero, MonoidalSupercategory.zero_whiskerRight R])
+    · simp [ιμIso, ιεIso, hl, MonoidalSupercategory.zero_whiskerRight R])
   right_unitality X := hom_ext (Superfunctor.hom_ext fun r Y => by
     have hr := proj_of_even (MonoidalSupercategory.rightUnitor_hom_mem (R := R) X)
     rcases parity_eq_zero_or_one r with rfl | rfl
-    · simp [ιμIso, ιεIso, hr, zmod2_one_ne_zero, MonoidalSupercategory.zero_whiskerRight R]
+    · simp [ιμIso, ιεIso, hr, MonoidalSupercategory.zero_whiskerRight R]
       exact (MonoidalSupercategory.coherence_right_unitality R X Y).symm
-    · simp [ιμIso, ιεIso, hr, zmod2_one_ne_zero, MonoidalSupercategory.zero_whiskerRight R,
-        MonoidalSupercategory.whiskerLeft_zero R])
+    · simp [ιμIso, ιεIso, hr, MonoidalSupercategory.zero_whiskerRight R])
 
 /-! ## Evaluation at the unit object -/
 
@@ -972,6 +980,7 @@ theorem ev_map {M N : Strictification R A} (x : M ⟶ N) :
 instance : (ev R A).Additive where
   map_add {M N x y} := by simp only [ev_map, add_val, add_app]; abel
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (ev R A).Linear R where
   map_smul {M N} x r := by simp only [ev_map, smul_val, smul_app, smul_add]
 
@@ -1003,28 +1012,32 @@ theorem evμIso_hom (M N : Strictification R A) :
     (evμIso M N).hom = (M.γ (𝟙_ A) (N.toFunctor.obj (𝟙_ A))).hom ≫
       M.toFunctor.map (λ_ (N.toFunctor.obj (𝟙_ A))).hom := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem ev_map_associator_hom (M N P : Strictification R A) :
     (ev R A).map (α_ M N P).hom = 𝟙 _ := by
   rw [ev_map, associator_hom_val, Superfunctor.id_app_zero, Superfunctor.id_app_one, add_zero]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem ev_map_leftUnitor_hom (M : Strictification R A) :
     (ev R A).map (λ_ M).hom = 𝟙 _ := by
   rw [ev_map, leftUnitor_hom_val, Superfunctor.id_app_zero, Superfunctor.id_app_one, add_zero]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem ev_map_rightUnitor_hom (M : Strictification R A) :
     (ev R A).map (ρ_ M).hom = 𝟙 _ := by
   rw [ev_map, rightUnitor_hom_val, Superfunctor.id_app_zero, Superfunctor.id_app_one, add_zero]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, after Definition 1.4.** `ev : Strictification R A → A` is a monoidal
 superfunctor, with coherence maps `c_{F,G} = F(l_{G(1)}) ∘ γ_{1,G(1)}` and `i = 1`. -/
 def evMonoidal : MonoidalSuperfunctor R (ev R A) where
   μIso := evμIso
   εIso := Iso.refl _
   μ_mem M N := by
-    simpa [evμIso] using comp_mem (M.γ_mem (𝟙_ A) (N.toFunctor.obj (𝟙_ A)))
+    simpa [evμIso] using! comp_mem (M.γ_mem (𝟙_ A) (N.toFunctor.obj (𝟙_ A)))
       (map_mem M.toFunctor (MonoidalSupercategory.leftUnitor_hom_mem (R := R) _))
   ε_mem := id_mem _
   μ_natural_left {M M'} x N := by
@@ -1038,7 +1051,7 @@ def evMonoidal : MonoidalSuperfunctor R (ev R A) where
     rw [← Functor.map_comp, MonoidalSupercategory.leftUnitor_naturality (R := R),
       Functor.map_comp]
     simp only [whiskerLeft_val, Superfunctor.whiskerRight_app, Superfunctor.map,
-      Functor.map_add, Category.assoc]
+      Functor.map_add]
     rfl
   associativity M N P := by
     rw [evμIso_hom, evμIso_hom, evμIso_hom, evμIso_hom, ev_map_associator_hom, Category.comp_id]
@@ -1106,6 +1119,7 @@ theorem ιμIso_hom_mem (X Y : A) : (ιμIso (R := R) X Y).hom ∈ parity (R := 
 theorem ιεIso_hom_mem : (ιεIso (R := R) (A := A)).hom ∈ parity (R := R) _ _ 0 :=
   isoMk_hom_mem _ _ _ _
 
+set_option backward.isDefEq.respectTransparency false in
 theorem evμIso_hom_mem (M N : Strictification R A) :
     (evμIso M N).hom ∈ parity (R := R) _ _ 0 := by
   simpa [evμIso] using comp_mem (M.γ_mem (𝟙_ A) (N.toFunctor.obj (𝟙_ A)))
@@ -1126,35 +1140,38 @@ def unitNatIso : 𝟭 A ≅ ι R A ⋙ ev R A :=
     rw [← MonoidalSupercategory.add_whiskerRight (R := R), proj_add_proj,
       MonoidalSupercategory.rightUnitor_inv_naturality R])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The unit `1 ⇒ ev ∘ ι` is a monoidal natural transformation. -/
 def unitNat : MonoidalNatTrans R (MonoidalSuperfunctor.id (R := R) (C := A))
     (ιMonoidal.comp evMonoidal) where
   toNatTrans := unitNatIso.hom
   app_mem X := inv_mem _ (MonoidalSupercategory.rightUnitor_hom_mem (R := R) X)
   tensor X Y := by
-    change 𝟙 ((X : A) ⊗ Y) ≫ (ρ_ ((X : A) ⊗ Y)).inv = ((ρ_ X).inv ⊗ (ρ_ Y).inv) ≫
+    change 𝟙 ((X : A) ⊗ Y) ≫ (ρ_ ((X : A) ⊗ Y)).inv = ((ρ_ X).inv ⊗ₘ (ρ_ Y).inv) ≫
       ((α_ X (𝟙_ A) (Y ⊗ 𝟙_ A)).hom ≫ X ◁ (λ_ (Y ⊗ 𝟙_ A)).hom) ≫
         ((ιμIso X Y).hom.1.app 0 (𝟙_ A) + (ιμIso X Y).hom.1.app 1 (𝟙_ A))
-    simp only [ιμIso, isoMk_hom_val_app, if_pos, zmod2_one_ne_zero, if_false, add_zero,
+    simp only [ιμIso, isoMk_hom_val_app, ite_eq_left, zmod2_one_ne_zero, ite_false, add_zero,
       Iso.symm_hom, Category.id_comp, Category.assoc]
     exact MonoidalSupercategory.coherence_rightUnitor_inv_tensor R X Y
   unit := by
     change 𝟙 _ ≫ (ρ_ (𝟙_ A)).inv = 𝟙 _ ≫ (ιεIso.hom.1.app 0 (𝟙_ A) + ιεIso.hom.1.app 1 (𝟙_ A))
-    simp only [ιεIso, isoMk_hom_val_app, if_pos, zmod2_one_ne_zero, if_false, add_zero,
+    simp only [ιεIso, isoMk_hom_val_app, ite_eq_left, zmod2_one_ne_zero, ite_false, add_zero,
       Iso.symm_hom, Category.id_comp]
     exact (MonoidalSupercategory.coherence_leftUnitor_inv_unit R).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The natural isomorphism `ι ∘ ev ≅ 1`, `F(1) ⊗ - ≅ F`. -/
 def counitNatIso : ev R A ⋙ ι R A ≅ 𝟭 (Strictification R A) :=
   NatIso.ofComponents ιObjIso (fun {M N} x => hom_ext (Superfunctor.hom_ext fun r Y => by
     erw [comp_val_app_of_even_right _ (ιObjIso_hom_mem N),
       comp_val_app_of_even_left (ιObjIso_hom_mem M)]
-    rw [ιObjIso_hom_val_app, ιObjIso_hom_val_app, if_pos rfl, if_pos rfl]
+    rw [ιObjIso_hom_val_app, ιObjIso_hom_val_app, ite_eq_left rfl, ite_eq_left rfl]
     change proj R r (x.1.app 0 (𝟙_ A) + x.1.app 1 (𝟙_ A)) ▷ Y ≫ _ = _
     rw [proj_app_add_app]
-    simp only [Iso.trans_hom, Functor.mapIso_hom, Functor.id_map, Category.assoc]
+    simp only [Functor.id_map, Category.assoc]
     exact ev_compat x r Y))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The counit `ι ∘ ev ⇒ 1` is a monoidal natural transformation. -/
 def counitNat : MonoidalNatTrans R (evMonoidal.comp ιMonoidal)
     (MonoidalSuperfunctor.id (R := R) (C := Strictification R A)) where
@@ -1163,23 +1180,23 @@ def counitNat : MonoidalNatTrans R (evMonoidal.comp ιMonoidal)
   tensor M N := hom_ext (Superfunctor.hom_ext fun r Y => by
     have hm := evμIso_hom_mem M N
     change (((ιμIso _ _).hom ≫ (ι R A).map (evμIso M N).hom) ≫ (ιObjIso (M ⊗ N)).hom).1.app r Y =
-      (((ιObjIso M).hom ⊗ (ιObjIso N).hom) ≫ 𝟙 _).1.app r Y
+      (((ιObjIso M).hom ⊗ₘ (ιObjIso N).hom) ≫ 𝟙 _).1.app r Y
     rw [Category.comp_id, Category.assoc, comp_val_app_of_even_left (ιμIso_hom_mem _ _),
       comp_val_app_of_even_right _ (ιObjIso_hom_mem _), tensorHom_val, comp_app,
       ι_map_val_app, ιμIso_hom_val_app, ιObjIso_hom_val_app]
     rcases parity_eq_zero_or_one r with rfl | rfl
     · rw [proj_of_mem hm]
       simp only [Superfunctor.whiskerLeft_app, Superfunctor.whiskerRight_app,
-        ιObjIso_hom_val_app, if_pos, zmod2_one_ne_zero, if_false, Functor.map_zero,
-        Limits.comp_zero, Limits.zero_comp, add_zero, zero_add, Superfunctor.map,
+        ιObjIso_hom_val_app, ite_eq_left, zmod2_one_ne_zero, ite_false, Functor.map_zero,
+        Limits.comp_zero, add_zero, zero_add, Superfunctor.map,
         Superfunctor.obj]
       rw [evμIso_hom, tensorObj_γ_hom, ← cancel_epi (α_ _ _ _).hom, Iso.hom_inv_id_assoc]
       simp only [Category.assoc, Functor.map_comp, tensorObj_toFunctor', Functor.comp_map,
-        ev_obj, ι_obj, ιObj_toFunctor, leftMul_obj]
-      rw [reassoc_of% (ιObjIso_compat M (N.toFunctor.obj (𝟙_ A)) Y)]
+        ev_obj, ι_obj]
+      erw [reassoc_of% (ιObjIso_compat M (N.toFunctor.obj (𝟙_ A)) Y)]
     · rw [proj_of_mem_ne hm (by decide)]
       simp only [Superfunctor.whiskerLeft_app, Superfunctor.whiskerRight_app,
-        ιObjIso_hom_val_app, if_pos, zmod2_one_ne_zero, if_false, Functor.map_zero,
+        ιObjIso_hom_val_app, ite_eq_left, zmod2_one_ne_zero, ite_false, Functor.map_zero,
         Limits.comp_zero, Limits.zero_comp, add_zero, MonoidalSupercategory.zero_whiskerRight R,
         SuperNatTrans.zmod2_one_add_one])
   unit := hom_ext (Superfunctor.hom_ext fun r Y => by
@@ -1189,7 +1206,7 @@ def counitNat : MonoidalNatTrans R (evMonoidal.comp ιMonoidal)
       ιεIso_hom_val_app, ιObjIso_hom_val_app]
     rcases parity_eq_zero_or_one r with rfl | rfl
     · simp
-    · simp [zmod2_one_ne_zero])
+    · simp)
 
 /-- **Brundan–Ellis, after Definition 1.4.** A monoidal supercategory `A` is monoidally
 superequivalent to its strictification, via the monoidal superfunctors `ι : A → B`,
