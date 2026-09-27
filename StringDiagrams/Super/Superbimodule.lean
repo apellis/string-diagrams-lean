@@ -213,8 +213,7 @@ theorem twist_lact_comp_ract (V : SuperBimodule 𝒜 ℬ) (a : A) (b : B) :
   refine DirectSum.Decomposition.inductionOn 𝒜 (motive := fun a =>
     twist k 1 (V.lact a) ≫ V.ract b = V.ract b ≫ twist k 1 (V.lact a)) (by simp)
     (fun {r} a => ?_) (fun a a' h h' => ?_) a
-  · dsimp only
-    rw [twist_one_of_mem (V.lact_mem r a a.2), Linear.smul_comp, Linear.comp_smul, V.lact_ract]
+  · rw [twist_one_of_mem (V.lact_mem r a a.2), Linear.smul_comp, Linear.comp_smul, V.lact_ract]
   · simp only [map_add, Preadditive.add_comp, Preadditive.comp_add, h, h']
 
 /-- **Brundan–Ellis, Example 1.8.** The superbimodule `Π V`: the superspace `V` with the
@@ -242,6 +241,7 @@ theorem piObj_lact_of_mem (V : SuperBimodule 𝒜 ℬ) {p : ZMod 2} {a : A} (ha 
 theorem piObj_ract (V : SuperBimodule 𝒜 ℬ) (b : B) : (piObj V).ract b = SVec.piHom (V.ract b) :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem isHom_ζ (V : SuperBimodule 𝒜 ℬ) : IsHom (piObj V) V (SVec.ζIso V.toSVec).hom := by
   refine ⟨fun p a ha => ?_, fun b => rfl⟩
   have hζ : (SVec.ζIso V.toSVec).hom ∈ parity (R := k) (piObj V).toSVec V.toSVec 1 :=
@@ -249,6 +249,7 @@ theorem isHom_ζ (V : SuperBimodule 𝒜 ℬ) : IsHom (piObj V) V (SVec.ζIso V.
   rw [piObj_lact_of_mem V ha, twist_of_mem p hζ, mul_one, Linear.smul_comp, map_smul]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem isHom_ζ_inv (V : SuperBimodule 𝒜 ℬ) : IsHom V (piObj V) (SVec.ζIso V.toSVec).inv := by
   refine ⟨fun p a ha => ?_, fun b => rfl⟩
   have hζ : (SVec.ζIso V.toSVec).inv ∈ parity (R := k) V.toSVec (piObj V).toSVec 1 :=
