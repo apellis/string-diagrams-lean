@@ -106,9 +106,11 @@ def conjFunctor (obj : C → C) (e : ∀ X, obj X ≅ X) : C ⥤ C where
   map_id X := by simp
   map_comp f g := by simp
 
+set_option backward.isDefEq.respectTransparency false in
 instance (obj : C → C) (e : ∀ X, obj X ≅ X) : (conjFunctor obj e).Additive where
   map_add := by simp [Preadditive.add_comp, Preadditive.comp_add]
 
+set_option backward.isDefEq.respectTransparency false in
 instance (obj : C → C) (e : ∀ X, obj X ≅ X) : (conjFunctor obj e).Linear R where
   map_smul _ _ := by simp
 
@@ -118,8 +120,10 @@ theorem conjFunctor_isSuperfunctor (obj : C → C) (e : ∀ X, obj X ≅ X)
     IsSuperfunctor R (conjFunctor obj e) where
   map_mem {X Y p f} hf := by
     have := comp_mem (comp_mem (he X) hf) (inv_mem _ (he Y))
-    simpa [Category.assoc] using this
+    simp only [zero_add, add_zero, Category.assoc] at this
+    exact this
 
+set_option backward.isDefEq.respectTransparency false in
 omit [GradedSupercategory R C] in
 theorem conjFunctor_isSupernatural (obj : C → C) (e : ∀ X, obj X ≅ X)
     (he : ∀ X, (e X).hom ∈ parity (R := R) (obj X) X 0) :
@@ -132,6 +136,7 @@ variable [PiSupercategory R C]
 `0`, a graded `(Q, Π)`-supercategory structure is determined by objects `qObj X`, `qinvObj X`
 and even isomorphisms `s X : qObj X ≅ X` of degree `-1`, `t X : qinvObj X ≅ X` of degree
 `1`. -/
+@[instance_reducible]
 def ofIso (hζ : ∀ X : C, (PiSupercategory.ζ (R := R) X).hom ∈
       degree (R := R) ((PiSupercategory.pi (R := R)).obj X) X 0)
     (qObj : C → C) (s : ∀ X, qObj X ≅ X) (hs : ∀ X, (s X).hom ∈ parity (R := R) (qObj X) X 0)
@@ -271,18 +276,26 @@ theorem jj_hom_eq (X : C) :
   (σ_naturality _).symm
 
 theorem ii_hom_mem (X : C) : (ii (R := R) X).hom ∈ parity (R := R) _ X 0 := by
-  simpa using comp_mem (σbar_hom_mem (R := R) (𝐐.obj X)) (σ_hom_mem (R := R) X)
+  have h := comp_mem (σbar_hom_mem (R := R) (𝐐.obj X)) (σ_hom_mem (R := R) X)
+  rw [add_zero] at h
+  exact h
 
 theorem ii_hom_mem_degree (X : C) : (ii (R := R) X).hom ∈ degree (R := R) _ X 0 := by
-  simpa using comp_mem_degree (σbar_hom_mem_degree (R := R) (𝐐.obj X))
+  have h := comp_mem_degree (σbar_hom_mem_degree (R := R) (𝐐.obj X))
     (σ_hom_mem_degree (R := R) X)
+  rw [add_neg_cancel] at h
+  exact h
 
 theorem jj_hom_mem (X : C) : (jj (R := R) X).hom ∈ parity (R := R) _ X 0 := by
-  simpa using comp_mem (σ_hom_mem (R := R) (𝐐⁻.obj X)) (σbar_hom_mem (R := R) X)
+  have h := comp_mem (σ_hom_mem (R := R) (𝐐⁻.obj X)) (σbar_hom_mem (R := R) X)
+  rw [add_zero] at h
+  exact h
 
 theorem jj_hom_mem_degree (X : C) : (jj (R := R) X).hom ∈ degree (R := R) _ X 0 := by
-  simpa using comp_mem_degree (σ_hom_mem_degree (R := R) (𝐐⁻.obj X))
+  have h := comp_mem_degree (σ_hom_mem_degree (R := R) (𝐐⁻.obj X))
     (σbar_hom_mem_degree (R := R) X)
+  rw [neg_add_cancel] at h
+  exact h
 
 @[reassoc]
 theorem ii_naturality {X Y : C} (f : X ⟶ Y) :
@@ -361,12 +374,16 @@ theorem γ_hom_eq (F : C ⥤ D) (X : C) :
 
 theorem γ_hom_mem (F : C ⥤ D) [F.Additive] [F.Linear R] [IsSuperfunctor R F] (X : C) :
     (γ R F X).hom ∈ parity (R := R) _ _ 0 := by
-  simpa using comp_mem (σ_hom_mem (R := R) (F.obj X)) (map_mem F (σ_inv_mem (R := R) X))
+  have h := comp_mem (σ_hom_mem (R := R) (F.obj X)) (map_mem F (σ_inv_mem (R := R) X))
+  rw [add_zero] at h
+  exact h
 
 theorem γ_hom_mem_degree (F : C ⥤ D) [F.Additive] [F.Linear R] [IsGradedSuperfunctor R F]
     (X : C) : (γ R F X).hom ∈ degree (R := R) _ _ 0 := by
-  simpa using comp_mem_degree (σ_hom_mem_degree (R := R) (F.obj X))
+  have h := comp_mem_degree (σ_hom_mem_degree (R := R) (F.obj X))
     (map_mem_degree F (σ_inv_mem_degree (R := R) X))
+  rw [neg_add_cancel] at h
+  exact h
 
 /-- **Corollary 6.7(ii).** `γ_F` is natural. -/
 @[reassoc]
@@ -475,7 +492,10 @@ theorem σPowNat_hom_mem (n : ℕ) (X : C) :
     (σPowNat R n X).hom ∈ parity (R := R) _ X 0 := by
   induction n with
   | zero => exact id_mem X
-  | succ n ih => simpa using comp_mem (σ_hom_mem (R := R) _) ih
+  | succ n ih =>
+    have h := comp_mem (σ_hom_mem (R := R) _) ih
+    rw [add_zero] at h
+    exact h
 
 theorem σPowNat_hom_mem_degree (n : ℕ) (X : C) :
     (σPowNat R n X).hom ∈ degree (R := R) _ X (-n) := by
@@ -489,7 +509,10 @@ theorem σbarPowNat_hom_mem (n : ℕ) (X : C) :
     (σbarPowNat R n X).hom ∈ parity (R := R) _ X 0 := by
   induction n with
   | zero => exact id_mem X
-  | succ n ih => simpa using comp_mem (σbar_hom_mem (R := R) _) ih
+  | succ n ih =>
+    have h := comp_mem (σbar_hom_mem (R := R) _) ih
+    rw [add_zero] at h
+    exact h
 
 theorem σbarPowNat_hom_mem_degree (n : ℕ) (X : C) :
     (σbarPowNat R n X).hom ∈ degree (R := R) _ X n := by
