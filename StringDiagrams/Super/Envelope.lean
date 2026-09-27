@@ -248,9 +248,11 @@ instance : (J R C).Additive where
 instance : (J R C).Linear R where
   map_smul _ _ := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 instance : IsSuperfunctor R (J R C) where
   map_mem {X Y p f} hf := by
     rw [mem_parity_iff]
+    show f ∈ parity (R := R) X Y (p + (0 + 0))
     simpa using hf
 
 instance : (J R C).Full where
@@ -285,10 +287,12 @@ theorem piComplete_of_piSupercategory [PiSupercategory R C] : PiComplete R C :=
 
 /-- A Π-complete supercategory admits a Π-supercategory structure (by choosing, for each
 object, an odd isomorphism onto it). -/
+@[instance_reducible]
 def PiComplete.piSupercategory (h : PiComplete R C) : PiSupercategory R C :=
   PiSupercategory.ofIso (fun X => (h X).choose) (fun X => (h X).choose_spec.choose)
     (fun X => (h X).choose_spec.choose_spec)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 4.1**, even density: `J` is evenly dense if and only if `A` is Π-complete. -/
 theorem J_evenlyDense_iff : EvenlyDense R (J R C) ↔ PiComplete R C := by
   constructor
@@ -296,7 +300,7 @@ theorem J_evenlyDense_iff : EvenlyDense R (J R C) ↔ PiComplete R C := by
     obtain ⟨Y, e, he⟩ := h ⟨1, X⟩
     refine ⟨Y, isoToIso e, ?_⟩
     rw [mem_parity_iff] at he
-    simpa using he
+    exact he
   · intro h X
     obtain ⟨a, X⟩ := X
     rcases parity_eq_zero_or_one a with rfl | rfl
@@ -304,7 +308,7 @@ theorem J_evenlyDense_iff : EvenlyDense R (J R C) ↔ PiComplete R C := by
     · obtain ⟨Y, e, he⟩ := h X
       refine ⟨Y, isoOfIso e, ?_⟩
       rw [mem_parity_iff]
-      simpa using he
+      exact he
 
 /-- **Lemma 4.1** ("if"): if `A` is Π-complete then `J : A → A_π` is a superequivalence. -/
 def superequivalenceJ (h : PiComplete R C) : Superequivalence R (J R C) :=
@@ -366,25 +370,37 @@ def extend : Envelope R C ⥤ B where
   map_id X := by simp
   map_comp f g := by simp
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (extend R F).Additive where
   map_add := by simp [Preadditive.add_comp, Preadditive.comp_add]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (extend R F).Linear R where
   map_smul _ _ := by simp
 
+set_option backward.isDefEq.respectTransparency false in
 instance : IsSuperfunctor R (extend R F) where
   map_mem {X Y p f} hf := by
     have := comp_mem (comp_mem (ζPow_hom_mem X.par (F.obj X.obj)) (map_mem F hf))
       (ζPow_inv_mem Y.par (F.obj Y.obj))
     rw [show X.par + (p + (X.par + Y.par)) + Y.par = p + (X.par + X.par) + (Y.par + Y.par) by
       ring, zmod2_add_self, zmod2_add_self, add_zero, add_zero] at this
-    simpa using this
+    simp only [Category.assoc] at this
+    exact this
 
 omit [Preadditive C] [Linear R C] [Supercategory R C] [F.Additive] [F.Linear R]
   [IsSuperfunctor R F] in
+theorem extend_map_J {X Y : C} (f : X ⟶ Y) : (extend R F).map ((J R C).map f) = F.map f :=
+  show (ζPow R 0 (F.obj X)).hom ≫ F.map f ≫ (ζPow R 0 (F.obj Y)).inv = F.map f by simp
+
+omit [Preadditive C] [Linear R C] [Supercategory R C] [F.Additive] [F.Linear R]
+  [IsSuperfunctor R F] in
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 4.2(i).** `F = F̃ J`. -/
 theorem J_comp_extend : J R C ⋙ extend R F = F :=
-  CategoryTheory.Functor.ext (fun _ => rfl) (fun X Y f => by simp)
+  CategoryTheory.Functor.ext (fun _ => rfl) (fun X Y f => by
+    simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp]
+    exact extend_map_J R F f)
 
 variable {R F}
 
@@ -400,6 +416,7 @@ def extendNat (p : ZMod 2) (x : ∀ X, F.obj X ⟶ G.obj X) (X : Envelope R C) :
 
 omit [F.Additive] [F.Linear R] [IsSuperfunctor R F] [G.Additive] [G.Linear R]
   [IsSuperfunctor R G] in
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 4.2(ii).** `x̃` is a supernatural transformation of the same parity. -/
 theorem isSupernatural_extendNat {p : ZMod 2} {x : ∀ X, F.obj X ⟶ G.obj X}
     (hx : IsSupernatural R p x) :
@@ -412,7 +429,7 @@ theorem isSupernatural_extendNat {p : ZMod 2} {x : ∀ X, F.obj X ⟶ G.obj X}
     exact Submodule.smul_mem _ _ this
   naturality {X Y q f} hf := by
     rw [mem_parity_iff] at hf
-    simp only [extend_obj, extend_map, extendNat, Linear.comp_smul, Linear.smul_comp,
+    simp only [extend_map, extendNat, Linear.comp_smul, Linear.smul_comp,
       Category.assoc, Iso.inv_hom_id_assoc, smul_smul]
     rw [reassoc_of% (hx.naturality hf), Linear.smul_comp, Linear.comp_smul, smul_smul,
       ← sign_add, ← sign_add]
@@ -422,10 +439,12 @@ theorem isSupernatural_extendNat {p : ZMod 2} {x : ∀ X, F.obj X ⟶ G.obj X}
 
 omit [Preadditive C] [Linear R C] [Supercategory R C] [F.Additive] [F.Linear R]
   [IsSuperfunctor R F] [G.Additive] [G.Linear R] [IsSuperfunctor R G] in
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 4.2(ii).** `x̃ J = x`. -/
 @[simp] theorem extendNat_zero_par (p : ZMod 2) (x : ∀ X, F.obj X ⟶ G.obj X) (X : C) :
     extendNat R F G p x ((J R C).obj X) = x X := by
-  simp [extendNat]
+  show sign R (0 * p) • ((ζPow R 0 (F.obj X)).hom ≫ x X ≫ (ζPow R 0 (G.obj X)).inv) = x X
+  simp
 
 omit [PiSupercategory R B] in
 /-- **Uniqueness in Lemma 4.2(ii).** Supernatural transformations of the same parity between
@@ -457,13 +476,16 @@ theorem eq_extendNat {p : ZMod 2} {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsSuper
     (h : ∀ X : C, y ((J R C).obj X) = x X) : y = extendNat R F G p x :=
   eq_of_restrict_eq hy (isSupernatural_extendNat hx) fun X => by rw [h, extendNat_zero_par]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 4.3**, full faithfulness: restriction along `J` is a bijection from parity-`p`
 supernatural transformations `F̃ ⇒ G̃` to parity-`p` supernatural transformations `F ⇒ G`. -/
 theorem restrict_bijective (p : ZMod 2) :
     Function.Bijective (fun y : {y : ∀ X, (extend R F).obj X ⟶ (extend R G).obj X //
         IsSupernatural R p (F := extend R F) (G := extend R G) y} =>
       (⟨fun X => y.1 ((J R C).obj X), ⟨fun X => y.2.mem ((J R C).obj X), fun {X Y q f} hf => by
-        simpa using y.2.naturality (map_mem (J R C) hf)⟩⟩ :
+        have h := y.2.naturality (map_mem (J R C) hf)
+        rw [extend_map_J, extend_map_J] at h
+        exact h⟩⟩ :
         {x : ∀ X, F.obj X ⟶ G.obj X // IsSupernatural R p x})) := by
   constructor
   · intro y y' hyy
@@ -472,13 +494,15 @@ theorem restrict_bijective (p : ZMod 2) :
     exact ⟨⟨extendNat R F G p x.1, isSupernatural_extendNat x.2⟩,
       Subtype.ext (funext fun X => extendNat_zero_par p x.1 X)⟩
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R F) in
 /-- **Theorem 4.3**, functoriality: `1̃ = 1`. -/
 theorem extendNat_id :
     extendNat R F F 0 (fun X => 𝟙 (F.obj X)) = fun X => 𝟙 ((extend R F).obj X) :=
   (eq_of_restrict_eq (isSupernatural_extendNat isSupernatural_id) isSupernatural_id
-    fun X => by simp).trans rfl
+    fun X => by simp; rfl).trans rfl
 
+set_option backward.isDefEq.respectTransparency false in
 omit [IsSuperfunctor R G] in
 /-- **Theorem 4.3**, functoriality: `(x ≫ y)~ = x̃ ≫ ỹ`. -/
 theorem extendNat_comp {H : C ⥤ B} [H.Additive] [H.Linear R] [IsSuperfunctor R H]
@@ -492,16 +516,19 @@ theorem extendNat_comp {H : C ⥤ B} [H.Additive] [H.Linear R] [IsSuperfunctor R
 
 omit [Preadditive C] [Linear R C] [Supercategory R C] [F.Additive] [F.Linear R]
   [IsSuperfunctor R F] [G.Additive] [G.Linear R] [IsSuperfunctor R G] in
+set_option backward.isDefEq.respectTransparency false in
 theorem extendNat_add {p : ZMod 2} (x y : ∀ X, F.obj X ⟶ G.obj X) :
     extendNat R F G p (x + y) = extendNat R F G p x + extendNat R F G p y := by
   funext X; simp [extendNat, Preadditive.add_comp, Preadditive.comp_add, smul_add]
 
 omit [Preadditive C] [Linear R C] [Supercategory R C] [F.Additive] [F.Linear R]
   [IsSuperfunctor R F] [G.Additive] [G.Linear R] [IsSuperfunctor R G] in
+set_option backward.isDefEq.respectTransparency false in
 theorem extendNat_smul {p : ZMod 2} (r : R) (x : ∀ X, F.obj X ⟶ G.obj X) :
     extendNat R F G p (r • x) = r • extendNat R F G p x := by
   funext X; simp [extendNat, smul_comm r]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 4.3**, even density: every superfunctor `H : A_π ⥤ B` is isomorphic to the
 extension of its restriction `J ⋙ H`, via the even isomorphisms
 `ζᵃ ≫ H((1_λ)_0^a) : Πᵃ(H Π⁰ λ) ≅ H(Πᵃ λ)`. -/
@@ -509,11 +536,13 @@ def extendRestrictIso (H : Envelope R C ⥤ B) [H.Additive] [H.Linear R] [IsSupe
     extend R (J R C ⋙ H) ≅ H :=
   NatIso.ofComponents (fun X => ζPow R X.par (H.obj ((J R C).obj X.obj)) ≪≫ H.mapIso (shiftIso X))
     (fun {X Y} f => by
-      simp only [extend_obj, Functor.comp_obj, extend_map, Functor.comp_map, Iso.trans_hom,
+      simp only [Functor.comp_obj, extend_map, Functor.comp_map, Iso.trans_hom,
         Functor.mapIso_hom, Category.assoc, Iso.inv_hom_id_assoc]
       rw [← H.map_comp, ← H.map_comp]
       congr 2
-      exact hom_ext (by simp [shiftIso]))
+      exact hom_ext (by
+        simp [shiftIso]
+        exact (Category.comp_id _).trans (Category.id_comp _).symm))
 
 theorem extendRestrictIso_hom_mem (H : Envelope R C ⥤ B) [H.Additive] [H.Linear R]
     [IsSuperfunctor R H] (X : Envelope R C) :
