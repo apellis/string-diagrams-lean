@@ -53,9 +53,11 @@ def toFGProj : SKar k (SuperalgebraCat 𝒜) ⥤ FGProj 𝒜 :=
 theorem toFGProj_obj (P : SKar k (SuperalgebraCat 𝒜)) :
     ((toFGProj 𝒜).obj P).obj = (toMod 𝒜).obj P := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 instance toFGProj_faithful : (toFGProj 𝒜).Faithful := by
   unfold toFGProj; infer_instance
 
+set_option backward.isDefEq.respectTransparency false in
 instance toFGProj_full : (toFGProj 𝒜).Full := by
   unfold toFGProj; infer_instance
 
@@ -69,7 +71,7 @@ projective `A`-supermodules and even homomorphisms. -/
 instance toFGProj_isEquivalence : (toFGProj 𝒜).IsEquivalence := {}
 
 instance toFGProj_additive : (toFGProj 𝒜).Additive where
-  map_add := (toMod 𝒜).map_add
+  map_add {_ _ f g} := (fgProjective 𝒜).ι.map_injective ((toMod 𝒜).map_add (f := f) (g := g))
 
 instance : HasBinaryBiproducts (FGProj 𝒜) :=
   haveI : HasBinaryProducts (FGProj 𝒜) :=
@@ -85,7 +87,7 @@ def K₀Equiv : K₀ (SKar k (SuperalgebraCat 𝒜)) ≃+ K₀ (FGProj 𝒜) :=
 
 theorem K₀Equiv_mk (P : SKar k (SuperalgebraCat 𝒜)) :
     K₀Equiv 𝒜 (K₀.mk P) = K₀.mk ((toFGProj 𝒜).obj P) := by
-  haveI : (toFGProj 𝒜).asEquivalence.functor.Additive := toFGProj_additive
+  have : (toFGProj 𝒜).asEquivalence.functor.Additive := toFGProj_additive
   exact K₀.mapEquiv_mk _ _
 
 end SKarAlg
