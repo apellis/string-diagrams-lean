@@ -14,6 +14,183 @@ open CategoryTheory Bicategory Supercategory
 
 universe w w₁ v₁ u₁ w₂ v₂ u₂
 
+/-! ### `𝔻` on `(Q, Π)`-2-natural transformations -/
+
+namespace QPiTwoFunctor
+
+variable {R : Type w} [CommRing R] {B : Type u₁} [Bicategory.{w₁, v₁} B]
+  [∀ a b : B, Preadditive (a ⟶ b)] [∀ a b : B, Linear R (a ⟶ b)] [PreadditiveBicategory B]
+  [LinearBicategory R B] [QPiTwoCategory R B]
+  {C : Type u₂} [Bicategory.{w₂, v₂} C]
+  [∀ a b : C, Preadditive (a ⟶ b)] [∀ a b : C, Linear R (a ⟶ b)] [PreadditiveBicategory C]
+  [LinearBicategory R C] [QPiTwoCategory R C]
+  {F G H : Pseudofunctor B C} {hF : QPiTwoFunctor R F} {hG : QPiTwoFunctor R G}
+  {hH : QPiTwoFunctor R H} {η : Oplax.OplaxTrans F.toOplax G.toOplax}
+
+open PiTwoCategory QPiTwoCategory
+
+local notation "𝐪" => QPiTwoCategory.q (R := R)
+local notation "𝛄" => QPiTwoCategory.γ (R := R)
+
+/-- The components `x_F` of a `(Q, Π)`-2-natural transformation are compatible with `γHom`
+(from the axiom `x_{q_λ} ∘ X_λ k ∘ γ_{X_λ} = k X_λ`): the `q`-analogue of
+`PiTwoFunctor.natHom_isPiNatural`. -/
+theorem natHom_γ (hη : hF.IsQPiTwoNatural hG η) {a b : B} (f : a ⟶ b) :
+    (α_ (F.map f) (η.app b) (𝐪 (G.obj b))).hom ≫ F.map f ◁ (𝛄 (η.app b)).hom ≫
+        (α_ (F.map f) (𝐪 (F.obj b)) (η.app b)).inv ≫ (hF.γHom f).hom ▷ η.app b ≫
+          η.naturality (f ≫ 𝐪 b) =
+      η.naturality f ▷ 𝐪 (G.obj b) ≫ (α_ (η.app a) (G.map f) (𝐪 (G.obj b))).hom ≫
+        η.app a ◁ (hG.γHom f).hom := by
+  have hc : (F.mapComp f (𝐪 b)).inv ▷ η.app b ≫ η.naturality (f ≫ 𝐪 b) =
+      (α_ (F.map f) (F.map (𝐪 b)) (η.app b)).hom ≫ F.map f ◁ η.naturality (𝐪 b) ≫
+        (α_ (F.map f) (η.app b) (G.map (𝐪 b))).inv ≫ η.naturality f ▷ G.map (𝐪 b) ≫
+          (α_ (η.app a) (G.map f) (G.map (𝐪 b))).hom ≫ η.app a ◁ (G.mapComp f (𝐪 b)).inv := by
+    have e := η.naturality_comp f (𝐪 b)
+    simp only [Pseudofunctor.toOplax_mapComp, Pseudofunctor.toOplax_toPrelaxFunctor] at e
+    rw [← cancel_mono (η.app a ◁ (G.mapComp f (𝐪 b)).hom)]
+    simp only [Category.assoc, Bicategory.whiskerLeft_inv_hom, Category.comp_id]
+    rw [e, Bicategory.inv_hom_whiskerRight_assoc]
+  rw [γHom_hom, Bicategory.comp_whiskerRight, Category.assoc, hc]
+  simp only [Pseudofunctor.toOplax_toPrelaxFunctor]
+  calc _ = (α_ (F.map f) (η.app b) (𝐪 (G.obj b))).hom ≫
+        F.map f ◁ ((𝛄 (η.app b)).hom ≫ (hF.k b).hom ▷ η.app b ≫ η.naturality (𝐪 b)) ≫
+          (α_ (F.map f) (η.app b) (G.map (𝐪 b))).inv ≫ η.naturality f ▷ G.map (𝐪 b) ≫
+            (α_ (η.app a) (G.map f) (G.map (𝐪 b))).hom ≫
+              η.app a ◁ (G.mapComp f (𝐪 b)).inv := by
+        bicategory
+    _ = (α_ (F.map f) (η.app b) (𝐪 (G.obj b))).hom ≫ F.map f ◁ (η.app b ◁ (hG.k b).hom) ≫
+          (α_ (F.map f) (η.app b) (G.map (𝐪 b))).inv ≫ η.naturality f ▷ G.map (𝐪 b) ≫
+            (α_ (η.app a) (G.map f) (G.map (𝐪 b))).hom ≫
+              η.app a ◁ (G.mapComp f (𝐪 b)).inv := by
+        rw [hη.2 b]
+    _ = ((F.map f ≫ η.app b) ◁ (hG.k b).hom ≫ η.naturality f ▷ G.map (𝐪 b)) ≫
+          (α_ (η.app a) (G.map f) (G.map (𝐪 b))).hom ≫
+            η.app a ◁ (G.mapComp f (𝐪 b)).inv := by
+        bicategory
+    _ = (η.naturality f ▷ 𝐪 (G.obj b) ≫ (η.app a ≫ G.map f) ◁ (hG.k b).hom) ≫
+          (α_ (η.app a) (G.map f) (G.map (𝐪 b))).hom ≫
+            η.app a ◁ (G.mapComp f (𝐪 b)).inv := by
+        rw [whisker_exchange]
+        rfl
+    _ = _ := by
+        rw [γHom_hom]
+        bicategory
+
+open CentralShift Orbit
+
+variable (hη : hF.IsQPiTwoNatural hG η)
+
+/-- The components `ŷ_F = (y_F, 0)` of `D₂(Y, y)`, as a natural transformation between composite
+morphisms of shift data. -/
+noncomputable def natHomQ (a b : Associated2 R B) :
+    ((hF.homShiftFunctor R a b).comp (postShift R _
+      ((PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).X b))).F ⟶
+      ((hG.homShiftFunctor R a b).comp (preShift R _
+        ((PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).X a))).F where
+  app f := (PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).x f
+  naturality _ _ θ := (PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).naturality θ
+
+theorem natHomQ_compat (a b : Associated2 R B) (f : a ⟶ b) :
+    ((hF.homShiftFunctor R a b).comp (postShift R _
+        ((PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).X b))).γ.hom.app f ≫
+      (natHomQ hη a b).app ((homShift R a b).Q.obj f) =
+    (homShift R _ _).Q.map ((natHomQ hη a b).app f) ≫
+      ((hG.homShiftFunctor R a b).comp (preShift R _
+        ((PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).X a))).γ.hom.app f := by
+  apply Associated2.hom₂_ext
+  · simp only [natHomQ, ShiftFunctor.comp_γ_hom_app, preShift_γ_hom_app, postShift_γ_hom_app,
+      QPiTwoFunctor.homShiftFunctor_γ_hom_app, QPiTwoFunctor.homShiftFunctor_F, preShift_F,
+      postShift_F, TwoSuperfunctor.mapFunctor_map, TwoSuperfunctor.mapFunctor_obj,
+      TwoSupercategory.postcomp_map, TwoSupercategory.postcomp_obj, TwoSupercategory.precomp_map,
+      TwoSupercategory.precomp_obj, homShift_Q, Iso.symm_hom, PiTwoFunctor.homFunctor_map,
+      Functor.comp_obj, γR_hom, Associated2.comp₂_fst, Associated2.comp₂_snd,
+      Associated2.whiskerLeft_fst, Associated2.whiskerLeft_snd, Associated2.whiskerRight_fst,
+      Associated2.whiskerRight_snd, Associated2.associator_hom_fst, Associated2.associator_hom_snd,
+      Associated2.associator_inv_fst, Associated2.associator_inv_snd,
+      Associated2.centralShift_γ_eq, Associated2.γhat_hom_fst, Associated2.γhat_hom_snd,
+      QPiTwoFunctor.γhat_hom_app_fst, QPiTwoFunctor.γhat_hom_app_snd,
+      PiTwoFunctor.mapTwoNat_x, PiTwoFunctor.mapTwoNat_X_obj, PiTwoFunctor.mapTwo_map_obj,
+      Associated.homMk_fst, Associated.homMk_snd, Limits.zero_comp, Limits.comp_zero,
+      PreadditiveBicategory.whiskerLeft_zero, PreadditiveBicategory.zero_whiskerRight, sub_zero,
+      add_zero, zero_add, Functor.map_zero, Category.assoc]
+    exact natHom_γ hη f.obj
+  · simp only [natHomQ, ShiftFunctor.comp_γ_hom_app, preShift_γ_hom_app, postShift_γ_hom_app,
+      QPiTwoFunctor.homShiftFunctor_γ_hom_app, QPiTwoFunctor.homShiftFunctor_F, preShift_F,
+      postShift_F, TwoSuperfunctor.mapFunctor_map, TwoSuperfunctor.mapFunctor_obj,
+      TwoSupercategory.postcomp_map, TwoSupercategory.postcomp_obj, TwoSupercategory.precomp_map,
+      TwoSupercategory.precomp_obj, homShift_Q, Iso.symm_hom, PiTwoFunctor.homFunctor_map,
+      Functor.comp_obj, γR_hom, Associated2.comp₂_fst, Associated2.comp₂_snd,
+      Associated2.whiskerLeft_fst, Associated2.whiskerLeft_snd, Associated2.whiskerRight_fst,
+      Associated2.whiskerRight_snd, Associated2.associator_hom_fst, Associated2.associator_hom_snd,
+      Associated2.associator_inv_fst, Associated2.associator_inv_snd,
+      Associated2.centralShift_γ_eq, Associated2.γhat_hom_fst, Associated2.γhat_hom_snd,
+      QPiTwoFunctor.γhat_hom_app_fst, QPiTwoFunctor.γhat_hom_app_snd,
+      PiTwoFunctor.mapTwoNat_x, PiTwoFunctor.mapTwoNat_X_obj, PiTwoFunctor.mapTwo_map_obj,
+      Associated.homMk_fst, Associated.homMk_snd, Limits.zero_comp, Limits.comp_zero,
+      PreadditiveBicategory.whiskerLeft_zero, PreadditiveBicategory.zero_whiskerRight, sub_zero,
+      add_zero, zero_add, Functor.map_zero, Category.assoc]
+
+set_option maxHeartbeats 1000000 in
+/-- **`𝔻` on 2-morphisms** (the §6 analogue of (5.6)): a `(Q, Π)`-2-natural transformation
+`(Y, y) : ℝ ⇒ 𝕊` gives the 2-natural transformation `(Ŷ, ŷ) : ℝ̂ ⇒ 𝕊̂` of the associated graded
+`(Q, Π)`-2-supercategories, `Ŷ_λ := Y_λ` and `ŷ_F := (y_F, 0)` in degree zero. Its
+supernaturality with respect to the 2-morphisms `σ` is the condition
+`y_{q_λ} ∘ Y_λ k ∘ γ_{Y_λ} = k Y_λ` (`natHom_γ`). -/
+noncomputable def mapQNat : TwoNatTrans hF.mapQ hG.mapQ where
+  X a := ⟨(PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).X a.obj⟩
+  x {a b} f := (Orbit.ι (homShift R (hF.mapQ.obj a).obj (hG.mapQ.obj b).obj)).map
+    ((PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).x f.obj)
+  x_mem {a b} f := map_mem (Orbit.ι (homShift R (hF.mapQ.obj a).obj (hG.mapQ.obj b).obj))
+    ((PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).x_mem f.obj)
+  naturality {a b f g} θ := by
+    have e := map_map_comp_ι_map (natHomQ hη a.obj b.obj) (natHomQ_compat hη a.obj b.obj) θ
+    rw [← map_map_comp, ← map_map_comp] at e
+    exact e
+  x_comp {a b c} f g := by
+    simp only [Functor.mapIso_hom, mapQ_mapComp_hom']
+    rw [Orbit2.whiskerRight_ι, Orbit2.whiskerLeft_ι, Orbit2.whiskerRight_ι, Orbit2.whiskerLeft_ι,
+      Orbit2.associator_hom_def, Orbit2.associator_inv_def, Orbit2.associator_hom_def]
+    simp only [← Functor.map_comp]
+    exact congrArg (Orbit.ι (homShift R (hF.mapQ.obj a).obj (hG.mapQ.obj c).obj)).map
+      ((PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).x_comp f.obj g.obj)
+  x_id a := by
+    simp only [Functor.mapIso_hom, mapQ_mapId_hom']
+    rw [Orbit2.whiskerRight_ι, Orbit2.whiskerLeft_ι, Orbit2.rightUnitor_hom_def,
+      Orbit2.leftUnitor_inv_def]
+    simp only [← Functor.map_comp]
+    exact congrArg (Orbit.ι (homShift R (hF.mapQ.obj a).obj (hG.mapQ.obj a).obj)).map
+      ((PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).x_id a.obj)
+
+theorem mapQNat_x {a b : QAssociated2 R B} (f : a ⟶ b) :
+    (mapQNat hη).x f = (Orbit.ι (homShift R (hF.mapQ.obj a).obj (hG.mapQ.obj b).obj)).map
+      ((PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).x f.obj) := rfl
+
+/-- `𝔻(Y, y)` is a graded 2-natural transformation (its components have degree zero). -/
+theorem mapQNat_isGraded : (mapQNat hη).IsGraded := fun _ => Orbit.ι_map_mem_degree _
+
+open QAssociated2 in
+/-- **`𝔼 ∘ 𝔻 = 𝕀` on 2-morphisms**: the components of `𝔻(Y, y)` are `Y_λ` and `(y_F, 0)` in
+degree zero. -/
+theorem mapQNat_X_eq (a : B) : (mapQNat hη).X (⟨⟨a⟩⟩ : QAssociated2 R B) = hom1 (η.app a) := rfl
+
+open QAssociated2 in
+theorem mapQNat_x_eq {a b : B} (f : a ⟶ b) :
+    (mapQNat hη).x (hom1 (R := R) f) = hom2 (η.naturality f) := rfl
+
+/-- **`𝔼 ∘ 𝔻 = 𝕀` on 2-morphisms**, in terms of `𝔼`: under the identifications
+`QAssociated2.unit`, the oplax transformation `𝔼(𝔻(Y, y))` has the components of `(Y, y)`. -/
+theorem toOplax_mapQNat_naturality {a b : B} (f : a ⟶ b) :
+    (((mapQNat hη).toDegreeZero2 hF.mapQ_isGraded hG.mapQ_isGraded
+        (mapQNat_isGraded hη)).toOplaxTrans).naturality ((QAssociated2.unit R B).map f) =
+      (QAssociated2.unit R C).map₂ (η.naturality f) := rfl
+
+theorem toOplax_mapQNat_app (a : B) :
+    (((mapQNat hη).toDegreeZero2 hF.mapQ_isGraded hG.mapQ_isGraded
+        (mapQNat_isGraded hη)).toOplaxTrans).app ((QAssociated2.unit R B).obj a) =
+      (QAssociated2.unit R C).map (η.app a) := rfl
+
+end QPiTwoFunctor
+
 /-! ### Naturality of `𝕋` in 1-morphisms -/
 
 namespace TwoSuperfunctor
