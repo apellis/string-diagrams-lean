@@ -108,8 +108,8 @@ theorem canon_comp_cup (n : ℕ) : ∀ (w : List (Fin 2)), IsDyck w → w.length
   have hlr : p + 2 + r.length = n := by rw [← hl, hr]; simp; omega
   obtain ⟨n, rfl⟩ : ∃ n', n = n' + 2 := ⟨p + r.length, by omega⟩
   have hw0 : IsDyck (List.replicate p 0 ++ r) := by
-    have := hw.del_pair (p := p) (by omega) (by rw [hr]; simp [getD_rep_add p 0 0 (0 :: 1 :: r)])
-      (by rw [hr]; simp [getD_rep_add p 1 0 (0 :: 1 :: r)])
+    have := hw.del_pair (p := p) (by omega) (by rw [hr]; simp)
+      (by rw [hr]; simp)
     rwa [hr, del_rep] at this
   have hc : canon R δ (n + 2) w = canon R δ n (List.replicate p 0 ++ r) ≫ cup R δ n p := by
     rw [canon_succ_succ, hp]
@@ -146,8 +146,8 @@ theorem canon_comp_cap (n : ℕ) : ∀ (w : List (Fin 2)), IsDyck w → w.length
   generalize hp : firstPair w = p at hr
   have hlr : p + r.length = n := by rw [hr] at hl; simp at hl; omega
   have hw0 : IsDyck (List.replicate p 0 ++ r) := by
-    have := hw.del_pair (p := p) (by omega) (by rw [hr]; simp [getD_rep_add p 0 0 (0 :: 1 :: r)])
-      (by rw [hr]; simp [getD_rep_add p 1 0 (0 :: 1 :: r)])
+    have := hw.del_pair (p := p) (by omega) (by rw [hr]; simp)
+      (by rw [hr]; simp)
     rwa [hr, del_rep] at this
   have hl0 : (List.replicate p (0 : Fin 2) ++ r).length = n := by simp; omega
   have hc : canon R δ (n + 2) w = canon R δ n (List.replicate p 0 ++ r) ≫ cup R δ n p := by
@@ -182,7 +182,7 @@ theorem canon_comp_cap (n : ℕ) : ∀ (w : List (Fin 2)), IsDyck w → w.length
       rw [← hr] at e
       rw [e.1, e.2]
       refine ⟨hw0, ?_⟩
-      simp only [loopPow, Bool.false_eq_true, if_false, pow_zero, one_smul]
+      simp only [loopPow, Bool.false_eq_true, ite_false, pow_zero, one_smul]
       exact PmEq.refl _
   · -- the cap closes the first pair: a loop
     rw [loop_at hi, Linear.comp_smul, Category.comp_id]
@@ -190,7 +190,7 @@ theorem canon_comp_cap (n : ℕ) : ∀ (w : List (Fin 2)), IsDyck w → w.length
     rw [← hr] at e
     rw [e.1, e.2]
     refine ⟨hw0, ?_⟩
-    simp only [loopPow, if_true, pow_one]
+    simp only [loopPow, ite_true, pow_one]
     exact PmEq.refl _
   · rcases Nat.lt_or_ge (p + 1) i with hgt' | hle
     · -- the cap is to the right of the first pair
@@ -220,7 +220,7 @@ theorem canon_comp_cap (n : ℕ) : ∀ (w : List (Fin 2)), IsDyck w → w.length
       rw [← hr] at e
       rw [e.1, e.2]
       refine ⟨hw0, ?_⟩
-      simp only [loopPow, Bool.false_eq_true, if_false, pow_zero, one_smul]
+      simp only [loopPow, Bool.false_eq_true, ite_false, pow_zero, one_smul]
       exact (PmEq.refl _).neg_left
 
 /-! ## Tracking arcs through a word -/
@@ -248,6 +248,7 @@ theorem trackW_append (w : List (Fin 2)) (u v : List Step) :
   | nil => simp
   | cons s u ih => cases s <;> simp [ih, add_assoc]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Tracking.** For a crossingless matching `w` of `k` points and a valid word `u` from `k`
 strands, `canon k w ≫ evW u = ± δ^ℓ canon (trackW w u)`, where `trackW w u = (w', ℓ)` is obtained
 by following the arcs through the cups and caps of `u` and `ℓ` is the number of closed loops. -/
@@ -277,7 +278,7 @@ theorem canon_comp_evW (u : List Step) : ∀ (k : ℕ) (w : List (Fin 2)), IsDyc
       obtain ⟨h1, h2, h3⟩ := ih k (capT i w) hd
         (by have := length_capT (i := i) (w := w) (by have := hu.1; omega); omega) hu.2
       refine ⟨h1, h2, ?_⟩
-      simp only [ht_cap, evW_cap, trackW_cap, Nat.add_sub_cancel]
+      simp only [ht_cap, evW_cap, trackW_cap]
       rw [← Category.assoc]
       refine (hc.comp_right _).trans ?_
       rw [Linear.smul_comp, pow_add, mul_comm, mul_smul]
