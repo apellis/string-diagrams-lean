@@ -477,7 +477,6 @@ theorem laurentEnd_T_neg_one : laurentEnd R (B := B) (T (-1)) = tEnd 𝐪⁻¹ :
 
 variable (R) in
 /-- **Brundan–Ellis, end of §6.** The Grothendieck ring of a `(Q, Π)`-2-category is a module
-@[instance_reducible]
 over `Zπ[q, q⁻¹]`, with `π` and `q` acting on the summand `K₀ (λ ⟶ μ)` by `[F] ↦ [F ≫ π_μ]`
 and `[F] ↦ [F ≫ q_μ]` (the paper's `[π_μ F]`, `[q_μ F]`). -/
 @[instance_reducible]
