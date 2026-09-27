@@ -62,10 +62,12 @@ variable {C}
 /-- The class `[X]` of an object. -/
 def mk (X : C) : K₀ C := QuotientAddGroup.mk (s := relations C) (FreeAbelianGroup.of X)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mk_eq_mk_of_iso {X Y : C} (e : X ≅ Y) : mk X = mk Y := by
   rw [mk, mk, QuotientAddGroup.eq_iff_sub_mem]
   exact AddSubgroup.subset_closure (Or.inl ⟨X, Y, e, rfl⟩)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `[V ⊞ W] = [V] + [W]`. -/
 theorem mk_biprod (X Y : C) : mk (X ⊞ Y) = mk X + mk Y := by
   rw [← sub_eq_zero, sub_add_eq_sub_sub, mk, mk, mk, ← QuotientAddGroup.mk_sub,
@@ -92,7 +94,7 @@ def lift : K₀ C →+ G :=
     · simp [hbiprod])
 
 @[simp] theorem lift_mk (X : C) : lift f hiso hbiprod (mk X) = f X :=
-  FreeAbelianGroup.lift.of f X
+  FreeAbelianGroup.lift_apply_of f X
 
 end Lift
 
@@ -100,7 +102,7 @@ end Lift
 theorem hom_ext {G : Type w} [AddCommGroup G] {φ ψ : K₀ C →+ G} (h : ∀ X : C, φ (mk X) = ψ (mk X)) :
     φ = ψ := by
   apply QuotientAddGroup.addMonoidHom_ext
-  apply FreeAbelianGroup.lift.ext
+  apply FreeAbelianGroup.lift_ext
   exact h
 
 /-- Induction on elements of `K₀ C`. -/
@@ -110,10 +112,10 @@ theorem induction_on {P : K₀ C → Prop} (x : K₀ C) (mk : ∀ X, P (mk X)) (
   induction x using QuotientAddGroup.induction_on with
   | H z =>
     induction z using FreeAbelianGroup.induction_on with
-    | C0 => exact zero
-    | C1 X => exact mk X
-    | Cn X h => exact neg _ h
-    | Cp a b ha hb => exact add _ _ ha hb
+    | zero => exact zero
+    | of X => exact mk X
+    | neg X h => exact neg _ h
+    | add a b ha hb => exact add _ _ ha hb
 
 open ZeroObject in
 theorem mk_zero [HasZeroObject C] : mk (0 : C) = 0 := by
@@ -364,6 +366,7 @@ theorem toEnd_π (σ : AddMonoid.End G) (hσ : ∀ x, σ (σ x) = x) : toEnd σ 
 
 /-- The `Zπ`-module structure on an abelian group with an involution `σ`, with `π` acting by
 `σ`. -/
+@[instance_reducible]
 def moduleOfInvolution (σ : AddMonoid.End G) (hσ : ∀ x, σ (σ x) = x) : Module Zπ G :=
   Module.compHom G (toEnd σ hσ)
 
@@ -394,9 +397,11 @@ theorem piInvolution_piInvolution (x : K₀ A) : piInvolution R A (piInvolution 
 
 /-- **Brundan–Ellis, §1.5.** `K₀` of a Π-category is a module over `Zπ = ℤ[π]/(π² − 1)`, with
 `π [V] = [Π V]`. -/
+@[instance_reducible]
 def moduleZπ : Module Zπ (K₀ A) :=
   Zπ.moduleOfInvolution (piInvolution R A) (piInvolution_piInvolution R A)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem π_smul_mk (X : A) :
     letI := moduleZπ R A
     Zπ.π • mk X = mk ((PiCategory.pi (R := R)).obj X) := by
