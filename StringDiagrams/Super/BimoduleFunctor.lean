@@ -266,7 +266,7 @@ theorem toFunctor_map_mem {X Y : BimodCat 𝒜 ℬ} {p : ZMod 2} {x : X ⟶ Y} (
       split_ifs with h
       · subst h
         rw [toFunctor_map_tmul, sract_of_mem M hb, Category.assoc]
-        simpa [add_comm] using comp_mem (sgnHom_mem M.toSVec b') (comp_mem (M.ract_mem b' b hb)
+        simpa [add_comm] using! comp_mem (sgnHom_mem M.toSVec b') (comp_mem (M.ract_mem b' b hb)
           (M.lact_mem a' a ha))
       · rw [Functor.map_zero]; exact Submodule.zero_mem _
   have := key x
@@ -406,7 +406,7 @@ def ofFunctor : SuperBimodule 𝒜 ℬ where
           Linear.smul_comp, Category.assoc, Category.assoc,
           map_tmul_comp_tmul V ha SetLike.GradedOne.one_mem hb,
           map_tmul_comp_tmul V SetLike.GradedOne.one_mem hb SetLike.GradedOne.one_mem]
-        simp only [one_mul, mul_one, mul_zero, zero_mul, add_zero, zero_add, sign_zero, one_smul,
+        simp only [one_mul, mul_one, mul_zero, zero_mul, add_zero, sign_zero, one_smul,
           Linear.comp_smul, smul_smul, sign_mul_self]
   lact_mem p a ha := by
     change V.map (tmulLeft 𝒜 ℬ a) ∈ _
@@ -443,6 +443,7 @@ section Inverse
 
 variable {𝒜 ℬ}
 
+set_option backward.isDefEq.respectTransparency false in
 theorem ofFunctor_toSuperfunctor (M : SuperBimodule 𝒜 ℬ) : ofFunctor (toSuperfunctor M) = M := by
   have hl : (ofFunctor (toSuperfunctor M)).lact = M.lact := LinearMap.ext fun a => by
     change (toFunctor M).map (tmul a 1) = M.lact a
@@ -463,6 +464,7 @@ theorem ofFunctor_toSuperfunctor (M : SuperBimodule 𝒜 ℬ) : ofFunctor (toSup
   unfold ofFunctor
   congr 1
 
+set_option backward.isDefEq.respectTransparency false in
 theorem toFunctor_ofFunctor_map (V : Superfunctor k (BimodCat 𝒜 ℬ) (SVec k)) {X Y : BimodCat 𝒜 ℬ}
     (x : X ⟶ Y) : (toFunctor (ofFunctor V)).map x = V.map x := by
   induction x using BimodCat.induction_on with
@@ -476,6 +478,7 @@ theorem toFunctor_ofFunctor_map (V : Superfunctor k (BimodCat 𝒜 ℬ) (SVec k)
       map_tmul_comp_tmul V SetLike.GradedOne.one_mem hb SetLike.GradedOne.one_mem, zero_mul,
       mul_zero, add_zero, sign_zero, one_smul, mul_one, mul_one]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem toSuperfunctor_ofFunctor (V : Superfunctor k (BimodCat 𝒜 ℬ) (SVec k)) :
     toSuperfunctor (ofFunctor V) = V := by
   refine Superfunctor.ext (CategoryTheory.Functor.ext (fun X => rfl) fun X Y x => ?_)
@@ -496,6 +499,7 @@ theorem total_eq_twist {V W : Superfunctor k (BimodCat 𝒜 ℬ) (SVec k)} (x : 
   rw [SuperNatTrans.total, map_add, twist_of_mem p (x.app_mem 0 X), twist_of_mem p (x.app_mem 1 X),
     mul_zero, sign_zero, one_smul, mul_one]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The total morphism of a supernatural transformation is a superbimodule homomorphism. -/
 theorem isHom_total {V W : Superfunctor k (BimodCat 𝒜 ℬ) (SVec k)} (x : V ⟶ W) :
     IsHom (ofFunctor V) (ofFunctor W) (SuperNatTrans.total x (pt 𝒜 ℬ)) := by
@@ -536,6 +540,7 @@ def homOfNatTrans {V W : Superfunctor k (BimodCat 𝒜 ℬ) (SVec k)} (x : V ⟶
 theorem homOfNatTrans_val {V W : Superfunctor k (BimodCat 𝒜 ℬ) (SVec k)} (x : V ⟶ W) :
     (homOfNatTrans x).1 = x.app 0 (pt 𝒜 ℬ) + x.app 1 (pt 𝒜 ℬ) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem toFunctor_map_proj_comp_proj {M N : SuperBimodule 𝒜 ℬ} (f : M ⟶ N) (s t : ZMod 2)
     {X Y : BimodCat 𝒜 ℬ} (x : X ⟶ Y) :
     ((toFunctor M).map ((BoxProd.homObj k X Y).proj t x) : M.toSVec ⟶ M.toSVec) ≫
@@ -577,6 +582,7 @@ def natTransOfHom {M N : SuperBimodule 𝒜 ℬ} (f : M ⟶ N) : toSuperfunctor 
 theorem natTransOfHom_app {M N : SuperBimodule 𝒜 ℬ} (f : M ⟶ N) (s : ZMod 2) (X : BimodCat 𝒜 ℬ) :
     (natTransOfHom f).app s X = proj k s f.1 := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem homOfNatTrans_natTransOfHom {M N : SuperBimodule 𝒜 ℬ} (f : M ⟶ N) :
     (homOfNatTrans (natTransOfHom f)).1 = f.1 := by
   rw [homOfNatTrans_val, natTransOfHom_app, natTransOfHom_app, proj_add_proj]
@@ -596,6 +602,7 @@ end Morphisms
 
 section Equiv
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The functor `Hom(A ⊠ B^{sop}, SVec) → A-SMod-B`, `V ↦ V(⋆)`. -/
 def evalFunctor : Superfunctor k (BimodCat 𝒜 ℬ) (SVec k) ⥤ SuperBimodule 𝒜 ℬ where
   obj := ofFunctor
@@ -614,6 +621,7 @@ instance : (evalFunctor 𝒜 ℬ).Additive where
     show (x + y).app 0 _ + (x + y).app 1 _ = (x.app 0 _ + x.app 1 _) + (y.app 0 _ + y.app 1 _)
     rw [Superfunctor.add_app, Superfunctor.add_app]; abel)
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (evalFunctor 𝒜 ℬ).Linear k where
   map_smul x r := hom_ext (by
     show (r • x).app 0 _ + (r • x).app 1 _ = r • (x.app 0 _ + x.app 1 _)
@@ -634,6 +642,7 @@ def evalSuperfunctor :
     Superfunctor k (Superfunctor k (BimodCat 𝒜 ℬ) (SVec k)) (SuperBimodule 𝒜 ℬ) :=
   ⟨evalFunctor 𝒜 ℬ⟩
 
+set_option backward.isDefEq.respectTransparency false in
 variable {𝒜 ℬ} in
 theorem natTransOfHom_comp_app {M N P : SuperBimodule 𝒜 ℬ} (f : M ⟶ N) (g : N ⟶ P) (s : ZMod 2)
     (X : BimodCat 𝒜 ℬ) :
@@ -653,18 +662,20 @@ def bimoduleFunctor : SuperBimodule 𝒜 ℬ ⥤ Superfunctor k (BimodCat 𝒜 �
   obj := toSuperfunctor
   map := natTransOfHom
   map_id M := Superfunctor.hom_ext_parity
-    (fun X => by rw [natTransOfHom_app, id_val, proj_id, if_pos rfl]; rfl)
-    (fun X => by rw [natTransOfHom_app, id_val, proj_id, if_neg (by decide)]; rfl)
+    (fun X => by rw [natTransOfHom_app, id_val, proj_id, ite_eq_left rfl]; rfl)
+    (fun X => by rw [natTransOfHom_app, id_val, proj_id, ite_eq_right (by decide)]; rfl)
   map_comp f g := Superfunctor.hom_ext fun s X => natTransOfHom_comp_app f g s X
 
 theorem bimoduleFunctor_map {M N : SuperBimodule 𝒜 ℬ} (f : M ⟶ N) :
     (bimoduleFunctor 𝒜 ℬ).map f = natTransOfHom f := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (bimoduleFunctor 𝒜 ℬ).Additive where
   map_add {_ _ f g} := Superfunctor.hom_ext fun s X => by
     rw [Superfunctor.add_app, bimoduleFunctor_map, bimoduleFunctor_map, bimoduleFunctor_map,
       natTransOfHom_app, natTransOfHom_app, natTransOfHom_app, add_val, map_add]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (bimoduleFunctor 𝒜 ℬ).Linear k where
   map_smul f r := Superfunctor.hom_ext fun s X => by
     rw [Superfunctor.smul_app, bimoduleFunctor_map, bimoduleFunctor_map, natTransOfHom_app,
@@ -694,6 +705,7 @@ theorem eqToHom_val {M N : SuperBimodule 𝒜 ℬ} (h : M = N) :
     (eqToHom h).1 = eqToHom (congrArg SuperBimodule.toSVec h) := by
   subst h; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `A-SMod-B → Hom(A ⊠ B^{sop}, SVec) → A-SMod-B` is the identity. -/
 theorem bimodule_comp_eval :
     (bimoduleSuperfunctor 𝒜 ℬ).comp (evalSuperfunctor 𝒜 ℬ) =
@@ -714,6 +726,7 @@ theorem eqToHom_app {V W : Superfunctor k (BimodCat 𝒜 ℬ) (SVec k)} (h : V =
       else 0 := by
   subst h; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `Hom(A ⊠ B^{sop}, SVec) → A-SMod-B → Hom(A ⊠ B^{sop}, SVec)` is the identity. -/
 theorem eval_comp_bimodule :
     (evalSuperfunctor 𝒜 ℬ).comp (bimoduleSuperfunctor 𝒜 ℬ) =
@@ -725,10 +738,10 @@ theorem eval_comp_bimodule :
   rw [natTransOfHom_homOfNatTrans, Superfunctor.comp_app, Superfunctor.comp_app, eqToHom_app,
     eqToHom_app, eqToHom_app, eqToHom_app]
   rcases parity_eq_zero_or_one s with rfl | rfl
-  · simp only [if_true, if_neg (show (1 : ZMod 2) ≠ 0 by decide), Limits.comp_zero, add_zero,
-      zero_add, SuperNatTrans.zmod2_one_add_one, Limits.zero_comp]
+  · simp only [ite_true, ite_eq_right (show (1 : ZMod 2) ≠ 0 by decide), Limits.comp_zero, add_zero,
+      zero_add, Limits.zero_comp]
     exact ((Category.id_comp _).trans (Category.comp_id _)).symm
-  · simp only [if_true, if_neg (show (1 : ZMod 2) ≠ 0 by decide), Limits.comp_zero, zero_add,
+  · simp only [ite_true, ite_eq_right (show (1 : ZMod 2) ≠ 0 by decide), Limits.comp_zero, zero_add,
       SuperNatTrans.zmod2_one_add_one, Limits.zero_comp, add_zero]
     exact ((Category.id_comp _).trans (Category.comp_id _)).symm
 
