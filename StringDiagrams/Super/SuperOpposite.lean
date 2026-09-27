@@ -53,8 +53,7 @@ theorem mulBilin_of_mem {p q : ZMod 2} {a b : B} (ha : a ∈ ℬ p) (hb : b ∈ 
     mulBilin ℬ a b = sign k (p * q) • (b * a) := by
   rw [mulBilin_apply]
   rcases parity_eq_zero_or_one p with rfl | rfl <;> rcases parity_eq_zero_or_one q with rfl | rfl <;>
-    simp [algProj_of_mem ℬ ha, algProj_of_mem ℬ hb, algProj_of_mem_ne ℬ ha, algProj_of_mem_ne ℬ hb,
-      sub_mul, add_mul]
+    simp [algProj_of_mem ℬ ha, algProj_of_mem ℬ hb, algProj_of_mem_ne ℬ ha, algProj_of_mem_ne ℬ hb]
 
 theorem mulBilin_mem {p q : ZMod 2} {a b : B} (ha : a ∈ ℬ p) (hb : b ∈ ℬ q) :
     mulBilin ℬ a b ∈ ℬ (p + q) := by
@@ -82,6 +81,7 @@ theorem mulBilin_assoc (a b c : B) :
         congr 2
         ring
 
+set_option backward.isDefEq.respectTransparency false in
 instance instRing : Ring (SuperOpposite ℬ) :=
   { (inferInstance : AddCommGroup (SuperOpposite ℬ)) with
     mul := fun a b => mulBilin ℬ a b
@@ -120,6 +120,7 @@ theorem mul_of_mem {p q : ZMod 2} {a b : B} (ha : a ∈ ℬ p) (hb : b ∈ ℬ q
     op ℬ a * op ℬ b = op ℬ (sign k (p * q) • (b * a)) :=
   (mul_def ℬ a b).trans (mulBilin_of_mem ℬ ha hb)
 
+set_option backward.isDefEq.respectTransparency false in
 instance instAlgebra : Algebra k (SuperOpposite ℬ) :=
   Algebra.ofModule
     (fun r a b => by
