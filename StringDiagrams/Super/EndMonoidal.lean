@@ -99,6 +99,7 @@ theorem whiskerRight_id' {G H : Superfunctor R A A} (x : G ⟶ H) :
     Superfunctor.whiskerRight x (Superfunctor.id R A) = x :=
   Superfunctor.hom_ext fun _ _ => rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, Example 1.5(ii).** `End(A)` is a monoidal supercategory. -/
 instance instMonoidalSupercategory : MonoidalSupercategory R (SuperEnd R A) where
   tensorHom_def _ _ := rfl
