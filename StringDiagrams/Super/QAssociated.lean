@@ -670,9 +670,9 @@ theorem val_eq {m : ℤ} {f : (dB R B).FamAll X Y} (hf : f ∈ (dB R B).Fam R m 
   have key : ∀ k : ℤ, val f (0 + k) (-m + k) = val f 0 (-m) := by
     intro k
     induction k using Int.induction_on with
-    | hz => simp
-    | hp k ih => rw [← ih, ← add_assoc, ← add_assoc, val_succ hf]
-    | hn k ih =>
+    | zero => simp
+    | succ k ih => rw [← ih, ← add_assoc, ← add_assoc, val_succ hf]
+    | pred k ih =>
       rw [← ih, show (0 : ℤ) + -(k : ℤ) = 0 + (-(k : ℤ) - 1) + 1 by ring,
         show -m + -(k : ℤ) = -m + (-(k : ℤ) - 1) + 1 by ring, val_succ hf]
   rw [← key i, show 0 + i = i by ring, show -m + i = j by omega]
@@ -832,18 +832,18 @@ def famOf {n : ℤ} (g : bobj X ⟶ bobj Y) (hg : g ∈ degree (R := R) _ _ n) :
 
 theorem TbF_famOf {n : ℤ} (g : bobj X ⟶ bobj Y) (hg : g ∈ degree (R := R) _ _ n) {i j : ℤ}
     (h : i - j = n) : (TbF R B).map (famOf g hg i j) = (τ R B i X).hom ≫ g ≫ (τ R B j Y).inv := by
-  rw [famOf, dif_pos h, TbF_map_TbPre]
+  rw [famOf, dite_eq_left h, TbF_map_TbPre]
 
 theorem famOf_mem {n : ℤ} (g : bobj X ⟶ bobj Y) (hg : g ∈ degree (R := R) _ _ n) :
     famOf g hg ∈ (dB R B).Fam R n X Y := by
-  refine ⟨fun i j h => by rw [famOf, dif_neg h], fun i j => ?_⟩
+  refine ⟨fun i j h => by rw [famOf, dite_eq_right h], fun i j => ?_⟩
   by_cases h : i - j = n
   · apply TbF_map_injective
     rw [TbF_famOf g hg (by omega), Functor.map_comp, Functor.map_comp]
     erw [TbF_map_Qhat]
     rw [TbF_famOf g hg h, τ_succ, τ_succ_inv, QPiSupercategory.Q_map_eq]
     simp only [Category.assoc, Iso.inv_hom_id_assoc, ← Functor.map_comp, Iso.inv_hom_id_app]
-  · rw [famOf, famOf, dif_neg (by omega), dif_neg h]; simp
+  · rw [famOf, famOf, dite_eq_right (by omega), dite_eq_right h]; simp
 
 theorem TL_famOf {n : ℤ} (g : bobj X ⟶ bobj Y) (hg : g ∈ degree (R := R) _ _ n) :
     TL R B X Y ((dB R B).lof n X Y ⟨famOf g hg, famOf_mem g hg⟩) = g := by
@@ -1001,14 +1001,14 @@ theorem TbF_Γ_inv_τ (i : ℤ) (Z : Associated R (GUnderlying R B)) :
     rw [h1, h2]
     exact ⟨fun h => (cancel_epi K.hom).1 h, fun h => by rw [h]; rfl⟩
   induction i using Int.induction_on with
-  | hz =>
+  | zero =>
     rw [τ_zero, τ_zero]
     simp only [Iso.refl_hom, CategoryTheory.Functor.map_id]
     erw [Category.comp_id]
     show (TbF R B').map (𝟙 _ ≫ 𝟙 _) = 𝟙 _
     simp
-  | hp k ih => exact (step k).2 ih
-  | hn k ih =>
+  | succ k ih => exact (step k).2 ih
+  | pred k ih =>
     have := (step (-(k : ℤ) - 1)).1
     rw [show -(k : ℤ) - 1 + 1 = -(k : ℤ) by ring] at this
     exact this ih

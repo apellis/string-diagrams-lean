@@ -177,7 +177,7 @@ theorem whiskerLeft_ξ_pi (a : B) :
   have h := ξ_comm (R := R) (𝛑 a)
   rw [β_pi, PreadditiveBicategory.neg_whiskerRight, PreadditiveBicategory.whiskerLeft_neg] at h
   simp only [Bicategory.id_whiskerRight, Bicategory.whiskerLeft_id, Preadditive.neg_comp,
-    Preadditive.comp_neg, neg_neg, Category.id_comp, Iso.hom_inv_id_assoc,
+    Preadditive.comp_neg, neg_neg, Category.id_comp,
     Iso.inv_hom_id_assoc] at h
   rw [← h]
   simp [← Bicategory.comp_whiskerRight_assoc]
@@ -411,7 +411,7 @@ theorem jIso_hom_mem (a : A) :
   have := Supercategory.comp_mem (Supercategory.comp_mem
     (PiTwoSupercategory.ζ_hom_mem (R := R) (F.obj a)) (F.mapId_hom_mem a))
     (F.map₂_mem (PiTwoSupercategory.ζ_inv_mem (R := R) a))
-  simpa [jIso_hom] using this
+  simpa [jIso_hom] using! this
 
 omit [TwoSupercategory R A] [TwoSupercategory R A'] in
 /-- `ℝζ_λ ∘ j = i ∘ ζ_{ℝλ}`: the defining property of `j`. -/

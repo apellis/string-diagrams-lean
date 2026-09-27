@@ -705,7 +705,7 @@ theorem interchange_of_degree {p q : ZMod 2} {x : f ⟶ g} (hx : x ∈ parity (R
     (n : ℤ) : ∀ {h i : b ⟶ c} (y : h ⟶ i), y ∈ degree (R := R) h i n →
       y ∈ parity (R := R) h i q → x ▷ h ≫ g ◁ y = koszulSign p q • (f ◁ y ≫ x ▷ i) := by
   induction n using Int.induction_on with
-  | hz =>
+  | zero =>
     intro h i y hn hq
     have hq' : (⟨y, hn⟩ : (⟨h⟩ : DegreeZero R (Orbit (homShift R b.obj c.obj))) ⟶ ⟨i⟩) ∈
         parity (R := R) (⟨h⟩ : DegreeZero R (Orbit (homShift R b.obj c.obj))) ⟨i⟩ q := hq
@@ -715,7 +715,7 @@ theorem interchange_of_degree {p q : ZMod 2} {x : f ⟶ g} (hx : x ∈ parity (R
         map_mem (π₀ (homShift R b.obj c.obj)) hq',
         congrArg Subtype.val (π₀_comp_ιZ_map (⟨y, hn⟩ : (⟨h⟩ : DegreeZero R (Orbit _)) ⟶ ⟨i⟩))⟩
     exact interchange_ι hx hy₀
-  | hp n ih =>
+  | succ n ih =>
     intro h i y hn hq
     have hσ := σIso_hom_mem (R := R) h
     have hd := σIso_hom_mem_degree (R := R) h
@@ -726,7 +726,7 @@ theorem interchange_of_degree {p q : ZMod 2} {x : f ⟶ g} (hx : x ∈ parity (R
     have := interchange_comp (q₁ := 0) (q₂ := q) (x := x) (y₁ := (σIso h).inv) (y₂ := (σIso h).hom ≫ y)
       (by rw [koszulSign_zero_right, one_smul]; exact interchange_σ_inv x) (ih _ e1 e2)
     simpa using this
-  | hn n ih =>
+  | pred n ih =>
     intro h i y hn hq
     have hσ := inv_mem _ (σIso_hom_mem (R := R) i)
     have hd := inv_mem_degree _ (σIso_hom_mem_degree (R := R) i)

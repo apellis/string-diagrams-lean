@@ -378,7 +378,7 @@ theorem tensorUnit_def : 𝟙_ (GSVec k) = of GradedSuperspace.unit := rfl
 @[simp] theorem rightUnitor_inv_val (V : GSVec k) : (ρ_ V).inv.1 = (ρ_ V.as.toSVec).inv := rfl
 
 @[simp] theorem tensorHom_val {V V' W W' : GSVec k} (f : V ⟶ V') (g : W ⟶ W') :
-    (f ⊗ g).1 = f.1 ⊗ g.1 := rfl
+    (f ⊗ₘ g).1 = f.1 ⊗ₘ g.1 := rfl
 
 /-- **Brundan–Ellis, §6.** `GSVec k` is a monoidal supercategory, with the tensor product,
 whiskerings (with the Koszul sign rule), associator and unitors of `SVec k`. -/

@@ -774,10 +774,10 @@ def yoneda : TwoSuperfunctor R B (TwoStrictification R B) where
     simp only [comp2_val', Superfunctor.comp_app, whiskerRight_val, Superfunctor.whiskerRight_app,
       yonedaMapComp_hom_val_app, yonedaMap₂_val_app]
     rcases parity_eq_zero_or_one r with rfl | rfl
-    · simp only [if_pos, zmod2_one_ne_zero, if_false, Limits.comp_zero, Limits.zero_comp,
+    · simp only [if_pos, zmod2_one_ne_zero, ite_false, Limits.comp_zero, Limits.zero_comp,
         add_zero, zero_add, proj_whiskerRight', Superfunctor.map, Functor.map_zero]
       exact TwoSupercategory.associator_naturality_middle R u (proj R 0 η) g
-    · simp only [if_pos, zmod2_one_ne_zero, if_false, Limits.comp_zero, Limits.zero_comp,
+    · simp only [if_pos, zmod2_one_ne_zero, ite_false, Limits.comp_zero, Limits.zero_comp,
         add_zero, zero_add, proj_whiskerRight', SuperNatTrans.zmod2_one_add_one,
         Superfunctor.map, Functor.map_zero]
       exact TwoSupercategory.associator_naturality_middle R u (proj R 1 η) g
@@ -785,10 +785,10 @@ def yoneda : TwoSuperfunctor R B (TwoStrictification R B) where
     simp only [comp2_val', Superfunctor.comp_app, whiskerLeft_val, Superfunctor.whiskerLeft_app,
       yonedaMapComp_hom_val_app, yonedaMap₂_val_app]
     rcases parity_eq_zero_or_one r with rfl | rfl
-    · simp only [if_pos, zmod2_one_ne_zero, if_false, Limits.comp_zero, Limits.zero_comp,
+    · simp only [if_pos, zmod2_one_ne_zero, ite_false, Limits.comp_zero, Limits.zero_comp,
         add_zero, zero_add, proj_whiskerLeft', Superfunctor.map, Functor.map_zero]
       exact TwoSupercategory.associator_naturality_right R u f (proj R 0 η)
-    · simp only [if_pos, zmod2_one_ne_zero, if_false, Limits.comp_zero, Limits.zero_comp,
+    · simp only [if_pos, zmod2_one_ne_zero, ite_false, Limits.comp_zero, Limits.zero_comp,
         add_zero, zero_add, proj_whiskerLeft', SuperNatTrans.zmod2_one_add_one,
         Superfunctor.map, Functor.map_zero]
       exact TwoSupercategory.associator_naturality_right R u f (proj R 1 η)

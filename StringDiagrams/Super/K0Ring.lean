@@ -143,12 +143,12 @@ def mulOf (p q : B × B) : K₀ (p.1 ⟶ p.2) →+ K₀ (q.1 ⟶ q.2) →+ K₀R
 
 theorem mulOf_of_ne {a b c d : B} (h : d ≠ a) (x : K₀ (a ⟶ b)) (y : K₀ (c ⟶ d)) :
     mulOf B (a, b) (c, d) x y = 0 := by
-  rw [mulOf, dif_neg h]
+  rw [mulOf, dite_eq_right h]
   rfl
 
 theorem mulOf_self (a b c : B) (x : K₀ (a ⟶ b)) (y : K₀ (c ⟶ a)) :
     mulOf B (a, b) (c, a) x y = of c b (K₀.hcompK c a b y x) := by
-  rw [mulOf, dif_pos rfl]
+  rw [mulOf, dite_eq_left rfl]
   rfl
 
 variable (B) in
