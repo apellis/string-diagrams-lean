@@ -25,11 +25,8 @@ graded 2-superfunctor `𝕁 : 𝔄 → 𝔄_{q,π}` is `QPiTwoEnvelope.twoJ` (`F
 
 A 2-superfunctor `ℝ : 𝔄 → 𝔅` extends to `ℝ̃ : 𝔄_{q,π} → 𝔅` (`QPiTwoEnvelope.extend`, and
 `QPiTwoEnvelope.extendQPi` for a graded `(Q, Π)`-2-supercategory `𝔅`) with `ℝ̃λ = ℝλ`,
-
   `ℝ̃(Q^m Π^a F) = Π^a Q^m (ℝF)`  (for a graded `(Q, Π)`-2-supercategory: `π^a_{ℝμ} q^m_{ℝμ} (ℝF)`),
-
   `ℝ̃(x^{n,b}_{m,a}) = (σ^n_{ℝμ} ζ^b_{ℝμ} (ℝG))⁻¹ ∘ ℝx ∘ (σ^m_{ℝμ} ζ^a_{ℝμ} (ℝF))`,
-
 with `ζ^a` and `σ^m` as in the proof of Lemma 6.11 (`Envelope.ζPow`, `QPiSupercategory.σPow`),
 `ĩ = i`, and coherence maps
 
@@ -102,13 +99,14 @@ variable (a b : C) in
 `(Q, Π)`-supercategory with `Π := π_μ -`, `Q := q_μ -`, `Q⁻¹ := q_μ⁻¹ -` (i.e. `f ↦ f ≫ π_μ`,
 `f ↦ f ≫ q_μ`, `f ↦ f ≫ q_μ⁻¹`) and `ζ_F := F ζ_μ`, `σ_F := F σ_μ`, `σ̄_F := F σ̄_μ` (followed
 by the unitors); its Π-part is `PiTwoSupercategory.homPiLeft`. -/
+@[instance_reducible]
 def homQPiLeft : QPiSupercategory R (a ⟶ b) :=
   letI := homPiLeft (R := R) a b
   QPiSupercategory.ofIso
     (fun f => by
       have := comp_mem_degree (whiskerLeft_mem_degree f (ζ_hom_mem_degree (R := R) b))
         (rightUnitor_hom_mem_degree (R := R) f)
-      simpa using this)
+      simpa using! this)
     (fun f => f ≫ q (R := R) b)
     (fun f => whiskerLeftIso (R := R) f (σ (R := R) b) ≪≫ rightUnitor f)
     (fun f => by
@@ -141,7 +139,7 @@ theorem homQPiLeft_Q_obj (a b : C) (f : a ⟶ b) :
 
 theorem homQPiLeft_σ_hom (a b : C) (f : a ⟶ b) :
     ((homQPiLeft (R := R) a b).σ f).hom = f ◁ (σ (R := R) b).hom ≫ (rightUnitor f).hom := by
-  simp [homQPiLeft, QPiSupercategory.ofIso]
+  rfl
 
 end QPiTwoSupercategory
 
@@ -227,8 +225,8 @@ def twoJ : TwoSuperfunctor R B (QPiTwoEnvelope R B) where
 theorem twoJ_isStrict : (twoJ R B).IsStrict where
   map_comp _ _ := rfl
   map_id _ := rfl
-  mapComp_eq _ _ := Iso.ext (by simp only [eqToIso.hom, eqToHom_refl]; rfl)
-  mapId_eq _ := Iso.ext (by simp only [eqToIso.hom, eqToHom_refl]; rfl)
+  mapComp_eq _ _ := Iso.ext (by simp only [eqToIso.hom]; rfl)
+  mapId_eq _ := Iso.ext (by simp only [eqToIso.hom]; rfl)
 
 /-- `𝕁` is the composite of the canonical 2-superfunctors `𝔄 → 𝔄_q → (𝔄_q)_π`. -/
 theorem twoJ_eq_comp :
@@ -245,6 +243,7 @@ theorem twoJ_eq_comp :
 theorem twoJ_mapFunctor (a b : B) :
     (twoJ R B).mapFunctor a b = QPiEnvelope.J R (a ⟶ b) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `𝕁` is a graded 2-superfunctor. -/
 theorem twoJ_isGraded [∀ a b : B, GradedSupercategory R (a ⟶ b)] [GradedTwoSupercategory R B] :
     (twoJ R B).IsGraded where
@@ -253,10 +252,10 @@ theorem twoJ_isGraded [∀ a b : B, GradedSupercategory R (a ⟶ b)] [GradedTwoS
     simpa using hη
   mapComp_hom_mem_degree f g := by
     show 𝟙 (f ≫ g) ∈ degree (R := R) _ _ (0 + (0 + 0 - 0))
-    simpa using id_mem_degree (R := R) (f ≫ g)
+    simpa using! id_mem_degree (R := R) (f ≫ g)
   mapId_hom_mem_degree a := by
     show 𝟙 (𝟙 a) ∈ degree (R := R) _ _ (0 + (0 - 0))
-    simpa using id_mem_degree (R := R) (𝟙 a)
+    simpa using! id_mem_degree (R := R) (𝟙 a)
 
 variable {C : Type u₂} [BicategoryStruct.{w₂, v₂} C]
   [∀ a b : C, Preadditive (a ⟶ b)] [∀ a b : C, Linear R (a ⟶ b)]
@@ -349,6 +348,7 @@ theorem extend_map₂ {f g : a ⟶ b} (η : f ⟶ g) :
       F.map₂ (toHom η) ≫ (σPow R g.obj.shift (F.map g.obj.obj)).inv) ≫ (ζPow R g.par _).inv :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The coherence map of `ℝ̃`:
 `c̃ = (-1)^{ab} (ζ^{a+b})⁻¹ ∘ (σ^{m+n})⁻¹ ∘ c ∘ (σ^n σ^m) ∘ (ζ^b ζ^a)`, in the diagrammatic
 order. -/
@@ -404,6 +404,7 @@ theorem twoJ_comp_extend : (twoJ R B).comp (extend F) = F := by
 theorem restrict_extend : restrict (extend F) = F := by
   rw [restrict_eq_comp, twoJ_comp_extend]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 6.11(i).** `ℝ̃` is a graded 2-superfunctor when `ℝ` is (and `𝔅` is a graded
 2-supercategory). -/
 theorem extend_isGraded [∀ a b : B, GradedSupercategory R (a ⟶ b)] [GradedTwoSupercategory R C]
@@ -418,8 +419,7 @@ theorem extend_isGraded [∀ a b : B, GradedSupercategory R (a ⟶ b)] [GradedTw
             (ζPow_inv_mem_degree (R := R) g.par _))))
     rw [extend_map₂]
     simp only [Category.assoc] at this ⊢
-    convert this using 2
-    ring
+    convert this using 2 <;> first | rfl | ring
   mapComp_hom_mem_degree f g := by
     rw [extendComp_hom]
     refine Submodule.smul_mem _ _ ?_
@@ -436,8 +436,7 @@ theorem extend_isGraded [∀ a b : B, GradedSupercategory R (a ⟶ b)] [GradedTw
                 (σPow_inv_mem_degree (R := R) (f.obj.shift + g.obj.shift) _)
                 (ζPow_inv_mem_degree (R := R) (f.par + g.par) _))))))
     simp only [Category.assoc] at this ⊢
-    convert this using 2
-    ring
+    convert this using 2 <;> first | rfl | ring
   mapId_hom_mem_degree a := hF.mapId_hom_mem_degree a.as.as
 
 end Extend
@@ -501,6 +500,7 @@ theorem restrictTwoNatTrans_extendTwoNatTrans (θ : TwoNatTrans F G) :
   rw [restrictTwoNatTrans, extendTwoNatTrans, TwoEnvelope.restrictTwoNatTrans_extendTwoNatTrans,
     QTwoEnvelope.restrictTwoNatTrans_extendTwoNatTrans]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A 2-natural transformation `ℝ̃ ⇒ 𝕊̃` is the extension of its restriction. -/
 theorem extendTwoNatTrans_restrictTwoNatTrans (ψ : TwoNatTrans (extend F) (extend G)) :
     extendTwoNatTrans (restrictTwoNatTrans ψ) = ψ := by
@@ -549,6 +549,7 @@ theorem extendTwoNatTrans_vcomp (θ : TwoNatTrans F G) (θ' : TwoNatTrans G H) :
 
 variable [∀ a b : B, GradedSupercategory R (a ⟶ b)] [GradedTwoSupercategory R C]
 
+set_option backward.isDefEq.respectTransparency false in
 omit [∀ a b : B, GradedSupercategory R (a ⟶ b)] in
 /-- The extension of a graded 2-natural transformation is graded. -/
 theorem extendTwoNatTrans_isGraded {θ : TwoNatTrans F G} (hθ : θ.IsGraded) :
@@ -565,8 +566,7 @@ theorem extendTwoNatTrans_isGraded {θ : TwoNatTrans F G} (hθ : θ.IsGraded) :
             (ζPow_inv_mem_degree (R := R) f.par _)))))
   rw [extendTwoNatTrans_x]
   simp only [Category.assoc] at this ⊢
-  convert this using 2
-  ring
+  convert this using 2 <;> first | rfl | ring
 
 omit [∀ a b : B, GradedSupercategory R (a ⟶ b)] [GradedTwoSupercategory R C] in
 /-- The restriction of a graded 2-natural transformation is graded. -/
@@ -647,8 +647,9 @@ instance : (extendHom F G).Faithful where
 instance : (extendHom F G).Full where
   map_surjective {θ θ'} γ := ⟨⟨fun a => γ.app ⟨⟨a⟩⟩, fun {a b} f => by
       have := γ.naturality (Jm (R := R) f)
-      simp only [extendHom_obj] at this
-      rw [extendTwoNatTrans_x_J, extendTwoNatTrans_x_J] at this
+      have h₁ : ((extendHom F G).obj θ).x (Jm (R := R) f) = θ.x f := extendTwoNatTrans_x_J θ f
+      have h₂ : ((extendHom F G).obj θ').x (Jm (R := R) f) = θ'.x f := extendTwoNatTrans_x_J θ' f
+      rw [h₁, h₂] at this
       exact this⟩,
     TwoNatTrans.hom_ext fun _ => rfl⟩
 
@@ -741,7 +742,7 @@ theorem extendComp_Q_one_zero {a b c : B} (f₀ : a ⟶ b) (g₀ : b ⟶ c) :
         F.map f₀ ◁ (γ (R := R) (F.map g₀)).inv ≫
         (associator (F.map f₀) (F.map g₀) (QPiTwoSupercategory.q (R := R) (B := C) (F.obj c))).inv ≫
         (F.mapComp f₀ g₀).hom ▷ QPiTwoSupercategory.q (R := R) (B := C) (F.obj c) := by
-  letI : ∀ a b : C, QPiSupercategory R (a ⟶ b) := fun a b => homQPiLeft a b
+  let : ∀ a b : C, QPiSupercategory R (a ⟶ b) := fun a b => homQPiLeft a b
   show (((F.map f₀ ◁ (QPiTwoSupercategory.σ (R := R) (F.obj b)).hom ≫
       (rightUnitor (F.map f₀)).hom) ≫ 𝟙 _) ▷ F.map g₀ ≫ F.map f₀ ◁ 𝟙 (F.map g₀) ≫
       (F.mapComp f₀ g₀).hom ≫ (𝟙 _ ≫ ((rightUnitor (F.map (f₀ ≫ g₀))).inv ≫
@@ -796,13 +797,12 @@ theorem extendRestrictIso_hom_app_J (X : A) :
     (extendRestrictIso H).hom.app ((J R A).obj X) = 𝟙 _ := by
   simp only [extendRestrictIso, Iso.trans_hom, NatTrans.comp_app, Envelope.extendIso_hom_app]
   erw [Envelope.extendNat_zero_par (X := (QEnvelope.J R A).obj X)]
-  simp only [Envelope.extendRestrictIso, NatIso.ofComponents_hom_app, Iso.trans_hom,
-    Functor.mapIso_hom]
-  simp only [QEnvelope.extendRestrictIso, NatIso.ofComponents_hom_app, Iso.trans_hom,
-    Functor.mapIso_hom]
+  simp only [Envelope.extendRestrictIso, NatIso.ofComponents_hom_app]
+  simp only [QEnvelope.extendRestrictIso, NatIso.ofComponents_hom_app]
   show (𝟙 _ ≫ H.map (𝟙 _)) ≫ (𝟙 _ ≫ H.map (𝟙 _)) = 𝟙 _
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extendRestrictIso_inv_app_J (X : A) :
     (extendRestrictIso H).inv.app ((J R A).obj X) = 𝟙 _ := by
   have := (extendRestrictIso H).hom_inv_id_app ((J R A).obj X)
@@ -981,7 +981,7 @@ theorem extendRestrictX_mem {a b : QPiTwoEnvelope R B} (f : a ⟶ b) :
     extendRestrictX T hT f ∈ parity (R := R) _ _ 0 := by
   have := comp_mem (rightUnitor_hom_mem (R := R) _)
     (comp_mem (extendRestrictApp_mem T hT f) (inv_mem _ (leftUnitor_hom_mem (R := R) _)))
-  simpa using this
+  simpa using! this
 
 include hT in
 theorem extendRestrictX_mem_degree [GradedTwoSupercategory R C] {a b : QPiTwoEnvelope R B}
@@ -989,8 +989,9 @@ theorem extendRestrictX_mem_degree [GradedTwoSupercategory R C] {a b : QPiTwoEnv
   have := comp_mem_degree (GradedTwoSupercategory.rightUnitor_hom_mem_degree (R := R) _)
     (comp_mem_degree (extendRestrictApp_mem_degree T hT f)
       (GradedTwoSupercategory.leftUnitor_inv_mem_degree (R := R) _))
-  simpa using this
+  simpa using! this
 
+set_option backward.isDefEq.respectTransparency false in
 include hT in
 theorem extendRestrictX_naturality {a b : QPiTwoEnvelope R B} {f g : a ⟶ b} (η : f ⟶ g) :
     (extend (restrict T)).map₂ η ▷ 𝟙 (T.obj b) ≫ extendRestrictX T hT g =
@@ -1000,6 +1001,7 @@ theorem extendRestrictX_naturality {a b : QPiTwoEnvelope R B} {f g : a ⟶ b} (�
     leftUnitor_inv_naturality R]
   simp only [Category.assoc]
 
+set_option backward.isDefEq.respectTransparency false in
 include hT in
 /-- **The analogue of Theorem 4.9**, even density: every graded 2-superfunctor
 `𝕋 : 𝔄_{q,π} → 𝔅` is isomorphic to the extension `(𝕋𝕁)~` of its restriction, by the 2-natural
@@ -1036,6 +1038,7 @@ def extendRestrictNatTrans : TwoNatTrans (extend (restrict T)) T where
     erw [unitors_inv_equal R (T.obj a), Iso.hom_inv_id_assoc]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 include hT in
 theorem extendRestrictNatTrans_isStrong : (extendRestrictNatTrans T hT).IsStrong :=
   fun {a b} f => by
@@ -1078,8 +1081,8 @@ theorem extendRestrictAppInv_mem {a b : QPiTwoEnvelope R B} (f : a ⟶ b) :
 include hT in
 theorem extendRestrictAppInv_mem_degree {a b : QPiTwoEnvelope R B} (f : a ⟶ b) :
     extendRestrictAppInv T hT f ∈ degree (R := R) _ _ 0 := by
-  haveI := hT.isGradedSuperfunctor a b
-  simpa using inv_mem_degree ((QPiEnvelope.extendRestrictIso (homFunctor T a b)).app f)
+  have := hT.isGradedSuperfunctor a b
+  simpa using! inv_mem_degree ((QPiEnvelope.extendRestrictIso (homFunctor T a b)).app f)
     (QPiEnvelope.extendRestrictIso_hom_mem_degree (homFunctor T a b) f)
 
 include hT in
@@ -1089,6 +1092,7 @@ theorem extendRestrictAppInv_naturality {a b : QPiTwoEnvelope R B} {f g : a ⟶ 
   haveI := hT.isGradedSuperfunctor a b
   (QPiEnvelope.extendRestrictIso (homFunctor T a b)).inv.naturality η
 
+set_option backward.isDefEq.respectTransparency false in
 include hT in
 theorem extendRestrictAppInv_J {a b : QPiTwoEnvelope R B} (f : a.as.as ⟶ b.as.as) :
     extendRestrictAppInv T hT (Jm (R := R) f : a ⟶ b) = 𝟙 _ := by
@@ -1107,7 +1111,7 @@ theorem extendRestrictInvX_mem {a b : QPiTwoEnvelope R B} (f : a ⟶ b) :
     extendRestrictInvX T hT f ∈ parity (R := R) _ _ 0 := by
   have := comp_mem (rightUnitor_hom_mem (R := R) _)
     (comp_mem (extendRestrictAppInv_mem T hT f) (inv_mem _ (leftUnitor_hom_mem (R := R) _)))
-  simpa using this
+  simpa using! this
 
 include hT in
 theorem extendRestrictInvX_mem_degree [GradedTwoSupercategory R C] {a b : QPiTwoEnvelope R B}
@@ -1115,8 +1119,9 @@ theorem extendRestrictInvX_mem_degree [GradedTwoSupercategory R C] {a b : QPiTwo
   have := comp_mem_degree (GradedTwoSupercategory.rightUnitor_hom_mem_degree (R := R) _)
     (comp_mem_degree (extendRestrictAppInv_mem_degree T hT f)
       (GradedTwoSupercategory.leftUnitor_inv_mem_degree (R := R) _))
-  simpa using this
+  simpa using! this
 
+set_option backward.isDefEq.respectTransparency false in
 include hT in
 theorem extendRestrictInvX_naturality {a b : QPiTwoEnvelope R B} {f g : a ⟶ b} (η : f ⟶ g) :
     T.map₂ η ▷ 𝟙 (T.obj b) ≫ extendRestrictInvX T hT g =
@@ -1127,6 +1132,7 @@ theorem extendRestrictInvX_naturality {a b : QPiTwoEnvelope R B} {f g : a ⟶ b}
   simp only [Category.assoc]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 include hT in
 /-- **The analogue of Theorem 4.9**, even density: the inverse 2-natural transformation
 `𝕋 ⇒ (𝕋𝕁)~`. -/
@@ -1162,6 +1168,7 @@ def extendRestrictNatTransInv : TwoNatTrans T (extend (restrict T)) where
     simp only [Iso.hom_inv_id_assoc]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 include hT in
 theorem extendRestrictNatTransInv_isStrong : (extendRestrictNatTransInv T hT).IsStrong :=
   fun {a b} f => by
@@ -1175,14 +1182,14 @@ include hT in
 theorem extendRestrictNatTransInv_isGraded [GradedTwoSupercategory R C] :
     (extendRestrictNatTransInv T hT).IsGraded := fun f => extendRestrictInvX_mem_degree T hT f
 
+set_option backward.isDefEq.respectTransparency false in
 include hT in
 /-- The components of `extendRestrictNatTrans` and `extendRestrictNatTransInv` are mutually
 inverse up to the unitors: `x_F ≫ λ ≫ ρ⁻¹ ≫ x'_F = ρ ≫ λ⁻¹`. -/
 theorem extendRestrictX_comp_inv {a b : QPiTwoEnvelope R B} (f : a ⟶ b) :
     extendRestrictX T hT f ≫ (leftUnitor _).hom ≫ (rightUnitor _).inv ≫
         extendRestrictInvX T hT f = (rightUnitor _).hom ≫ (leftUnitor _).inv := by
-  simp only [extendRestrictX, extendRestrictInvX, Category.assoc, Iso.inv_hom_id_assoc,
-    Iso.hom_inv_id_assoc]
+  simp only [extendRestrictX, extendRestrictInvX, Category.assoc, Iso.inv_hom_id_assoc]
   rw [reassoc_of% (extendRestrictApp_comp_inv T hT f)]
 
 include hT in
@@ -1225,6 +1232,7 @@ variable {R : Type w} [CommRing R]
   [∀ a b : B, Supercategory R (a ⟶ b)] [∀ a b : B, GradedSupercategory R (a ⟶ b)]
   [TwoSupercategory R B] [GradedTwoSupercategory R B]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The analogue of Lemma 4.6** (stated after Definition 6.10). The canonical graded
 2-superfunctor `𝕁 : 𝔄 → 𝔄_{q,π}` (the identity on objects) induces graded superequivalences on
 all morphism supercategories if and only if `𝔄` is `(Q, Π)`-complete. -/
