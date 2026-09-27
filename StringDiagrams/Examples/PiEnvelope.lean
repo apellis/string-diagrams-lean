@@ -45,8 +45,8 @@ theorem cup_mem (n i : ℕ) :
   by_cases h : i ≤ n
   · rw [cup_def (R := R) h]
     have := Presentation.diag_isHomogeneous (isParityHomogeneous R) (dcup h)
-    convert this using 1
-  · simp [cup, h, Submodule.zero_mem]
+    exact this
+  · simp [cup, h]
 
 theorem cap_mem (n i : ℕ) :
     cap R n i ∈
@@ -54,8 +54,8 @@ theorem cap_mem (n i : ℕ) :
   by_cases h : i ≤ n
   · rw [cap_def (R := R) h]
     have := Presentation.diag_isHomogeneous (isParityHomogeneous R) (dcap h)
-    convert this using 1
-  · simp [cap, h, Submodule.zero_mem]
+    exact this
+  · simp [cap, h]
 
 /-- In the Π-envelope, the shifted cup is even. -/
 theorem cupShift_mem (n i : ℕ) :
