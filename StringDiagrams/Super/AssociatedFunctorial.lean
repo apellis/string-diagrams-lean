@@ -70,14 +70,14 @@ theorem natTrans_comp {x : ∀ X, F.obj X ⟶ G.obj X} {y : ∀ X, G.obj X ⟶ H
 theorem natTrans_whiskerLeft (K : E ⥤ C) [K.Additive] [K.Linear R] [IsSuperfunctor R K]
     {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsSupernatural R 0 x) :
     natTrans (F := K ⋙ F) (G := K ⋙ G) (hx.whiskerLeft K) =
-      whiskerLeft (map (R := R) K) (natTrans hx) := by
+      Functor.whiskerLeft (map (R := R) K) (natTrans hx) := by
   ext X; rfl
 
 /-- `𝔼₁` preserves whiskering on the right. -/
 theorem natTrans_whiskerRight (K : D ⥤ E) [K.Additive] [K.Linear R] [IsSuperfunctor R K]
     {x : ∀ X, F.obj X ⟶ G.obj X} (hx : IsSupernatural R 0 x) :
     natTrans (F := F ⋙ K) (G := G ⋙ K) (hx.whiskerRight K) =
-      whiskerRight (natTrans hx) (map (R := R) K) := by
+      Functor.whiskerRight (natTrans hx) (map (R := R) K) := by
   ext X; rfl
 
 end Underlying
@@ -130,10 +130,13 @@ theorem mapNatTrans_isSupernatural {y : F ⟶ G} (hy : PiFunctor.IsPiNatural R h
     IsSupernatural R 0 (F := map hF) (G := map hG) (mapNatTrans hy).app :=
   isSupernatural_mapNatTrans hy
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `𝔻₁` preserves identity 2-morphisms. -/
 theorem mapNatTrans_id : mapNatTrans (PiFunctor.isPiNatural_id hF) = 𝟙 (map hF) := by
   ext X <;> simp
+  rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `𝔻₁` preserves vertical composition. -/
 theorem mapNatTrans_comp {x : F ⟶ G} {y : G ⟶ H} (hx : PiFunctor.IsPiNatural R hF hG x)
     (hy : PiFunctor.IsPiNatural R hG hH y) :
@@ -144,20 +147,19 @@ omit [F.Additive] [F.Linear R] [G.Additive] [G.Linear R] in
 /-- Whiskering a Π-natural transformation by a Π-functor on the left. -/
 theorem isPiNatural_whiskerLeft {K : E ⥤ C} [K.Additive] (hK : PiFunctor R K) {y : F ⟶ G}
     (hy : PiFunctor.IsPiNatural R hF hG y) :
-    PiFunctor.IsPiNatural R (hK.comp hF) (hK.comp hG) (whiskerLeft K y) := fun X => by
+    PiFunctor.IsPiNatural R (hK.comp hF) (hK.comp hG) (Functor.whiskerLeft K y) := fun X => by
   simp only [PiFunctor.comp_β, NatIso.ofComponents_hom_app, Iso.trans_hom, Iso.app_hom,
-    Functor.mapIso_hom, whiskerLeft_app, Functor.comp_obj, Category.assoc]
+    Functor.mapIso_hom, Functor.whiskerLeft_app, Functor.comp_obj, Category.assoc]
   rw [y.naturality, reassoc_of% (hy (K.obj X))]
 
 omit [F.Additive] [F.Linear R] [G.Additive] [G.Linear R] in
 /-- Whiskering a Π-natural transformation by a Π-functor on the right. -/
 theorem isPiNatural_whiskerRight {K : D ⥤ E} [K.Additive] (hK : PiFunctor R K) {y : F ⟶ G}
     (hy : PiFunctor.IsPiNatural R hF hG y) :
-    PiFunctor.IsPiNatural R (hF.comp hK) (hG.comp hK) (whiskerRight y K) := fun X => by
+    PiFunctor.IsPiNatural R (hF.comp hK) (hG.comp hK) (Functor.whiskerRight y K) := fun X => by
   simp only [PiFunctor.comp_β, NatIso.ofComponents_hom_app, Iso.trans_hom, Iso.app_hom,
-    Functor.mapIso_hom, whiskerRight_app, Functor.comp_obj, Category.assoc, ← K.map_comp,
-    hy X]
-  rw [K.map_comp, reassoc_of% (hK.β.hom.naturality (y.app X))]
+    Functor.mapIso_hom, Functor.whiskerRight_app, Functor.comp_obj, Category.assoc]
+  rw [← K.map_comp, hy X, K.map_comp, reassoc_of% (hK.β.hom.naturality (y.app X))]
 
 /-- `𝔻₁` preserves whiskering on the left (with `𝔻₁(K F) = 𝔻₁ K ⋙ 𝔻₁ F`, `map_comp`). -/
 theorem mapNatTrans_whiskerLeft {K : E ⥤ C} [K.Additive] [K.Linear R] (hK : PiFunctor R K)
@@ -165,6 +167,7 @@ theorem mapNatTrans_whiskerLeft {K : E ⥤ C} [K.Additive] [K.Linear R] (hK : Pi
     (mapNatTrans (isPiNatural_whiskerLeft hK hy)).app X =
       (mapNatTrans hy).app ((map hK).obj X) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `𝔻₁` preserves whiskering on the right. -/
 theorem mapNatTrans_whiskerRight {K : D ⥤ E} [K.Additive] [K.Linear R] (hK : PiFunctor R K)
     {y : F ⟶ G} (hy : PiFunctor.IsPiNatural R hF hG y) (X : Associated R C) :
@@ -178,6 +181,7 @@ theorem natTrans_mapNatTrans {y : F ⟶ G} (hy : PiFunctor.IsPiNatural R hF hG y
     (Underlying.natTrans (F := map hF) (G := map hG) (mapNatTrans_isSupernatural hy)).app
       ⟨⟨X⟩⟩ = (unit R D).map (y.app X) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 5.3, `𝔻₁ Π = Π̂`.** The Π-supercategory structure of `Â` is `𝔻₁` of `(Π, β_Π = -1)`:
 `𝔻₁` is a strict Π-2-functor on the 1-morphisms `π`. -/
 theorem pi_eq_map_pi :
@@ -195,6 +199,7 @@ theorem ζ_inv (X : Associated R C) :
       homMk (X := X) (Y := ⟨(PiCategory.pi (R := R)).obj X.obj⟩) 0
         (-(PiCategory.ξApp (R := R) X.obj).inv) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 omit [F.Linear R] in
 /-- **Theorem 5.3, `𝔻₁ β_F = β_{F̂}`.** The isomorphism `β_{F̂} = -ζ F̂ ζ⁻¹` of Corollary 3.3(ii)
 for the superfunctor `F̂ = 𝔻₁(F, β_F)` is `β_F`, viewed as an even morphism. This uses the
@@ -221,7 +226,7 @@ theorem β_map (X : Associated R C) :
       PiCategory.ξApp_hom]
     erw [n]
     rw [← Category.assoc, PiCategory.ξ_pi, ← Functor.map_comp, Iso.inv_hom_id_app]
-    simp
+    erw [CategoryTheory.Functor.map_id, Category.id_comp]
   · simp [ζ_hom, ζ_inv]
 
 end Map
@@ -236,10 +241,12 @@ variable {R : Type w} [CommRing R]
   {B : Type w₃} [Category.{w₄} B] [Preadditive B] [Linear R B] [Supercategory R B]
   [PiSupercategory R B]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem T_map_homMk {X Y : Associated R (Underlying R A)} (f : X.obj ⟶ Y.obj) :
     (T R A).map (homMk f 0) = f.1 := by
   simp [T_map]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 5.3, naturality of `t`.** For an even supernatural transformation `x : F ⇒ G`
 between superfunctors of Π-supercategories, `x T_A = T_B (x̲)^`. -/
 theorem T_map_mapNatTrans {F G : A ⥤ B} [F.Additive] [F.Linear R] [IsSuperfunctor R F]
@@ -249,6 +256,7 @@ theorem T_map_mapNatTrans {F G : A ⥤ B} [F.Additive] [F.Linear R] [IsSuperfunc
   simp [mapNatTrans]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 5.3, the coherence axiom of Definition 5.2(iii) for `(T, t)`.** The isomorphism
 `β_{T_A} = -ζ_A T_A ζ⁻¹` of Corollary 3.3(ii) for the superfunctor `T_A` is the identity. -/
 theorem β_T (X : Associated R (Underlying R A)) :
