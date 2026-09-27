@@ -44,12 +44,12 @@ def xU : LZˣ where
   val_inv := by rw [← T_add]; simp
   inv_val := by rw [← T_add]; simp
 
-theorem xz_xU (k : ℤ) : xz xU k = T k := by
+theorem xz_xU (k : ℤ) : xz (A := LZ) xU k = T k := by
   rw [xz]
   induction k using Int.induction_on with
-  | hz => simp
-  | hp n ih => rw [zpow_add_one, Units.val_mul, ih, T_add]; rfl
-  | hn n ih =>
+  | zero => simp
+  | succ n ih => rw [zpow_add_one, Units.val_mul, ih, T_add]; rfl
+  | pred n ih =>
     rw [zpow_sub_one, Units.val_mul, ih]
     show T (-(n : ℤ)) * T (-1) = T (-(n : ℤ) - 1)
     rw [← T_add]
@@ -73,22 +73,24 @@ theorem brk_succ (n : ℕ) :
 def genL (x : ℕ × ZMod 2) : LZ := πL ^ x.2.val * brk (x.1 + 1)
 
 theorem genL_coeff (n : ℕ) (b : ZMod 2) (k : ℤ) :
-    genL (n, b) k = ∑ r ∈ Finset.range (n + 1),
+    (genL (n, b)).coeff k = ∑ r ∈ Finset.range (n + 1),
       if (n : ℤ) - 2 * r = k then Zπ.π ^ (b.val + r) else 0 := by
-  rw [genL, brk_succ, Finset.mul_sum, Finset.sum_apply']
+  rw [genL, brk_succ, Finset.mul_sum, AddMonoidAlgebra.coeff_sum, Finset.sum_apply']
   refine Finset.sum_congr rfl fun r _ => ?_
-  rw [← map_pow, ← mul_assoc, ← map_mul, ← pow_add, ← single_eq_C_mul_T, Finsupp.single_apply]
+  rw [← map_pow, ← mul_assoc, ← map_mul, ← pow_add, ← single_eq_C_mul_T,
+    AddMonoidAlgebra.coeff_single, Finsupp.single_apply]
 
-theorem genL_coeff_self (n : ℕ) (b : ZMod 2) : genL (n, b) n = Zπ.π ^ b.val := by
+theorem genL_coeff_self (n : ℕ) (b : ZMod 2) : (genL (n, b)).coeff n = Zπ.π ^ b.val := by
   rw [genL_coeff, Finset.sum_eq_single 0]
   · simp
-  · intro r _ hr; rw [if_neg]; omega
+  · intro r _ hr; rw [ite_eq_right]; omega
   · simp
 
-theorem genL_coeff_of_lt {n : ℕ} (b : ZMod 2) {k : ℤ} (hk : (n : ℤ) < k) : genL (n, b) k = 0 := by
+theorem genL_coeff_of_lt {n : ℕ} (b : ZMod 2) {k : ℤ} (hk : (n : ℤ) < k) :
+    (genL (n, b)).coeff k = 0 := by
   rw [genL_coeff]
   refine Finset.sum_eq_zero fun r _ => ?_
-  rw [if_neg]; omega
+  rw [ite_eq_right]; omega
 
 /-- **The elements `[n+1]_{x,π}`, `π [n+1]_{x,π}` are linearly independent over `ℤ`.** -/
 theorem linearIndependent_genL : LinearIndependent ℤ genL := by
@@ -100,15 +102,14 @@ theorem linearIndependent_genL : LinearIndependent ℤ genL := by
   have hne : s'.Nonempty := ⟨i, by simp [s', hi, hgi]⟩
   obtain ⟨i₀, hi₀, hmax⟩ := s'.exists_max_image (fun j => j.1) hne
   set N := i₀.1
-  have hc := congrArg (fun p : LZ => p (N : ℤ)) hsum
-  simp only at hc
-  rw [Finsupp.finset_sum_apply] at hc
-  simp only [Finsupp.smul_apply, Finsupp.coe_zero, Pi.zero_apply] at hc
+  have hc := congrArg (fun p : LZ => p.coeff (N : ℤ)) hsum
+  rw [AddMonoidAlgebra.coeff_sum, Finsupp.finsetSum_apply] at hc
+  simp only [AddMonoidAlgebra.coeff_zero, Finsupp.coe_zero, Pi.zero_apply] at hc
   -- only the terms of degree `N` contribute
-  have hterm : ∀ j ∈ s, (g j • genL j) (N : ℤ) =
+  have hterm : ∀ j ∈ s, (g j • genL j).coeff (N : ℤ) =
       if j.1 = N then g j • Zπ.π ^ j.2.val else 0 := by
     intro j hj
-    change g j • genL j (N : ℤ) = _
+    change g j • (genL j).coeff (N : ℤ) = _
     by_cases hgj : g j = 0
     · simp [hgj]
     · have hjN : j.1 ≤ N := hmax j (by simp [s', hj, hgj])
@@ -183,7 +184,7 @@ theorem basisK₀_eq_classJw (x : ℕ × ZMod 2) : basisK₀ q hq x = classJw q 
   basisK₀_apply q hq x
 
 theorem K₀ToLZlin_classJw (x : ℕ × ZMod 2) : K₀ToLZlin q hq (classJw q hq x) = genL x := by
-  rw [K₀ToLZlin, ← basisK₀_eq_classJw, Basis.constr_basis]
+  rw [K₀ToLZlin, ← basisK₀_eq_classJw, Module.Basis.constr_basis]
 
 omit hq in
 theorem πsmul_πsmul (x : K₀ (SKar k (STL k δq))) : Zπ.π • Zπ.π • x = x := by
@@ -191,10 +192,10 @@ theorem πsmul_πsmul (x : K₀ (SKar k (STL k δq))) : Zπ.π • Zπ.π • x 
 
 theorem K₀ToLZlin_π_smul (x : K₀ (SKar k (STL k δq))) :
     K₀ToLZlin q hq (Zπ.π • x) = πL * K₀ToLZlin q hq x := by
-  have : (K₀ToLZlin q hq).comp (DistribMulAction.toLinearMap ℤ _ Zπ.π) =
+  have : (K₀ToLZlin q hq).comp (DistribSMul.toLinearMap ℤ _ Zπ.π) =
       (LinearMap.mulLeft ℤ πL).comp (K₀ToLZlin q hq) := by
     refine (basisK₀ q hq).ext fun ⟨n, b⟩ => ?_
-    simp only [LinearMap.coe_comp, Function.comp_apply, DistribMulAction.toLinearMap_apply,
+    simp only [LinearMap.coe_comp, Function.comp_apply, DistribSMul.toLinearMap_apply,
       LinearMap.mulLeft_apply, basisK₀_eq_classJw]
     rcases Supercategory.parity_eq_zero_or_one b with rfl | rfl
     · rw [← classJw_one, K₀ToLZlin_classJw, K₀ToLZlin_classJw, genL_one]
@@ -259,7 +260,7 @@ theorem K₀ToLZlin_mul (x y : K₀ (SKar k (STL k δq))) :
 `[(f_n)^b_b] ↦ π^b [n+1]_{x,π}`. -/
 def K₀ToLZ : K₀ (SKar k (STL k δq)) →+* LZ where
   toFun := K₀ToLZlin q hq
-  map_one' := by rw [one_eq_classJw, K₀ToLZlin_classJw, genL_zero_zero]
+  map_one' := by rw [one_eq_classJw q hq, K₀ToLZlin_classJw, genL_zero_zero]
   map_mul' := K₀ToLZlin_mul q hq
   map_zero' := map_zero _
   map_add' := map_add _
@@ -270,11 +271,11 @@ def K₀ToLZ : K₀ (SKar k (STL k δq)) →+* LZ where
 theorem K₀ToLZ_injective : Function.Injective (K₀ToLZ q hq) := by
   intro x y h
   have hx : K₀ToLZ q hq x = Finsupp.linearCombination ℤ genL ((basisK₀ q hq).repr x) := by
-    rw [K₀ToLZ, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, K₀ToLZlin, Basis.constr_apply,
-      Finsupp.linearCombination_apply]
+    rw [K₀ToLZ, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, K₀ToLZlin,
+      Module.Basis.constr_apply, Finsupp.linearCombination_apply]
   have hy : K₀ToLZ q hq y = Finsupp.linearCombination ℤ genL ((basisK₀ q hq).repr y) := by
-    rw [K₀ToLZ, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, K₀ToLZlin, Basis.constr_apply,
-      Finsupp.linearCombination_apply]
+    rw [K₀ToLZ, RingHom.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk, K₀ToLZlin,
+      Module.Basis.constr_apply, Finsupp.linearCombination_apply]
   rw [hx, hy] at h
   exact (basisK₀ q hq).repr.injective (linearIndependent_genL h)
 
@@ -282,7 +283,7 @@ theorem K₀ToLZ_injective : Function.Injective (K₀ToLZ q hq) := by
 theorem range_K₀ToLZ :
     ((K₀ToLZ q hq).range : Set LZ) = Submodule.span ℤ (Set.range genL) := by
   have : (Set.range (K₀ToLZ q hq)) = Set.range (K₀ToLZlin q hq) := rfl
-  rw [RingHom.coe_range, this, ← LinearMap.range_coe, K₀ToLZlin, Basis.constr_range]
+  rw [RingHom.coe_range, this, ← LinearMap.coe_range, K₀ToLZlin, Module.Basis.constr_range]
 
 /-- **Theorem A.3 = Theorem 1.18 (the Grothendieck ring).** `K₀(SKar(STL(δ)))` is isomorphic, as
 a ring, to the subring of `Zπ[x, x⁻¹]` spanned over `ℤ` by `[n+1]_{x,π}` and `π [n+1]_{x,π}`
