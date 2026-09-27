@@ -189,6 +189,48 @@ theorem toOplax_mapQNat_app (a : B) :
         (mapQNat_isGraded hη)).toOplaxTrans).app ((QAssociated2.unit R B).obj a) =
       (QAssociated2.unit R C).map (η.app a) := rfl
 
+omit hη in
+/-- **`𝔻` preserves identity 2-morphisms.** -/
+theorem mapQNat_id (hF : QPiTwoFunctor R F) :
+    mapQNat (isQPiTwoNatural_id hF) = TwoNatTrans.id hF.mapQ := by
+  refine TwoNatTrans.ext_of_eq rfl fun {a b} f => ?_
+  simp only [eqToHom_refl, Category.comp_id, Category.id_comp]
+  rw [mapQNat_x, TwoNatTrans.id_x, Orbit2.rightUnitor_hom_def, Orbit2.leftUnitor_inv_def,
+    ← Functor.map_comp]
+  refine congrArg (Orbit.ι (homShift R (hF.mapQ.obj a).obj (hF.mapQ.obj b).obj)).map ?_
+  simp only [PiTwoFunctor.mapTwoNat_x, Oplax.OplaxTrans.id]
+  apply Associated2.hom₂_ext <;> (try simp) <;> rfl
+
+omit hη in
+/-- **`𝔻` preserves vertical composition of 2-morphisms.** -/
+theorem mapQNat_vcomp {η : Oplax.OplaxTrans F.toOplax G.toOplax}
+    {θ : Oplax.OplaxTrans G.toOplax H.toOplax} (hη : hF.IsQPiTwoNatural hG η)
+    (hθ : hG.IsQPiTwoNatural hH θ) :
+    mapQNat (hη.vcomp hθ) = (mapQNat hη).vcomp (mapQNat hθ) := by
+  refine TwoNatTrans.ext_of_eq rfl fun {a b} f => ?_
+  simp only [eqToHom_refl, Category.comp_id, Category.id_comp]
+  rw [TwoNatTrans.vcomp_x, mapQNat_x, mapQNat_x, mapQNat_x, Orbit2.whiskerRight_ι,
+    Orbit2.whiskerLeft_ι, Orbit2.associator_inv_def, Orbit2.associator_hom_def,
+    Orbit2.associator_inv_def]
+  simp only [← Functor.map_comp]
+  refine congrArg (Orbit.ι (homShift R (hF.mapQ.obj a).obj (hH.mapQ.obj b).obj)).map ?_
+  simp only [PiTwoFunctor.mapTwoNat_x, Oplax.OplaxTrans.vcomp]
+  apply Associated2.hom₂_ext
+  · simp only [Associated2.comp₂_fst, Associated2.whiskerLeft_fst, Associated2.whiskerLeft_snd,
+      Associated2.whiskerRight_fst, Associated2.whiskerRight_snd, Associated2.associator_hom_fst,
+      Associated2.associator_hom_snd, Associated2.associator_inv_fst,
+      Associated2.associator_inv_snd, Associated.homMk_fst, Associated.homMk_snd,
+      PreadditiveBicategory.zero_whiskerRight, PreadditiveBicategory.whiskerLeft_zero,
+      Limits.zero_comp, Limits.comp_zero, sub_zero, Category.assoc,
+      Pseudofunctor.toOplax_toPrelaxFunctor]
+    rfl
+  · simp only [Associated2.comp₂_snd, Associated2.whiskerLeft_fst, Associated2.whiskerLeft_snd,
+      Associated2.whiskerRight_fst, Associated2.whiskerRight_snd, Associated2.associator_hom_fst,
+      Associated2.associator_hom_snd, Associated2.associator_inv_fst,
+      Associated2.associator_inv_snd, Associated.homMk_fst, Associated.homMk_snd,
+      PreadditiveBicategory.zero_whiskerRight, PreadditiveBicategory.whiskerLeft_zero,
+      Limits.zero_comp, Limits.comp_zero, add_zero, zero_add, PiTwoCategory.pi_map]
+
 end QPiTwoFunctor
 
 /-! ### Naturality of `𝕋` in 1-morphisms -/
