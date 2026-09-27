@@ -73,10 +73,9 @@ theorem nfSpan_induction {a b : ℕ} {p : (X R δ a ⟶ X R δ b) → Prop}
 theorem cap_comp_mem_nfSpan {a b i : ℕ} (hi : i ≤ a) {x : X R δ a ⟶ X R δ b}
     (hx : x ∈ nfSpan R δ a b) : cap R δ a i ≫ x ∈ nfSpan R δ (a + 2) b := by
   refine nfSpan_induction (p := fun x => cap R δ a i ≫ x ∈ nfSpan R δ (a + 2) b)
-    (fun C U hC hU hv hb => ?_) (by dsimp only; rw [Limits.comp_zero]; exact Submodule.zero_mem _)
-    (fun x y hx hy => by dsimp only at *; rw [Preadditive.comp_add]; exact Submodule.add_mem _ hx hy)
-    (fun r x hx => by dsimp only at *; rw [Linear.comp_smul]; exact Submodule.smul_mem _ r hx) hx
-  dsimp only
+    (fun C U hC hU hv hb => ?_) (by rw [Limits.comp_zero]; exact Submodule.zero_mem _)
+    (fun x y hx hy => by rw [Preadditive.comp_add]; exact Submodule.add_mem _ hx hy)
+    (fun r x hx => by rw [Linear.comp_smul]; exact Submodule.smul_mem _ r hx) hx
   rw [← evW_cap, ← List.cons_append]
   exact nf_mem (C := .cap i :: C) hC hU ⟨by omega, hv⟩ hb
 
@@ -124,9 +123,9 @@ theorem cup_comp_nf (C : List Step) (hC : IsCapWord C) : ∀ {a j : ℕ} {U : Li
 theorem cup_comp_mem_nfSpan {a b j : ℕ} (hj : j ≤ a) {x : X R δ (a + 2) ⟶ X R δ b}
     (hx : x ∈ nfSpan R δ (a + 2) b) : cup R δ a j ≫ x ∈ nfSpan R δ a b := by
   refine nfSpan_induction (p := fun x => cup R δ a j ≫ x ∈ nfSpan R δ a b)
-    (fun C U hC hU hv hb => ?_) (by dsimp only; rw [Limits.comp_zero]; exact Submodule.zero_mem _)
-    (fun x y hx hy => by dsimp only at *; rw [Preadditive.comp_add]; exact Submodule.add_mem _ hx hy)
-    (fun r x hx => by dsimp only at *; rw [Linear.comp_smul]; exact Submodule.smul_mem _ r hx) hx
+    (fun C U hC hU hv hb => ?_) (by rw [Limits.comp_zero]; exact Submodule.zero_mem _)
+    (fun x y hx hy => by rw [Preadditive.comp_add]; exact Submodule.add_mem _ hx hy)
+    (fun r x hx => by rw [Linear.comp_smul]; exact Submodule.smul_mem _ r hx) hx
   exact cup_comp_nf C hC hU hj hv hb
 
 /-- **Every morphism is a combination of words "caps, then cups".** -/
@@ -196,8 +195,8 @@ theorem jw_comp_nf_comp_jw (hq : ∀ n : ℕ, 0 < n → q ^ n ≠ 1) {m n : ℕ}
 theorem jw_comp_comp_jw_of_ne (hq : ∀ n : ℕ, 0 < n → q ^ n ≠ 1) {m n : ℕ} (hmn : m ≠ n)
     (x : X k δq m ⟶ X k δq n) : jw q m ≫ x ≫ jw q n = 0 := by
   refine nfSpan_induction (p := fun x => jw q m ≫ x ≫ jw q n = 0) (fun C U hC hU hv hb => ?_)
-    (by simp) (fun x y hx hy => by dsimp only at *; simp [hx, hy])
-    (fun r x hx => by dsimp only at *; simp [hx]) (mem_nfSpan x)
+    (by simp) (fun x y hx hy => by simp [hx, hy])
+    (fun r x hx => by simp [hx]) (mem_nfSpan x)
   refine jw_comp_nf_comp_jw hq hC hU hv hb fun h => ?_
   rw [h] at hb
   exact hmn hb
