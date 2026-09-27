@@ -59,7 +59,7 @@ theorem evenSpan_le_parity (a b : ℕ) :
   refine Submodule.span_le.mpr ?_
   rintro _ ⟨u, hu, hb, he, rfl⟩
   have := evW_mem_parity (R := R) (δ := δ) hu hb
-  rwa [ZMod.eq_zero_iff_even.mpr he] at this
+  rwa [ZMod.natCast_eq_zero_iff_even.mpr he] at this
 
 theorem cup_mem_parity {a i : ℕ} (hi : i ≤ a) :
     cup R δ a i ∈
@@ -167,7 +167,7 @@ theorem gDec_mem_parity (N : ℕ) :
     gDec q N ∈ (pres k δq).homDeg (Presentation.parityDeg sig) (strands (N + 2)) (strands (N + 2)) 0 := by
   rw [← vDec_comp_uDec]
   have := Presentation.comp_mem_homDeg (vDec_mem_parity (q := q) N) (uDec_mem_parity (q := q) N)
-  simpa using this
+  rwa [show (1 : ZMod 2) + 1 = 0 by decide] at this
 
 end StringDiagrams.OddTemperleyLieb
 
