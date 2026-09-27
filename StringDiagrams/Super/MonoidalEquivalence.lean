@@ -160,7 +160,7 @@ def ofNatIso (x : MonoidalNatTrans R cF cG) (e : F ≅ G) (h : e.hom = x.toNatTr
           inv_mem (e.app Y) (by simpa [h] using x.app_mem Y)
         have ht := x.tensor X Y
         rw [← h] at ht
-        have hinv : (e.inv.app X ⊗ e.inv.app Y) ≫ (e.hom.app X ⊗ e.hom.app Y) = 𝟙 _ := by
+        have hinv : (e.inv.app X ⊗ₘ e.inv.app Y) ≫ (e.hom.app X ⊗ₘ e.hom.app Y) = 𝟙 _ := by
           rw [MonoidalSupercategory.tensorHom_comp_tensorHom _ _ _ _ hX' hY,
             koszulSign_zero_left, one_smul, Iso.inv_hom_id_app, Iso.inv_hom_id_app,
             MonoidalSupercategory.tensor_id R]
