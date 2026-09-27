@@ -88,6 +88,7 @@ section Proj
 
 variable (R) in
 /-- The decomposition of a morphism module into homogeneous components. -/
+@[instance_reducible]
 def degreeDecomposition (X Y : C) : DirectSum.Decomposition (degree (R := R) X Y) :=
   (isInternal_degree X Y).chooseDecomposition
 
@@ -129,15 +130,15 @@ theorem induction_on_degree {X Y : C} {P : (X ⟶ Y) → Prop} (f : X ⟶ Y) (ze
 `n`. -/
 theorem mem_degree_of_dproj {n : ℤ} {X Y : C} {f : X ⟶ Y}
     (h : ∀ m, m ≠ n → dproj R m f = 0) : f ∈ degree (R := R) X Y n := by
-  letI := degreeDecomposition R X Y
+  let := degreeDecomposition R X Y
   have e : DirectSum.decompose (degree (R := R) X Y) f =
       DirectSum.of (fun m => degree (R := R) X Y m) n
         (DirectSum.decompose (degree (R := R) X Y) f n) := by
-    ext m
+    ext m : 1
     by_cases hm : m = n
     · subst hm; simp
-    · rw [DirectSum.of_eq_of_ne _ _ _ (Ne.symm hm)]
-      exact h m hm
+    · rw [DirectSum.of_eq_of_ne _ _ _ hm]
+      exact Subtype.ext (h m hm)
   have := congrArg (DirectSum.decompose (degree (R := R) X Y)).symm e
   rw [Equiv.symm_apply_apply, DirectSum.decompose_symm_of] at this
   rw [this]; exact Submodule.coe_mem _
@@ -189,8 +190,8 @@ def bidegree (X Y : C) (np : ℤ × ZMod 2) : Submodule R (X ⟶ Y) :=
 the internal direct sum of the bihomogeneous parts `V_{n,p} = degree n ⊓ parity p`. -/
 theorem isInternal_bigrading (X Y : C) : DirectSum.IsInternal (bidegree (R := R) X Y) := by
   classical
-  letI := degreeDecomposition R X Y
-  letI := decomposition R X Y
+  let := degreeDecomposition R X Y
+  let := decomposition R X Y
   refine (DirectSum.isInternal_submodule_iff_iSupIndep_and_iSup_eq_top _).2 ⟨?_, ?_⟩
   · -- independence, via the linear map `f ↦ proj_p (dproj_n f)` for each index
     rw [iSupIndep_def]
@@ -414,25 +415,31 @@ def GradedEvenlyDense.inverse : D ⥤ C where
   map_id Y := F.map_injective (by simp)
   map_comp f g := F.map_injective (by simp)
 
+set_option backward.isDefEq.respectTransparency false in
 instance GradedEvenlyDense.inverse_additive : (hF.inverse F).Additive where
   map_add := F.map_injective (by simp)
 
+set_option backward.isDefEq.respectTransparency false in
 instance GradedEvenlyDense.inverse_linear : (hF.inverse F).Linear R where
   map_smul _ _ := F.map_injective (by simp [F.map_smul])
 
+set_option backward.isDefEq.respectTransparency false in
 instance GradedEvenlyDense.inverse_isGraded : IsGradedSuperfunctor R (hF.inverse F) where
   map_mem {Y Y' p g} hg := by
     apply mem_of_map_mem F
     rw [GradedEvenlyDense.inverse_map, F.map_preimage]
     have := comp_mem (comp_mem (hF.iso_mem F Y) hg) (inv_mem _ (hF.iso_mem F Y'))
-    simpa using this
+    rw [Category.assoc, zero_add, add_zero] at this
+    exact this
   map_mem_degree {Y Y' n g} hg := by
     apply mem_degree_of_map_mem F
     rw [GradedEvenlyDense.inverse_map, F.map_preimage]
     have := comp_mem_degree (comp_mem_degree (hF.iso_mem_degree F Y) hg)
       (inv_mem_degree _ (hF.iso_mem_degree F Y'))
-    simpa using this
+    rw [Category.assoc, zero_add, neg_zero, add_zero] at this
+    exact this
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A full, faithful graded superfunctor that is evenly dense in degree zero is a graded
 superequivalence. -/
 def GradedSuperequivalence.ofFullyFaithful : GradedSuperequivalence R F where
@@ -442,10 +449,12 @@ def GradedSuperequivalence.ofFullyFaithful : GradedSuperequivalence R F where
   counitIso := NatIso.ofComponents (fun Y => hF.iso F Y) (fun g => by simp)
   unitIso_mem X := by
     apply mem_of_map_mem F
+    show F.map _ ∈ parity (R := R) (F.obj X) (F.obj (hF.obj F (F.obj X))) 0
     simpa using inv_mem _ (hF.iso_mem F (F.obj X))
   counitIso_mem Y := hF.iso_mem F Y
   unitIso_mem_degree X := by
     apply mem_degree_of_map_mem F
+    show F.map _ ∈ degree (R := R) (F.obj X) (F.obj (hF.obj F (F.obj X))) 0
     simpa using inv_mem_degree _ (hF.iso_mem_degree F (F.obj X))
   counitIso_mem_degree Y := hF.iso_mem_degree F Y
 
