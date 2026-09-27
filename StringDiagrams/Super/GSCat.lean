@@ -159,6 +159,7 @@ def family : GradedHomFamily R (Superfunctor R A B) (GradedSuperfunctor R A B) w
       (comp_mem_degree (hx 1 X) (hy _ X))
   indep := iSupIndep_degNat
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whiskerLeft_mem_hom (F : GradedSuperfunctor R A B) {G K : GradedSuperfunctor R B C}
     {y : G.toSuperfunctor ⟶ K.toSuperfunctor} (hy : y ∈ (family R B C).hom G K) :
     Superfunctor.whiskerLeft F.toSuperfunctor y ∈ (family R A C).hom (F.comp G) (F.comp K) := by
@@ -170,6 +171,7 @@ theorem whiskerLeft_mem_hom (F : GradedSuperfunctor R A B) {G K : GradedSuperfun
   · intro y z hy hz
     rw [Superfunctor.whiskerLeft_add]; exact Submodule.add_mem _ hy hz
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whiskerRight_mem_hom {F H : GradedSuperfunctor R A B}
     {x : F.toSuperfunctor ⟶ H.toSuperfunctor} (hx : x ∈ (family R A B).hom F H)
     (G : GradedSuperfunctor R B C) :
@@ -231,6 +233,7 @@ theorem ofHomogeneous_mem_degree {F G : GradedHom R A B} {p : ZMod 2} {n : ℤ}
     ofHomogeneous hx ∈ degree (R := R) F G n :=
   homMk_mem_degree _ _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A homogeneous supernatural isomorphism, as an isomorphism of `ℋom(A, B)`. -/
 def isoOfHomogeneous {F G : GradedHom R A B} {p : ZMod 2} {n : ℤ}
     {x : ∀ X, F.as.obj X ≅ G.as.obj X} (hx : IsGradedSupernatural R p n fun X => (x X).hom)
