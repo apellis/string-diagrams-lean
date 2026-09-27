@@ -96,7 +96,7 @@ theorem βHom_comm {a b : B} (g : a ⟶ b) :
           F.map g ◁ ((hF.j b).hom ▷ 𝛑 (F.obj b)) ≫ F.map g ◁ (F.map (𝛑 b) ◁ (hF.j b).hom) := by
       bicategory
     rw [reassoc_of% c1]
-    simp only [← Bicategory.whiskerLeft_comp_assoc, Category.assoc]
+    simp only [← Bicategory.whiskerLeft_comp_assoc]
     rw [reassoc_of% hξ]
     simp
   rw [key]
@@ -133,29 +133,34 @@ theorem _root_.CategoryTheory.Pseudofunctor.map₂_associator_inv' (F : Pseudofu
   rw [← F.map₂_comp, Iso.hom_inv_id, F.map₂_id, Pseudofunctor.map₂_associator]
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `c : (ℝF)(ℝG) ⇒ ℝ(F G)`, as a natural transformation in `G`. -/
 def mapCompRight {a b : B} (c : B) (f : a ⟶ b) :
     hF.homFunctor b c ⋙ precomp (F.obj c) (F.map f) ⟶ precomp c f ⋙ hF.homFunctor a c where
   app g := (F.mapComp f g).inv
   naturality _ _ η := by simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mapCompRight_isPiNatural {a b : B} (c : B) (f : a ⟶ b) :
     PiFunctor.IsPiNatural R ((hF.homPi R b c).comp (precompPi R (F.obj c) (F.map f)))
       ((precompPi R c f).comp (hF.homPi R a c)) (hF.mapCompRight c f) := fun g => by
   simp only [mapCompRight, PiFunctor.comp_β, NatIso.ofComponents_hom_app, Iso.trans_hom,
-    Iso.app_hom, Functor.mapIso_hom, Functor.comp_obj, homFunctor_obj, homFunctor_map,
-    precomp_obj, precomp_map, precompPi_β_hom_app, homPi_β_hom_app, βHom_hom, pi_obj, pi_map,
+    Iso.app_hom, Functor.mapIso_hom, Functor.comp_obj, homFunctor_map,
+    precomp_map, precompPi_β_hom_app, homPi_β_hom_app, βHom_hom, pi_obj, pi_map,
     Pseudofunctor.map₂_associator]
-  simp only [Bicategory.whiskerLeft_comp, Category.assoc, Iso.inv_hom_id_assoc]
-  rw [← whisker_exchange_assoc, Bicategory.inv_hom_whiskerRight_assoc]
+  simp only [Bicategory.whiskerLeft_comp, Category.assoc]
+  erw [Iso.inv_hom_id_assoc, ← whisker_exchange_assoc]
+  rw [Bicategory.inv_hom_whiskerRight_assoc]
   bicategory
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `c : (ℝF)(ℝG) ⇒ ℝ(F G)`, as a natural transformation in `F`. -/
 def mapCompLeft (a : B) {b c : B} (h : b ⟶ c) :
     hF.homFunctor a b ⋙ postcomp (F.obj a) (F.map h) ⟶ postcomp a h ⋙ hF.homFunctor a c where
   app f := (F.mapComp f h).inv
   naturality _ _ η := by simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mapCompLeft_isPiNatural (a : B) {b c : B} (h : b ⟶ c) :
     PiFunctor.IsPiNatural R ((hF.homPi R a b).comp (postcompPi R (F.obj a) (F.map h)))
       ((postcompPi R a h).comp (hF.homPi R a c)) (hF.mapCompLeft a h) := fun f => by
@@ -167,24 +172,23 @@ theorem mapCompLeft_isPiNatural (a : B) {b c : B} (h : b ⟶ c) :
     rw [e]
     simp
   simp only [mapCompLeft, PiFunctor.comp_β, NatIso.ofComponents_hom_app, Iso.trans_hom,
-    Iso.app_hom, Functor.mapIso_hom, Functor.comp_obj, homFunctor_obj, homFunctor_map,
-    postcomp_obj, postcomp_map, postcompPi_β_hom_app, homPi_β_hom_app, βHom_hom, pi_obj,
+    Iso.app_hom, Functor.mapIso_hom, Functor.comp_obj, homFunctor_map,
+    postcomp_map, postcompPi_β_hom_app, homPi_β_hom_app, βHom_hom, pi_obj,
     pi_map]
   rw [← cancel_mono ((F.mapComp (f ≫ 𝛑 b) h).hom ≫ (F.mapComp f (𝛑 b)).hom ▷ F.map h)]
   simp only [Category.assoc, Iso.inv_hom_id_assoc, Bicategory.comp_whiskerRight,
     Bicategory.inv_hom_whiskerRight, Category.comp_id, βR_hom, F.map₂_comp,
     Pseudofunctor.map₂_associator, Pseudofunctor.map₂_whisker_left,
-    Pseudofunctor.map₂_associator_inv', Iso.hom_inv_id_assoc, Bicategory.whiskerLeft_comp]
-  rw [F.map₂_comp, F.map₂_comp, Pseudofunctor.map₂_associator, Pseudofunctor.map₂_whisker_left,
     Pseudofunctor.map₂_associator_inv']
-  simp only [Category.assoc, Iso.inv_hom_id_assoc, Iso.hom_inv_id_assoc,
-    Bicategory.inv_hom_whiskerRight, Bicategory.inv_hom_whiskerRight_assoc, Category.comp_id]
-  rw [← whisker_exchange_assoc, Bicategory.inv_hom_whiskerRight_assoc]
-  simp only [← Bicategory.whiskerLeft_comp_assoc, Category.assoc]
-  rw [hβ, associator_naturality_right_assoc, ← Bicategory.whiskerLeft_comp_assoc,
-    Bicategory.whiskerLeft_hom_inv_assoc]
+  erw [Iso.inv_hom_id_assoc, ← whisker_exchange_assoc]
+  rw [Bicategory.inv_hom_whiskerRight_assoc]
+  simp only [← Bicategory.whiskerLeft_comp_assoc]
+  rw [hβ]
+  erw [associator_naturality_right_assoc, ← Bicategory.whiskerLeft_comp_assoc]
+  rw [Bicategory.whiskerLeft_hom_inv_assoc]
   bicategory
 
+set_option backward.isDefEq.respectTransparency false in
 open Associated2 in
 /-- **Brundan–Ellis, (5.5), `D₂` on Π-2-functors.** A Π-2-functor `ℝ` induces a 2-superfunctor
 `ℝ̂ : 𝔄̂ → 𝔅̂`: `ℝ` on objects and 1-morphisms, `D₁` of the Π-functors `ℋom(λ, μ) → ℋom(ℝλ, ℝμ)`
@@ -217,7 +221,7 @@ def mapTwo : TwoSuperfunctor R (Associated2 R B) (Associated2 R C) where
     · simp [Pseudofunctor.map₂_associator_inv']
     · simp only [comp₂_snd, whiskerLeft_snd, whiskerRight_snd, Associated.evenIso_hom,
         Associated.homMk_fst, Associated.homMk_snd, Associated.map_map, associator_inv_snd,
-        associator_inv_fst, whiskerLeft_fst, whiskerRight_fst, Iso.symm_hom, hF.map₂_zero,
+        associator_inv_fst, whiskerLeft_fst, whiskerRight_fst, Iso.symm_hom,
         Limits.zero_comp, Limits.comp_zero, add_zero, PreadditiveBicategory.whiskerLeft_zero,
         PreadditiveBicategory.zero_whiskerRight, pi_map]
       erw [homFunctor_map, hF.map₂_zero]
@@ -233,8 +237,6 @@ def mapTwo : TwoSuperfunctor R (Associated2 R B) (Associated2 R C) where
         Associated.homMk_snd, Associated.map_map, leftUnitor_hom_snd, leftUnitor_hom_fst,
         whiskerRight_fst, Iso.symm_hom, homFunctor_map, hF.map₂_zero, Limits.zero_comp, Limits.comp_zero,
         add_zero, PreadditiveBicategory.zero_whiskerRight, pi_map]
-      erw [hF.map₂_zero]
-      simp
   map₂_rightUnitor f := by
     apply hom₂_ext
     · simp only [comp₂_fst, whiskerLeft_fst, whiskerLeft_snd, Associated.evenIso_hom,
@@ -247,9 +249,8 @@ def mapTwo : TwoSuperfunctor R (Associated2 R B) (Associated2 R C) where
         Associated.homMk_snd, Associated.map_map, rightUnitor_hom_snd, rightUnitor_hom_fst,
         whiskerLeft_fst, Iso.symm_hom, homFunctor_map, hF.map₂_zero, Limits.zero_comp, Limits.comp_zero,
         add_zero, PreadditiveBicategory.whiskerLeft_zero, pi_map]
-      erw [hF.map₂_zero]
-      simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 5.4, `E₂ ∘ D₂ = I` on morphisms.** The coherence map
 `ĵ := (ℝ̂ζ)⁻¹ ∘ i ∘ ζ` of the Π-2-functor `E₂ ℝ̂` is `j`, viewed as an even 2-isomorphism. -/
 theorem jIso_mapTwo_hom (a : Associated2 R B) :
@@ -266,7 +267,7 @@ theorem jIso_mapTwo_hom (a : Associated2 R B) :
       Associated2.ζ_hom_snd, mapTwo_map₂, mapTwo_mapId, Associated.evenIso_hom,
       Associated.homMk_fst, Associated.homMk_snd, Associated.map_map, homFunctor_map,
       homPi_β_inv_app, βHom_inv, Iso.symm_hom, Limits.zero_comp, zero_add, add_zero,
-      pi_map, Functor.map_zero]
+      pi_map]
     have e : F.map₂ (λ_ (𝛑 a.obj)).inv ≫ (F.mapComp (𝟙 a.obj) (𝛑 a.obj)).hom =
         (λ_ (F.map (𝛑 a.obj))).inv ≫ (F.mapId a.obj).inv ▷ F.map (𝛑 a.obj) := by
       apply (cancel_epi (F.map₂ (λ_ (𝛑 a.obj)).hom)).1
@@ -279,6 +280,7 @@ theorem jIso_mapTwo_hom (a : Associated2 R B) :
     erw [e2]
     rw [Category.assoc, whisker_exchange_assoc]
     simp
+    rfl
 
 end PiTwoFunctor
 
@@ -315,6 +317,7 @@ theorem map₂_ζG {a b : A} (g : a ⟶ b) :
   rw [ζG_hom, ζG_hom, G.map₂_comp, n, Category.assoc, Category.assoc, r,
     ← whiskerLeft_comp'_assoc R, ← hj, whiskerLeft_comp'_assoc R]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 5.4, naturality of `𝕋`.** For a 2-superfunctor `ℝ : 𝔄 → 𝔄'` of Π-2-supercategories,
 `ℝ ∘ 𝕋_𝔄 = 𝕋_𝔄' ∘ (E₂ ℝ)^` on 2-morphisms (both are `ℝ` on objects and 1-morphisms). -/
 theorem T_map₂_mapTwo {a b : Associated2 R (Underlying2 R A)} {f g : a ⟶ b} (x : f ⟶ g) :
@@ -327,6 +330,7 @@ theorem T_map₂_mapTwo {a b : Associated2 R (Underlying2 R A)} {f g : a ⟶ b} 
   simp only [Category.assoc]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 5.4, naturality of `𝕋`**, on the coherence maps `c`: both composites have coherence
 maps `c_ℝ`. -/
 theorem T_map₂_mapTwo_mapComp {a b c : Associated2 R (Underlying2 R A)} (f : a ⟶ b) (g : b ⟶ c) :
@@ -334,6 +338,7 @@ theorem T_map₂_mapTwo_mapComp {a b c : Associated2 R (Underlying2 R A)} (f : a
       (G.mapComp f.obj.obj g.obj.obj).hom := by
   simp [T_map₂]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 5.4, naturality of `𝕋`**, on the coherence maps `i`. -/
 theorem T_map₂_mapTwo_mapId (a : Associated2 R (Underlying2 R A)) :
     (T R A').map₂ ((G.toPiTwoFunctor.mapTwo).mapId a).hom = (G.mapId a.obj.obj).hom := by
