@@ -112,20 +112,17 @@ def quadMap (q : ZMod 2) : (X.fst ⟶ Y.fst) →ₗ[k] (X.snd ⟶ Y.snd) →ₗ[
       (projComp X Y Z q f) (sgnComp X Y Z q g))
     (fun f f' g => by
       ext h l
-      simp only [LinearMap.compl₁₂_apply, LinearMap.add_apply, map_add, TensorProduct.mk_apply,
-        add_tmul])
+      simp only [LinearMap.compl₁₂_apply, LinearMap.add_apply, map_add, TensorProduct.mk_apply])
     (fun r f g => by
       ext h l
       simp only [LinearMap.compl₁₂_apply, LinearMap.smul_apply, map_smul, TensorProduct.mk_apply,
         smul_tmul'])
     (fun f g g' => by
       ext h l
-      simp only [LinearMap.compl₁₂_apply, LinearMap.add_apply, map_add, TensorProduct.mk_apply,
-        tmul_add])
+      simp only [LinearMap.compl₁₂_apply, LinearMap.add_apply, map_add, TensorProduct.mk_apply])
     (fun r g g' => by
       ext h l
-      simp only [LinearMap.compl₁₂_apply, LinearMap.smul_apply, map_smul, TensorProduct.mk_apply,
-        tmul_smul])
+      simp only [LinearMap.compl₁₂_apply, LinearMap.smul_apply, map_smul, TensorProduct.mk_apply])
 
 theorem quadMap_apply (q : ZMod 2) (f : X.fst ⟶ Y.fst) (g : X.snd ⟶ Y.snd) (h : Y.fst ⟶ Z.fst)
     (l : Y.snd ⟶ Z.snd) :
@@ -134,15 +131,16 @@ theorem quadMap_apply (q : ZMod 2) (f : X.fst ⟶ Y.fst) (g : X.snd ⟶ Y.snd) (
 /-- Composition in `C ⊠ D`, as a bilinear map:
 `(f ⊗ g) ≫ (h ⊗ l) = Σ_q (f_q ≫ h) ⊗ (g ≫ (l₀ + (-1)^q l₁))`. -/
 def compMap : homObj k X Y →ₗ[k] homObj k Y Z →ₗ[k] homObj k X Z :=
-  (TensorProduct.uncurry k (homSVec k C Y.fst Z.fst) (homSVec k D Y.snd Z.snd) (homObj k X Z)) ∘ₗ
+  (TensorProduct.uncurry (RingHom.id k) (homSVec k C Y.fst Z.fst) (homSVec k D Y.snd Z.snd)
+    (homObj k X Z)) ∘ₗ
     TensorProduct.lift (quadMap X Y Z 0 + quadMap X Y Z 1)
 
 theorem compMap_tmul_tmul (f : X.fst ⟶ Y.fst) (g : X.snd ⟶ Y.snd) (h : Y.fst ⟶ Z.fst)
     (l : Y.snd ⟶ Z.snd) :
     compMap X Y Z (f ⊗ₜ g) (h ⊗ₜ l) =
       (proj k 0 f ≫ h) ⊗ₜ[k] (g ≫ l) + (proj k 1 f ≫ h) ⊗ₜ[k] (g ≫ twist k 1 l) := by
-  simp only [compMap, LinearMap.comp_apply, lift.tmul, LinearMap.add_apply, map_add,
-    uncurry_apply]
+  simp only [compMap, LinearMap.comp_apply, TensorProduct.lift.tmul, TensorProduct.uncurry_apply,
+    LinearMap.add_apply]
   rw [quadMap_apply, quadMap_apply, twist_zero]
 
 /-- **The composition rule of `C ⊠ D`** for homogeneous `f`, `l`:
@@ -171,14 +169,14 @@ theorem hom_ext_homogeneous {X Y : BoxProd k C D} {M : Type u} [AddCommGroup M] 
   SVec.ext_tensor fun p q f g hf hg =>
     h p q f g ((mem_homSVec_part_iff k).1 hf) ((mem_homSVec_part_iff k).1 hg)
 
+set_option linter.unusedVariables false in
 /-- Induction on `Hom((X₁, X₂), (Y₁, Y₂))` with homogeneous generators. -/
 theorem induction_on_homogeneous {X Y : BoxProd k C D} {P : homObj k X Y → Prop} (x : homObj k X Y)
     (zero : P 0)
     (tmul : ∀ (p q : ZMod 2) (f : X.fst ⟶ Y.fst) (g : X.snd ⟶ Y.snd), f ∈ parity (R := k) X.fst Y.fst p →
       g ∈ parity (R := k) X.snd Y.snd q → P (f ⊗ₜ g))
     (add : ∀ x y, P x → P y → P (x + y)) : P x := by
-  induction x using TensorProduct.induction_on with
-  | zero => exact zero
+  induction x using TensorProduct.inductionOn with
   | tmul f g =>
     rw [← proj_add_proj (R := k) f, ← proj_add_proj (R := k) g, add_tmul, tmul_add, tmul_add]
     exact add _ _ (add _ _ (tmul 0 0 _ _ (proj_mem 0 f) (proj_mem 0 g))
@@ -301,7 +299,7 @@ theorem compMap_proj_proj_mem {X Y Z : BoxProd k C D} (p q : ZMod 2) (x : X ⟶ 
         rwa [h1, h2, add_add_add_comm]
       · simp only [map_zero]; exact Submodule.zero_mem _
       · simp only [map_zero, LinearMap.zero_apply]; exact Submodule.zero_mem _
-      · simp only [map_zero, LinearMap.zero_apply]; exact Submodule.zero_mem _
+      · simp only [map_zero]; exact Submodule.zero_mem _
 
 /-- **Brundan–Ellis, after Example 1.2.** `C ⊠ D` is a supercategory: the morphisms of parity
 `p` are the elements of parity `p` of the tensor product of superspaces
@@ -309,7 +307,7 @@ theorem compMap_proj_proj_mem {X Y Z : BoxProd k C D} (p q : ZMod 2) (x : X ⟶ 
 instance instSupercategory : Supercategory k (BoxProd k C D) where
   parity X Y p := (homObj k X Y).part p
   isInternal X Y := SVec.isInternal_part (homObj k X Y)
-  id_mem X := by simpa using tmul_mem_part (id_mem X.fst) (id_mem X.snd)
+  id_mem X := by simpa using! tmul_mem_part (id_mem X.fst) (id_mem X.snd)
   comp_mem {X Y Z p q x y} hx hy := by
     have := compMap_proj_proj_mem p q x y
     rwa [(SVec.mem_part_iff _).1 hx, (SVec.mem_part_iff _).1 hy] at this
