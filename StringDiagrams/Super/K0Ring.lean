@@ -13,7 +13,6 @@ For a bicategory `B` whose hom categories are additive (preadditive with binary 
 whose whiskerings are additive, the *Grothendieck ring* is
 
   `K₀Ring B := ⨁_{(λ, μ)} K₀ (λ ⟶ μ)`,
-
 the direct sum of the split Grothendieck groups of the hom categories, with the multiplication
 induced by horizontal composition: for `F : λ → μ` and `G : μ → ν`, `[G] · [F] = [F ≫ G]`
 (the composite `λ → ν`; classes of non-composable 1-morphisms multiply to zero). It is a
@@ -57,7 +56,6 @@ namespace K₀
 @[simps!]
 def precompIso {a b c : B} {f f' : a ⟶ b} (e : f ≅ f') : precomp c f ≅ precomp c f' :=
   NatIso.ofComponents (fun g => whiskerRightIso e g) fun η => by
-    dsimp
     exact whisker_exchange _ _
 
 variable (a b c : B)
@@ -427,23 +425,26 @@ def γinvIso (f : a ⟶ b) : f ≫ 𝐪⁻¹ b ≅ 𝐪⁻¹ a ≫ f :=
     whiskerLeftIso _ ((α_ _ _ _).symm ≪≫ whiskerRightIso (𝛄 f).symm _ ≪≫ α_ _ _ _ ≪≫
       whiskerLeftIso _ (QPiTwoCategory.ii (R := R) b) ≪≫ ρ_ _)
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R) in
 /-- The ring homomorphism `Zπ[q, q⁻¹] → End(K₀Ring B)` acting on each summand `K₀ (λ ⟶ μ)`
 through the `Zπ[q, q⁻¹]`-module structure of `K₀` of the `(Q, Π)`-category `Hom(λ, μ)`
 (`K₀.laurentEnd`). -/
 def laurentEnd : LaurentPolynomial Zπ →+* AddMonoid.End (K₀Ring B) where
   toFun r := DirectSum.map fun p : B × B => K₀.laurentEnd R (p.1 ⟶ p.2) r
-  map_one' := AddMonoidHom.ext fun x => DirectSum.ext _ fun p => by
+  map_one' := AddMonoidHom.ext fun x => DirectSum.ext fun p => by
     rw [DirectSum.map_apply, map_one]
     rfl
-  map_mul' r s := AddMonoidHom.ext fun x => DirectSum.ext _ fun p => by
-    show (DirectSum.map _ x) p = (DirectSum.map _ (DirectSum.map _ x)) p
+  map_mul' r s := AddMonoidHom.ext fun x => DirectSum.ext fun p => by
+    show (DirectSum.map (fun p : B × B => K₀.laurentEnd R (p.1 ⟶ p.2) (r * s)) x) p =
+      (DirectSum.map (fun p : B × B => K₀.laurentEnd R (p.1 ⟶ p.2) r)
+        (DirectSum.map (fun p : B × B => K₀.laurentEnd R (p.1 ⟶ p.2) s) x)) p
     rw [DirectSum.map_apply, DirectSum.map_apply, DirectSum.map_apply, map_mul]
     rfl
-  map_zero' := AddMonoidHom.ext fun x => DirectSum.ext _ fun p => by
+  map_zero' := AddMonoidHom.ext fun x => DirectSum.ext fun p => by
     rw [DirectSum.map_apply, map_zero]
     rfl
-  map_add' r s := AddMonoidHom.ext fun x => DirectSum.ext _ fun p => by
+  map_add' r s := AddMonoidHom.ext fun x => DirectSum.ext fun p => by
     rw [AddMonoidHom.add_apply, DirectSum.add_apply, DirectSum.map_apply, DirectSum.map_apply,
       DirectSum.map_apply, map_add]
     rfl
@@ -456,25 +457,30 @@ theorem laurentEnd_of (r : LaurentPolynomial Zπ) (x : K₀ (a ⟶ b)) :
     laurentEnd R r (of a b x) = of a b (K₀.laurentEnd R (a ⟶ b) r x) :=
   DirectSum.map_of _ _ _
 
+set_option backward.isDefEq.respectTransparency false in
 theorem laurentEnd_C_π : laurentEnd R (B := B) (C Zπ.π) = tEnd 𝛑 :=
-  AddMonoidHom.ext fun x => DirectSum.ext _ fun p => by
+  AddMonoidHom.ext fun x => DirectSum.ext fun p => by
     rw [laurentEnd_apply, K₀.laurentEnd_C, Zπ.toEnd_π, tEnd, DirectSum.map_apply]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem laurentEnd_T_one : laurentEnd R (B := B) (T 1) = tEnd 𝐪 :=
-  AddMonoidHom.ext fun x => DirectSum.ext _ fun p => by
+  AddMonoidHom.ext fun x => DirectSum.ext fun p => by
     rw [laurentEnd_apply, K₀.laurentEnd_T, zpow_one, tEnd, DirectSum.map_apply]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem laurentEnd_T_neg_one : laurentEnd R (B := B) (T (-1)) = tEnd 𝐪⁻¹ :=
-  AddMonoidHom.ext fun x => DirectSum.ext _ fun p => by
+  AddMonoidHom.ext fun x => DirectSum.ext fun p => by
     rw [laurentEnd_apply, K₀.laurentEnd_T, zpow_neg_one, tEnd, DirectSum.map_apply]
     rfl
 
 variable (R) in
 /-- **Brundan–Ellis, end of §6.** The Grothendieck ring of a `(Q, Π)`-2-category is a module
+@[instance_reducible]
 over `Zπ[q, q⁻¹]`, with `π` and `q` acting on the summand `K₀ (λ ⟶ μ)` by `[F] ↦ [F ≫ π_μ]`
 and `[F] ↦ [F ≫ q_μ]` (the paper's `[π_μ F]`, `[q_μ F]`). -/
+@[instance_reducible]
 def moduleLaurent : Module (LaurentPolynomial Zπ) (K₀Ring B) :=
   Module.compHom (K₀Ring B) (laurentEnd R (B := B))
 
@@ -567,9 +573,9 @@ theorem IsCentral.mul {φ ψ : AddMonoid.End (K₀Ring B)} (hφ : IsCentral φ) 
 
 theorem isCentral_intCast (n : ℤ) : IsCentral ((n : ℤ) : AddMonoid.End (K₀Ring B)) := by
   induction n using Int.induction_on with
-  | hz => rw [Int.cast_zero]; exact isCentral_zero
-  | hp n ih => rw [Int.cast_add, Int.cast_one]; exact ih.add isCentral_one
-  | hn n ih => rw [Int.cast_sub, Int.cast_one, sub_eq_add_neg]; exact ih.add isCentral_one.neg
+  | zero => rw [Int.cast_zero]; exact isCentral_zero
+  | succ n ih => rw [Int.cast_add, Int.cast_one]; exact ih.add isCentral_one
+  | pred n ih => rw [Int.cast_sub, Int.cast_one, sub_eq_add_neg]; exact ih.add isCentral_one.neg
 
 theorem isCentral_tEnd_π : IsCentral (tEnd (B := B) 𝛑) := fun x y =>
   ⟨tEnd_mul 𝛑 x y, mul_tEnd 𝛑 (fun f => 𝛃 f) x y⟩
@@ -582,9 +588,9 @@ theorem isCentral_tEnd_qinv : IsCentral (tEnd (B := B) 𝐪⁻¹) := fun x y =>
 
 theorem isCentral_laurentEnd_T (n : ℤ) : IsCentral (laurentEnd R (B := B) (T n)) := by
   induction n using Int.induction_on with
-  | hz => rw [T_zero, map_one]; exact isCentral_one
-  | hp n ih => rw [T_add, map_mul, laurentEnd_T_one]; exact ih.mul (isCentral_tEnd_q (R := R))
-  | hn n ih =>
+  | zero => rw [T_zero, map_one]; exact isCentral_one
+  | succ n ih => rw [T_add, map_mul, laurentEnd_T_one]; exact ih.mul (isCentral_tEnd_q (R := R))
+  | pred n ih =>
     rw [T_sub, map_mul, laurentEnd_T_neg_one]; exact ih.mul (isCentral_tEnd_qinv (R := R))
 
 theorem isCentral_laurentEnd_C (r : Zπ) : IsCentral (laurentEnd R (B := B) (C r)) := by
@@ -638,6 +644,7 @@ example : NonUnitalRing (K₀Ring (GSKAR R B)) := inferInstance
 theorem K₀_hom_eq (a b : B) : K₀ (mkObj R B a ⟶ mkObj R B b) = K₀ (GSKar R (a ⟶ b)) := rfl
 
 /-- **Brundan–Ellis, end of §6.** `K₀(GSKAR(𝔄))` is a `Zπ[q, q⁻¹]`-algebra. -/
+@[instance_reducible]
 def moduleLaurent : Module (LaurentPolynomial Zπ) (K₀Ring (GSKAR R B)) :=
   K₀Ring.moduleLaurent R
 
