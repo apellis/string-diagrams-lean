@@ -128,7 +128,7 @@ theorem τNat_hom_mem (n : ℕ) (X : C) :
   induction n with
   | zero => exact ⟨id_mem _, id_mem_degree _⟩
   | succ n ih =>
-    refine ⟨by simpa using comp_mem (t.σ_mem _) ih.1, ?_⟩
+    refine ⟨by simpa using! comp_mem (t.σ_mem _) ih.1, ?_⟩
     have := comp_mem_degree (t.σ_mem_degree _) ih.2
     rwa [show (-1 + -(n : ℤ)) = -((n + 1 : ℕ) : ℤ) by push_cast; ring] at this
 
@@ -139,13 +139,13 @@ theorem τNeg_hom_mem (n : ℕ) (X : C) :
   | zero =>
     show (t.σ _).inv ≫ d.e.counitIso.hom.app X ∈ _ ∧ (t.σ _).inv ≫ d.e.counitIso.hom.app X ∈ _
     refine ⟨?_, ?_⟩
-    · simpa using comp_mem (t.σ_inv_mem (d.Qi.obj X)) (d.counit_mem X)
-    · simpa using comp_mem_degree (t.σ_inv_mem_degree (d.Qi.obj X)) (t.counit_mem_degree X)
+    · simpa using! comp_mem (t.σ_inv_mem (d.Qi.obj X)) (d.counit_mem X)
+    · simpa using! comp_mem_degree (t.σ_inv_mem_degree (d.Qi.obj X)) (t.counit_mem_degree X)
   | succ n ih =>
     show (t.σ _).inv ≫ d.e.counitIso.hom.app _ ≫ (τNeg t n X).hom ∈ _ ∧
       (t.σ _).inv ≫ d.e.counitIso.hom.app _ ≫ (τNeg t n X).hom ∈ _
     refine ⟨?_, ?_⟩
-    · simpa using comp_mem (t.σ_inv_mem (d.Qi.obj ((d.powNeg (n + 1)).obj X)))
+    · simpa using! comp_mem (t.σ_inv_mem (d.Qi.obj ((d.powNeg (n + 1)).obj X)))
         (comp_mem (d.counit_mem ((d.powNeg (n + 1)).obj X)) ih.1)
     · have := comp_mem_degree (t.σ_inv_mem_degree (d.Qi.obj ((d.powNeg (n + 1)).obj X)))
         (comp_mem_degree (t.counit_mem_degree ((d.powNeg (n + 1)).obj X)) ih.2)
@@ -187,9 +187,9 @@ theorem val_eq {m : ℤ} {f : d.FamAll X Y} (hf : f ∈ d.Fam R m X Y) {i j : �
   have key : ∀ k : ℤ, val t f (0 + k) (-m + k) = val t f 0 (-m) := by
     intro k
     induction k using Int.induction_on with
-    | hz => simp
-    | hp k ih => rw [← ih, ← add_assoc, ← add_assoc, val_succ hf]
-    | hn k ih =>
+    | zero => simp
+    | succ k ih => rw [← ih, ← add_assoc, ← add_assoc, val_succ hf]
+    | pred k ih =>
       rw [← ih, show (0 : ℤ) + -(k : ℤ) = 0 + (-(k : ℤ) - 1) + 1 by ring,
         show -m + -(k : ℤ) = -m + (-(k : ℤ) - 1) + 1 by ring, val_succ hf]
   rw [← key i, show 0 + i = i by ring, show -m + i = j by omega]
@@ -302,6 +302,7 @@ theorem eval_ι_map {X Y : C} (f : X ⟶ Y) : (eval t).map ((ι d).map f) = f :=
   rw [neg_zero, val, τ_zero, τ_zero]
   simp [mapFam, diagFam_self]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The evaluation carries `σ` of the orbit supercategory to `σ`. -/
 theorem eval_σIso_hom (X : Orbit d) : (eval t).map (σIso X).hom = (t.σ X.obj).hom := by
   show (eval t).map (d.lof (-1) _ _ _) = _
@@ -331,8 +332,7 @@ theorem Γ_inv_τ (h : IsTrivCompatible t t' Ψ) (i : ℤ) (Z : C) :
     (Ψ.Γ i).inv.app Z ≫ (τ t' i (Ψ.F.obj Z)).hom = Ψ.F.map (τ t i Z).hom := by
   refine Int.forall_of_step (P := fun i => (Ψ.Γ i).inv.app Z ≫ (τ t' i (Ψ.F.obj Z)).hom =
     Ψ.F.map (τ t i Z).hom) ?_ (fun i => ?_) i
-  · dsimp only
-    rw [Γ_zero_inv_app, τ_zero, τ_zero]; simp
+  · rw [Γ_zero_inv_app, τ_zero, τ_zero]; simp
   · have h1 : (Ψ.Γ (i + 1)).inv.app Z ≫ (τ t' (i + 1) (Ψ.F.obj Z)).hom =
         Ψ.F.map ((d.succ i).inv.app Z ≫ (t.σ ((d.pow i).obj Z)).hom) ≫
           (Ψ.Γ i).inv.app Z ≫ (τ t' i (Ψ.F.obj Z)).hom := by
@@ -349,6 +349,7 @@ theorem Γ_inv_τ (h : IsTrivCompatible t t' Ψ) (i : ℤ) (Z : C) :
     rw [h1, h2]
     exact ⟨fun e => (cancel_epi _).1 e, fun e => by rw [e]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Naturality of the evaluation** with respect to morphisms of trivialized shift data. -/
 theorem eval_map_map (h : IsTrivCompatible t t' Ψ) {X Y : Orbit d} (x : X ⟶ Y) :
     (eval t').map ((map Ψ).map x) = Ψ.F.map ((eval t).map x) := by
@@ -359,7 +360,7 @@ theorem eval_map_map (h : IsTrivCompatible t t' Ψ) {X Y : Orbit d} (x : X ⟶ Y
     rw [map_map_lof]
     erw [eval_map_lof, eval_map_lof]
     rw [val_zero, val_zero]
-    simp only [famMapₗ_apply, famMap, Γ_zero_hom_app, Category.id_comp, Category.assoc,
+    simp only [famMapₗ_apply, famMap, Γ_zero_hom_app, Category.assoc,
       Functor.map_comp]
     erw [Category.id_comp, Γ_inv_τ h]
 
@@ -396,22 +397,25 @@ instance : (lift t Φ).Linear R := inferInstanceAs ((map Φ ⋙ eval t).Linear R
 
 instance : IsSuperfunctor R (lift t Φ) := inferInstanceAs (IsSuperfunctor R (map Φ ⋙ eval t))
 
+set_option backward.isDefEq.respectTransparency false in
 theorem lift_ι_map {X Y : S} (f : X ⟶ Y) : (lift t Φ).map ((ι d').map f) = Φ.F.map f := by
   rw [lift_map, map_ι_map, eval_ι_map]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem lift_σIso_hom (X : Orbit d') :
     (lift t Φ).map (σIso X).hom = Φ.γ.inv.app X.obj ≫ (t.σ (Φ.F.obj X.obj)).hom := by
   rw [lift_map, map_σIso_hom, Functor.map_comp, eval_ι_map]
   erw [eval_σIso_hom]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem lift_map_lof {X Y : Orbit d'} {m : ℤ} (f : d'.Fam R m X.obj Y.obj) :
     (lift t Φ).map (d'.lof m X.obj Y.obj f : X ⟶ Y) =
       Φ.F.map (f.1 0 (-m)) ≫ (Φ.Γ (-m)).inv.app Y.obj ≫ (τ t (-m) (Φ.F.obj Y.obj)).hom := by
   rw [lift_map, map_map_lof]
   erw [eval_map_lof]
   rw [val_zero]
-  simp only [famMapₗ_apply, famMap, Γ_zero_hom_app, Category.id_comp, Category.assoc]
+  simp only [famMapₗ_apply, famMap, Γ_zero_hom_app, Category.assoc]
   erw [Category.id_comp]
   rfl
 
@@ -424,8 +428,7 @@ theorem Γ_hom_mem_degree (hP : ∀ {X Y : S} (f : X ⟶ Y), Φ.F.map f ∈ degr
     (Φ.Γ i).hom.app X ∈ degree (R := R) _ _ 0 := by
   refine Int.forall_of_step (P := fun i => (Φ.Γ i).hom.app X ∈ degree (R := R) _ _ 0) ?_
     (fun i => ?_) i
-  · dsimp only
-    rw [Γ_zero_hom_app]; exact id_mem_degree _
+  · rw [Γ_zero_hom_app]; exact id_mem_degree _
   · show _ ∈ _ ↔ _ ∈ _
     rw [Γ_succ_hom_app]
     constructor
@@ -433,7 +436,7 @@ theorem Γ_hom_mem_degree (hP : ∀ {X Y : S} (f : X ⟶ Y), Φ.F.map f ∈ degr
       have h1 := comp_mem_degree (comp_mem_degree (t.succ_hom_mem_degree i _) h)
         (comp_mem_degree (hP ((d'.succ i).inv.app X))
           (inv_mem_degree (Φ.γ.app ((d'.pow i).obj X)) (hγ ((d'.pow i).obj X))))
-      simp only [Category.assoc, Iso.hom_inv_id_app_assoc, zero_add, add_zero, Iso.app_hom,
+      simp only [Category.assoc, Iso.hom_inv_id_app_assoc, zero_add, add_zero,
         Iso.app_inv] at h1
       rw [← Φ.F.map_comp_assoc, Iso.hom_inv_id_app] at h1
       erw [CategoryTheory.Functor.map_id, Category.id_comp] at h1
@@ -465,7 +468,7 @@ theorem lift_map_lof_mem_degree (hP : ∀ {X Y : S} (f : X ⟶ Y), Φ.F.map f �
   rw [lift_map_lof]
   have := comp_mem_degree (hP (f.1 0 (-m))) (comp_mem_degree
     (Γ_inv_mem_degree t hP hγ (-m) Y.obj) (τ_hom_mem t (-m) (Φ.F.obj Y.obj)).2)
-  simpa using this
+  simpa using! this
 
 /-- **The lift is graded** when `Φ.F` takes values in degree zero and `γ` has degree zero. -/
 theorem lift_map_mem_degree (hP : ∀ {X Y : S} (f : X ⟶ Y), Φ.F.map f ∈ degree (R := R) _ _ 0)
@@ -503,7 +506,7 @@ theorem lift_map_injective [Φ.F.Faithful]
   have h1 := dproj_lift_map t hP hγ n x
   rw [h, dproj_lift_map t hP hγ n y, lift_map_lof, lift_map_lof] at h1
   have h2 := (cancel_mono ((Φ.Γ (-n)).inv.app Y.obj ≫ (τ t (-n) (Φ.F.obj Y.obj)).hom)).1
-    (by simpa only [Category.assoc] using h1)
+    (by simpa only [Category.assoc] using! h1)
   exact Subtype.ext (Fam.eq_of_entry (d'.component n X.obj Y.obj x).2
     (d'.component n X.obj Y.obj y).2 (i₀ := 0) (j₀ := -n) (by ring) (Φ.F.map_injective h2.symm))
 
@@ -534,6 +537,7 @@ variable (hP : ∀ {X Y : S} (f : X ⟶ Y), Φ.F.map f ∈ degree (R := R) _ _ 0
   (hsurj : ∀ {X Y : S} (g : Φ.F.obj X ⟶ Φ.F.obj Y), g ∈ degree (R := R) _ _ 0 →
     ∃ f : X ⟶ Y, Φ.F.map f = g)
 
+set_option backward.isDefEq.respectTransparency false in
 include hP hγ hsurj in
 /-- **The lift is full** when `Φ.F` is faithful with image all the morphisms of degree zero. -/
 theorem lift_map_surjective [Φ.F.Faithful] {X Y : Orbit d'}
@@ -544,18 +548,18 @@ theorem lift_map_surjective [Φ.F.Faithful] {X Y : Orbit d'}
   let fam : d'.FamAll X.obj Y.obj := fun i j =>
     if h : i - j = n then (hsurj _ (conj_mem_degree t Φ hP hγ hg h)).choose else 0
   have hfam : ∀ i j (h : i - j = n), Φ.F.map (fam i j) = conj t Φ g i j := fun i j h => by
-    simp only [fam, dif_pos h]
+    simp only [fam, dite_eq_left h]
     exact (hsurj _ (conj_mem_degree t Φ hP hγ hg h)).choose_spec
   have hmem : fam ∈ d'.Fam R n X.obj Y.obj := by
-    refine ⟨fun i j h => by simp only [fam, dif_neg h], fun i j => ?_⟩
+    refine ⟨fun i j h => by simp only [fam, dite_eq_right h], fun i j => ?_⟩
     by_cases h : i - j = n
     · apply Φ.F.map_injective
       rw [hfam _ _ (by omega), Functor.map_comp, Functor.map_comp, F_map_Q_map, hfam i j h]
       simp only [conj, Γ_succ_inv_app, Γ_succ_hom_app, τ_succ, τ_succ_inv, t.Q_map_eq,
-        Functor.map_comp, Category.assoc, Iso.hom_inv_id_app_assoc, Iso.inv_hom_id_app_assoc,
-        Iso.hom_inv_id_assoc, Iso.inv_hom_id_assoc, Iso.map_hom_inv_id_assoc,
-        Iso.map_inv_hom_id_assoc, Functor.comp_obj]
-    · simp only [fam, dif_neg h, dif_neg (show ¬(i + 1 - (j + 1) = n) by omega),
+        Category.assoc, Iso.hom_inv_id_app_assoc,
+        Iso.inv_hom_id_assoc,
+        Functor.comp_obj]
+    · simp only [fam, dite_eq_right h, dite_eq_right (show ¬(i + 1 - (j + 1) = n) by omega),
         Functor.map_zero, Limits.zero_comp, Limits.comp_zero]
   refine ⟨d'.lof n X.obj Y.obj ⟨fam, hmem⟩, ?_⟩
   rw [lift_map_lof]
