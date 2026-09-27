@@ -179,6 +179,7 @@ section Reduction
 
 variable {R : Type w} [CommRing R] {D : Type w₁} [Category.{w₂} D] [Preadditive D] [Linear R D]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The linear extension of a functor, along a map of diagrams that is intertwined with an
 `R`-linear map `T` of Hom-modules. -/
 theorem freeLift_map_mapDomain {S₁ : Signature.{u₀', u₁', u₂'}} {F : Obj S ⥤ D}
@@ -414,6 +415,7 @@ theorem freeLift_toPresented_of {a b : Obj S} (d : a ⟶ b) :
       Diagram.weight χ d • Q.diag (φ.map d) :=
   freeLift_map_of _ d
 
+set_option backward.isDefEq.respectTransparency false in
 /-- With trivial weights, the linear extension is the class of the image. -/
 theorem freeLift_toPresented_one {a b : Obj S} (f : LinDiagram R a b) :
     (freeLift R (φ.toPresented Q fun _ => 1)).map f = Q.lin (φ.lin f) := by
@@ -483,6 +485,7 @@ theorem toPresented_map_whisker {i : ι} {a b : Obj S} (d : a ⟶ b) (u : Obj S)
   rw [toPresented_map, toPresented_map, W.map_whisker _ _ _ ha, Diagram.weight_whisker, Q.diag_cast,
     Q.whisk_smul, Q.whisk_diag _ _ _ (W.whiskerOK ha hw), Linear.smul_comp, Linear.comp_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The hypothesis on whiskering of `Presentation.respects_of_whisker`, for the functors
 induced by a family of layer maps compatible with whiskering. -/
 theorem freeLift_whisker_eq_zero {i : ι} {a b : Obj S} (f : LinDiagram R a b) (u : Obj S)
@@ -561,6 +564,7 @@ theorem lift_lin {a b : Obj S} (f : LinDiagram R a b) :
     (lift P W hadm hrel hint i).map (P.lin f) = (freeLift R ((φ i).toPresented Q χ)).map f :=
   P.lift_lin _ f
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The induced functors commute with whiskering: whiskering by `u` and `v` in `P` becomes
 whiskering by `W.left i a u v` and `W.right i a u v` in `Q`. -/
 theorem lift_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) {u : Obj S} {v : List S.Colour}
@@ -589,6 +593,7 @@ end Lift
 
 variable (Q χ)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A layer map sending the four layers of an instance `x` of the interchange law to the four
 layers of an instance `x'` with the same Koszul sign respects the interchange law. -/
 theorem toPresented_interchange {x : InterchangeData S} (hx : x.Valid) (x' : InterchangeData S')
@@ -610,6 +615,7 @@ theorem toPresented_interchange {x : InterchangeData S} (hx : x.Valid) (x' : Int
     sub_eq_zero]
   simp only [Linear.smul_comp, Linear.comp_smul, smul_comm (Diagram.weight χ _)]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A layer map sending the four layers of an instance `x` of the interchange law to the four
 layers of an instance `x'` with the roles of the two generators exchanged (as for a reflection
 in a vertical axis), with the same Koszul sign, respects the interchange law. -/
@@ -658,6 +664,7 @@ theorem preservesDeg_parityDeg
     φ.PreservesDeg (Presentation.parityDeg S) (Presentation.parityDeg S') := fun hv => by
   simp only [Presentation.parityDeg, h hv]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem PreservesDeg.toPresented_mem_homDeg (h : φ.PreservesDeg deg deg') {a b : Obj S}
     {f : LinDiagram R a b} {e : A} (hf : f ∈ LinDiagram.homDeg R deg a b e) :
     (freeLift R (φ.toPresented Q χ)).map f ∈ Q.homDeg deg' (φ.obj a) (φ.obj b) e := by

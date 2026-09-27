@@ -50,12 +50,14 @@ def Diagram.toPivotalFunctor : Obj S ⥤ Obj (S.pivotal D) where
   map_id _ := rfl
   map_comp _ _ := Diagram.ext List.map_append
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Diagram.toPivotal_whisker {a b : Obj S} (d : a ⟶ b) (u : Obj S) (v : List S.Colour)
     (hw : a.WhiskerOK u v) :
     Diagram.toPivotal D (Diagram.whisker d u v hw) =
       Diagram.whisker (Diagram.toPivotal D d) (u.toPivotal D) v (hw.toPivotal D) :=
   Diagram.ext (by simp only [Diagram.layers_toPivotal, Diagram.layers_whisker, List.map_map]; rfl)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem LinDiagram.toPivotal_whisker {R : Type w} [CommRing R] {a b : Obj S}
     (f : LinDiagram R a b) (u : Obj S) (v : List S.Colour) (hw : a.WhiskerOK u v) :
     (LinDiagram.whisker f u v hw).toPivotal D =
@@ -125,6 +127,7 @@ theorem lin_whisker_eq_zero {S' : Signature.{u₀, u₁, u₂}} (Q : Presentatio
     (hw : a.WhiskerOK u v) : Q.lin (LinDiagram.whisker f u v hw) = 0 := by
   rw [← LinDiagram.whisk_of_ok f hw, ← whisk_lin, hf, whisk_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem freeLift_toPivotal_map {a b : Obj S} (f : LinDiagram R a b) :
     (freeLift R (Diagram.toPivotalFunctor D ⋙ Q.diagFunctor)).map f = Q.lin (f.toPivotal D) := by
   induction f using Finsupp.induction_linear with

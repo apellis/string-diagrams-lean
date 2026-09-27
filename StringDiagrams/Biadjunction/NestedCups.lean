@@ -238,6 +238,7 @@ theorem layers_capW_append (u w : List S.Colour) (h : S.ok r (u ++ w)) :
     exact List.map_congr_left fun L _ => by
       simp [Layer.whisker_whisker, Obj.tensor]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Nested cups `1 ⟶ (u w)* (u w)` of a concatenation: those of `w`, then those of `u` inserted
 between `w*` and `w`. -/
 theorem layers_cup'W_append (u w : List S.Colour) (h : S.ok r (u ++ w)) :
@@ -254,6 +255,7 @@ theorem layers_cup'W_append (u w : List S.Colour) (h : S.ok r (u ++ w)) :
     exact List.map_congr_left fun L _ => by
       simp [Layer.whisker_whisker, Obj.tensor]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Nested caps `(u w) (u w)* ⟶ 1` of a concatenation: those of `w` (between `u` and `u*`), then
 those of `u`. -/
 theorem layers_cap'W_append (u w : List S.Colour) (h : S.ok r (u ++ w)) :
@@ -328,6 +330,7 @@ def rotL (d : (⟨r, u⟩ : Obj S) ⟶ ⟨r, u'⟩) (hu : S.ok r u) (hs : S.endR
       Diagram.lwhisker ⟨s, D.dualWord u⟩ (K.cap'W r u' hu') (c₃.tensor_right c₄))
     (Obj.nil_tensor rfl) (Obj.tensor_nil _ r)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem layers_rotR (d : (⟨r, u⟩ : Obj S) ⟶ ⟨r, u'⟩) (hu : S.ok r u)
     (hs : S.endR r u = s) :
     Diagram.layers (K.rotR d hu hs) =
@@ -337,6 +340,7 @@ def rotL (d : (⟨r, u⟩ : Obj S) ⟶ ⟨r, u'⟩) (hu : S.ok r u) (hs : S.endR
             (·.wr (D.dualWord u)) := by
   simp [rotR]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem layers_rotL (d : (⟨r, u⟩ : Obj S) ⟶ ⟨r, u'⟩) (hu : S.ok r u)
     (hs : S.endR r u = s) :
     Diagram.layers (K.rotL d hu hs) =
@@ -475,6 +479,7 @@ theorem ColourCupsCaps.biadjunctions_right_counit (Q : ColourCupsCaps P D) (x : 
     (h₂ : Obj.nil (S.colourSrc c) = (𝟙 l : l ⟶ l).obj) :
     (Q.biadjunctions x c hx).right.counit = P.diag (Diagram.cast (Q.cap' c) h₁ h₂) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The unit of `x ⊣ x*` for a word `w` is the class of the nested cups (induction on `w`). -/
 theorem biadjW_left_unit_eq_wordCup (Q : ColourCupsCaps P D) (w : List S.Colour) :
     ∀ {l m : P.Bicat} (x : l ⟶ m) (hx : x.obj.word = w),
@@ -490,8 +495,7 @@ theorem biadjW_left_unit_eq_wordCup (Q : ColourCupsCaps P D) (w : List S.Colour)
     have ih' : (biadj Q.biadjunctions (P.tailHom x c w hx)).left.unit = _ :=
       ih (P.tailHom x c w hx) rfl
     rw [ih']
-    simp [bicategoricalComp, Strict.associator_eqToIso, Strict.leftUnitor_eqToIso,
-      Strict.rightUnitor_eqToIso]
+    simp [bicategoricalComp, Strict.associator_eqToIso, Strict.leftUnitor_eqToIso]
     rw [ColourCupsCaps.biadjunctions_left_unit Q (P.headHom x c w hx) c rfl
       (congrArg Obj.nil (Bicat.Hom.colourSrc_eq_of_word_eq_cons x hx))
       (Obj.ext (Bicat.Hom.colourSrc_eq_of_word_eq_cons x hx) rfl)]
@@ -500,7 +504,7 @@ theorem biadjW_left_unit_eq_wordCup (Q : ColourCupsCaps P D) (w : List S.Colour)
     simp only [Bicat.diag_comp_diag]
     apply P.diag_eq_of_layers_eq
     simp only [Diagram.layers_comp, Diagram.layers_cast, Diagram.layers_lwhisker,
-      Diagram.layers_rwhisker, Diagram.layers_eqToHom, Diagram.layers_id, List.map_nil,
+      Diagram.layers_rwhisker, Diagram.layers_eqToHom,
       List.nil_append, List.append_nil, layers_wordCup,
       ColourCupCapDiagrams.layers_cupW_congr _ hx, ColourCupCapDiagrams.layers_cupW_cons,
       List.map_map]
@@ -508,6 +512,7 @@ theorem biadjW_left_unit_eq_wordCup (Q : ColourCupsCaps P D) (w : List S.Colour)
     simp only [List.map_nil, List.nil_append, List.append_nil]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The counit of `x ⊣ x*` for a word `w` is the class of the nested caps. -/
 theorem biadjW_left_counit_eq_wordCap (Q : ColourCupsCaps P D) (w : List S.Colour) :
     ∀ {l m : P.Bicat} (x : l ⟶ m) (hx : x.obj.word = w),
@@ -523,16 +528,15 @@ theorem biadjW_left_counit_eq_wordCap (Q : ColourCupsCaps P D) (w : List S.Colou
     have ih' : (biadj Q.biadjunctions (P.tailHom x c w hx)).left.counit = _ :=
       ih (P.tailHom x c w hx) rfl
     rw [ih']
-    simp [bicategoricalComp, Strict.associator_eqToIso, Strict.leftUnitor_eqToIso,
-      Strict.rightUnitor_eqToIso]
+    simp [bicategoricalComp, Strict.associator_eqToIso, Strict.leftUnitor_eqToIso]
     rw [ColourCupsCaps.biadjunctions_left_counit Q (P.headHom x c w hx) c rfl rfl rfl]
     simp only [Bicat.whiskerLeft_diag, Bicat.diag_whiskerRight, Bicat.eqToHom_eq_diag,
       Bicat.id_eq_diag]
     simp only [Bicat.diag_comp_diag]
     apply P.diag_eq_of_layers_eq
     simp only [Diagram.layers_comp, Diagram.layers_cast, Diagram.layers_lwhisker,
-      Diagram.layers_rwhisker, Diagram.layers_eqToHom, Diagram.layers_id, List.map_nil,
-      List.nil_append, List.append_nil, layers_wordCap,
+      Diagram.layers_rwhisker, Diagram.layers_eqToHom,
+      List.nil_append, layers_wordCap,
       ColourCupCapDiagrams.layers_capW_congr _ hx, ColourCupCapDiagrams.layers_capW_cons,
       List.map_map]
     erw [Diagram.layers_id]
@@ -541,6 +545,7 @@ theorem biadjW_left_counit_eq_wordCap (Q : ColourCupsCaps P D) (w : List S.Colou
     exact List.map_congr_left fun L _ =>
       Layer.ext (Bicat.Hom.endR_region (P.tailHom x c w hx)).symm rfl rfl rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The unit of `x* ⊣ x` for a word `w` is the class of the nested cups `cup'W`. -/
 theorem biadjW_right_unit_eq_wordCup' (Q : ColourCupsCaps P D) (w : List S.Colour) :
     ∀ {l m : P.Bicat} (x : l ⟶ m) (hx : x.obj.word = w),
@@ -557,16 +562,15 @@ theorem biadjW_right_unit_eq_wordCup' (Q : ColourCupsCaps P D) (w : List S.Colou
     simp only [biadjW, Biadjunction.congr_right_unit, Biadjunction.comp_right,
       Bicategory.Adjunction.comp_unit, Bicategory.Adjunction.compUnit]
     erw [ih']
-    simp [bicategoricalComp, Strict.associator_eqToIso, Strict.leftUnitor_eqToIso,
-      Strict.rightUnitor_eqToIso]
+    simp [bicategoricalComp, Strict.associator_eqToIso, Strict.leftUnitor_eqToIso]
     rw [ColourCupsCaps.biadjunctions_right_unit Q (P.headHom x c w hx) c rfl rfl rfl]
     simp only [Bicat.whiskerLeft_diag, Bicat.diag_whiskerRight, Bicat.eqToHom_eq_diag,
       Bicat.id_eq_diag]
     simp only [Bicat.diag_comp_diag]
     apply P.diag_eq_of_layers_eq
     simp only [Diagram.layers_comp, Diagram.layers_cast, Diagram.layers_lwhisker,
-      Diagram.layers_rwhisker, Diagram.layers_eqToHom, Diagram.layers_id, List.map_nil,
-      List.nil_append, List.append_nil, layers_wordCup',
+      Diagram.layers_rwhisker, Diagram.layers_eqToHom,
+      List.append_nil, layers_wordCup',
       ColourCupCapDiagrams.layers_cup'W_congr _ hx, ColourCupCapDiagrams.layers_cup'W_cons,
       List.map_map]
     erw [Diagram.layers_id]
@@ -575,6 +579,7 @@ theorem biadjW_right_unit_eq_wordCup' (Q : ColourCupsCaps P D) (w : List S.Colou
     exact List.map_congr_left fun L _ =>
       Layer.ext (Bicat.Hom.endR_region (P.tailHom x c w hx)).symm rfl rfl rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The counit of `x* ⊣ x` for a word `w` is the class of the nested caps `cap'W`. -/
 theorem biadjW_right_counit_eq_wordCap' (Q : ColourCupsCaps P D) (w : List S.Colour) :
     ∀ {l m : P.Bicat} (x : l ⟶ m) (hx : x.obj.word = w),
@@ -591,18 +596,16 @@ theorem biadjW_right_counit_eq_wordCap' (Q : ColourCupsCaps P D) (w : List S.Col
     simp only [biadjW, Biadjunction.congr_right_counit, Biadjunction.comp_right,
       Bicategory.Adjunction.comp_counit, Bicategory.Adjunction.compCounit]
     erw [ih']
-    simp [bicategoricalComp, Strict.associator_eqToIso, Strict.leftUnitor_eqToIso,
-      Strict.rightUnitor_eqToIso]
+    simp [bicategoricalComp, Strict.associator_eqToIso, Strict.leftUnitor_eqToIso]
     rw [ColourCupsCaps.biadjunctions_right_counit Q (P.headHom x c w hx) c rfl
       (Obj.ext (Bicat.Hom.colourSrc_eq_of_word_eq_cons x hx) rfl)
       (congrArg Obj.nil (Bicat.Hom.colourSrc_eq_of_word_eq_cons x hx))]
-    simp only [Bicat.whiskerLeft_diag, Bicat.diag_whiskerRight, Bicat.eqToHom_eq_diag,
-      Bicat.id_eq_diag]
+    simp only [Bicat.whiskerLeft_diag, Bicat.diag_whiskerRight, Bicat.eqToHom_eq_diag]
     simp only [Bicat.diag_comp_diag]
     apply P.diag_eq_of_layers_eq
     simp only [Diagram.layers_comp, Diagram.layers_cast, Diagram.layers_lwhisker,
-      Diagram.layers_rwhisker, Diagram.layers_eqToHom, Diagram.layers_id, List.map_nil,
-      List.nil_append, List.append_nil, layers_wordCap',
+      Diagram.layers_rwhisker, Diagram.layers_eqToHom,
+      List.nil_append, layers_wordCap',
       ColourCupCapDiagrams.layers_cap'W_congr _ hx, ColourCupCapDiagrams.layers_cap'W_cons,
       List.map_map]
     rfl
@@ -635,6 +638,7 @@ theorem biadj_right_counit_eq_wordCap' :
 
 /-! ### Zigzag identities for nested cups and caps -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The left zigzag identity for the nested cups and caps of `x ⊣ x*`, as an identity of diagram
 classes. -/
 theorem diag_leftZigzag_wordCup_wordCap :
@@ -642,37 +646,40 @@ theorem diag_leftZigzag_wordCup_wordCap :
       𝟙 _ := by
   have h := (biadj Q.biadjunctions x).left.left_triangle
   rw [biadj_left_unit_eq_wordCup, biadj_left_counit_eq_wordCap, leftZigzag_diag] at h
-  simp only [Category.assoc, Iso.cancel_iso_hom_left] at h
+  simp only [Iso.cancel_iso_hom_left] at h
   have h' := (Iso.cancel_iso_inv_right _ _ _).1 (h.trans (Category.id_comp _).symm)
   exact h'
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The right zigzag identity for the nested cups and caps of `x ⊣ x*`. -/
 theorem diag_rightZigzag_wordCup_wordCap :
     P.diag (P.rightZigzagD x (P.dualHom D x) (Q.toDiagrams.wordCup x) (Q.toDiagrams.wordCap x)) =
       𝟙 _ := by
   have h := (biadj Q.biadjunctions x).left.right_triangle
   rw [biadj_left_unit_eq_wordCup, biadj_left_counit_eq_wordCap, rightZigzag_diag] at h
-  simp only [Category.assoc, Iso.cancel_iso_hom_left] at h
+  simp only [Iso.cancel_iso_hom_left] at h
   have h' := (Iso.cancel_iso_inv_right _ _ _).1 (h.trans (Category.id_comp _).symm)
   exact h'
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The left zigzag identity for the nested cups and caps of `x* ⊣ x`. -/
 theorem diag_leftZigzag_wordCup'_wordCap' :
     P.diag (P.leftZigzagD (P.dualHom D x) x (Q.toDiagrams.wordCup' x)
       (Q.toDiagrams.wordCap' x)) = 𝟙 _ := by
   have h := (biadj Q.biadjunctions x).right.left_triangle
   rw [biadj_right_unit_eq_wordCup', biadj_right_counit_eq_wordCap', leftZigzag_diag] at h
-  simp only [Category.assoc, Iso.cancel_iso_hom_left] at h
+  simp only [Iso.cancel_iso_hom_left] at h
   have h' := (Iso.cancel_iso_inv_right _ _ _).1 (h.trans (Category.id_comp _).symm)
   exact h'
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The right zigzag identity for the nested cups and caps of `x* ⊣ x`. -/
 theorem diag_rightZigzag_wordCup'_wordCap' :
     P.diag (P.rightZigzagD (P.dualHom D x) x (Q.toDiagrams.wordCup' x)
       (Q.toDiagrams.wordCap' x)) = 𝟙 _ := by
   have h := (biadj Q.biadjunctions x).right.right_triangle
   rw [biadj_right_unit_eq_wordCup', biadj_right_counit_eq_wordCap', rightZigzag_diag] at h
-  simp only [Category.assoc, Iso.cancel_iso_hom_left] at h
+  simp only [Iso.cancel_iso_hom_left] at h
   have h' := (Iso.cancel_iso_inv_right _ _ _).1 (h.trans (Category.id_comp _).symm)
   exact h'
 
@@ -698,6 +705,7 @@ def _root_.StringDiagrams.ColourCupCapDiagrams.rotateL {x x' : l ⟶ m} (d : x.o
 
 variable (Q : ColourCupsCaps P D) {x x' : l ⟶ m}
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Rotation of diagrams with arbitrary boundaries.** The right mate of the class of a diagram
 `d : x ⟶ x'`, for the biadjunctions of words, is the class of its right rotation by the nested
 cups and caps. -/
@@ -708,6 +716,7 @@ theorem rightMate_biadj_diag (d : x.obj ⟶ x'.obj) :
     (biadj_left_counit_eq_wordCap Q x') d]
   exact P.diag_eq_of_layers_eq (by simp [ColourCupCapDiagrams.rotateR])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The left mate of the class of a diagram `d : x ⟶ x'`, for the biadjunctions of words, is the
 class of its left rotation by the nested cups and caps. -/
 theorem leftMate_biadj_diag (d : x.obj ⟶ x'.obj) :
@@ -727,6 +736,7 @@ theorem isCyclic_biadj_diag_iff (d : x.obj ⟶ x'.obj) :
 
 /-! ### Sliding diagrams along nested cups and caps -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Sliding a diagram `d : x ⟶ x'` along the nested cups of `x ⊣ x*` turns it into its right
 rotation on the other strands. -/
 theorem diag_wordCup_comp_rwhisker (d : x.obj ⟶ x'.obj) :
@@ -740,6 +750,7 @@ theorem diag_wordCup_comp_rwhisker (d : x.obj ⟶ x'.obj) :
   simp only [Bicat.whiskerLeft_diag, Bicat.diag_whiskerRight, Bicat.diag_comp_diag] at h
   exact h
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Sliding a diagram `d : x ⟶ x'` along the nested caps of `x' ⊣ x'*` turns it into its right
 rotation on the other strands. -/
 theorem diag_lwhisker_comp_wordCap (d : x.obj ⟶ x'.obj) :
@@ -753,6 +764,7 @@ theorem diag_lwhisker_comp_wordCap (d : x.obj ⟶ x'.obj) :
   simp only [Bicat.whiskerLeft_diag, Bicat.diag_whiskerRight, Bicat.diag_comp_diag] at h
   exact h
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Sliding a diagram `d : x ⟶ x'` along the nested cups of `x* ⊣ x` turns it into its left
 rotation on the other strands. -/
 theorem diag_wordCup'_comp_lwhisker (d : x.obj ⟶ x'.obj) :
@@ -766,6 +778,7 @@ theorem diag_wordCup'_comp_lwhisker (d : x.obj ⟶ x'.obj) :
   simp only [Bicat.whiskerLeft_diag, Bicat.diag_whiskerRight, Bicat.diag_comp_diag] at h
   exact h
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Sliding a diagram `d : x ⟶ x'` along the nested caps of `x'* ⊣ x'` turns it into its left
 rotation on the other strands. -/
 theorem diag_rwhisker_comp_wordCap' (d : x.obj ⟶ x'.obj) :
@@ -830,14 +843,12 @@ theorem isCyclic_gen_iff (g : S.Gen) (hg : S.GenValid g) :
   have e₁ : P.diag (Q.toDiagrams.rotateR (x := P.genDom g hg) (x' := P.genCod g hg)
       (genDiag g hg)) = P.diag (Q.toDiagrams.genRotR g hg) :=
     P.diag_eq_of_layers_eq (by
-      simp only [ColourCupCapDiagrams.rotateR, ColourCupCapDiagrams.genRotR,
-        ColourCupCapDiagrams.layers_rotR, Diagram.layers_cast]
+      simp only [ColourCupCapDiagrams.rotateR, ColourCupCapDiagrams.genRotR]
       rfl)
   have e₂ : P.diag (Q.toDiagrams.rotateL (x := P.genDom g hg) (x' := P.genCod g hg)
       (genDiag g hg)) = P.diag (Q.toDiagrams.genRotL g hg) :=
     P.diag_eq_of_layers_eq (by
-      simp only [ColourCupCapDiagrams.rotateL, ColourCupCapDiagrams.genRotL,
-        ColourCupCapDiagrams.layers_rotL, Diagram.layers_cast]
+      simp only [ColourCupCapDiagrams.rotateL, ColourCupCapDiagrams.genRotL]
       rfl)
   rw [← e₁, ← e₂]
   exact isCyclic_biadj_diag_iff Q (x := P.genDom g hg) (x' := P.genCod g hg) (genDiag g hg)
@@ -876,6 +887,7 @@ theorem isCyclic_of_genRot
 
 /-- The pivotal structure on `P.Bicat` given by the nested cups and caps, when the two rotations
 of every generator have the same class. -/
+@[instance_reducible]
 def pivotalOfGenRot
     (hrot : ∀ (g : S.Gen) (hg : S.GenValid g),
       P.diag (Q.toDiagrams.genRotR g hg) = P.diag (Q.toDiagrams.genRotL g hg)) :
@@ -892,6 +904,7 @@ namespace Pivotal
 
 variable (E : S.ColourInvolution)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The cups and caps of the pivotal extension, as diagrams: the cup and the cap of `c` for
 `c ⊣ c*`, and the cup and the cap of `c*` (retyped along `c** = c`) for `c* ⊣ c`. -/
 def cupCapDiagrams :
@@ -946,6 +959,7 @@ theorem pivotal_isCyclic_of_genRot (Q : Presentation.{w, v} (S.pivotal E.toColou
 /-- The pivotal structure on the bicategory presented by a presentation of the pivotal extension
 in which the zigzag identities hold and the two rotations of every original generator have the
 same class. -/
+@[instance_reducible]
 def pivotalStructureOfGenRot (Q : Presentation.{w, v} (S.pivotal E.toColourDuality) R)
     (hz : Q.PivotalZigzags E.toColourDuality)
     (hrot : ∀ (g : S.Gen) (hg : (S.pivotal E.toColourDuality).GenValid (.gen g)),
@@ -1001,6 +1015,7 @@ theorem pivotalCyclic_isCyclic {l m : (P.pivotalCyclic E).Bicat} {x x' : l ⟶ m
   pivotal_isCyclic_of_genRot E _ _ (P.pivotalCyclic_genRot E) θ
 
 /-- The pivotal structure on the bicategory presented by the cyclic pivotal extension. -/
+@[instance_reducible]
 def pivotalCyclicStructure : StringDiagrams.Pivotal (P.pivotalCyclic E).Bicat :=
   pivotalStructureOfGenRot E _ (P.pivotalCyclic_zigzags E) (P.pivotalCyclic_genRot E)
 

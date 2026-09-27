@@ -126,6 +126,7 @@ theorem rotMate_obj_eq (hu : S.ok r u) (hs : S.endR r u = s) (ev : D.dualWord u 
     P.obj ⟨s, v⟩ = P.obj (P.dualHom D (P.wordHomTo r s u hu hs)).obj := by
   rw [dualHom_wordHomTo_obj, ev]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Rotation by a half turn** of morphisms `⟨r, u⟩ ⟶ ⟨r, u'⟩` of the presented category between
 words from the region `r` to the region `s`: the right mate `⟨s, u'*⟩ ⟶ ⟨s, u*⟩` for the
 biadjunctions of words given by the nested cups and caps, with the dual words written as
@@ -149,6 +150,7 @@ theorem rotMate_apply (hu : S.ok r u) (hu' : S.ok r u') (hs : S.endR r u = s)
       wordMate Q (P.wordHomTo r s u hu hs) (P.wordHomTo r s u' hu' hs') f ≫
         eqToHom (rotMate_obj_eq hu hs ev).symm := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- With the canonical dual words, the rotation is the right mate. -/
 theorem rotMate_rfl_apply (hu : S.ok r u) (hu' : S.ok r u') (hs : S.endR r u = s)
     (hs' : S.endR r u' = s) (f : P.obj ⟨r, u⟩ ⟶ P.obj ⟨r, u'⟩) :
@@ -158,6 +160,7 @@ theorem rotMate_rfl_apply (hu : S.ok r u) (hu' : S.ok r u') (hs : S.endR r u = s
   rw [rotMate_apply, wordMate_apply]
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The rotation is contravariant. -/
 theorem rotMate_comp (hu : S.ok r u) (hu' : S.ok r u') (hu'' : S.ok r u'') (hs : S.endR r u = s)
     (hs' : S.endR r u' = s) (hs'' : S.endR r u'' = s) (ev : D.dualWord u = v)
@@ -171,6 +174,7 @@ theorem rotMate_comp (hu : S.ok r u) (hu' : S.ok r u') (hu'' : S.ok r u'') (hs :
   rw [h]
   simp only [Category.assoc, eqToHom_trans_assoc, eqToHom_refl, Category.id_comp]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The rotation of an identity is an identity. -/
 theorem rotMate_id (hu : S.ok r u) (hs : S.endR r u = s) (ev : D.dualWord u = v) :
     rotMate Q hu hu hs hs ev ev (𝟙 _) = 𝟙 _ := by
@@ -182,6 +186,7 @@ end RotMate
 
 /-! ## Rotation data -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The right mate of a generator for the biadjunctions of its boundary words is the class of its
 right rotation by the nested cups and caps. -/
 theorem rightMate_gen2_eq_genRotR (g : S.Gen) (hg : S.GenValid g) :
@@ -224,6 +229,7 @@ theorem rightMate_gen2 (g : S.Gen) (hρ : ρ.Rotates g) (hg : S.GenValid g) :
   obtain ⟨d, hd, he⟩ := ρ.genRotR_eq g hρ hg
   exact ⟨P.diag d, (rightMate_gen2_eq_genRotR Q g hg).trans he, ⟨d, rfl, hd⟩⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The rotation of a layer**: the right mate of a layer `(u, g, v)` whose generator is in the
 family is `ρ.scalar g` times the rotated layer `(v*, ρ.rot g, u*)`. -/
 theorem rightMate_layer {l m : P.Bicat} (x x' : l ⟶ m) (L : Layer S) (hv : L.Valid)
@@ -294,6 +300,7 @@ theorem rightMate_layer {l m : P.Bicat} (x x' : l ⟶ m) (L : Layer S) (hv : L.V
     Linear.comp_smul]
   exact congrArg (ρ.scalar L.gen • ·) hd
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The rotation of a diagram** all of whose generators are in the family: its right mate for the
 biadjunctions of words is the product of the scalars of its generators times the diagram of the
 rotated layers in reverse order. -/

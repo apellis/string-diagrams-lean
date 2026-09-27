@@ -361,6 +361,7 @@ theorem _root_.StringDiagrams.Signature.ColourDuality.dualWord_dualWord_of
   simp [Signature.ColourDuality.dualWord_eq, List.map_reverse, List.map_map, Function.comp_def,
     hD]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- For an involutive duality whose chosen caps of `c*` have the layers of the caps `c c* ⟶ 1`,
 the nested caps of the dual word `w*` are the nested caps `cap'W` of `w`. -/
 theorem _root_.StringDiagrams.ColourCupCapDiagrams.layers_capW_dualWord

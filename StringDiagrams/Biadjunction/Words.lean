@@ -165,6 +165,7 @@ def _root_.StringDiagrams.Biadjunction.congr {B : Type*} [Bicategory B] {a b : B
 @[simp] theorem _root_.StringDiagrams.Biadjunction.congr_rfl {B : Type*} [Bicategory B]
     {a b : B} {f : a ⟶ b} {g : b ⟶ a} (Q : f ⊣⊢ g) : Q.congr rfl rfl = Q := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The biadjunction of a 1-morphism with the empty word (and its dual): all units and counits
 are identities, retyped. -/
 def nilBiadj {l m : P.Bicat} (x : l ⟶ m) (hx : x.obj.word = []) : x ⊣⊢ P.dualHom D x :=

@@ -212,6 +212,7 @@ theorem rightZigzag_eq (x : l ⟶ m) (y : m ⟶ l) (η : 𝟙 l ⟶ x ≫ y) (ε
     rightZigzag η ε = y ◁ η ≫ (α_ y x y).inv ≫ ε ▷ y := by
   bicategory
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Mathlib's left zigzag of the classes of a cup and a cap is the class of the left zigzag
 diagram, up to unitors. -/
 theorem leftZigzag_diag (x : l ⟶ m) (y : m ⟶ l) (cup : Obj.nil l.region ⟶ x.obj.tensor y.obj)
@@ -227,6 +228,7 @@ theorem leftZigzag_diag (x : l ⟶ m) (y : m ⟶ l) (cup : Obj.nil l.region ⟶ 
     P.wL_diag_of_composable _ cap (Bicat.Hom.composable x (y ≫ x))]
   simp [Diagram.leftZigzag, Diagram.cast_eq, P.diag_eqToHom]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Mathlib's right zigzag of the classes of a cup and a cap is the class of the right zigzag
 diagram, up to unitors. -/
 theorem rightZigzag_diag (x : l ⟶ m) (y : m ⟶ l) (cup : Obj.nil l.region ⟶ x.obj.tensor y.obj)
@@ -340,6 +342,7 @@ open MonoidalCategory
 variable {P : Presentation.{w, v} S R} [S.IsEven] [Subsingleton S.Region] [Inhabited S.Region]
   {x y : Obj S}
 
+set_option backward.isDefEq.respectTransparency false in
 omit [S.IsEven] in
 theorem evaluation_coevaluation_diag (cup : Obj.unit ⟶ x.tensor y) (cap : y.tensor x ⟶ Obj.unit) :
     (P.diag cup : 𝟙_ P.Presented ⟶ P.obj x ⊗ P.obj y) ▷ P.obj x ≫ (MonoidalCategory.associator _ _ _).hom ≫
@@ -349,6 +352,7 @@ theorem evaluation_coevaluation_diag (cup : Obj.unit ⟶ x.tensor y) (cap : y.te
   simp [wR_diag, wL_diag, associator_eq, leftUnitor_eq, rightUnitor_eq, Diagram.leftZigzagM,
     Diagram.cast_eq, P.diag_eqToHom]
 
+set_option backward.isDefEq.respectTransparency false in
 omit [S.IsEven] in
 theorem coevaluation_evaluation_diag (cup : Obj.unit ⟶ x.tensor y) (cap : y.tensor x ⟶ Obj.unit) :
     P.obj y ◁ (P.diag cup : 𝟙_ P.Presented ⟶ P.obj x ⊗ P.obj y) ≫ (MonoidalCategory.associator _ _ _).inv ≫
@@ -363,6 +367,7 @@ variable (P)
 /-- The exact pairing between `P.obj x` and `P.obj y` given by a cup and a cap satisfying the two
 zigzag identities, for an even monoidal signature. Its coevaluation and evaluation are the classes
 of the cup and the cap. -/
+@[instance_reducible]
 def exactPairingOfZigzag (cup : Obj.unit ⟶ x.tensor y) (cap : y.tensor x ⟶ Obj.unit)
     (hl : P.diag (Diagram.leftZigzagM cup cap) = 𝟙 _)
     (hr : P.diag (Diagram.rightZigzagM cup cap) = 𝟙 _) : ExactPairing (P.obj x) (P.obj y) where
@@ -386,6 +391,7 @@ theorem exactPairingOfZigzag_evaluation (cup : Obj.unit ⟶ x.tensor y)
 /-- The exact pairing between `P.obj x` and `P.obj y` given by a cup and a cap whose zigzag
 identities are relations `i` and `j` of `P` of the form `z - e`, with `e` without layers and `z`
 with the layers of the zigzag diagram. -/
+@[instance_reducible]
 def exactPairingOfRels (cup : Obj.unit ⟶ x.tensor y) (cap : y.tensor x ⟶ Obj.unit)
     (i : P.Rel) {z e : P.dom i ⟶ P.cod i} (he : Diagram.layers e = [])
     (hi : P.rel i = LinDiagram.of z - LinDiagram.of e) (hidom : P.dom i = x)

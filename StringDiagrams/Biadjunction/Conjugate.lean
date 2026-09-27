@@ -115,7 +115,7 @@ theorem conjugateEquiv_whiskerRight {l₁ l₂ : c ⟶ d} {r₁ r₂ : d ⟶ c} 
       g ◁ conjugateEquiv adj₁ adj₂ α := by
   apply conjugateEquiv_eq_of_unit
   have h := unit_comp_whiskerRight_eq adj₁ adj₂ α
-  dsimp only [Adjunction.comp_unit, Adjunction.compUnit]
+  dsimp only [Adjunction.comp, Adjunction.compUnit]
   calc
     _ = 𝟙 _ ⊗≫ adj₂.unit ⊗≫ (l₂ ◁ adj.unit ≫ α ▷ (f ≫ g)) ▷ r₂ ⊗≫ 𝟙 _ := by
       bicategory
@@ -135,7 +135,7 @@ theorem conjugateEquiv_whiskerLeft {l₁ l₂ : c ⟶ d} {r₁ r₂ : d ⟶ c} (
       conjugateEquiv adj₁ adj₂ α ▷ g := by
   apply conjugateEquiv_eq_of_unit
   have h := unit_comp_whiskerRight_eq adj₁ adj₂ α
-  dsimp only [Adjunction.comp_unit, Adjunction.compUnit]
+  dsimp only [Adjunction.comp, Adjunction.compUnit]
   calc
     _ = 𝟙 _ ⊗≫ adj.unit ⊗≫ f ◁ (adj₂.unit ≫ α ▷ r₂) ▷ g ⊗≫ 𝟙 _ := by
       bicategory

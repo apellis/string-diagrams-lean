@@ -129,6 +129,7 @@ namespace WhiskerData
 
 variable {ι : Type*} {φ : ι → LocalMap S Q} (W : WhiskerData φ)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem functor_map_whisker_aux {i : ι} {a u : Obj S} {v : List S.Colour}
     (ha : W.Admissible a) (hw : a.WhiskerOK u v) :
     ∀ (ls : List (Layer S)) {c b : Obj S} (hcr : Nonempty (a ⟶ c)) (hc : Chain c ls b)
@@ -176,6 +177,7 @@ theorem functor_map_whisker {i : ι} {a b : Obj S} (d : a ⟶ b) (u : Obj S) (v 
   obtain ⟨ls, hc⟩ := d
   exact W.functor_map_whisker_aux ha hw ls ⟨𝟙 a⟩ hc hw
 
+set_option backward.isDefEq.respectTransparency false in
 theorem freeLift_whisker_eq_zero {i : ι} {a b : Obj S} (f : LinDiagram R a b) (u : Obj S)
     (v : List S.Colour) (ha : W.Admissible a) (hw : a.WhiskerOK u v)
     (hf : (freeLift R (φ (W.idx i a u v)).functor).map f = 0) :
@@ -252,6 +254,7 @@ theorem lift_layer (L : Layer S) (hv : L.Valid) :
     (lift P W hadm hrel hint i).map (P.diag (Diagram.ofLayer L hv)) = (φ i).layer L hv := by
   rw [lift_diag, functor_map_ofLayer]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The induced functors commute with whiskering. -/
 theorem lift_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) {u : Obj S} {v : List S.Colour}
     (ha : W.Admissible a) (hw : a.WhiskerOK u v) (hb : Nonempty (a ⟶ b)) :
@@ -305,6 +308,7 @@ theorem PreservesDeg.functor_map_mem (h : φ.PreservesDeg deg deg') {a b : Obj S
     rw [e, Functor.map_comp, functor_map_ofLayer, Diagram.degree_comp, Diagram.degree_ofLayer]
     exact Presentation.comp_mem_homDeg (h L hv) (ih hc')
 
+set_option backward.isDefEq.respectTransparency false in
 theorem PreservesDeg.freeLift_mem (h : φ.PreservesDeg deg deg') {a b : Obj S}
     {f : LinDiagram R a b} {e : A} (hf : f ∈ LinDiagram.homDeg R deg a b e) :
     (freeLift R φ.functor).map f ∈ Q.homDeg deg' (φ.obj a) (φ.obj b) e := by
@@ -387,6 +391,7 @@ theorem ofGen_layer (L : Layer S) (hv : L.Valid) :
       Q.whisk (img L.gen) (κ.obj ⟨L.start, L.left⟩) (κ.word L.right) ≫
         eqToHom (congrArg Q.obj (whisker_genCod κ L)) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The local map given by images of generators commutes with whiskering, on all objects. -/
 def ofGen_whiskerData : WhiskerData fun _ : Unit => ofGen κ img where
   Admissible _ := True
@@ -429,6 +434,7 @@ private theorem whisk_eq_wL {b b' : Obj S'} (g : Q.obj b ⟶ Q.obj b') (a : Obj 
         eqToHom (congrArg Q.obj (Obj.tensor_eq_whisker_nil a b')) := by
   simp [Presentation.wL]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Images of generators respect the interchange law** when every image `img g` is homogeneous
 of the parity of `g`: this is the super interchange law in `Q.Presented`. -/
 theorem ofGen_interchange

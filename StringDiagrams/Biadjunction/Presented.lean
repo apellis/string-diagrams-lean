@@ -185,12 +185,14 @@ theorem biadjW_eq (w : List S.Colour) {l m : P.Bicat} (x : l ⟶ m) (hx : x.obj.
 omit [S.IsEven] in
 @[simp] theorem dualHom_id (l : P.Bicat) : P.dualHom D (𝟙 l) = 𝟙 l := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem nilBiadj_id (l : P.Bicat) (h : (𝟙 l : l ⟶ l).obj.word = []) :
     nilBiadj (D := D) (𝟙 l) h = Biadjunction.id l := by
   simp only [nilBiadj, Biadjunction.id, Biadjunction.mk.injEq, Bicategory.Adjunction.id,
     adjunctionOfZigzag, Bicategory.Adjunction.mk.injEq]
-  refine ⟨⟨?_, ?_⟩, ?_, ?_⟩ <;> simp [P.diag_eqToHom] <;> rfl
+  refine ⟨⟨?_, ?_⟩, ?_, ?_⟩ <;> simp <;> rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem isCyclic_biadj_comp {l m n : P.Bicat} (x : l ⟶ m) (y : m ⟶ n) :
     Biadjunction.IsCyclic ((biadj B x).comp (biadj B y)) (biadj B (x ≫ y)) (𝟙 _) := by
   suffices h : ∀ (w : List S.Colour) {l : P.Bicat} (x : l ⟶ m) (hx : x.obj.word = w),
@@ -215,7 +217,9 @@ theorem isCyclic_biadj_comp {l m n : P.Bicat} (x : l ⟶ m) (y : m ⟶ n) :
       (congr_arg_heq (fun z => biadj B z) (Strict.id_comp y).symm)
     have key := h₁.comp h₂
     convert key using 1
-    simp [Strict.leftUnitor_eqToIso]
+    · simp
+    · rw [Strict.leftUnitor_eqToIso]
+      simp
   | cons c w ih =>
     intro l x hx
     have hxy : (x ≫ y).obj.word = c :: (w ++ y.obj.word) := by
@@ -238,7 +242,9 @@ theorem isCyclic_biadj_comp {l m n : P.Bicat} (x : l ⟶ m) (y : m ⟶ n) :
         (P.dualHom_tail_comp_head D (x ≫ y) c (w ++ y.obj.word) hxy)).symm
     have key := h₀.comp (h₁.comp (h₂.comp h₃))
     convert key using 1
-    simp [Strict.associator_eqToIso]
+    · rfl
+    · rw [Strict.associator_eqToIso]
+      simp
 
 theorem _root_.StringDiagrams.Biadjunction.congr_left_unit {B : Type*} [Bicategory B] {a b : B}
     {f f' : a ⟶ b} {g g' : b ⟶ a} (Q : f ⊣⊢ g) (hf : f = f') (hg : g = g') :
@@ -407,6 +413,7 @@ theorem dualHom_obj_eq_of_word_eq_singleton (x : l ⟶ m) {c : S.Colour} (hx : x
   rw [obj_eq_of_word_eq_singleton x hx] at h
   exact Obj.ext h.symm (by simp [hx])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The biadjunctions of all colours, at every placement, given by chosen cups and caps. -/
 def ColourCupsCaps.biadjunctions (Q : ColourCupsCaps P D) : ColourBiadjunctions P D :=
   fun {l m} x c hx =>
@@ -476,6 +483,7 @@ def leftRotateD (x x' : l ⟶ m) (y y' : m ⟶ l) (cup : Obj.nil m.region ⟶ y.
       Diagram.lwhisker y.obj cap' (Bicat.Hom.composable y (x' ≫ y')))
     (Obj.nil_tensor y'.start_eq) (Obj.tensor_nil y.obj l.region)
 
+set_option backward.isDefEq.respectTransparency false in
 omit [S.IsEven] in
 @[simp] theorem layers_rightRotateD (x x' : l ⟶ m) (y y' : m ⟶ l)
     (cup : Obj.nil l.region ⟶ x.obj.tensor y.obj) (cap' : y'.obj.tensor x'.obj ⟶ Obj.nil m.region)
@@ -486,6 +494,7 @@ omit [S.IsEven] in
           (Diagram.layers cap').map (·.wr y.obj.word) := by
   simp [rightRotateD]
 
+set_option backward.isDefEq.respectTransparency false in
 omit [S.IsEven] in
 @[simp] theorem layers_leftRotateD (x x' : l ⟶ m) (y y' : m ⟶ l)
     (cup : Obj.nil m.region ⟶ y.obj.tensor x.obj) (cap' : x'.obj.tensor y'.obj ⟶ Obj.nil l.region)
@@ -496,6 +505,7 @@ omit [S.IsEven] in
           (Diagram.layers cap').map (·.wl y.obj) := by
   simp [leftRotateD]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The right mate of the class of a diagram, for biadjunctions whose units and counits are
 classes of diagrams, is the class of the rotated diagram. -/
 theorem rightMate_diag {x x' : l ⟶ m} {y y' : m ⟶ l} (Q : x ⊣⊢ y) (Q' : x' ⊣⊢ y')
@@ -516,6 +526,7 @@ theorem rightMate_diag {x x' : l ⟶ m} {y y' : m ⟶ l} (Q : x ⊣⊢ y) (Q' : 
     P.wL_diag_of_composable _ _ (Bicat.Hom.composable y' (x ≫ y))]
   simp [rightRotateD, Diagram.cast_eq, P.diag_eqToHom]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The left mate of the class of a diagram, for biadjunctions whose units and counits are
 classes of diagrams, is the class of the rotated diagram. -/
 theorem leftMate_diag {x x' : l ⟶ m} {y y' : m ⟶ l} (Q : x ⊣⊢ y) (Q' : x' ⊣⊢ y')
@@ -576,6 +587,7 @@ theorem colourBiadjunctions_heq {l m : P.Bicat} {z z' : l ⟶ m} (h : z = z') (c
     (hc : z.obj.word = [c]) (hc' : z'.obj.word = [c]) : HEq (B z c hc) (B z' c hc') := by
   subst h; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The biadjunction of a one-letter word is the chosen biadjunction of the colour, up to
 unitors. -/
 theorem isCyclic_biadj_single {l m : P.Bicat} (x : l ⟶ m) (c : S.Colour) (hx : x.obj.word = [c]) :
@@ -669,6 +681,7 @@ theorem hom_eq_zero_of_isEmpty {a b : Obj S} (h : IsEmpty (a ⟶ b)) (f : P.obj 
   | add f g hf hg => rw [hf, hg, add_zero]
   | smul r f hf => rw [hf, smul_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A single layer is a whiskered generator, up to the identifications of the boundaries. -/
 theorem diag_ofLayer_eq {l m : P.Bicat} (L : Layer S) (hv : L.Valid) (x x' : l ⟶ m)
     (hx : x.obj = L.dom) (hx' : x'.obj = L.cod) (u : l ⟶ ⟨S.left L.gen⟩)
@@ -731,6 +744,7 @@ theorem isCyclic_layer
   convert k₁.comp (c₂.comp k₂) using 1
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Rotation invariance.** If every generator is cyclic for the biadjunctions of its
 boundary words, then every 2-morphism of the presented bicategory is cyclic for the
 biadjunctions of its boundary words. -/
@@ -748,7 +762,7 @@ theorem isCyclic_of_generators
       subst h hy
       obtain rfl : y' = y := Bicat.Hom.ext hy'
       convert isCyclic_id (biadj B y') using 1
-      simp [P.diag_eqToHom]
+      simp
       rfl
     · intro L hv l m y y' hy hy'
       exact isCyclic_layer B hgen L hv y y' hy hy'
@@ -779,6 +793,7 @@ theorem isCyclic_of_generators
 
 /-- The pivotal structure on `P.Bicat` given by the biadjunctions of words, when every generator
 is cyclic. -/
+@[instance_reducible]
 def pivotalOfGenerators
     (hgen : ∀ (g : S.Gen) (hg : S.GenValid g),
       Biadjunction.IsCyclic (biadj B (P.genDom g hg)) (biadj B (P.genCod g hg)) (P.gen2 g hg)) :

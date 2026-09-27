@@ -257,6 +257,7 @@ theorem lift_lin {a b : Obj S} (f : LinDiagram R a b) :
     (φ.lift P hodd hrel).map (P.lin f) = (freeLift R (φ.toLayerMap.toPresented Q χ)).map f :=
   LayerMap.lift_lin _ _ _ _ _ f
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A map of signatures commutes with whiskering in the presented categories. -/
 theorem lift_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) {u : Obj S} {v : List S.Colour}
     (hw : a.WhiskerOK u v) :
@@ -722,18 +723,21 @@ namespace SigMap
 
 variable (φ : SigMap S S')
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_rwhisker {a a' : Obj S} (f : a ⟶ a') (b : Obj S) (h : a.Composable b) :
     φ.toLayerMap.map (Diagram.rwhisker f b h) =
       Diagram.cast (Diagram.rwhisker (φ.toLayerMap.map f) (φ.obj b) (φ.composable h))
         (φ.obj_tensor a b).symm (φ.obj_tensor a' b).symm :=
   Diagram.ext (by simp [layer, Layer.wr, ColourMap.obj, Function.comp_def])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_lwhisker (a : Obj S) {b b' : Obj S} (g : b ⟶ b') (h : a.Composable b) :
     φ.toLayerMap.map (Diagram.lwhisker a g h) =
       Diagram.cast (Diagram.lwhisker (φ.obj a) (φ.toLayerMap.map g) (φ.composable h))
         (φ.obj_tensor a b).symm (φ.obj_tensor a b').symm :=
   Diagram.ext (by simp [layer, Layer.wl, ColourMap.obj, Function.comp_def])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A map of signatures commutes with horizontal composition `f ⊗ g = (f ⊗ 1) ≫ (1 ⊗ g)`. -/
 theorem map_tensor {a a' b b' : Obj S} (f : a ⟶ a') (g : b ⟶ b') (h : a.Composable b) :
     φ.toLayerMap.map (Diagram.rwhisker f b h ≫ Diagram.lwhisker a' g (h.map_left f)) =
@@ -748,6 +752,7 @@ namespace SigFlip
 
 variable (φ : SigFlip S S')
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_rwhisker {a a' : Obj S} (f : a ⟶ a') (b : Obj S) (h : a.Composable b) :
     φ.toOpLayerMap.map (Diagram.rwhisker f b h) =
       Diagram.cast (Diagram.rwhisker (φ.toOpLayerMap.map f) (φ.obj b)
@@ -755,6 +760,7 @@ theorem map_rwhisker {a a' : Obj S} (f : a ⟶ a') (b : Obj S) (h : a.Composable
         (φ.obj_tensor a' b).symm (φ.obj_tensor a b).symm :=
   Diagram.ext (by simp [layer, Layer.wr, ColourMap.obj, Function.comp_def, List.map_reverse])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_lwhisker (a : Obj S) {b b' : Obj S} (g : b ⟶ b') (h : a.Composable b) :
     φ.toOpLayerMap.map (Diagram.lwhisker a g h) =
       Diagram.cast (Diagram.lwhisker (φ.obj a) (φ.toOpLayerMap.map g)
@@ -769,6 +775,7 @@ theorem oddCount_map (hodd : ∀ g, S'.odd (φ.gen g) = S.odd g) {a b : Obj S} (
 
 variable {R : Type w} [CommRing R] (Q : Presentation.{w, v'} S' R)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Koszul signs for reflections in a horizontal axis.** For `f : a ⟶ a'`, `g : b ⟶ b'` with
 `a` composable with `b`, the reflection of `f ⊗ g = (f ⊗ 1) ≫ (1 ⊗ g)` is
 `(-1)^{|f||g|} ψ f ⊗ ψ g` in the presented category, where `ψ f : ψ a' ⟶ ψ a` and
@@ -786,12 +793,13 @@ theorem diag_map_tensor (hodd : ∀ g, S'.odd (φ.gen g) = S.odd g) {a a' b b' :
     (φ.toOpLayerMap.map g) (φ.composable ((h.map_left f).map_right g))
     (φ.composable (h.map_right g)) (φ.composable (h.map_left f))
   rw [φ.oddCount_map hodd, φ.oddCount_map hodd] at key
-  simp only [toOpLayerMap_obj] at key
   rw [OpLayerMap.map_comp, φ.map_rwhisker, φ.map_lwhisker, Q.diag_comp, Q.diag_cast,
     Q.diag_cast]
   simp only [Category.assoc, eqToHom_trans_assoc, eqToHom_refl, Category.id_comp]
-  rw [← Category.assoc (Q.diag _) (Q.diag _), ← Q.diag_comp, key, Linear.smul_comp,
-    Linear.comp_smul]
+  rw [← Category.assoc (Q.diag _) (Q.diag _), ← Q.diag_comp]
+  erw [key]
+  rw [Linear.smul_comp, Linear.comp_smul]
+  rfl
 
 end SigFlip
 
@@ -817,6 +825,7 @@ namespace SigMirror
 
 variable (φ : SigMirror S S')
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The reflection of `f ⊗ 1_b` is `1_{σ b} ⊗ σ f`. -/
 theorem map_rwhisker {a a' : Obj S} (f : a ⟶ a') (b : Obj S) (h : a.Composable b) :
     φ.toLayerMap.map (Diagram.rwhisker f b h) =
@@ -834,6 +843,7 @@ theorem map_rwhisker {a a' : Obj S} (f : a ⟶ a') (b : Obj S) (h : a.Composable
     rfl
   · simp [layer, Layer.wr, Layer.wl, MirrorColourMap.obj, MirrorColourMap.word_append]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The reflection of `1_a ⊗ g` is `σ g ⊗ 1_{σ a}`. -/
 theorem map_lwhisker (a : Obj S) {b b' : Obj S} (g : b ⟶ b') (h : a.Composable b) :
     φ.toLayerMap.map (Diagram.lwhisker a g h) =
@@ -850,6 +860,7 @@ theorem oddCount_map (hodd : ∀ g, S'.odd (φ.gen g) = S.odd g) {a b : Obj S} (
 
 variable {R : Type w} [CommRing R] (Q : Presentation.{w, v'} S' R)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Koszul signs for reflections in a vertical axis.** For `f : a ⟶ a'`, `g : b ⟶ b'` with
 `a` composable with `b`, the reflection of `f ⊗ g = (f ⊗ 1) ≫ (1 ⊗ g)` is
 `(-1)^{|f||g|} σ g ⊗ σ f` in the presented category. -/
@@ -865,12 +876,13 @@ theorem diag_map_tensor (hodd : ∀ g, S'.odd (φ.gen g) = S.odd g) {a a' b b' :
     (φ.toLayerMap.map f) (φ.composable h) (φ.composable (h.map_right g))
     (φ.composable (h.map_left f))
   rw [φ.oddCount_map hodd, φ.oddCount_map hodd, mul_comm] at key
-  simp only [toLayerMap_obj] at key
   rw [LayerMap.map_comp, φ.map_rwhisker, φ.map_lwhisker, Q.diag_comp, Q.diag_cast,
     Q.diag_cast]
   simp only [Category.assoc, eqToHom_trans_assoc, eqToHom_refl, Category.id_comp]
-  rw [← Category.assoc (Q.diag _) (Q.diag _), ← Q.diag_comp, key, Linear.smul_comp,
-    Linear.comp_smul]
+  rw [← Category.assoc (Q.diag _) (Q.diag _), ← Q.diag_comp]
+  erw [key]
+  rw [Linear.smul_comp, Linear.comp_smul]
+  rfl
 
 end SigMirror
 

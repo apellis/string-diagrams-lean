@@ -116,6 +116,7 @@ def comp {S'' : Signature.{u₀, u₁, u₂}} (ψ : OpLayerMap S' S'') : LayerMa
   dom_eq hv := by simp [ψ.dom_eq (φ.valid hv), φ.cod_eq hv]
   cod_eq hv := by simp [ψ.cod_eq (φ.valid hv), φ.dom_eq hv]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem comp_map {S'' : Signature.{u₀, u₁, u₂}} (ψ : OpLayerMap S' S'') {a b : Obj S}
     (d : a ⟶ b) : (φ.comp ψ).map d = ψ.map (φ.map d) :=
   Diagram.ext (by simp [List.map_reverse, Function.comp_def])
@@ -161,6 +162,7 @@ theorem lin_smul {a b : Obj S} (r : R) (f : LinDiagram R a b) : φ.lin (r • f)
 
 theorem lin_zero {a b : Obj S} : φ.lin (0 : LinDiagram R a b) = 0 := Finsupp.mapDomain_zero
 
+set_option backward.isDefEq.respectTransparency false in
 theorem lin_comp {a b c : Obj S} (f : LinDiagram R a b) (g : LinDiagram R b c) :
     φ.lin (f ≫ g) = φ.lin g ≫ φ.lin f := by
   induction f using Finsupp.induction_linear with
@@ -190,7 +192,7 @@ def toPresented : Obj S ⥤ Q.Presentedᵒᵖ where
   map_comp f g := by
     apply Quiver.Hom.unop_inj
     simp only [Diagram.weight_comp, map_comp, Q.diag_comp, unop_comp, Quiver.Hom.unop_op,
-      Linear.smul_comp, Linear.comp_smul, smul_smul, mul_comm]
+      Linear.smul_comp, Linear.comp_smul, smul_smul]
 
 @[simp] theorem toPresented_obj (a : Obj S) :
     (φ.toPresented Q χ).obj a = op (Q.obj (φ.obj a)) := rfl
@@ -210,6 +212,7 @@ theorem freeLift_toPresented_of {a b : Obj S} (d : a ⟶ b) :
       (Diagram.weight χ d • Q.diag (φ.map d)).op :=
   freeLift_map_of _ d
 
+set_option backward.isDefEq.respectTransparency false in
 /-- With trivial weights, the linear extension is the class of the image. -/
 theorem freeLift_toPresented_one {a b : Obj S} (f : LinDiagram R a b) :
     (freeLift R (φ.toPresented Q fun _ => 1)).map f = (Q.lin (φ.lin f)).op := by
@@ -270,6 +273,7 @@ theorem map_whisker {i : ι} {a b : Obj S} (d : a ⟶ b) (u : Obj S) (v : List S
   exact W.layer_whisker ha hw ((Diagram.chain d).valid_of_mem hL)
     ((Diagram.chain d).nonempty_of_mem hL)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem toPresented_map_whisker {i : ι} {a b : Obj S} (d : a ⟶ b) (u : Obj S)
     (v : List S.Colour) (ha : W.Admissible a) (hw : a.WhiskerOK u v) :
     ((φ i).toPresented Q χ).map (Diagram.whisker d u v hw) =
@@ -281,6 +285,7 @@ theorem toPresented_map_whisker {i : ι} {a b : Obj S} (d : a ⟶ b) (u : Obj S)
     Quiver.Hom.unop_op, Q.whisk_smul, Q.whisk_diag _ _ _ (W.whiskerOK ha hw ⟨d⟩),
     Linear.smul_comp, Linear.comp_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem freeLift_whisker_eq_zero {i : ι} {a b : Obj S} (f : LinDiagram R a b) (u : Obj S)
     (v : List S.Colour) (ha : W.Admissible a) (hw : a.WhiskerOK u v)
     (hf : (freeLift R ((φ (W.idx i a u v)).toPresented Q χ)).map f = 0) :
@@ -358,6 +363,7 @@ theorem lift_lin {a b : Obj S} (f : LinDiagram R a b) :
     (lift P W hadm hrel hint i).map (P.lin f) = (freeLift R ((φ i).toPresented Q χ)).map f :=
   P.lift_lin _ f
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The induced functors commute with whiskering: whiskering by `u` and `v` in `P` becomes
 whiskering by `W.left i a u v` and `W.right i a u v` in `Q`. -/
 theorem lift_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) {u : Obj S} {v : List S.Colour}
@@ -388,6 +394,7 @@ end Lift
 
 variable (Q χ)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A contravariant layer map respects the interchange law if it sends the four layers of an
 instance `x` to the four layers of an instance `x'` with the same Koszul sign as a reflection
 in a horizontal axis does: the image of the upper layer on either side is the lower layer on
@@ -414,6 +421,7 @@ theorem toPresented_interchange_reflect {x : InterchangeData S} (hx : x.Valid)
   simp only [unop_sub_hom, unop_smul_hom, Quiver.Hom.unop_op, Limits.unop_zero, Linear.smul_comp,
     Linear.comp_smul, smul_smul, x.sign_cast_mul_self_assoc, sub_self]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A contravariant layer map respects the interchange law if it sends the four layers of an
 instance `x` to the four layers of an instance `x'` with the same Koszul sign as a rotation by a
 half turn does: the image of the upper layer on either side is the lower layer on the other
@@ -460,6 +468,7 @@ theorem preservesDeg_parityDeg
     φ.PreservesDeg (Presentation.parityDeg S) (Presentation.parityDeg S') := fun hv => by
   simp only [Presentation.parityDeg, h hv]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem PreservesDeg.toPresented_mem_homDeg (h : φ.PreservesDeg deg deg') {a b : Obj S}
     {f : LinDiagram R a b} {e : A} (hf : f ∈ LinDiagram.homDeg R deg a b e) :
     ((freeLift R (φ.toPresented Q χ)).map f).unop ∈ Q.homDeg deg' (φ.obj b) (φ.obj a) e := by

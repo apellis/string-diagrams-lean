@@ -90,6 +90,7 @@ variable (D : S.ColourDuality)
 instance pivotal_isEven [S.IsEven] : (S.pivotal D).IsEven :=
   ⟨fun g => by cases g <;> simp [pivotal, IsEven.odd_eq_false]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem pivotal_ok (r : S.Region) (w : List S.Colour) :
     (S.pivotal D).ok r w ↔ S.ok r w := by
   induction w generalizing r with
@@ -288,6 +289,7 @@ def Signature.ColourDuality.pivotal (D : S.ColourDuality) : (S.pivotal D).Colour
   src_dual := D.src_dual
   tgt_dual := D.tgt_dual
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem Signature.ColourDuality.pivotal_dualWord (D : S.ColourDuality)
     (w : List S.Colour) : D.pivotal.dualWord w = D.dualWord w := by
   induction w with
@@ -301,6 +303,7 @@ open Pivotal
 variable {R : Type w} [CommRing R] [S.IsEven] (E : S.ColourInvolution)
   (Q : Presentation.{w, v} (S.pivotal E.toColourDuality) R)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The cups and caps of the pivotal extension exhibit every colour as biadjoint to its dual:
 `c ⊣ c*` by the cup and the cap of `c`, and `c* ⊣ c` by the cup and the cap of `c*`
 (transported along `c** = c`). -/
@@ -332,6 +335,7 @@ abbrev pivotalBiadj (hz : Q.PivotalZigzags E.toColourDuality) :
 
 variable (hz : Q.PivotalZigzags E.toColourDuality)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The biadjunction of `c*` is the exchange of the biadjunction of `c`. -/
 theorem pivotalBiadj_symm_heq (c : S.Colour) :
     HEq (pivotalBiadj E Q hz (Q.colourHom c) c rfl).symm
@@ -354,6 +358,7 @@ theorem pivotalBiadj_symm_isCyclic (c : S.Colour) :
   isCyclic_eqToHom rfl (Bicat.Hom.ext (Obj.ext rfl (by
     show [c] = [E.dual (E.dual c)]; rw [E.dual_dual]))) (pivotalBiadj_symm_heq E Q hz c)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The cups of the pivotal extension are cyclic. -/
 theorem pivotal_isCyclic_cup (c : S.Colour) (hg : (S.pivotal E.toColourDuality).GenValid (.cup c)) :
     Biadjunction.IsCyclic (biadj (pivotalBiadj E Q hz) (Q.genDom (.cup c) hg))
@@ -379,6 +384,7 @@ theorem pivotal_isCyclic_cup (c : S.Colour) (hg : (S.pivotal E.toColourDuality).
   rw [e₄] at key
   exact key
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The caps of the pivotal extension are cyclic. -/
 theorem pivotal_isCyclic_cap (c : S.Colour) (hg : (S.pivotal E.toColourDuality).GenValid (.cap c)) :
     Biadjunction.IsCyclic (biadj (pivotalBiadj E Q hz) (Q.genDom (.cap c) hg))
@@ -426,6 +432,7 @@ theorem pivotal_isCyclic
 
 /-- The pivotal structure on the bicategory presented by `Q`, when every original generator is
 cyclic. -/
+@[instance_reducible]
 def pivotalStructure
     (hgen : ∀ (g : S.Gen) (hg : (S.pivotal E.toColourDuality).GenValid (.gen g)),
       Biadjunction.IsCyclic (biadj (pivotalBiadj E Q hz) (Q.genDom (.gen g) hg))

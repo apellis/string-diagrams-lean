@@ -54,7 +54,7 @@ namespace MonoidalDuality
 
 /-- The one-object bicategory `MonoidalSingleObj C`, with its universe fixed. -/
 abbrev SingleObj (C : Type u) [Category.{v} C] [MonoidalCategory C] : Type :=
-  MonoidalSingleObj.{u, v, 1} C
+  MonoidalSingleObj C
 
 /-- The unique object of the bicategory `MonoidalSingleObj C`. -/
 local notation "⋆" => (MonoidalSingleObj.star C : SingleObj C)
@@ -80,6 +80,7 @@ theorem adjunction_counit (X Y : C) [ExactPairing X Y] : (adjunction X Y).counit
   rfl
 
 /-- An adjunction `X ⊣ Y` in `MonoidalSingleObj C` as an exact pairing of `X` and `Y`. -/
+@[instance_reducible]
 def exactPairing {X Y : C} (adj : @Bicategory.Adjunction (SingleObj C) _ ⋆ ⋆ X Y) :
     ExactPairing X Y where
   coevaluation' := adj.unit
@@ -284,22 +285,22 @@ end Traces
 
 section Linear
 
-instance instPreadditiveHom [Preadditive C] (a b : MonoidalSingleObj.{u, v, w + 1} C) :
+instance instPreadditiveHom [Preadditive C] (a b : MonoidalSingleObj C) :
     Preadditive (a ⟶ b) :=
   inferInstanceAs (Preadditive C)
 
 instance instLinearHom (R : Type*) [Semiring R] [Preadditive C] [Linear R C]
-    (a b : MonoidalSingleObj.{u, v, w + 1} C) : Linear R (a ⟶ b) :=
+    (a b : MonoidalSingleObj C) : Linear R (a ⟶ b) :=
   inferInstanceAs (Linear R C)
 
 instance [Preadditive C] [MonoidalPreadditive C] :
-    LocallyPreadditive (MonoidalSingleObj.{u, v, w + 1} C) where
+    LocallyPreadditive (MonoidalSingleObj C) where
   whiskerLeft_add f _ _ η θ := MonoidalPreadditive.whiskerLeft_add (C := C) (X := f) η θ
   add_whiskerRight η θ h := MonoidalPreadditive.add_whiskerRight (C := C) (X := h) η θ
 
 instance (R : Type*) [Semiring R] [Preadditive C] [Linear R C] [MonoidalPreadditive C]
     [MonoidalLinear R C] :
-    LocallyLinear R (MonoidalSingleObj.{u, v, w + 1} C) where
+    LocallyLinear R (MonoidalSingleObj C) where
   whiskerLeft_smul f _ _ r η := MonoidalLinear.whiskerLeft_smul (C := C) f r η
   smul_whiskerRight r η h := MonoidalLinear.smul_whiskerRight (C := C) r η h
 
