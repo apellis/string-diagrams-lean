@@ -38,6 +38,7 @@ variable {K : Type u} [Field K]
 theorem obj_p (a : ZMod 2) :
     (obj K a).p = 𝟙 ((CategoryTheory.Mat_.embedding _).obj (⟨⟨a, ()⟩⟩ : D K)) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `End(Πᵃ ⋆) = K`. -/
 theorem isSchur_obj (a : ZMod 2) : IsSchur (k := K) (obj K a) := by
   intro f
@@ -50,11 +51,12 @@ theorem isSchur_obj (a : ZMod 2) : IsSchur (k := K) (obj K a) := by
   change _ = scal (f.f PUnit.unit PUnit.unit) * scal (𝟙 _)
   rw [scal_id, mul_one]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `Πᵃ ⋆ ≠ 0`. -/
 theorem id_obj_ne_zero (a : ZMod 2) : 𝟙 (obj K a) ≠ 0 := by
   intro h
   have := congrArg (fun φ : obj K a ⟶ obj K a => scal (φ.f PUnit.unit PUnit.unit)) h
-  simp only [Karoubi.id_f, obj_p, CategoryTheory.Mat_.id_apply_self, scal_id] at this
+  simp only [Karoubi.id_f, obj_p, CategoryTheory.Mat_.id_apply_self] at this
   exact one_ne_zero (this.trans rfl)
 
 /-- `Hom(Πᵃ ⋆, Πᵇ ⋆) = 0` for `a ≠ b`. -/
