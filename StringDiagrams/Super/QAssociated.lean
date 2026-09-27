@@ -96,7 +96,7 @@ namespace QAssociated
 variable (R : Type w) [CommRing R] (A : Type w₁) [Category.{w₂} A] [Preadditive A] [Linear R A]
   [QPiCategory R A]
 
-open Associated
+open StringDiagrams.Associated
 
 /-- The superfunctor `Q̂` of the associated Π-supercategory. -/
 abbrev Qhat : Associated R A ⥤ Associated R A :=
@@ -116,6 +116,7 @@ instance : (Qhat R A).Faithful where
     exact hom_ext ((QPiCategory.Q (R := R)).map_injective h1)
       ((QPiCategory.Q (R := R)).map_injective ((cancel_mono _).1 h2))
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (Qhat R A).Full where
   map_surjective {X Y} f :=
     ⟨homMk ((QPiCategory.Q (R := R)).preimage f.1)
@@ -123,7 +124,8 @@ instance : (Qhat R A).Full where
         (f.2 ≫ (QPiCategory.Q_pi (R := R) (C := A)).β.hom.app Y.obj)), by
       apply hom_ext
       · simp
-      · simp⟩
+      · simp
+        exact Category.comp_id _⟩
 
 /-- `Q̂` is evenly dense: `jj_λ : Q Q⁻¹ λ ≅ λ` is even. -/
 theorem Qhat_evenlyDense : EvenlyDense R (Qhat R A) := fun Y =>
@@ -161,7 +163,8 @@ def shiftData : ShiftData R (Associated R A) where
     have h3 := inv_mem _ ((Qhat_superequivalence R A).unitIso_mem X)
     have := comp_mem h1 (comp_mem (map_mem (Qhat_superequivalence R A).inverse h2)
       (map_mem (Qhat_superequivalence R A).inverse (map_mem (Qhat R A) h3)))
-    simpa using this
+    rw [add_zero, add_zero] at this
+    exact this
   counit_mem X := Superequivalence.counitIso_mem (Qhat_superequivalence R A) X
 
 end QAssociated
@@ -178,7 +181,7 @@ namespace QAssociated
 variable {R : Type w} [CommRing R] {A : Type w₁} [Category.{w₂} A] [Preadditive A] [Linear R A]
   [QPiCategory R A]
 
-open Associated Orbit
+open StringDiagrams.Associated Orbit
 
 example : QPiSupercategory R (QAssociated R A) := inferInstance
 
@@ -199,6 +202,7 @@ def counit : GUnderlying R (QAssociated R A) ⥤ A :=
 theorem unit_map_val {X Y : A} (f : X ⟶ Y) :
     ((unit R A).map f).1.1 = (ι (shiftData R A)).map (homMk (X := ⟨X⟩) (Y := ⟨Y⟩) f 0) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem unit_comp_counit : unit R A ⋙ counit R A = 𝟭 A :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by
     simp only [Functor.comp_obj, Functor.comp_map, Functor.id_obj, Functor.id_map, eqToHom_refl,
@@ -206,6 +210,7 @@ theorem unit_comp_counit : unit R A ⋙ counit R A = 𝟭 A :=
     show ((π₀ (shiftData R A)).map ((ιZ (shiftData R A)).map (homMk (X := ⟨X⟩) (Y := ⟨Y⟩) f 0))).1 = f
     rw [ιZ_comp_π₀_map]; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem counit_comp_unit : counit R A ⋙ unit R A = 𝟭 _ :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y x => by
     simp only [Functor.comp_obj, Functor.comp_map, Functor.id_obj, Functor.id_map, eqToHom_refl,
@@ -226,6 +231,7 @@ theorem unit_map_pi {X Y : A} (f : X ⟶ Y) :
   congr 1
   exact congrArg Subtype.val (Associated.unit_map_pi (R := R) (C := A) f)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem unit_map_Q {X Y : A} (f : X ⟶ Y) :
     (QPiCategory.Q (R := R)).map ((unit R A).map f) = (unit R A).map ((QPiCategory.Q (R := R)).map f) := by
   apply Underlying.hom_ext; apply DegreeZero.hom_ext
@@ -246,6 +252,7 @@ theorem ξ_unit (X : A) :
   exact (ξ_hom_eq (d := shiftData R A) (⟨X⟩ : Associated R A)).trans
     (congrArg (ι (shiftData R A)).map (Associated.ξ_hom (R := R) (C := A) ⟨X⟩))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `unit` carries `β_Q` to `β_Q`. -/
 theorem β_Q_unit (X : A) :
     (QPiCategory.Q_pi (R := R) (C := GUnderlying R (QAssociated R A))).β.hom.app ((unit R A).obj X) =
@@ -258,6 +265,7 @@ theorem β_Q_unit (X : A) :
   congr 1
   exact Associated.β_map (hF := QPiCategory.Q_pi (R := R) (C := A)) (⟨X⟩ : Associated R A)
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R A) in
 /-- **`𝔼 ∘ 𝔻 = I`**: the identification `unit` is a `(Q, Π)`-functor with `β = 1` and
 `γ = 1`. -/
@@ -284,9 +292,11 @@ def unitQPiFunctor : QPiFunctor R (unit R A) where
       CategoryTheory.Functor.map_id, Category.id_comp, Category.comp_id]
     exact β_Q_unit X
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem unitQPiFunctor_β_hom_app (X : A) :
     (unitQPiFunctor R A).β.hom.app X = 𝟙 _ := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem unitQPiFunctor_γ_hom_app (X : A) :
     (unitQPiFunctor R A).γ.hom.app X = 𝟙 _ := rfl
 
@@ -308,9 +318,10 @@ theorem compat_inv {F : A ⥤ A'} [F.Additive] (hF : QPiFunctor R F) (Y : A) :
     (QPiCategory.Q (R := R)).map (hF.β.hom.app Y))]
   simp only [Category.assoc]
   rw [reassoc_of% h]
-  simp only [Functor.comp_obj, ← Functor.map_comp_assoc, Iso.hom_inv_id_app, Iso.hom_inv_id_app_assoc]
+  simp only [Functor.comp_obj, ← Functor.map_comp_assoc, Iso.hom_inv_id_app]
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The even isomorphism `γ̂_F : Q̂' F̂ ≅ F̂ Q̂` of the associated Π-supercategories, for a
 `(Q, Π)`-functor; the naturality uses the compatibility of `γ_F` with `β`. -/
 def γhat {F : A ⥤ A'} [F.Additive] (hF : QPiFunctor R F) :
@@ -320,15 +331,15 @@ def γhat {F : A ⥤ A'} [F.Additive] (hF : QPiFunctor R F) :
         (Y := ⟨F.obj ((QPiCategory.Q (R := R)).obj X.obj)⟩) (hF.γ.hom.app X.obj) 0
       inv := homMk (X := ⟨F.obj ((QPiCategory.Q (R := R)).obj X.obj)⟩)
         (Y := ⟨(QPiCategory.Q (R := R)).obj (F.obj X.obj)⟩) (hF.γ.inv.app X.obj) 0
-      hom_inv_id := hom_ext (by simp) (by simp)
-      inv_hom_id := hom_ext (by simp) (by simp) })
+      hom_inv_id := hom_ext (by simp; rfl) (by simp)
+      inv_hom_id := hom_ext (by simp; rfl) (by simp) })
     (fun {_ Y} f => by
       apply hom_ext
       · simp only [Functor.comp_obj, Functor.comp_map, Associated.map_map, comp_fst, homMk_fst,
           homMk_snd, Limits.comp_zero, Limits.zero_comp, sub_zero, Functor.map_zero]
         exact hF.γ.hom.naturality f.1
       · simp only [Functor.comp_obj, Functor.comp_map, Associated.map_map, comp_snd, homMk_fst,
-          homMk_snd, Limits.comp_zero, zero_add, add_zero, Functor.map_comp, Category.assoc]
+          homMk_snd, Limits.comp_zero, zero_add, Functor.map_comp, Category.assoc]
         have n := hF.γ.hom.naturality f.2
         simp only [Functor.comp_obj, Functor.comp_map] at n
         rw [Limits.zero_comp, add_zero]
@@ -353,6 +364,7 @@ abbrev map {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F) :
 example {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F) :
     IsGradedSuperfunctor R (map hF) := inferInstance
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **`𝔼 ∘ 𝔻 = I` on 1-morphisms**: under the identifications `unit`, `𝔼(𝔻 F) = F`. -/
 theorem unit_comp_map {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor R F) :
     unit R A ⋙ GUnderlying.map R (map hF) = F ⋙ unit R A' :=
@@ -368,6 +380,7 @@ theorem unit_comp_map {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : QPiFunctor 
     congr 1
     exact hom_ext rfl (by simp [shiftFunctor])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **`𝔻` on 2-morphisms.** A `(Q, Π)`-natural transformation `x : F ⟶ G` between
 `(Q, Π)`-functors gives the natural transformation `x̂_λ := ι(x_λ, 0)` between `𝔻 F` and `𝔻 G`. -/
 def mapNat {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive] [G.Linear R]
@@ -390,6 +403,7 @@ theorem mapNat_app {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive] [G.Li
       (ι (shiftData R A')).map (homMk (X := ⟨F.obj X.obj.obj⟩) (Y := ⟨G.obj X.obj.obj⟩)
         (x.app X.obj.obj) 0) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `𝔻 x` is even of degree zero. -/
 theorem isGradedSupernatural_mapNat {F G : A ⥤ A'} [F.Additive] [F.Linear R] [G.Additive]
     [G.Linear R] {hF : QPiFunctor R F} {hG : QPiFunctor R G} {x : F ⟶ G}
@@ -434,6 +448,7 @@ theorem shiftFunctor_γ_hom_app {F : A ⥤ A'} [F.Additive] [F.Linear R] (hF : Q
 
 /-! ### `𝔻` is a strict 2-functor: identities and composition of `(Q, Π)`-functors -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **`𝔻` preserves identity 1-morphisms.** -/
 theorem map_id : map (QPiFunctor.id R A) = 𝟭 (QAssociated R A) := by
   rw [← Orbit.map_id]
@@ -447,6 +462,7 @@ theorem map_id : map (QPiFunctor.id R A) = 𝟭 (QAssociated R A) := by
 
 variable {A'' : Type w₅} [Category.{w₆} A''] [Preadditive A''] [Linear R A''] [QPiCategory R A'']
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **`𝔻` preserves composition of 1-morphisms.** -/
 theorem map_comp {F : A ⥤ A'} [F.Additive] [F.Linear R] {G : A' ⥤ A''} [G.Additive] [G.Linear R]
     (hF : QPiFunctor R F) (hG : QPiFunctor R G) : map (hF.comp hG) = map hF ⋙ map hG := by
@@ -455,10 +471,12 @@ theorem map_comp {F : A ⥤ A'} [F.Additive] [F.Linear R] {G : A' ⥤ A''} [G.Ad
   · simp only [eqToHom_refl, Category.comp_id, Category.id_comp, ShiftFunctor.comp_F,
       Functor.comp_map, shiftFunctor_F]
     apply hom_ext <;> simp
+    rfl
   · simp only [shiftFunctor_γ_hom_app, ShiftFunctor.comp_γ_hom_app, QPiFunctor.comp_γ_hom_app,
       eqToHom_refl, Category.comp_id, Category.id_comp]
     change _ = homMk _ 0 ≫ (Associated.map hG.toPiFunctor).map (homMk _ 0)
     apply hom_ext <;> simp
+    rfl
 
 /-! ### `𝔻` on whiskered 2-morphisms -/
 
@@ -470,19 +488,19 @@ omit [F.Additive] [F.Linear R] [G.Additive] [G.Linear R] in
 theorem isQPiNatural_whiskerLeft {E : Type w₅} [Category.{w₆} E] [Preadditive E] [Linear R E]
     [QPiCategory R E] {K : E ⥤ A} [K.Additive] [K.Linear R] (hK : QPiFunctor R K)
     (hx : QPiFunctor.IsQPiNatural R hF hG x) :
-    QPiFunctor.IsQPiNatural R (hK.comp hF) (hK.comp hG) (whiskerLeft K x) :=
+    QPiFunctor.IsQPiNatural R (hK.comp hF) (hK.comp hG) (Functor.whiskerLeft K x) :=
   ⟨Associated.isPiNatural_whiskerLeft hK.toPiFunctor hx.1, fun X => by
-    simp only [QPiFunctor.comp_γ_hom_app, whiskerLeft_app, Functor.comp_obj, Category.assoc]
+    simp only [QPiFunctor.comp_γ_hom_app, Functor.whiskerLeft_app, Functor.comp_obj, Category.assoc]
     rw [x.naturality, reassoc_of% (hx.2 (K.obj X))]⟩
 
 omit [F.Additive] [F.Linear R] [G.Additive] [G.Linear R] in
 /-- Whiskering a `(Q, Π)`-natural transformation by a `(Q, Π)`-functor on the right. -/
 theorem isQPiNatural_whiskerRight {K : A' ⥤ A''} [K.Additive] [K.Linear R] (hK : QPiFunctor R K)
     (hx : QPiFunctor.IsQPiNatural R hF hG x) :
-    QPiFunctor.IsQPiNatural R (hF.comp hK) (hG.comp hK) (whiskerRight x K) :=
+    QPiFunctor.IsQPiNatural R (hF.comp hK) (hG.comp hK) (Functor.whiskerRight x K) :=
   ⟨Associated.isPiNatural_whiskerRight hK.toPiFunctor hx.1, fun X => by
-    simp only [QPiFunctor.comp_γ_hom_app, whiskerRight_app, Functor.comp_obj, Category.assoc,
-      ← K.map_comp, hx.2 X]
+    simp only [QPiFunctor.comp_γ_hom_app, Functor.whiskerRight_app, Functor.comp_obj,
+      Category.assoc, ← K.map_comp, hx.2 X]
     rw [K.map_comp, reassoc_of% (hK.γ.hom.naturality (x.app X))]⟩
 
 /-- **`𝔻` preserves whiskering on the left** (with `𝔻(K F) = 𝔻 K ⋙ 𝔻 F`, `map_comp`). -/
@@ -491,6 +509,7 @@ theorem mapNat_whiskerLeft_app {E : Type w₅} [Category.{w₆} E] [Preadditive 
     (hx : QPiFunctor.IsQPiNatural R hF hG x) (X : QAssociated R E) :
     (mapNat (isQPiNatural_whiskerLeft hK hx)).app X = (mapNat hx).app ((map hK).obj X) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **`𝔻` preserves whiskering on the right.** -/
 theorem mapNat_whiskerRight_app {K : A' ⥤ A''} [K.Additive] [K.Linear R] (hK : QPiFunctor R K)
     (hx : QPiFunctor.IsQPiNatural R hF hG x) (X : QAssociated R A) :
@@ -531,6 +550,7 @@ theorem TbF_map_injective {X Y : Associated R (GUnderlying R B)} {f g : X ⟶ Y}
     (h : (TbF R B).map f = (TbF R B).map g) : f = g :=
   Associated.T_map_injective (DegreeZero.hom_ext h)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `T` intertwines `Q̂` and `Q` (Lemma 5.1, naturality of `T`). -/
 theorem TbF_map_Qhat {X Y : Associated R (GUnderlying R B)} (f : X ⟶ Y) :
     (TbF R B).map ((Qhat R (GUnderlying R B)).map f) =
@@ -593,7 +613,7 @@ theorem τNat_hom_mem (n : ℕ) (X : Associated R (GUnderlying R B)) :
   induction n with
   | zero => exact ⟨id_mem _, id_mem_degree _⟩
   | succ n ih =>
-    refine ⟨by simpa using comp_mem (σ_hom_mem (R := R) _) ih.1, ?_⟩
+    refine ⟨by simpa using! comp_mem (σ_hom_mem (R := R) _) ih.1, ?_⟩
     have := comp_mem_degree (σ_hom_mem_degree (R := R) _) ih.2
     rwa [show (-1 + -(n : ℤ)) = -((n + 1 : ℕ) : ℤ) by push_cast; ring] at this
 
@@ -607,17 +627,17 @@ theorem τNeg_hom_mem (n : ℕ) (X : Associated R (GUnderlying R B)) :
     refine ⟨?_, ?_⟩
     · have := comp_mem (σ_inv_mem (R := R) (bobj ((dB R B).Qi.obj X)))
         (map_mem (TbF R B) ((dB R B).counit_mem X))
-      simpa using this
+      simpa using! this
     · have := comp_mem_degree (σ_inv_mem_degree (R := R) (bobj ((dB R B).Qi.obj X)))
         (TbF_map_mem_degree (R := R) (B := B) ((dB R B).e.counitIso.hom.app X))
-      simpa using this
+      simpa using! this
   | succ n ih =>
     show (σ (R := R) _).inv ≫ (TbF R B).map ((dB R B).e.counitIso.hom.app _) ≫ (τNeg R B n X).hom ∈ _ ∧
       (σ (R := R) _).inv ≫ (TbF R B).map ((dB R B).e.counitIso.hom.app _) ≫ (τNeg R B n X).hom ∈ _
     refine ⟨?_, ?_⟩
     · have := comp_mem (σ_inv_mem (R := R) (bobj ((dB R B).Qi.obj (((dB R B).powNeg (n + 1)).obj X))))
         (comp_mem (map_mem (TbF R B) ((dB R B).counit_mem (((dB R B).powNeg (n + 1)).obj X))) ih.1)
-      simpa using this
+      simpa using! this
     · have := comp_mem_degree
         (σ_inv_mem_degree (R := R) (bobj ((dB R B).Qi.obj (((dB R B).powNeg (n + 1)).obj X))))
         (comp_mem_degree (TbF_map_mem_degree (R := R) (B := B)
@@ -638,6 +658,7 @@ theorem τ_inv_mem (i : ℤ) (X : Associated R (GUnderlying R B)) :
   refine ⟨inv_mem _ (τ_hom_mem i X).1, ?_⟩
   simpa using inv_mem_degree _ (τ_hom_mem i X).2
 
+set_option backward.isDefEq.respectTransparency false in
 theorem τ_succ_inv (i : ℤ) (X : Associated R (GUnderlying R B)) :
     (τ R B (i + 1) X).inv = (τ R B i X).inv ≫ (σ (R := R) (bobj (((dB R B).pow i).obj X))).inv ≫
       (TbF R B).map (((dB R B).succ i).hom.app X) := by
@@ -652,6 +673,7 @@ variable {X Y : Associated R (GUnderlying R B)}
 def val (f : (dB R B).FamAll X Y) (i j : ℤ) : bobj X ⟶ bobj Y :=
   (τ R B i X).inv ≫ (TbF R B).map (f i j) ≫ (τ R B j Y).hom
 
+set_option backward.isDefEq.respectTransparency false in
 /-- All entries of a compatible family give the same morphism of `B`. -/
 theorem val_succ {m : ℤ} {f : (dB R B).FamAll X Y} (hf : f ∈ (dB R B).Fam R m X Y) (i j : ℤ) :
     val f (i + 1) (j + 1) = val f i j := by
@@ -710,6 +732,7 @@ theorem TL_lof {m : ℤ} (f : (dB R B).Fam R m X Y) :
   erw [DirectSum.toModule_lof]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R B) in
 /-- **`𝔻 ∘ 𝔼 ≅ I`.** The graded superfunctor `T_B : (B̲)^ ⥤ B`: a family of degree `m` goes to
 `τ_{-m} ∘ T(f_{0,-m})`, where `T` is the functor of Lemma 5.1 and `τ_{-m} : Q⁻ᵐ μ ≅ μ` is built
@@ -723,14 +746,19 @@ def T : QAssociated R (GUnderlying R B) ⥤ B where
     show val ((dB R B).idFam X.obj) 0 (-0) = 𝟙 _
     rw [neg_zero, val, (dB R B).idFam_self, τ_zero]
     simp
+    rfl
   map_comp {X Y Z} x y := by
     show TL R B _ _ ((dB R B).compL _ _ _ x y) = TL R B _ _ x ≫ TL R B _ _ y
     induction x using Hom.induction_on with
-    | zero => simp
+    | zero =>
+      simp
+      exact (map_zero _).trans (Limits.zero_comp.symm.trans (congrArg (· ≫ _) (map_zero _).symm))
     | add x x' hx hx' => simp only [map_add, LinearMap.add_apply, hx, hx', Preadditive.add_comp]
     | lof m f =>
       induction y using Hom.induction_on with
-      | zero => simp
+      | zero =>
+        simp
+        exact (map_zero _).trans (Limits.comp_zero.symm.trans (congrArg (_ ≫ ·) (map_zero _).symm))
       | add y y' hy hy' => simp only [map_add, hy, hy', Preadditive.comp_add]
       | lof n g =>
         rw [compL_lof_lof, TL_lof, TL_lof, TL_lof, famCompₗ_apply, val_famComp,
@@ -773,14 +801,17 @@ instance : IsGradedSuperfunctor R (T R B) where
   map_mem_degree {X Y n x} hx := by
     obtain ⟨f, rfl⟩ := hx
     rw [T_map_lof]
-    simpa using val_mem_degree (f := f.1) 0 (-n)
+    simpa using! val_mem_degree (f := f.1) 0 (-n)
 
 /-! ### `T_B` is an isomorphism -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem dproj_TL (n : ℤ) (x : (dB R B).Hom X Y) :
     dproj R n (TL R B X Y x) = val ((dB R B).component n X Y x).1 0 (-n) := by
   induction x using Hom.induction_on with
-  | zero => simp [val]
+  | zero =>
+    simp [val]
+    exact (congrArg _ (map_zero _)).trans (map_zero _)
   | add x y hx hy =>
     rw [map_add, map_add, hx, hy, map_add]
     simp only [val, Submodule.coe_add, FamAll.add_apply, Functor.map_add, Preadditive.add_comp,
@@ -794,6 +825,7 @@ theorem dproj_TL (n : ℤ) (x : (dB R B).Hom X Y) :
     · rw [(dB R B).component_lof_of_ne _ h, dproj_of_mem_ne (by simpa using val_mem_degree (f := f.1) 0 (-m)) h]
       simp [val]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem TL_injective : Function.Injective (TL R B X Y) := by
   rw [← LinearMap.ker_eq_bot, Submodule.eq_bot_iff]
   intro x hx
@@ -834,6 +866,7 @@ theorem TbF_famOf {n : ℤ} (g : bobj X ⟶ bobj Y) (hg : g ∈ degree (R := R) 
     (h : i - j = n) : (TbF R B).map (famOf g hg i j) = (τ R B i X).hom ≫ g ≫ (τ R B j Y).inv := by
   rw [famOf, dite_eq_left h, TbF_map_TbPre]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem famOf_mem {n : ℤ} (g : bobj X ⟶ bobj Y) (hg : g ∈ degree (R := R) _ _ n) :
     famOf g hg ∈ (dB R B).Fam R n X Y := by
   refine ⟨fun i j h => by rw [famOf, dite_eq_right h], fun i j => ?_⟩
@@ -842,7 +875,7 @@ theorem famOf_mem {n : ℤ} (g : bobj X ⟶ bobj Y) (hg : g ∈ degree (R := R) 
     rw [TbF_famOf g hg (by omega), Functor.map_comp, Functor.map_comp]
     erw [TbF_map_Qhat]
     rw [TbF_famOf g hg h, τ_succ, τ_succ_inv, QPiSupercategory.Q_map_eq]
-    simp only [Category.assoc, Iso.inv_hom_id_assoc, ← Functor.map_comp, Iso.inv_hom_id_app]
+    simp only [Category.assoc]
   · rw [famOf, famOf, dite_eq_right (by omega), dite_eq_right h]; simp
 
 theorem TL_famOf {n : ℤ} (g : bobj X ⟶ bobj Y) (hg : g ∈ degree (R := R) _ _ n) :
@@ -862,6 +895,7 @@ instance : (T R B).Faithful where
 instance : (T R B).Full where
   map_surjective g := TL_surjective g
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R B) in
 /-- The inverse of `T_B`. -/
 @[simps obj]
@@ -875,17 +909,21 @@ def Tinv : B ⥤ QAssociated R (GUnderlying R B) where
 theorem T_map_Tinv_map {b b' : B} (g : b ⟶ b') : (T R B).map ((Tinv R B).map g) = g :=
   (T R B).map_preimage (show (T R B).obj ⟨⟨⟨⟨b⟩⟩⟩⟩ ⟶ (T R B).obj ⟨⟨⟨⟨b'⟩⟩⟩⟩ from g)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **`𝔻 ∘ 𝔼 ≅ I`.** `T_B` is an isomorphism of categories. -/
 theorem Tinv_comp_T : Tinv R B ⋙ T R B = 𝟭 B :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun b b' g => by simpa using T_map_Tinv_map g
 
+set_option backward.isDefEq.respectTransparency false in
 theorem T_comp_Tinv : T R B ⋙ Tinv R B = 𝟭 _ :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y x =>
     (T R B).map_injective (by simpa using T_map_Tinv_map ((T R B).map x))
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (Tinv R B).Additive where
   map_add := (T R B).map_injective (by simp [T_map_Tinv_map])
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (Tinv R B).Linear R where
   map_smul _ _ := (T R B).map_injective (by simp [T_map_Tinv_map])
 
@@ -905,6 +943,7 @@ theorem T_obj_Q (X : QAssociated R (GUnderlying R B)) :
     (T R B).obj ((QPiSupercategory.Q (R := R)).obj X) =
       (QPiSupercategory.Q (R := R)).obj ((T R B).obj X) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem T_map_ι {Z W : Associated R (GUnderlying R B)} (f : Z ⟶ W) :
     (T R B).map ((ι (dB R B)).map f) = (TbF R B).map f := by
   rw [ι_map]
@@ -919,6 +958,7 @@ theorem T_map_ζ (X : QAssociated R (GUnderlying R B)) :
   erw [T_map_ι]
   exact congrArg Subtype.val (Associated.T_map_ζ (R := R) (A := DegreeZero R B) X.obj)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `T_B` carries `σ` to `σ`. -/
 theorem T_map_σ (X : QAssociated R (GUnderlying R B)) :
     (T R B).map (QPiSupercategory.σ (R := R) X).hom = (σ (R := R) ((T R B).obj X)).hom := by
@@ -947,6 +987,7 @@ abbrev DEmap : QAssociated R (GUnderlying R B) ⥤ QAssociated R (GUnderlying R 
 abbrev DEΦ : ShiftFunctor R (dB R B) (dB R B') :=
   shiftFunctor R (GUnderlying.qpiFunctor (R := R) F)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem TbF_map_F {Z W : Associated R (GUnderlying R B)} (f : Z ⟶ W) :
     (TbF R B').map ((DEΦ F).F.map f) = F.map ((TbF R B).map f) := by
   have h := CategoryTheory.Functor.congr_hom (Associated.T_naturality (R := R)
@@ -954,6 +995,7 @@ theorem TbF_map_F {Z W : Associated R (GUnderlying R B)} (f : Z ⟶ W) :
   simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp] at h
   exact congrArg Subtype.val h
 
+set_option backward.isDefEq.respectTransparency false in
 theorem TbF_γhat_inv (Z : Associated R (GUnderlying R B)) :
     (TbF R B').map ((DEΦ F).γ.inv.app Z) = (γ R F (bobj Z)).inv := by
   show ((Associated.T R (DegreeZero R B')).map (Associated.homMk _ 0)).1 = _
@@ -962,11 +1004,14 @@ theorem TbF_γhat_inv (Z : Associated R (GUnderlying R B)) :
     add_zero]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem TbF_Γ_zero (Z : Associated R (GUnderlying R B)) :
     (TbF R B').map (((DEΦ F).Γ 0).hom.app Z) = 𝟙 _ := by
   show (TbF R B').map (𝟙 _ ≫ 𝟙 _) = _
   simp
+  rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The step of the comparison between `Γ` and `τ`. -/
 theorem TbF_Γ_inv_τ_succ (i : ℤ) (Z : Associated R (GUnderlying R B)) :
     (TbF R B').map (((DEΦ F).Γ (i + 1)).inv.app Z) ≫ (τ R B' (i + 1) ((DEΦ F).F.obj Z)).hom =
@@ -985,6 +1030,7 @@ theorem TbF_Γ_inv_τ_succ (i : ℤ) (Z : Associated R (GUnderlying R B)) :
   simp only [Category.assoc]
   erw [Iso.inv_hom_id_assoc]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem TbF_Γ_inv_τ (i : ℤ) (Z : Associated R (GUnderlying R B)) :
     (TbF R B').map (((DEΦ F).Γ i).inv.app Z) ≫ (τ R B' i ((DEΦ F).F.obj Z)).hom =
       F.map (τ R B i Z).hom := by
@@ -1007,12 +1053,14 @@ theorem TbF_Γ_inv_τ (i : ℤ) (Z : Associated R (GUnderlying R B)) :
     erw [Category.comp_id]
     show (TbF R B').map (𝟙 _ ≫ 𝟙 _) = 𝟙 _
     simp
+    rfl
   | succ k ih => exact (step k).2 ih
   | pred k ih =>
     have := (step (-(k : ℤ) - 1)).1
     rw [show -(k : ℤ) - 1 + 1 = -(k : ℤ) by ring] at this
     exact this ih
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Naturality of `T`**: `F ∘ T_B = T_{B'} ∘ 𝔻(𝔼 F)` for a graded superfunctor `F`. -/
 theorem T_naturality : DEmap F ⋙ T R B' = T R B ⋙ F :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y x => by
@@ -1038,6 +1086,7 @@ theorem T_naturality : DEmap F ⋙ T R B' = T R B ⋙ F :=
       congr 1
       exact TbF_Γ_inv_τ F (-m) Y.obj
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Naturality of `T` in 2-morphisms**: for an even supernatural transformation `x : F ⇒ G` of
 degree zero, `T_{B'} ∘ 𝔻(𝔼 x) = x T_B`. -/
 theorem T_map_mapNat_app {G : B ⥤ B'} [G.Additive] [G.Linear R] [IsGradedSuperfunctor R G]
