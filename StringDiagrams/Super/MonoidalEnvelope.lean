@@ -52,7 +52,7 @@ include R in
 theorem associator_naturality_left {X X' : C} (f : X ⟶ X') (Y Z : C) :
     (f ▷ Y) ▷ Z ≫ (α_ X' Y Z).hom = (α_ X Y Z).hom ≫ f ▷ (Y ⊗ Z) := by
   have h := associator_naturality (R := R) f (𝟙 Y) (𝟙 Z)
-  rwa [tensor_id R, tensorHom_def (R := R) (f ⊗ 𝟙 Y), tensorHom_def (R := R) f,
+  rwa [tensor_id R, tensorHom_def (R := R) (f ⊗ₘ 𝟙 Y), tensorHom_def (R := R) f,
     tensorHom_def (R := R) f, whiskerLeft_id (R := R), whiskerLeft_id (R := R),
     whiskerLeft_id (R := R), Category.comp_id, Category.comp_id, Category.comp_id] at h
 
@@ -61,7 +61,7 @@ include R in
 theorem associator_naturality_middle (X : C) {Y Y' : C} (g : Y ⟶ Y') (Z : C) :
     (X ◁ g) ▷ Z ≫ (α_ X Y' Z).hom = (α_ X Y Z).hom ≫ X ◁ (g ▷ Z) := by
   have h := associator_naturality (R := R) (𝟙 X) g (𝟙 Z)
-  rwa [tensorHom_def (R := R) (𝟙 X ⊗ g), tensorHom_def (R := R) (𝟙 X) g,
+  rwa [tensorHom_def (R := R) (𝟙 X ⊗ₘ g), tensorHom_def (R := R) (𝟙 X) g,
     tensorHom_def (R := R) (𝟙 X), tensorHom_def (R := R) g, id_whiskerRight (R := R),
     id_whiskerRight (R := R), whiskerLeft_id (R := R), whiskerLeft_id (R := R),
     Category.id_comp, Category.id_comp, Category.comp_id, Category.comp_id] at h
@@ -83,7 +83,7 @@ structure whose whiskerings are functorial and whose tensor product of morphisms
 theorem MonoidalSupercategory.associator_naturality_of_whiskers {C : Type w₁} [Category.{w₂} C]
     [MonoidalCategoryStruct C]
     (tensorHom_def : ∀ {X₁ Y₁ X₂ Y₂ : C} (f : X₁ ⟶ Y₁) (g : X₂ ⟶ Y₂),
-      f ⊗ g = f ▷ X₂ ≫ Y₁ ◁ g)
+      f ⊗ₘ g = f ▷ X₂ ≫ Y₁ ◁ g)
     (whiskerLeft_comp : ∀ (X : C) {Y Z W : C} (f : Y ⟶ Z) (g : Z ⟶ W),
       X ◁ (f ≫ g) = X ◁ f ≫ X ◁ g)
     (comp_whiskerRight : ∀ {X Y Z : C} (f : X ⟶ Y) (g : Y ⟶ Z) (W : C),
@@ -95,8 +95,8 @@ theorem MonoidalSupercategory.associator_naturality_of_whiskers {C : Type w₁} 
     (right : ∀ (X Y : C) {Z Z' : C} (h : Z ⟶ Z'),
       (X ⊗ Y) ◁ h ≫ (α_ X Y Z').hom = (α_ X Y Z).hom ≫ X ◁ (Y ◁ h))
     {X₁ X₂ X₃ Y₁ Y₂ Y₃ : C} (f₁ : X₁ ⟶ Y₁) (f₂ : X₂ ⟶ Y₂) (f₃ : X₃ ⟶ Y₃) :
-    ((f₁ ⊗ f₂) ⊗ f₃) ≫ (α_ Y₁ Y₂ Y₃).hom = (α_ X₁ X₂ X₃).hom ≫ (f₁ ⊗ (f₂ ⊗ f₃)) := by
-  rw [tensorHom_def (f₁ ⊗ f₂), tensorHom_def f₁ f₂, tensorHom_def f₁, tensorHom_def f₂,
+    ((f₁ ⊗ₘ f₂) ⊗ₘ f₃) ≫ (α_ Y₁ Y₂ Y₃).hom = (α_ X₁ X₂ X₃).hom ≫ (f₁ ⊗ₘ (f₂ ⊗ₘ f₃)) := by
+  rw [tensorHom_def (f₁ ⊗ₘ f₂), tensorHom_def f₁ f₂, tensorHom_def f₁, tensorHom_def f₂,
     comp_whiskerRight, whiskerLeft_comp, Category.assoc, Category.assoc, right,
     ← Category.assoc ((Y₁ ◁ f₂) ▷ X₃), middle, Category.assoc, ← Category.assoc ((f₁ ▷ X₂) ▷ X₃),
     left, Category.assoc]
@@ -148,7 +148,7 @@ theorem toHom_whiskerRight {X X' : Envelope R C} (f : X ⟶ X') (Y : Envelope R 
     toHom (f ▷ Y) = twist R Y.par (toHom f) ▷ Y.obj := rfl
 
 theorem tensorHom_def' {X₁ Y₁ X₂ Y₂ : Envelope R C} (f : X₁ ⟶ Y₁) (g : X₂ ⟶ Y₂) :
-    f ⊗ g = f ▷ X₂ ≫ Y₁ ◁ g := rfl
+    f ⊗ₘ g = f ▷ X₂ ≫ Y₁ ◁ g := rfl
 
 @[simp] theorem toHom_associator_hom (X Y Z : Envelope R C) :
     toHom (α_ X Y Z).hom = (α_ X.obj Y.obj Z.obj).hom := rfl
@@ -437,43 +437,48 @@ theorem ζUnit_hom_mem : (ζUnit (R := R) (C := C)).hom ∈ parity (R := R) _ _ 
   show 𝟙 (𝟙_ C) ∈ parity (R := R) (𝟙_ C) (𝟙_ C) (1 + (1 + 0))
   exact id_mem _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The canonical superfunctor `J : A ⥤ A_π` is a (strict) monoidal superfunctor. -/
 def monoidalJ : MonoidalSuperfunctor R (J R C) where
   μIso X Y := isoOfIso (Iso.refl (X ⊗ Y))
   εIso := Iso.refl _
   μ_mem X Y := by
     rw [mem_parity_iff]
-    convert id_mem (R := R) (MonoidalCategoryStruct.tensorObj X Y) using 2
+    exact id_mem (R := R) (MonoidalCategoryStruct.tensorObj X Y)
   ε_mem := id_mem _
   μ_natural_left f X' := by
     apply hom_ext
-    simp only [toHom_comp, isoOfIso_hom, Iso.refl_hom, toHom_ofHom, Category.comp_id,
-      Category.id_comp]
-    rw [toHom_whiskerRight_of_par_zero _ _ rfl]; simp
+    simp only [toHom_comp, isoOfIso_hom, Iso.refl_hom, toHom_ofHom]
+    rw [toHom_whiskerRight_of_par_zero _ _ rfl]
+    exact (Category.comp_id _).trans (Category.id_comp _).symm
   μ_natural_right X' f := by
     apply hom_ext
-    simp only [toHom_comp, isoOfIso_hom, Iso.refl_hom, toHom_ofHom, Category.comp_id,
-      Category.id_comp]
-    rw [toHom_whiskerLeft_of_par_zero _ rfl]; simp
+    simp only [toHom_comp, isoOfIso_hom, Iso.refl_hom, toHom_ofHom]
+    rw [toHom_whiskerLeft_of_par_zero _ rfl]
+    exact (Category.comp_id _).trans (Category.id_comp _).symm
   associativity X Y Z := by
     apply hom_ext
-    simp only [toHom_comp, isoOfIso_hom, Iso.refl_hom, toHom_ofHom, Category.id_comp,
+    simp only [toHom_comp, isoOfIso_hom, Iso.refl_hom, toHom_ofHom,
       J_map, toHom_associator_hom]
     rw [toHom_whiskerRight_of_par_zero _ _ rfl, toHom_whiskerLeft_of_par_zero _ rfl]
+    change 𝟙 (X ⊗ Y) ▷ Z ≫ 𝟙 ((X ⊗ Y) ⊗ Z) ≫ (α_ X Y Z).hom =
+      (α_ X Y Z).hom ≫ X ◁ 𝟙 (Y ⊗ Z) ≫ 𝟙 (X ⊗ Y ⊗ Z)
     simp [MonoidalSupercategory.id_whiskerRight (R := R),
       MonoidalSupercategory.whiskerLeft_id (R := R)]
   left_unitality X := by
     apply hom_ext
-    simp only [toHom_comp, isoOfIso_hom, Iso.refl_hom, toHom_ofHom, Category.id_comp, J_map,
+    simp only [toHom_comp, isoOfIso_hom, Iso.refl_hom, toHom_ofHom, J_map,
       toHom_leftUnitor_hom]
     rw [toHom_whiskerRight_of_par_zero _ _ rfl]
     simp [MonoidalSupercategory.id_whiskerRight (R := R)]
+    exact (Category.id_comp _).symm
   right_unitality X := by
     apply hom_ext
-    simp only [toHom_comp, isoOfIso_hom, Iso.refl_hom, toHom_ofHom, Category.id_comp, J_map,
+    simp only [toHom_comp, isoOfIso_hom, Iso.refl_hom, toHom_ofHom, J_map,
       toHom_rightUnitor_hom]
     rw [toHom_whiskerLeft_of_par_zero _ rfl]
     simp [MonoidalSupercategory.whiskerLeft_id (R := R)]
+    exact (Category.id_comp _).symm
 
 end Envelope
 
