@@ -512,16 +512,16 @@ def qCenterObj : DrinfeldCenter R B where
       x_mem f := γ_hom_mem f
       naturality η := (γ_naturality η).symm
       x_comp f g := by
-        simp only [TwoSuperfunctor.id_mapComp, Iso.refl_hom, TwoSuperfunctor.id_map]
+        simp only [Iso.refl_hom, TwoSuperfunctor.id_map]
         erw [id_whiskerRight (R := R), whiskerLeft_id (R := R), Category.id_comp,
           Category.comp_id]
         exact γ_comp f g
       x_id a := by
-        simp only [TwoSuperfunctor.id_mapId, Iso.refl_hom, TwoSuperfunctor.id_obj]
+        simp only [Iso.refl_hom, TwoSuperfunctor.id_obj]
         erw [id_whiskerRight (R := R), whiskerLeft_id (R := R), Category.id_comp]
         rw [γ_id]
         simp }
-  isStrong f := inferInstanceAs (IsIso (γ (R := R) f).hom)
+  isStrong f := (inferInstance : IsIso (γ (R := R) f).hom)
 
 @[simp] theorem qCenterObj_X (a : B) : (qCenterObj R B).toTwoNatTrans.X a = q (R := R) a := rfl
 
