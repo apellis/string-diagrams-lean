@@ -74,7 +74,7 @@ instance instMonoidalCategoryStruct : MonoidalCategoryStruct (Underlying R C) wh
   tensorObj X Y := ⟨X.obj ⊗ Y.obj⟩
   whiskerLeft X _ _ f := ⟨X.obj ◁ f.1, MonoidalSupercategory.whiskerLeft_mem _ f.2⟩
   whiskerRight f Y := ⟨f.1 ▷ Y.obj, MonoidalSupercategory.whiskerRight_mem _ f.2⟩
-  tensorHom f g := ⟨f.1 ⊗ g.1, by simpa using MonoidalSupercategory.tensorHom_mem f.2 g.2⟩
+  tensorHom f g := ⟨f.1 ⊗ₘ g.1, by simpa using MonoidalSupercategory.tensorHom_mem f.2 g.2⟩
   tensorUnit := ⟨𝟙_ C⟩
   associator X Y Z := isoMk (α_ X.obj Y.obj Z.obj)
     (MonoidalSupercategory.associator_hom_mem _ _ _)
@@ -92,7 +92,7 @@ instance instMonoidalCategoryStruct : MonoidalCategoryStruct (Underlying R C) wh
     (f ▷ Y).1 = f.1 ▷ Y.obj := rfl
 
 @[simp] theorem tensorHom_val {X X' Y Y' : Underlying R C} (f : X ⟶ X') (g : Y ⟶ Y') :
-    (f ⊗ g).1 = f.1 ⊗ g.1 := rfl
+    (f ⊗ₘ g).1 = f.1 ⊗ₘ g.1 := rfl
 
 @[simp] theorem associator_hom_val (X Y Z : Underlying R C) :
     (α_ X Y Z).hom.1 = (α_ X.obj Y.obj Z.obj).hom := rfl
@@ -112,8 +112,8 @@ instance instMonoidalCategoryStruct : MonoidalCategoryStruct (Underlying R C) wh
 morphisms the super interchange law is the ordinary interchange law. -/
 instance instMonoidalCategory : MonoidalCategory (Underlying R C) where
   tensorHom_def f g := Subtype.ext (MonoidalSupercategory.tensorHom_def (R := R) f.1 g.1)
-  tensor_id X Y := Subtype.ext (MonoidalSupercategory.tensor_id R X.obj Y.obj)
-  tensor_comp f₁ f₂ g₁ g₂ := Subtype.ext (by
+  id_tensorHom_id X Y := Subtype.ext (MonoidalSupercategory.tensor_id R X.obj Y.obj)
+  tensorHom_comp_tensorHom f₁ f₂ g₁ g₂ := Subtype.ext (by
     simp only [comp_val, tensorHom_val]
     rw [MonoidalSupercategory.tensorHom_comp_tensorHom _ _ _ _ g₁.2 f₂.2, koszulSign_zero_left,
       one_smul])
@@ -155,7 +155,7 @@ variable (R) in
 include R in
 theorem leftUnitor_tensor (X Y : C) :
     (λ_ (X ⊗ Y)).hom = (α_ (𝟙_ C) X Y).inv ≫ (λ_ X).hom ▷ Y :=
-  congrArg Subtype.val (MonoidalCategory.leftUnitor_tensor (C := Underlying R C) ⟨X⟩ ⟨Y⟩)
+  congrArg Subtype.val (MonoidalCategory.leftUnitor_tensor_hom (C := Underlying R C) ⟨X⟩ ⟨Y⟩)
 
 variable (R) in
 include R in
@@ -248,11 +248,11 @@ def ζR (X : C) : X ⊗ 𝛑 ≅ X where
       MonoidalSupercategory.whiskerLeft_id (R := R), Category.id_comp, Iso.inv_hom_id]
 
 theorem ζL_hom_mem (X : C) : (ζL (R := R) X).hom ∈ parity (R := R) (𝛑 ⊗ X) X 1 := by
-  simpa using comp_mem (MonoidalSupercategory.whiskerRight_mem X (ζ_hom_mem (R := R) (C := C)))
+  simpa using! comp_mem (MonoidalSupercategory.whiskerRight_mem X (ζ_hom_mem (R := R) (C := C)))
     (MonoidalSupercategory.leftUnitor_hom_mem (R := R) X)
 
 theorem ζR_hom_mem (X : C) : (ζR (R := R) X).hom ∈ parity (R := R) (X ⊗ 𝛑) X 1 := by
-  simpa using comp_mem (MonoidalSupercategory.whiskerLeft_mem X (ζ_hom_mem (R := R) (C := C)))
+  simpa using! comp_mem (MonoidalSupercategory.whiskerLeft_mem X (ζ_hom_mem (R := R) (C := C)))
     (MonoidalSupercategory.rightUnitor_hom_mem (R := R) X)
 
 /-- Supernaturality of `ζL`: `ζ_μ ∘ (1_π ⊗ f) = (-1)^{|f|} f ∘ ζ_λ`. -/
@@ -276,6 +276,7 @@ theorem ζR_naturality {X Y : C} {q : ZMod 2} {f : X ⟶ Y} (hf : f ∈ parity (
 variable (R C) in
 /-- **Brundan–Ellis, after Definition 1.12.** A monoidal Π-supercategory is a Π-supercategory
 with `Π := π ⊗ -` and `ζ_λ := l_λ ∘ (ζ ⊗ 1_λ)`. -/
+@[instance_reducible]
 def toPiSupercategory : PiSupercategory R C where
   pi := leftFunctor (R := R)
   ζ := ζL (R := R)
@@ -297,7 +298,7 @@ theorem β_hom (X : C) :
 
 theorem β_hom_mem (X : C) : (β (R := R) X).hom ∈ parity (R := R) (𝛑 ⊗ X) (X ⊗ 𝛑) 0 := by
   have := comp_mem (ζL_hom_mem (R := R) X) (inv_mem _ (ζR_hom_mem (R := R) X))
-  simpa [β] using this
+  simpa [β] using! this
 
 /-- `β` is natural (an even supernatural isomorphism `π ⊗ - ⇒ - ⊗ π`). -/
 theorem β_naturality {X Y : C} (f : X ⟶ Y) :
@@ -400,7 +401,7 @@ theorem ξ_hom_eq : (ξ (R := R) (C := C)).hom =
   rw [← MonoidalSupercategory.rightUnitor_naturality (R := R)]
 
 theorem ξ_hom_mem : (ξ (R := R) (C := C)).hom ∈ parity (R := R) (𝛑 ⊗ 𝛑) (𝟙_ C) 0 := by
-  simpa using comp_mem (ζR_hom_mem (R := R) 𝛑) (ζ_hom_mem (R := R) (C := C))
+  simpa using! comp_mem (ζR_hom_mem (R := R) 𝛑) (ζ_hom_mem (R := R) (C := C))
 
 theorem ξ_hom_eq_neg : (ξ (R := R) (C := C)).hom = -((ζL (R := R) 𝛑).hom ≫ (𝛇).hom) := by
   rw [ξ_hom, ζL_pi, Preadditive.neg_comp, neg_neg]
@@ -509,7 +510,7 @@ structure MonoidalPiFunctor (F : D ⥤ E) [F.Monoidal] where
       F.map ((MonoidalPiCategory.β (R := R) (D := D)).β X).hom =
     ((MonoidalPiCategory.β (R := R) (D := E)).β (F.obj X)).hom ≫ F.obj X ◁ j.hom ≫ μ F X _
   ξ_comm : (MonoidalPiCategory.ξ (R := R) (D := E)).hom ≫ ε F =
-    (j.hom ⊗ j.hom) ≫ μ F _ _ ≫ F.map (MonoidalPiCategory.ξ (R := R) (D := D)).hom
+    (j.hom ⊗ₘ j.hom) ≫ μ F _ _ ≫ F.map (MonoidalPiCategory.ξ (R := R) (D := D)).hom
 
 /-- A monoidal Π-natural transformation (Brundan–Ellis, Definition 1.14(iii)): a monoidal
 natural transformation `x` with `x_π ∘ j_F = j_G`. -/
@@ -591,7 +592,7 @@ omit [MonoidalSupercategory R C] [MonoidalSupercategory R D] in
 theorem jIso_hom_mem : (jIso hF).hom ∈ parity (R := R) 𝛑D (F.obj 𝛑C) 0 := by
   have := comp_mem (comp_mem (MonoidalPiSupercategory.ζ_hom_mem (R := R) (C := D)) hF.ε_mem)
     (Supercategory.map_mem F (MonoidalPiSupercategory.ζ_inv_mem (R := R) (C := C)))
-  simpa using this
+  simpa using! this
 
 omit [MonoidalSupercategory R C] [MonoidalSupercategory R D] in
 theorem jIso_hom_comp_map_ζ : (jIso hF).hom ≫ F.map (𝛇C).hom = (𝛇D).hom ≫ hF.εIso.hom := by
@@ -657,7 +658,7 @@ def toMonoidalPiFunctor :
       rw [β_comm_left, β_comm_right])
     ξ_comm := Subtype.ext (by
       change (MonoidalPiSupercategory.ξ (R := R) (C := D)).hom ≫ hF.εIso.hom =
-        ((jIso hF).hom ⊗ (jIso hF).hom) ≫ (hF.μIso 𝛑C 𝛑C).hom ≫
+        ((jIso hF).hom ⊗ₘ (jIso hF).hom) ≫ (hF.μIso 𝛑C 𝛑C).hom ≫
           F.map (MonoidalPiSupercategory.ξ (R := R) (C := C)).hom
       rw [MonoidalSupercategory.tensorHom_def (R := R), ξ_comm_aux]) }
 
