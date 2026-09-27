@@ -116,9 +116,9 @@ def restrictSuperNatTrans {F G : Superfunctor R A B}
       naturality := fun {X Y q f} hf => by
         have := (SuperNatTrans.isSupernatural y p).naturality (map_mem (J R A) hf)
         have e1 : ((extendHom R A B).obj F).toFunctor.map ((J R A).map f) = F.toFunctor.map f :=
-          extend_map_J R F.toFunctor f
+          extend_map_J_map R F.toFunctor f
         have e2 : ((extendHom R A B).obj G).toFunctor.map ((J R A).map f) = G.toFunctor.map f :=
-          extend_map_J R G.toFunctor f
+          extend_map_J_map R G.toFunctor f
         rw [e1, e2] at this
         exact this }
 

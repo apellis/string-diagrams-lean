@@ -390,7 +390,7 @@ instance : IsSuperfunctor R (extend R F) where
 
 omit [Preadditive C] [Linear R C] [Supercategory R C] [F.Additive] [F.Linear R]
   [IsSuperfunctor R F] in
-theorem extend_map_J {X Y : C} (f : X ⟶ Y) : (extend R F).map ((J R C).map f) = F.map f :=
+theorem extend_map_J_map {X Y : C} (f : X ⟶ Y) : (extend R F).map ((J R C).map f) = F.map f :=
   show (ζPow R 0 (F.obj X)).hom ≫ F.map f ≫ (ζPow R 0 (F.obj Y)).inv = F.map f by simp
 
 omit [Preadditive C] [Linear R C] [Supercategory R C] [F.Additive] [F.Linear R]
@@ -400,7 +400,7 @@ set_option backward.isDefEq.respectTransparency false in
 theorem J_comp_extend : J R C ⋙ extend R F = F :=
   CategoryTheory.Functor.ext (fun _ => rfl) (fun X Y f => by
     simp only [Functor.comp_map, eqToHom_refl, Category.comp_id, Category.id_comp]
-    exact extend_map_J R F f)
+    exact extend_map_J_map R F f)
 
 variable {R F}
 
@@ -484,7 +484,7 @@ theorem restrict_bijective (p : ZMod 2) :
         IsSupernatural R p (F := extend R F) (G := extend R G) y} =>
       (⟨fun X => y.1 ((J R C).obj X), ⟨fun X => y.2.mem ((J R C).obj X), fun {X Y q f} hf => by
         have h := y.2.naturality (map_mem (J R C) hf)
-        rw [extend_map_J, extend_map_J] at h
+        rw [extend_map_J_map, extend_map_J_map] at h
         exact h⟩⟩ :
         {x : ∀ X, F.obj X ⟶ G.obj X // IsSupernatural R p x})) := by
   constructor
