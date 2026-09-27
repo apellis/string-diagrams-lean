@@ -120,6 +120,7 @@ def oneElt : ∀ a : ZMod 2, ((F̃).obj (P k a)).carrier
   | ⟨1, _⟩ => (1 : k)
   | ⟨_ + 2, h⟩ => absurd h (by simp)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem oneElt_mem (a : ZMod 2) : oneElt k a ∈ ((F̃).obj (P k a)).part a := by
   rcases parity_eq_zero_or_one a with rfl | rfl
   · rw [SVec.mem_part_zero_iff]; rfl
@@ -133,6 +134,7 @@ theorem extendSVec_map_one (a b : ZMod 2) : (F̃).map (one a b) (oneElt k a) = o
   · show (1 : k) • (1 : k) = 1
     exact one_smul k _
 
+set_option backward.isDefEq.respectTransparency false in
 omit [CommRing k] in
 theorem unit_whiskerLeft_one_tmul [CommRing k] {W W' : SVec k} {q : ZMod 2} {g : W ⟶ W'}
     (hg : g ∈ parity (R := k) W W' q) (w : W) :
@@ -140,6 +142,7 @@ theorem unit_whiskerLeft_one_tmul [CommRing k] {W W' : SVec k} {q : ZMod 2} {g :
   rw [SVec.whiskerLeft_tmul' (p := 0) hg (by rw [SVec.mem_part_zero_iff]; rfl), zero_mul,
     sign_zero, one_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Example 4.8.** The coherence maps `Πᵇ k ⊗ Πᵃ k → Π^{a+b} k` of `F̃` send `1 ⊗ 1 ↦ 1`. -/
 theorem extendSVec_μ_one_tmul_one (a b : ZMod 2) :
     ((extendSVec k).μIso (P k b) (P k a)).hom (oneElt k b ⊗ₜ oneElt k a) = oneElt k (b + a) := by

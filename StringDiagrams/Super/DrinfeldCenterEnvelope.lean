@@ -75,12 +75,13 @@ theorem unit_x {a b : B} (f : a ⟶ b) :
     (𝟙_ (DrinfeldCenter R B)).toTwoNatTrans.x f =
       (BicategoryStruct.rightUnitor f).hom ≫ (BicategoryStruct.leftUnitor f).inv := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Remark 4.10.** The object `(X_π, x_π)` of the Drinfeld center of `𝔄_π` induced by an object
 `(X, x)` of the Drinfeld center of `𝔄`. -/
 def mapPiObj (X : DrinfeldCenter R B) : DrinfeldCenter R (TwoEnvelope R B) where
   toTwoNatTrans := mapPiNatTrans X.toTwoNatTrans
   isStrong f := by
-    haveI := X.isStrong f.obj
+    have := X.isStrong f.obj
     exact ⟨⟨Envelope.ofHom (inv (X.toTwoNatTrans.x f.obj)),
       Envelope.hom_ext (by
         rw [Envelope.toHom_comp, Envelope.toHom_ofHom]
@@ -122,6 +123,7 @@ instance : (mapPi R B).Additive where
 instance : (mapPi R B).Linear R where
   map_smul _ _ := TwoNatTrans.hom_ext fun _ => rfl
 
+set_option backward.isDefEq.respectTransparency false in
 instance : IsSuperfunctor R (mapPi R B) where
   map_mem {X Y p α} hα a := by
     rw [mapPi_map_app, Envelope.mem_parity_iff, toHom_J2]
@@ -164,6 +166,7 @@ def mapPiμ (X Y : DrinfeldCenter R B) : mapPiObj X ⊗ mapPiObj Y ≅ mapPiObj 
 theorem mapPiμ_hom_app (X Y : DrinfeldCenter R B) (a : TwoEnvelope R B) :
     (mapPiμ X Y).hom.app a = 𝟙 _ := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The coherence isomorphism `1 ≅ 1_π`, with identity components. -/
 def mapPiε : 𝟙_ (DrinfeldCenter R (TwoEnvelope R B)) ≅ mapPiObj (𝟙_ (DrinfeldCenter R B)) where
   hom :=
@@ -188,6 +191,7 @@ def mapPiε : 𝟙_ (DrinfeldCenter R (TwoEnvelope R B)) ≅ mapPiObj (𝟙_ (Dr
 
 theorem mapPiε_hom_app (a : TwoEnvelope R B) : (mapPiε (R := R) (B := B)).hom.app a = 𝟙 _ := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R B) in
 /-- **Brundan–Ellis, Remark 4.10.** The strict 2-functor `-_π` induces a monoidal superfunctor
 from the Drinfeld center of `𝔄` to the Drinfeld center of `𝔄_π`, with identity coherence maps. -/

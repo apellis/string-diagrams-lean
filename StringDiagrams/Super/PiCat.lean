@@ -179,9 +179,11 @@ namespace Associated
 
 variable {C : Type u} [Category.{v} C] [Preadditive C] [Linear R C] [PiCategory R C]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (unit R C).Additive where
   map_add := Underlying.hom_ext (Associated.hom_ext rfl (by simp))
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (unit R C).Linear R where
   map_smul _ _ := Underlying.hom_ext (Associated.hom_ext rfl (by simp))
 
@@ -191,6 +193,7 @@ instance : (counit R C).Additive where
 instance : (counit R C).Linear R where
   map_smul _ _ := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The inverse of `ξ̂ = ξ` in `Â`. -/
 theorem ξ_inv (X : Associated R C) :
     (PiSupercategory.ξ (R := R) X).inv =
@@ -200,6 +203,7 @@ theorem ξ_inv (X : Associated R C) :
   rw [← cancel_epi (PiSupercategory.ξ (R := R) X).hom, Iso.hom_inv_id, ξ_hom]
   ext <;> simp
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R C) in
 /-- The identification `counit : E₁(D₁ A) → A` as a Π-functor with `β = 1`. -/
 def counitPiFunctor : PiFunctor R (counit R C) where
@@ -219,14 +223,17 @@ def counitPiFunctor : PiFunctor R (counit R C) where
 variable {A : Type u} [Category.{v} A] [Preadditive A] [Linear R A] [Supercategory R A]
   [PiSupercategory R A]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (Tinv R A).Additive where
   map_add {X Y f g} := T_map_injective (by
     rw [T_map_Tinv_map, Functor.map_add, T_map_Tinv_map, T_map_Tinv_map])
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (Tinv R A).Linear R where
   map_smul {X Y} f r := T_map_injective (by
     rw [T_map_Tinv_map, Functor.map_smul, T_map_Tinv_map])
 
+set_option backward.isDefEq.respectTransparency false in
 instance : IsSuperfunctor R (Tinv R A) where
   map_mem {X Y p f} hf := by
     rcases parity_eq_zero_or_one p with rfl | rfl
@@ -251,6 +258,7 @@ def D₁ : PiCat.{w, v, u} R ⥤ PiSCat.{w, v, u} R where
   map_id _ := Superfunctor.ext Associated.map_id
   map_comp F G := Superfunctor.ext (Associated.map_comp F.piFunctor G.piFunctor)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 5.1, `E₁ ∘ D₁ = I`.** The identification `A ≅ E₁(D₁ A)` in `Π-Cat` given by
 `unit` and `counit`. -/
 def unitIsoApp (A : PiCat.{w, v, u} R) : A ≅ PiCat.of R (Underlying R (Associated R A)) where
@@ -263,6 +271,7 @@ def unitIsoApp (A : PiCat.{w, v, u} R) : A ≅ PiCat.of R (Underlying R (Associa
     simp [PiFunctor.comp, PiFunctor.id, Associated.counitPiFunctor, Associated.unitPiFunctor]
     rfl)
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R) in
 /-- **Lemma 5.1, `E₁ ∘ D₁ = I`.** The natural isomorphism `𝟭 ≅ D₁ ⋙ E₁`. -/
 def unitIso : 𝟭 (PiCat.{w, v, u} R) ≅ D₁ ⋙ PiSCat.E₁ :=
@@ -271,12 +280,14 @@ def unitIso : 𝟭 (PiCat.{w, v, u} R) ≅ D₁ ⋙ PiSCat.E₁ :=
     · refine CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => ?_
       simp only [Functor.comp_obj, Functor.comp_map, eqToHom_refl, Category.comp_id,
         Category.id_comp]
-      exact Underlying.hom_ext (Associated.hom_ext rfl (by simp [unitIsoApp]))
-    · refine heq_of_eq (Underlying.hom_ext (Associated.hom_ext ?_ ?_))
-      · simp [unitIsoApp, PiFunctor.comp, Associated.unitPiFunctor, Underlying.piFunctor,
-          Associated.β_map]
-      · simp [unitIsoApp, PiFunctor.comp, Associated.unitPiFunctor, Underlying.piFunctor,
-          Associated.β_map]
+      exact Underlying.hom_ext (Associated.hom_ext rfl (by
+        change _ = ((Associated.map F.piFunctor).map (Associated.homMk (X := ⟨X⟩) (Y := ⟨Y⟩) f 0)).2
+        simp [unitIsoApp]))
+    · refine heq_of_eq (Underlying.hom_ext ?_)
+      simp [unitIsoApp, PiFunctor.comp, Associated.unitPiFunctor, Underlying.piFunctor]
+      erw [Category.id_comp, CategoryTheory.Functor.map_id, Category.comp_id]
+      apply Underlying.hom_ext
+      exact (Associated.β_map (hF := F.piFunctor) ⟨X⟩).symm
 
 /-- **Lemma 5.1, `D₁ ∘ E₁ ≅ I`.** The isomorphism `T_A : D₁(E₁ A) ≅ A` in `Π-SCat`. -/
 def counitIsoApp (A : PiSCat.{w, v, u} R) :
