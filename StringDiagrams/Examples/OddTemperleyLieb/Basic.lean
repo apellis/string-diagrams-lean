@@ -84,6 +84,7 @@ theorem list_unit_ext {l₁ l₂ : List Unit} (h : l₁.length = l₂.length) : 
 theorem obj_ext {a b : Obj sig} (h : a.word.length = b.word.length) : a = b :=
   Obj.ext (Subsingleton.elim (α := Unit) _ _) (list_unit_ext h)
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem strands_word_length (n : ℕ) : (strands n).word.length = n := by
   simp [strands]
 
@@ -93,12 +94,14 @@ theorem eq_strands (a : Obj sig) : a = strands a.word.length := obj_ext (by simp
 /-- The generator `g` with `l` strands to its left and `r` strands to its right. -/
 abbrev gl (l : ℕ) (g : Gen) (r : ℕ) : Layer sig := ⟨(), List.replicate l (), g, List.replicate r ()⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cup at position `i`, from `m` to `m + 2` strands. -/
 def dcup {m i : ℕ} (h : i ≤ m) : strands m ⟶ strands (m + 2) :=
   Diagram.layer (gl i .cup (m - i)) (Layer.valid_of_subsingleton _)
     (obj_ext (by simp [Layer.dom, strands, sig]; omega))
     (obj_ext (by simp [Layer.cod, strands, sig]; omega))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cap at position `i`, from `m + 2` to `m` strands. -/
 def dcap {m i : ℕ} (h : i ≤ m) : strands (m + 2) ⟶ strands m :=
   Diagram.layer (gl i .cap (m - i)) (Layer.valid_of_subsingleton _)
@@ -139,6 +142,7 @@ def pres : Presentation sig R where
   cod r := strands r.width
   rel := relation R δ
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The relations are homogeneous for the parity. -/
 theorem isParityHomogeneous : (pres R δ).IsParityHomogeneous := by
   intro r
@@ -174,6 +178,7 @@ example : MonoidalSupercategory.IsStrict (STL R δ) := Presentation.isStrict _
 /-- The object `n`: `n` strands, the `n`-fold tensor power of the generating object. -/
 abbrev X (n : ℕ) : STL R δ := (pres R δ).obj (strands n)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Tensor product of objects adds numbers of strands; in particular `X n` is the `n`-fold
 tensor power of the generating object `X 1`. -/
 theorem X_tensor (m n : ℕ) : X R δ m ⊗ X R δ n = X R δ (m + n) := by
@@ -196,6 +201,7 @@ variable {R δ}
 /-- `i` strands, used to whisker on the left. -/
 def shift (i : ℕ) : Obj sig := ⟨(), List.replicate i ()⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whisk_eq {w i k n : ℕ} (h : i + w + k = n) :
     (strands w).whisker (shift i) (List.replicate k ()) = strands n :=
   obj_ext (by simp [strands, shift, Obj.whisker]; omega)
@@ -220,16 +226,17 @@ def cap (n i : ℕ) : X R δ (n + 2) ⟶ X R δ n :=
 
 variable {R δ}
 
-theorem cup_def {n i : ℕ} (h : i ≤ n) : cup R δ n i = (pres R δ).diag (dcup h) := dif_pos h
+theorem cup_def {n i : ℕ} (h : i ≤ n) : cup R δ n i = (pres R δ).diag (dcup h) := dite_eq_left h
 
-theorem cap_def {n i : ℕ} (h : i ≤ n) : cap R δ n i = (pres R δ).diag (dcap h) := dif_pos h
+theorem cap_def {n i : ℕ} (h : i ≤ n) : cap R δ n i = (pres R δ).diag (dcap h) := dite_eq_left h
 
-theorem cup_of_lt {n i : ℕ} (h : n < i) : cup R δ n i = 0 := dif_neg (by omega)
+theorem cup_of_lt {n i : ℕ} (h : n < i) : cup R δ n i = 0 := dite_eq_right (by omega)
 
-theorem cap_of_lt {n i : ℕ} (h : n < i) : cap R δ n i = 0 := dif_neg (by omega)
+theorem cap_of_lt {n i : ℕ} (h : n < i) : cap R δ n i = 0 := dite_eq_right (by omega)
 
 /-! ## The relations at symbolic positions -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `cup_{i+1} ≫ cap_i = 1`. -/
 theorem zigzagA_at {n i : ℕ} (h : i + 1 ≤ n) : cup R δ n (i + 1) ≫ cap R δ n i = 𝟙 _ := by
   have key := relation_at (R := R) (δ := δ) .zigzagA i (n - i - 1) (a := strands n)
@@ -242,6 +249,7 @@ theorem zigzagA_at {n i : ℕ} (h : i + 1 ≤ n) : cup R δ n (i + 1) ≫ cap R 
   · simp [dcup, dcap, shift, Layer.whisker, Rel.width, sig]; try omega
   · rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `cup_i ≫ cap_{i+1} = ε = -1`. -/
 theorem zigzagB_at {n i : ℕ} (h : i + 1 ≤ n) : cup R δ n i ≫ cap R δ n (i + 1) = -𝟙 _ := by
   have key := relation_at (R := R) (δ := δ) .zigzagB i (n - i - 1) (a := strands n)
@@ -254,6 +262,7 @@ theorem zigzagB_at {n i : ℕ} (h : i + 1 ≤ n) : cup R δ n i ≫ cap R δ n (
   · simp [dcup, dcap, shift, Layer.whisker, Rel.width, sig]; try omega
   · rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `cup_i ≫ cap_i = δ`. -/
 theorem loop_at {n i : ℕ} (h : i ≤ n) : cup R δ n i ≫ cap R δ n i = δ • 𝟙 _ := by
   have key := relation_at (R := R) (δ := δ) .loop i (n - i) (a := strands n)
@@ -287,6 +296,7 @@ theorem diag_eq_of_swap {a b : Obj sig} {f f' : a ⟶ b} (L M : Layer sig)
     (((pres R δ).diag_swap_layers L M).trans
       (congrArg _ (Presentation.diag_eq_of_layers_eq _ (by rw [hf']; rfl))))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two caps anticommute: `cap_j ≫ cap_i = -(cap_i ≫ cap_{j-2})` for `i + 2 ≤ j`. -/
 theorem cap_cap {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
     cap R δ (n + 2) j ≫ cap R δ n i = -(cap R δ (n + 2) i ≫ cap R δ n (j - 2)) := by
@@ -301,6 +311,7 @@ theorem cap_cap {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
   simp [Diagram.oddCountList, sig] at key
   rw [key, neg_neg]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two cups anticommute: `cup_{j-2} ≫ cup_i = -(cup_i ≫ cup_j)` for `i + 2 ≤ j`. -/
 theorem cup_cup {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
     cup R δ n (j - 2) ≫ cup R δ (n + 2) i = -(cup R δ n i ≫ cup R δ (n + 2) j) := by
@@ -315,6 +326,7 @@ theorem cup_cup {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
   simp [Diagram.oddCountList, sig] at key
   rw [key, neg_neg]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cup on the left and a cap on the right anticommute:
 `cup_i ≫ cap_j = -(cap_{j-2} ≫ cup_i)` for `i + 2 ≤ j`. -/
 theorem cup_cap {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
@@ -330,6 +342,7 @@ theorem cup_cap {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
   simp [Diagram.oddCountList, sig] at key
   exact key
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cap on the left and a cup on the right anticommute:
 `cup_j ≫ cap_i = -(cap_i ≫ cup_{j-2})` for `i + 2 ≤ j`. -/
 theorem cap_cup {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :

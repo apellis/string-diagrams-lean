@@ -175,6 +175,7 @@ theorem s_slide_cup :
     ((diag_wordCup_comp_rwhisker (Q R) (x := EF R) (x' := EF R) sD).trans
       ((pres R).diag_eq_of_layers_eq rfl))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Sliding `s` along the nested cups of `E F`**, from the right copy of `E F` to the left one,
 also turns it into `rotS`: this uses the cyclicity of `s`. -/
 theorem s_slide_cup' :

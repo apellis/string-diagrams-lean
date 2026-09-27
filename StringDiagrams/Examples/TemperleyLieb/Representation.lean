@@ -289,6 +289,7 @@ variable {R}
 /-- `F` and `F'` agree on words of length `n`. -/
 def Agree (n : ℕ) (F F' : Fn R) : Prop := ∀ w : List (Fin 2), w.length = n → F w = F' w
 
+set_option backward.isDefEq.respectTransparency false in
 theorem op_agree (L : Layer sig) {F F' : Fn R} (h : Agree L.dom.word.length F F') :
     Agree L.cod.word.length (op R L F) (op R L F') := by
   obtain ⟨s, l, g, r⟩ := L
@@ -325,10 +326,10 @@ def ext (n : ℕ) : (Word n → R) →ₗ[R] Fn R where
   map_smul' r f := by funext w; by_cases h : w.length = n <;> simp [h]
 
 theorem ext_apply_of_length {n : ℕ} (f : Word n → R) {w : List (Fin 2)} (h : w.length = n) :
-    ext R n f w = f ⟨w, h⟩ := dif_pos h
+    ext R n f w = f ⟨w, h⟩ := dite_eq_left h
 
 @[simp] theorem ext_apply_word {n : ℕ} (f : Word n → R) (w : Word n) : ext R n f w.1 = f w :=
-  dif_pos w.2
+  dite_eq_left w.2
 
 /-- Restriction of a function on words of all lengths to words of length `n`. -/
 def res (n : ℕ) : Fn R →ₗ[R] (Word n → R) where
@@ -440,7 +441,7 @@ theorem cap_cup_op {p k : ℕ} (F : Fn R) {w : List (Fin 2)} (h : p + k + 2 ≤ 
     cupOp R (p + k) (capOp R p F) w = capOp R p (cupOp R (p + 2 + k) F) w := by
   simp only [cupOp_apply, capOp_apply]
   simp only [del_ins_far _ _ h]
-  simp only [show p + 2 + k + 1 = (p + k + 1) + 2 by omega, show p + 2 + k = (p + k) + 2 by omega,
+  simp only [show p + 2 + k = (p + k) + 2 by omega,
     getD_ins_ge _ _ (show p ≤ p + k by omega) (show p ≤ w.length by omega),
     getD_ins_ge _ _ (show p ≤ p + k + 1 by omega) (show p ≤ w.length by omega), Fin.sum_univ_two]
   ring
@@ -462,6 +463,7 @@ theorem cup_cap_op {p k : ℕ} (F : Fn R) {w : List (Fin 2)} (h : p + 2 + k ≤ 
 
 variable (R)
 
+set_option backward.isDefEq.respectTransparency false in
 open LocalInterpretation in
 /-- The interpretation respects the relations of `pres R (-2)` (at every position) and every
 instance of the interchange law. -/
@@ -471,11 +473,11 @@ theorem respects : (pres R (-2)).Respects (interp R).functor := by
   · cases r <;> simp only [pres, relation, evalW_sub, evalW_smul, evalW_of, sub_eq_zero] <;>
     refine LinearMap.ext fun f => funext fun w => ?_ <;>
     have hl := w.2 <;>
-    simp only [loc_κ, Obj.whisker_word, List.length_append, pres, strands, Rel.width,
+    simp only [loc_κ, Obj.whisker_word, List.length_append, strands, Rel.width,
       List.length_replicate, add_zero] at hl <;>
-    simp only [Diagram.layers_comp, Diagram.layers_layer, Diagram.layers_id, dcup, dcap, lay,
+    simp only [Diagram.layers_comp, Diagram.layers_layer, dcup, dcap, lay,
       List.map_cons, List.map_nil, List.cons_append, List.nil_append, opList_cons, opList_nil,
-      LinearMap.id_comp, LinearMap.smul_apply, LinearMap.comp_apply, LinearMap.id_apply,
+      LinearMap.id_comp, LinearMap.smul_apply, LinearMap.comp_apply,
       Pi.smul_apply, loc_res, res_apply, loc_op, loc_ext, Layer.whisker, op_cup, op_cap,
       List.length_append, List.length_replicate, add_zero, smul_eq_mul]
     · exact loop_op _ (by omega)
@@ -487,7 +489,7 @@ theorem respects : (pres R (-2)).Respects (interp R).functor := by
     refine LinearMap.ext fun f => funext fun w => ?_
     have hl := w.2
     cases g <;> cases g' <;>
-    simp only [loc_κ, List.length_append, sig_dom_cup, sig_cod_cup, sig_dom_cap, sig_cod_cap,
+    simp only [loc_κ, List.length_append, sig_cod_cup, sig_cod_cap,
       List.length_nil, List.length_cons] at hl <;>
     simp only [LinearMap.comp_apply, loc_res, res_apply, loc_op, loc_ext, op_cup, op_cap,
       List.length_append, sig_dom_cup, sig_cod_cup, sig_dom_cap, sig_cod_cap, List.length_nil,
@@ -520,6 +522,7 @@ theorem ins_inj {p : ℕ} {a b a' b' : Fin 2} {w : List (Fin 2)} (hp : p ≤ w.l
   simp only [getD_ins_self _ _ _ hp, getD_ins_succ _ _ _ hp] at h₁ h₂
   exact ⟨h₁, h₂⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The value of `e_i = cup_i ∘ cap_i` of `rep R` on the basis vector `…e₀ ⊗ e₁…` (with `e₀`
 in position `i`), read off at the same basis vector, is `-1`. -/
 theorem rep_e_apply {m i : ℕ} (h : i ≤ m) :

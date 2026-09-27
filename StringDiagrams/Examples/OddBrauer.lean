@@ -101,18 +101,21 @@ theorem obj_ext {a b : Obj sig} (h : a.word.length = b.word.length) : a = b :=
 /-- The generator `g` with `l` strands to its left and `r` strands to its right. -/
 abbrev gl (l : ℕ) (g : Gen) (r : ℕ) : Layer sig := ⟨(), List.replicate l (), g, List.replicate r ()⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cup at position `i`, from `m` to `m + 2` strands. -/
 def dcup {m i : ℕ} (h : i ≤ m) : strands m ⟶ strands (m + 2) :=
   Diagram.layer (gl i .cup (m - i)) (Layer.valid_of_subsingleton _)
     (obj_ext (by simp [Layer.dom, strands, sig]; omega))
     (obj_ext (by simp [Layer.cod, strands, sig]; omega))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cap at position `i`, from `m + 2` to `m` strands. -/
 def dcap {m i : ℕ} (h : i ≤ m) : strands (m + 2) ⟶ strands m :=
   Diagram.layer (gl i .cap (m - i)) (Layer.valid_of_subsingleton _)
     (obj_ext (by simp [Layer.dom, strands, sig]; omega))
     (obj_ext (by simp [Layer.cod, strands, sig]; omega))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A crossing of the strands `i` and `i + 1` of `n`. -/
 def dcross {n i : ℕ} (h : i + 2 ≤ n) : strands n ⟶ strands n :=
   Diagram.layer (gl i .cross (n - i - 2)) (Layer.valid_of_subsingleton _)
@@ -174,6 +177,7 @@ def pres : Presentation sig R where
   cod r := strands r.cod
   rel := relation R
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The relations are homogeneous for the parity. -/
 theorem isParityHomogeneous : (pres R).IsParityHomogeneous := by
   intro r
@@ -205,6 +209,7 @@ variable {R}
 /-- `i` strands, used to whisker on the left. -/
 def shift (i : ℕ) : Obj sig := ⟨(), List.replicate i ()⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whisk_eq {w i k n : ℕ} (h : i + w + k = n) :
     (strands w).whisker (shift i) (List.replicate k ()) = strands n :=
   obj_ext (by simp [strands, shift, Obj.whisker]; omega)
@@ -233,14 +238,15 @@ def cross (n i : ℕ) : (pres R).obj (strands n) ⟶ (pres R).obj (strands n) :=
 
 variable {R}
 
-theorem cup_def {n i : ℕ} (h : i ≤ n) : cup R n i = (pres R).diag (dcup h) := dif_pos h
+theorem cup_def {n i : ℕ} (h : i ≤ n) : cup R n i = (pres R).diag (dcup h) := dite_eq_left h
 
-theorem cap_def {n i : ℕ} (h : i ≤ n) : cap R n i = (pres R).diag (dcap h) := dif_pos h
+theorem cap_def {n i : ℕ} (h : i ≤ n) : cap R n i = (pres R).diag (dcap h) := dite_eq_left h
 
-theorem cross_def {n i : ℕ} (h : i + 2 ≤ n) : cross R n i = (pres R).diag (dcross h) := dif_pos h
+theorem cross_def {n i : ℕ} (h : i + 2 ≤ n) : cross R n i = (pres R).diag (dcross h) := dite_eq_left h
 
 /-! ## The relations at symbolic positions -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `cup_{i+1} ≫ cap_i = 1`. -/
 theorem zigzagA_at {n i : ℕ} (h : i + 1 ≤ n) : cup R n (i + 1) ≫ cap R n i = 𝟙 _ := by
   have key := relation_at (R := R) .zigzagA i (n - i - 1) (a := strands n) (b := strands n)
@@ -252,6 +258,7 @@ theorem zigzagA_at {n i : ℕ} (h : i + 1 ≤ n) : cup R n (i + 1) ≫ cap R n i
   · simp [dcup, dcap, shift, Layer.whisker, Rel.dom, sig]; try omega
   · rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `cup_i ≫ cap_{i+1} = -1`. -/
 theorem zigzagB_at {n i : ℕ} (h : i + 1 ≤ n) : cup R n i ≫ cap R n (i + 1) = -𝟙 _ := by
   have key := relation_at (R := R) .zigzagB i (n - i - 1) (a := strands n) (b := strands n)
@@ -263,6 +270,7 @@ theorem zigzagB_at {n i : ℕ} (h : i + 1 ≤ n) : cup R n i ≫ cap R n (i + 1)
   · simp [dcup, dcap, shift, Layer.whisker, Rel.dom, sig]; try omega
   · rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A strand slides through a cup: `cup_i ≫ s_{i+1} = cup_{i+1} ≫ s_i`. -/
 theorem slide_at {n i : ℕ} (h : i + 1 ≤ n) :
     cup R n i ≫ cross R (n + 2) (i + 1) = cup R n (i + 1) ≫ cross R (n + 2) i := by
@@ -276,6 +284,7 @@ theorem slide_at {n i : ℕ} (h : i + 1 ≤ n) :
   · simp [dcup, dcross, shift, Layer.whisker, Rel.dom, sig]; try omega
   · simp [dcup, dcross, shift, Layer.whisker, Rel.dom, sig]; try omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `cup ≫ s = cup`. -/
 theorem crossCup_at {n i : ℕ} (h : i ≤ n) : cup R n i ≫ cross R (n + 2) i = cup R n i := by
   have key := relation_at (R := R) .crossCup i (n - i - 0) (a := strands n) (b := strands (n + 2))
@@ -285,8 +294,9 @@ theorem crossCup_at {n i : ℕ} (h : i ≤ n) : cup R n i ≫ cross R (n + 2) i 
   rw [cup_def h, cross_def (by omega), ← Presentation.diag_comp]
   refine Eq.trans ?_ (key.trans ?_) <;> apply Presentation.diag_eq_of_layers_eq
   · simp [dcup, dcross, shift, Layer.whisker, Rel.dom, sig]; try omega
-  · simp [dcup, dcross, shift, Layer.whisker, Rel.dom, sig]; try omega
+  · simp [dcup, shift, Layer.whisker, Rel.dom, sig]; try omega
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `s ≫ s = 1`. -/
 theorem crossSq_at {n i : ℕ} (h : i + 2 ≤ n) : cross R n i ≫ cross R n i = 𝟙 _ := by
   have key := relation_at (R := R) .crossSq i (n - i - 2) (a := strands n) (b := strands n)
@@ -316,6 +326,7 @@ theorem diag_eq_of_swap {a b : Obj sig} {f f' : a ⟶ b} (L M : Layer sig)
     (((pres R).diag_swap_layers L M).trans
       (congrArg _ (Presentation.diag_eq_of_layers_eq _ (by rw [hf']; rfl))))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two caps anticommute: `cap_j ≫ cap_i = -(cap_i ≫ cap_{j-2})` for `i + 2 ≤ j`. -/
 theorem cap_cap {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
     cap R (n + 2) j ≫ cap R n i = -(cap R (n + 2) i ≫ cap R n (j - 2)) := by
@@ -330,6 +341,7 @@ theorem cap_cap {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
   simp [Diagram.oddCountList, sig] at key
   rw [key, neg_neg]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two cups anticommute: `cup_{j-2} ≫ cup_i = -(cup_i ≫ cup_j)` for `i + 2 ≤ j`. -/
 theorem cup_cup {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
     cup R n (j - 2) ≫ cup R (n + 2) i = -(cup R n i ≫ cup R (n + 2) j) := by
@@ -344,6 +356,7 @@ theorem cup_cup {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
   simp [Diagram.oddCountList, sig] at key
   rw [key, neg_neg]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cup on the left and a cap on the right anticommute:
 `cup_i ≫ cap_j = -(cap_{j-2} ≫ cup_i)` for `i + 2 ≤ j`. -/
 theorem cup_cap {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
@@ -359,6 +372,7 @@ theorem cup_cap {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n + 2) :
   simp [Diagram.oddCountList, sig] at key
   exact key
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A cap on the right commutes with a crossing on the left:
 `cap_j ≫ s_i = s_i ≫ cap_j` for `i + 2 ≤ j`. -/
 theorem cap_cross {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n) :
@@ -373,6 +387,7 @@ theorem cap_cross {n i j : ℕ} (hij : i + 2 ≤ j) (hj : j ≤ n) :
   simp [Diagram.oddCountList, sig] at key
   exact key.symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A crossing on the right commutes with a cap on the left:
 `s_{i+2} ≫ cap_j = cap_j ≫ s_i` for `j ≤ i`. -/
 theorem cross_cap {n i j : ℕ} (hji : j ≤ i) (hi : i + 2 ≤ n) :
@@ -431,11 +446,11 @@ theorem cross_comp_cap : cross R 2 0 ≫ cap R 0 0 = -cap R 0 0 := by
       cap R 0 0 := by
     simp only [Category.assoc]
     rw [reassoc_of% g1, reassoc_of% g2, g3]
-    simp only [Preadditive.comp_neg, Category.assoc]
+    simp only [Preadditive.comp_neg]
     rw [reassoc_of% g4]
     simp only [Preadditive.comp_neg, Preadditive.neg_comp, neg_neg, Category.assoc]
     rw [reassoc_of% (rotate_crossCup (R := R))]
-    simp only [Preadditive.neg_comp, Category.assoc]
+    simp only [Preadditive.neg_comp]
     rw [reassoc_of% g5]
     simp
   rw [zigzag_two] at key

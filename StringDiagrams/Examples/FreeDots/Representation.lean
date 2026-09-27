@@ -74,6 +74,7 @@ instance : (polyRep R).Linear R := Presentation.lift_linear _
     (polyRep R).map ((pres R).diag f) = (polyLocal R).functor.map f :=
   Presentation.lift_diag _ f
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A dot on strand `i` acts by multiplication by `X i`. -/
 theorem polyRep_map_x {n i : ℕ} (h : i < n) :
     (polyRep R).map (x R n i) = ModuleCat.ofHom (mulX R i) := by
@@ -82,11 +83,13 @@ theorem polyRep_map_x {n i : ℕ} (h : i < n) :
   rw [functor_map_hom]
   simp [polyLocal, layerOp, lay]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem polyRep_map_x_one {n i : ℕ} (h : i < n) :
     ((polyRep R).map (x R n i)).hom (1 : MvPolynomial ℕ R) = X i := by
   rw [polyRep_map_x R h, ModuleCat.hom_ofHom]
   exact mul_one (X i : MvPolynomial ℕ R)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Over a nontrivial ring, a dot on any strand is nonzero. -/
 theorem x_ne_zero [Nontrivial R] {n i : ℕ} (h : i < n) : x R n i ≠ 0 := by
   intro h0

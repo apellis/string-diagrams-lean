@@ -36,6 +36,7 @@ abbrev TL.obj (n : ℕ) : TL R δ := (pres R δ).obj (strands n)
 example : MonoidalCategory (TL R δ) := inferInstance
 example : MonoidalLinear R (TL R δ) := inferInstance
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Tensor product of objects adds numbers of strands. -/
 theorem TL.obj_tensor (m n : ℕ) : TL.obj R δ m ⊗ TL.obj R δ n = TL.obj R δ (m + n) := by
   rw [TL.obj, TL.obj, Presentation.obj_tensor]

@@ -52,17 +52,18 @@ def x (n i : ℕ) : End ((pres R).obj (strands n)) :=
 
 theorem x_eq_lin {n i : ℕ} (h : i < n) :
     (pres R).lin (LinDiagram.of (dlay h)) = x R n i := by
-  rw [x, dif_pos h]; rfl
+  rw [x, dite_eq_left h]; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `d(x_i) = x_i²`: Ellis–Qi (2.18). -/
 theorem d_x (n i : ℕ) : d R n (x R n i) = x R n i * x R n i := by
   by_cases h : i < n
-  · rw [x, dif_pos h, Presentation.derivEnd_apply, dlay,
+  · rw [x, dite_eq_left h, Presentation.derivEnd_apply, dlay,
       Presentation.deriv_layer_of _ _ _ _ _ _ (ofGen Gen.dot ≫ ofGen Gen.dot) rfl, End.mul_def,
       ← Presentation.diag_comp]
     apply Presentation.diag_eq_of_layers_eq
     simp [lay, Layer.whisker, Signature.genLayer]
-  · simp [x, dif_neg h]
+  · simp [x, dite_eq_right h]
 
 /-- The Leibniz rule on a product of two dots: `d(x_i x_j) = x_i² x_j - x_i x_j²`. -/
 theorem d_x_mul_x (n i j : ℕ) :
@@ -70,8 +71,9 @@ theorem d_x_mul_x (n i j : ℕ) :
   by_cases h : i < n
   · rw [Presentation.deriv_mul _ _ _ _ (LinDiagram.hasParity_of (p := 1) rfl) (x_eq_lin R h),
       d_x, d_x, pow_one, neg_one_smul, sub_eq_add_neg]
-  · simp [x, dif_neg h]
+  · simp [x, dite_eq_right h]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem d_ofGen_ofGen :
     (pres R).deriv (compatible R) ((pres R).diag (ofGen Gen.dot)) =
       (pres R).diag (ofGen Gen.dot) ≫ (pres R).diag (ofGen Gen.dot) := by
@@ -79,6 +81,7 @@ theorem d_ofGen_ofGen :
   show (pres R).lin (LinDiagram.of (ofGen Gen.dot ≫ ofGen Gen.dot)) = _
   rw [Presentation.lin_of, Presentation.diag_comp]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `d² = 0`, checked on the generator. -/
 theorem d_d {a b : Obj sig} (f : (pres R).obj a ⟶ (pres R).obj b) :
     (pres R).deriv (compatible R) ((pres R).deriv (compatible R) f) = 0 := by
@@ -100,6 +103,7 @@ open CategoryTheory Exterior Diagram
 
 variable (R : Type*) [CommRing R]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The local derivation `δ(dot) = 1` (the identity strand). -/
 def D : LocalDerivation sig R where
   δ g := LinDiagram.of (𝟙 (sig.genDom g))

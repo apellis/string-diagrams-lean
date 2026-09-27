@@ -123,6 +123,7 @@ def pres : Presentation sig R where
 
 /-! ## Evaluating bubbles -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A bubble at any whiskered position evaluates to the value of its region. -/
 theorem diag_whisker_bubble (μ : ℤ) (u : Obj sig) (v : List sig.Colour)
     (hw : (vac (μ + 2)).WhiskerOK u v) :
@@ -164,6 +165,7 @@ def interleavedDiagram (μ : ℤ) : strandE μ ⟶ strandE μ :=
   Diagram.mk [leftCup μ, rightCup μ, leftCap μ, rightCap μ]
     ⟨leftCup_valid μ, rfl, rightCup_valid μ, rfl, leftCap_valid μ, rfl, rightCap_valid μ, rfl, rfl⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two bubbles on either side of a strand, drawn at interleaved heights, evaluate to the
 product of the values of their two (different) regions. The proof uses the interchange law
 for general regions. -/
@@ -218,6 +220,7 @@ def leftBubble (μ : ℤ) : (pres c).obj (strandE μ) ⟶ (pres c).obj (strandE 
 def rightBubble (μ : ℤ) : (pres c).obj (strandE μ) ⟶ (pres c).obj (strandE μ) :=
   E c μ ◁ bubble₂ c μ
 
+set_option backward.isDefEq.respectTransparency false in
 theorem leftBubble_eq (μ : ℤ) : leftBubble c μ = c (μ + 2 + 2) • 𝟙 _ := by
   have h := (pres c).wRAt_id (a := vac (μ + 2 + 2)) (r := μ + 2 + 2) rfl (strandE μ)
     ⟨rfl, trivial⟩
@@ -225,6 +228,7 @@ theorem leftBubble_eq (μ : ℤ) : leftBubble c μ = c (μ + 2 + 2) • 𝟙 _ :
     Presentation.wRAt_smul]
   exact congrArg (fun f => c (μ + 2 + 2) • f) h
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rightBubble_eq (μ : ℤ) : rightBubble c μ = c (μ + 2) • 𝟙 _ := by
   have h := (pres c).wL_id_of_composable (a := strandE μ) (b := vac (μ + 2))
     ⟨⟨rfl, trivial⟩, rfl, trivial⟩
@@ -244,6 +248,7 @@ def interp : Interpretation sig (ModuleCat.{u} R) where
   obj _ := ModuleCat.of R R
   layer L _ := scal c L.gen • 𝟙 (ModuleCat.of R R)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem interp_mapChain {a b : Obj sig} (ls : List (Layer sig)) (h : Chain a ls b) :
     (interp c).mapChain a ls b h = (ls.map fun L => scal c L.gen).prod • 𝟙 (ModuleCat.of R R) := by
   induction ls generalizing a with
@@ -261,20 +266,21 @@ theorem interp_map {a b : Obj sig} (d : a ⟶ b) :
       ((Diagram.layers d).map fun L => scal c L.gen).prod • 𝟙 (ModuleCat.of R R) :=
   interp_mapChain c _ _
 
+set_option backward.isDefEq.respectTransparency false in
 theorem interp_respects : (pres c).Respects (interp c).functor where
   rel μ u v hw := by
     simp only [pres, LinDiagram.whisker_sub, LinDiagram.whisker_smul, LinDiagram.whisker_of,
       Functor.map_sub, Functor.map_smul, freeLift_map_of, interp_map, Diagram.layers_whisker,
-      Diagram.whisker_id, Diagram.layers_id, bubble, Diagram.layers_mk, List.map_map,
-      Function.comp_def, Layer.whisker, List.map_cons, List.map_nil, List.prod_cons,
+      Diagram.whisker_id, Diagram.layers_id, bubble, Diagram.layers_mk,
+      Layer.whisker, List.map_cons, List.map_nil, List.prod_cons,
       List.prod_nil, scal, mul_one, one_mul, smul_smul, sub_self]
   interchange x hx u v hw := by
     have hs : ((x.sign : ℤ) : R) = 1 := by
       simp [InterchangeData.sign, Signature.IsEven.odd_eq_false]
     simp only [InterchangeData.rel, hs, one_smul, LinDiagram.whisker_sub, LinDiagram.whisker_of,
       Functor.map_sub, freeLift_map_of, interp_map, Diagram.layers_whisker,
-      InterchangeData.ghDiagram, InterchangeData.hgDiagram, Diagram.layers_mk, List.map_map,
-      Function.comp_def, Layer.whisker, List.map_cons, List.map_nil, List.prod_cons,
+      InterchangeData.ghDiagram, InterchangeData.hgDiagram, Diagram.layers_mk,
+      Layer.whisker, List.map_cons, List.map_nil, List.prod_cons,
       List.prod_nil, InterchangeData.gh₁, InterchangeData.gh₂, InterchangeData.hg₁,
       InterchangeData.hg₂, mul_one]
     rw [mul_comm, sub_self]
@@ -284,6 +290,7 @@ def rep : (pres c).Presented ⥤ ModuleCat.{u} R := (pres c).lift (interp_respec
 
 instance : (rep c).Linear R := (pres c).lift_linear (interp_respects c)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Scalar multiples of identities are faithfully represented. -/
 theorem smul_id_injective (a : Obj sig) {x y : R}
     (h : x • 𝟙 ((pres c).obj a) = y • 𝟙 ((pres c).obj a)) : x = y := by
