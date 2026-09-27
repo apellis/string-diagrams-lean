@@ -188,6 +188,7 @@ import StringDiagrams.Examples.OddTemperleyLieb.Semisimple
 import StringDiagrams.Chord.Basic
 import StringDiagrams.Chord.NormalForm
 import StringDiagrams.Chord.Realisation
+import StringDiagrams.Chord.Matching
 
 /-!
 # StringDiagrams
