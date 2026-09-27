@@ -76,8 +76,8 @@ def tensorProj (n : ℤ) : V.toSVec ⊗[k] W.toSVec →ₗ[k] V.toSVec ⊗[k] W.
 
 theorem tensorProj_tmul (n r s : ℤ) {v : V.toSVec} {w : W.toSVec} (hv : v ∈ V.deg r)
     (hw : w ∈ W.deg s) : V.tensorProj W n (v ⊗ₜ w) = if r + s = n then v ⊗ₜ w else 0 := by
-  letI := V.degreeDecomposition
-  letI := W.degreeDecomposition
+  let := V.degreeDecomposition
+  let := W.degreeDecomposition
   have hv' : DirectSum.decompose V.deg v = DirectSum.lof k ℤ (fun r => V.deg r) r ⟨v, hv⟩ :=
     DirectSum.decompose_of_mem V.deg hv
   have hw' : DirectSum.decompose W.deg w = DirectSum.lof k ℤ (fun s => W.deg s) s ⟨w, hw⟩ :=
@@ -92,12 +92,12 @@ theorem tensorProj_tmul (n r s : ℤ) {v : V.toSVec} {w : W.toSVec} (hv : v ∈ 
 theorem tensorPiece_le_eqLocus (n : ℤ) (rs : ℤ × ℤ) (h : rs.1 + rs.2 = n) :
     V.tensorPiece W rs ≤ LinearMap.eqLocus (V.tensorProj W n) LinearMap.id :=
   Submodule.map₂_le.2 fun v hv w hw => LinearMap.mem_eqLocus.2 (by
-    rw [TensorProduct.mk_apply, tensorProj_tmul V W n rs.1 rs.2 hv hw, if_pos h]; rfl)
+    rw [TensorProduct.mk_apply, tensorProj_tmul V W n rs.1 rs.2 hv hw, ite_eq_left h]; rfl)
 
 theorem tensorPiece_le_ker (n : ℤ) (rs : ℤ × ℤ) (h : rs.1 + rs.2 ≠ n) :
     V.tensorPiece W rs ≤ LinearMap.ker (V.tensorProj W n) :=
   Submodule.map₂_le.2 fun v hv w hw => LinearMap.mem_ker.2 (by
-    rw [TensorProduct.mk_apply, tensorProj_tmul V W n rs.1 rs.2 hv hw, if_neg h])
+    rw [TensorProduct.mk_apply, tensorProj_tmul V W n rs.1 rs.2 hv hw, ite_eq_right h])
 
 theorem tensorProj_of_mem {n : ℤ} {x : V.toSVec ⊗[k] W.toSVec} (hx : x ∈ V.tensorDeg W n) :
     V.tensorProj W n x = x :=
@@ -118,7 +118,7 @@ theorem iSupIndep_tensorDeg : iSupIndep (V.tensorDeg W) :=
 theorem iSup_tensorDeg_eq_top : ⨆ n, V.tensorDeg W n = ⊤ := by
   rw [eq_top_iff]
   intro x _
-  refine TensorProduct.induction_on x (Submodule.zero_mem _) (fun v w => ?_)
+  refine TensorProduct.inductionOn x (fun v w => ?_)
     (fun x y hx hy => Submodule.add_mem _ hx hy)
   refine V.induction_on_deg v (by rw [zero_tmul]; exact Submodule.zero_mem _) (fun r v hv => ?_)
     (fun v v' hv hv' => by rw [add_tmul]; exact Submodule.add_mem _ hv hv')
@@ -166,9 +166,9 @@ def unit : GradedSuperspace k where
       by_cases hi : i = 0
       · subst hi
         refine Disjoint.mono_right (iSup₂_le fun j hj => ?_) disjoint_bot_right
-        rw [if_neg hj]
-      · rw [if_neg hi]; exact disjoint_bot_left
-    · exact le_antisymm le_top (le_iSup_of_le 0 (by rw [if_pos rfl]))
+        rw [ite_eq_right hj]
+      · rw [ite_eq_right hi]; exact disjoint_bot_left
+    · exact le_antisymm le_top (le_iSup_of_le 0 (by rw [ite_eq_left rfl]))
   odd_mem {n v} _ := by
     change (0 : k) ∈ _
     exact Submodule.zero_mem _
@@ -179,11 +179,11 @@ theorem unit_deg (n : ℤ) : (unit : GradedSuperspace k).deg n = if n = 0 then �
 
 theorem mem_unit_deg_zero (r : (unit : GradedSuperspace k).toSVec) :
     r ∈ (unit : GradedSuperspace k).deg 0 := by
-  rw [unit_deg, if_pos rfl]; trivial
+  rw [unit_deg, ite_eq_left rfl]; trivial
 
 theorem eq_zero_of_mem_unit_deg {n : ℤ} (hn : n ≠ 0) {r : (unit : GradedSuperspace k).toSVec}
     (hr : r ∈ (unit : GradedSuperspace k).deg n) : r = 0 := by
-  rwa [unit_deg, if_neg hn, Submodule.mem_bot] at hr
+  rwa [unit_deg, ite_eq_right hn, Submodule.mem_bot] at hr
 
 /-! ## The whiskerings and coherence maps preserve degrees -/
 
@@ -219,6 +219,7 @@ theorem whiskerRight_mem_degHom {V V' : GradedSuperspace k} {n : ℤ} {f : V.toS
   rw [add_right_comm]
   exact tmul_mem_tensorDeg V' W (hf r v hv) hw
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whiskerLeft_mem_hom (V : GradedSuperspace k) {W W' : GradedSuperspace k}
     {g : W.toSVec ⟶ W'.toSVec} (hg : g ∈ (family k).hom W W') :
     SVec.whiskerLeft V.toSVec g ∈ (family k).hom (V.tensorObj W) (V.tensorObj W') := by
@@ -228,6 +229,7 @@ theorem whiskerLeft_mem_hom (V : GradedSuperspace k) {W W' : GradedSuperspace k}
   · intro g g' hg hg'
     rw [SVec.whiskerLeft_add]; exact Submodule.add_mem _ hg hg'
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whiskerRight_mem_hom {V V' : GradedSuperspace k} {f : V.toSVec ⟶ V'.toSVec}
     (hf : f ∈ (family k).hom V V') (W : GradedSuperspace k) :
     SVec.whiskerRight f W.toSVec ∈ (family k).hom (V.tensorObj W) (V'.tensorObj W) := by
@@ -237,6 +239,7 @@ theorem whiskerRight_mem_hom {V V' : GradedSuperspace k} {f : V.toSVec ⟶ V'.to
   · intro f f' hf hf'
     rw [SVec.whiskerRight_add]; exact Submodule.add_mem _ hf hf'
 
+set_option backward.isDefEq.respectTransparency false in
 theorem associator_hom_mem_degHom (U V W : GradedSuperspace k) :
     (SVec.associator U.toSVec V.toSVec W.toSVec).hom ∈
       degHom ((U.tensorObj V).tensorObj W) (U.tensorObj (V.tensorObj W)) 0 := by
@@ -257,6 +260,7 @@ theorem associator_hom_mem_degHom (U V W : GradedSuperspace k) :
   rw [add_zero, add_assoc]
   exact tmul_mem_tensorDeg U (V.tensorObj W) hu (tmul_mem_tensorDeg V W hv hw)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem associator_inv_mem_degHom (U V W : GradedSuperspace k) :
     (SVec.associator U.toSVec V.toSVec W.toSVec).inv ∈
       degHom (U.tensorObj (V.tensorObj W)) ((U.tensorObj V).tensorObj W) 0 := by
@@ -277,6 +281,7 @@ theorem associator_inv_mem_degHom (U V W : GradedSuperspace k) :
   rw [add_zero, ← add_assoc]
   exact tmul_mem_tensorDeg (U.tensorObj V) W (tmul_mem_tensorDeg U V hu hv) hw
 
+set_option backward.isDefEq.respectTransparency false in
 theorem leftUnitor_hom_mem_degHom (V : GradedSuperspace k) :
     (SVec.leftUnitor V.toSVec).hom ∈ degHom (unit.tensorObj V) V 0 := by
   intro m x hx
@@ -298,6 +303,7 @@ theorem leftUnitor_inv_mem_degHom (V : GradedSuperspace k) :
   have := tmul_mem_tensorDeg unit V (mem_unit_deg_zero (1 : k)) hv
   rwa [zero_add] at this
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rightUnitor_hom_mem_degHom (V : GradedSuperspace k) :
     (SVec.rightUnitor V.toSVec).hom ∈ degHom (V.tensorObj unit) V 0 := by
   intro m x hx
