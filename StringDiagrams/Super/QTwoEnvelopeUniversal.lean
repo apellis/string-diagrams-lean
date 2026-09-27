@@ -249,7 +249,7 @@ instance (a b : QTwoEnvelope R B) : IsSuperfunctor R (extendFunctor F a b) where
     have := comp_mem (comp_mem (σF_hom_mem F f) (F.map₂_mem (f := f.obj) (g := g.obj) hη))
       (σF_inv_mem F g)
     rw [extendFunctor_map]
-    simpa using this
+    simpa using! this
 
 /-- The coherence 2-morphism `(σ^{m+n})⁻¹ ∘ c ∘ (σ^n σ^m)` of `ℝ^q`. -/
 def extendCompAux (f : a ⟶ b) (g : b ⟶ c) :
@@ -482,6 +482,7 @@ theorem extendComp_J_id (f : a.as ⟶ b.as) :
   rw [id_whiskerRight (R := R), whiskerLeft_id (R := R), Category.id_comp, Category.id_comp,
     Category.comp_id]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extend_leftUnitor (f : a ⟶ b) :
     (F.mapId a.as).hom ▷ (F̃ a b).obj f ≫ (extendComp F (𝟙 a) f).hom ≫
         (F̃ a b).map (leftUnitor f).hom = (leftUnitor ((F̃ a b).obj f)).hom := by
@@ -507,6 +508,7 @@ theorem extend_leftUnitor (f : a ⟶ b) :
   rw [e]
   exact F.map₂_leftUnitor f.obj
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extend_rightUnitor (f : a ⟶ b) :
     (F̃ a b).obj f ◁ (F.mapId b.as).hom ≫ (extendComp F f (𝟙 b)).hom ≫
         (F̃ a b).map (rightUnitor f).hom = (rightUnitor ((F̃ a b).obj f)).hom := by
@@ -631,7 +633,7 @@ theorem extendX_mem (θ : TwoNatTrans F G) (f : a ⟶ b) :
     extendX θ f ∈ parity (R := R) _ _ 0 := by
   have := comp_mem (whiskerRight_mem (θ.X b.as) (σF_hom_mem F f))
     (comp_mem (θ.x_mem f.obj) (whiskerLeft_mem (θ.X a.as) (σF_inv_mem G f)))
-  simpa using this
+  simpa using! this
 
 omit [TwoSupercategory R B] in
 theorem extendX_naturality (θ : TwoNatTrans F G) {f g : a ⟶ b} (η : f ⟶ g) :
@@ -789,6 +791,7 @@ theorem restrictTwoNatTrans_extendTwoNatTrans (θ : TwoNatTrans F G) :
   TwoEnvelope.twoNatTrans_ext rfl fun {a b} f =>
     heq_of_eq (extendX_J (a := (⟨a⟩ : QTwoEnvelope R B)) (b := ⟨b⟩) θ f)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A 2-natural transformation `ℝ^q ⇒ 𝕊^q` is the extension of its restriction. -/
 theorem extendTwoNatTrans_restrictTwoNatTrans (ψ : TwoNatTrans (extend F) (extend G)) :
     extendTwoNatTrans (restrictTwoNatTrans ψ) = ψ := by
@@ -847,6 +850,7 @@ theorem extendTwoNatTrans_vcomp {H : TwoSuperfunctor R B C} (θ : TwoNatTrans F 
 
 /-! ### Supermodifications -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extend_naturality {θ θ' : TwoNatTrans F G} (α : θ ⟶ θ') (f : a ⟶ b) :
     (extendTwoNatTrans θ).x f ≫ α.app a.as ▷ (extend G).map f =
       (extend F).map f ◁ α.app b.as ≫ (extendTwoNatTrans θ').x f := by
@@ -892,13 +896,12 @@ instance : (extendHom F G).Faithful where
 instance : (extendHom F G).Full where
   map_surjective {θ θ'} γ := ⟨⟨fun a => γ.app ⟨a⟩, fun {a b} f => by
       have := γ.naturality ((J R (a ⟶ b)).obj f : (⟨a⟩ : QTwoEnvelope R B) ⟶ ⟨b⟩)
-      have h₁ : (extendTwoNatTrans θ).x
+      have h₁ : ((extendHom F G).obj θ).x
           ((J R (a ⟶ b)).obj f : (⟨a⟩ : QTwoEnvelope R B) ⟶ ⟨b⟩) = θ.x f :=
         extendX_J (a := (⟨a⟩ : QTwoEnvelope R B)) (b := ⟨b⟩) θ f
-      have h₂ : (extendTwoNatTrans θ').x
+      have h₂ : ((extendHom F G).obj θ').x
           ((J R (a ⟶ b)).obj f : (⟨a⟩ : QTwoEnvelope R B) ⟶ ⟨b⟩) = θ'.x f :=
         extendX_J (a := (⟨a⟩ : QTwoEnvelope R B)) (b := ⟨b⟩) θ' f
-      simp only [extendHom_obj] at this
       rw [h₁, h₂] at this
       exact this⟩,
     TwoNatTrans.hom_ext fun _ => rfl⟩
