@@ -492,6 +492,137 @@ def toFiltration (Q : LayerFiltration P wt) (hcup : ∀ a, wt (G.cup a) = 0)
     have hc : Chain ⟨r₀, l'⟩ [L] ⟨r₀, lstep d l' m⟩ := hL ▸ G.chain_moveLayers r₀ l' m
     exact Q.comp_layer_mem' hc.1 hc.2.1 hc.2.2 hx
 
+omit [Subsingleton S.Region] in
+theorem moveLayers_shift (u l v : List S.Colour) {m : Move S.Colour} (hm : m.Ok l.length) :
+    G.moveLayers r₀ (u ++ l ++ v) (m.shift u.length) =
+      (G.moveLayers r₀ l m).map (·.whisker ⟨r₀, u⟩ v) := by
+  cases m with
+  | cup g a =>
+    simp only [Move.Ok] at hm
+    obtain ⟨l₁, l₂, rfl, rfl⟩ := exists_eq_append hm
+    rw [show u ++ (l₁ ++ l₂) ++ v = (u ++ l₁) ++ (l₂ ++ v) by simp, Move.shift,
+      moveLayers_cup' _ _ _ _ _ (by simp), moveLayers_cup]
+    simp [Layer.whisker]
+  | cross p =>
+    simp only [Move.Ok] at hm
+    obtain ⟨l₁, x, y, t, rfl, rfl⟩ := exists_eq_append_cons_cons hm
+    rw [show u ++ (l₁ ++ x :: y :: t) ++ v = (u ++ l₁) ++ x :: y :: (t ++ v) by simp, Move.shift,
+      moveLayers_cross' _ _ _ _ _ _ (by simp), moveLayers_cross]
+    simp [Layer.whisker]
+
+omit [Subsingleton S.Region] in
+theorem layersOf_shift (u v : List S.Colour) {l : List S.Colour} {D : List (Move S.Colour)}
+    (hf : Fits l.length D) :
+    G.layersOf r₀ (u ++ l ++ v) (D.map (Move.shift u.length)) =
+      (G.layersOf r₀ l D).map (·.whisker ⟨r₀, u⟩ v) := by
+  induction D generalizing l with
+  | nil => rfl
+  | cons m D ih =>
+    obtain ⟨hm, hf⟩ := hf
+    rw [← length_lstep (d := d)] at hf
+    simp only [List.map_cons, layersOf, List.map_append, G.moveLayers_shift r₀ u l v hm,
+      lstep_shift d u l v hm, ih hf]
+
+/-- Moves applied to a subword: if two diagrams have equal images modulo `Q.sub n` on the
+boundary word `l`, then so do the shifted diagrams on `u ++ l ++ v`, since the filtration is
+closed under whiskering. -/
+theorem near_shift (Q : LayerFiltration P wt) (hcup : ∀ a, wt (G.cup a) = 0)
+    (hcross : ∀ a b, wt (G.cross a b) = 1) {n : ℕ} {l : List S.Colour}
+    {X Y : List (Move S.Colour)} (h : (G.toFiltration r₀ Q hcup hcross).Near n l X Y)
+    (hX : Fits l.length X) (hY : Fits l.length Y) (u v : List S.Colour) :
+    (G.toFiltration r₀ Q hcup hcross).Near n (u ++ l ++ v) (X.map (Move.shift u.length))
+      (Y.map (Move.shift u.length)) := by
+  intro e
+  have e0 : X.foldl (lstep d) l = Y.foldl (lstep d) l := by
+    have e' := e
+    rw [foldl_shift d u v hX, foldl_shift d u v hY] at e'
+    simpa using e'
+  have hw : (⟨r₀, l⟩ : Obj S).WhiskerOK ⟨r₀, u⟩ v := Obj.whiskerOK_of_subsingleton _ _ _
+  have key := Q.whisk_mem ⟨r₀, u⟩ v (h e0)
+  rw [G.eval_comp_eqToHom_eq r₀ P e0 ⟨G.layersOf r₀ l X, e0 ▸ G.chain_layersOf r₀ l X⟩ rfl,
+    eval_interp, P.whisk_sub, P.whisk_diag _ _ _ hw, P.whisk_diag _ _ _ hw] at key
+  have hb : (⟨r₀, Y.foldl (lstep d) l⟩ : Obj S).whisker ⟨r₀, u⟩ v =
+      ⟨r₀, (Y.map (Move.shift u.length)).foldl (lstep d) (u ++ l ++ v)⟩ := by
+    rw [foldl_shift d u v hY]; rfl
+  have key' := Q.comp_eqToHom_mem hb key
+  rw [Preadditive.sub_comp,
+    diag_comp_eqToHom_of_layers_eq P
+      (Diagram.whisker ⟨G.layersOf r₀ l X, e0 ▸ G.chain_layersOf r₀ l X⟩ ⟨r₀, u⟩ v hw)
+      ⟨G.layersOf r₀ (u ++ l ++ v) (X.map (Move.shift u.length)),
+        e ▸ G.chain_layersOf r₀ (u ++ l ++ v) (X.map (Move.shift u.length))⟩ hb
+      (G.layersOf_shift r₀ u v hX).symm,
+    diag_comp_eqToHom_of_layers_eq P
+      (Diagram.whisker ⟨G.layersOf r₀ l Y, G.chain_layersOf r₀ l Y⟩ ⟨r₀, u⟩ v hw)
+      ⟨G.layersOf r₀ (u ++ l ++ v) (Y.map (Move.shift u.length)),
+        G.chain_layersOf r₀ (u ++ l ++ v) (Y.map (Move.shift u.length))⟩ hb
+      (G.layersOf_shift r₀ u v hY).symm] at key'
+  rw [G.eval_comp_eqToHom_eq r₀ P e
+    ⟨G.layersOf r₀ (u ++ l ++ v) (X.map (Move.shift u.length)),
+      e ▸ G.chain_layersOf r₀ (u ++ l ++ v) (X.map (Move.shift u.length))⟩ rfl, eval_interp]
+  exact key'
+
+/-- **Soundness of the chord moves in a presented monoidal category.** For a filtration `Q`
+compatible with single layers (cups of weight `0`, crossings of weight `1`) and with
+whiskering, the braid relation on three strands modulo `Q.sub 3` and the pitchfork move on one
+strand modulo `Q.sub 1` imply that all chord moves hold, in every position, modulo lower order
+terms (the distant commutations hold exactly, by the interchange law). -/
+theorem respects (Q : LayerFiltration P wt) (hcup : ∀ a, wt (G.cup a) = 0)
+    (hcross : ∀ a b, wt (G.cross a b) = 1)
+    (hbraid : ∀ a b c : S.Colour, (G.toFiltration r₀ Q hcup hcross).Near 3 [a, b, c]
+      [.cross 0, .cross 1, .cross 0] [.cross 1, .cross 0, .cross 1])
+    (hpitch : ∀ a c : S.Colour, (G.toFiltration r₀ Q hcup hcross).Near 1 [c]
+      [.cup 0 a, .cross 1] [.cup 1 a, .cross 0]) :
+    (G.toFiltration r₀ Q hcup hcross).Respects := by
+  intro L R hs l hf
+  cases hs with
+  | xx h => exact near_xx G r₀ P _ h hf
+  | xuL a h => exact near_xuL G r₀ P _ a h hf
+  | xuR a h => exact near_xuR G r₀ P _ a h hf
+  | uu a b h => exact near_uu G r₀ P _ a b h hf
+  | braid p =>
+    have hl : p + 2 < l.length := by simp [Fits, Move.Ok, Move.len] at hf; omega
+    obtain ⟨u, x, y, t, rfl, rfl⟩ := exists_eq_append_cons_cons (show p + 1 < l.length by omega)
+    obtain ⟨z, v, rfl⟩ : ∃ z v, t = z :: v := by
+      cases t with
+      | nil => simp at hl
+      | cons z v => exact ⟨z, v, rfl⟩
+    have := G.near_shift r₀ Q hcup hcross (hbraid x y z) (by simp [Fits, Move.Ok, Move.len])
+      (by simp [Fits, Move.Ok, Move.len]) u v
+    have e3 : u ++ [x, y, z] ++ v = u ++ x :: y :: z :: v := by simp
+    rw [e3] at this
+    exact this
+  | pitch g a =>
+    have hl : g < l.length := by simp [Fits, Move.Ok, Move.len] at hf; omega
+    obtain ⟨u, t, rfl, rfl⟩ := exists_eq_append (show g ≤ l.length by omega)
+    obtain ⟨c, v, rfl⟩ : ∃ c v, t = c :: v := by
+      cases t with
+      | nil => simp at hl
+      | cons c v => exact ⟨c, v, rfl⟩
+    have := G.near_shift r₀ Q hcup hcross (hpitch a c) (by simp [Fits, Move.Ok, Move.len])
+      (by simp [Fits, Move.Ok, Move.len]) u v
+    have e3 : u ++ [c] ++ v = u ++ c :: v := by simp
+    rw [e3] at this
+    exact this
+
+/-- **The normal form in a presented monoidal category.** Under the hypotheses of `respects`,
+the image of every chord diagram `D` on the empty boundary word agrees, modulo terms of order
+less than its number of crossings, with the image of a diagram containing a double crossing,
+with the image of a diagram containing a curl, or with the image of the canonical diagram of its
+final pairing. -/
+theorem near_canon_or_reducible (Q : LayerFiltration P wt) (hcup : ∀ a, wt (G.cup a) = 0)
+    (hcross : ∀ a b, wt (G.cross a b) = 1)
+    (hbraid : ∀ a b c : S.Colour, (G.toFiltration r₀ Q hcup hcross).Near 3 [a, b, c]
+      [.cross 0, .cross 1, .cross 0] [.cross 1, .cross 0, .cross 1])
+    (hpitch : ∀ a c : S.Colour, (G.toFiltration r₀ Q hcup hcross).Near 1 [c]
+      [.cup 0 a, .cross 1] [.cup 1 a, .cross 0])
+    {D : List (Move S.Colour)} (hf : Fits 0 D) :
+    (∃ A B : List (Move S.Colour), ∃ p : ℕ, (G.toFiltration r₀ Q hcup hcross).Near (ncross D) []
+        D (A ++ [.cross p, .cross p] ++ B)) ∨
+      (∃ A B : List (Move S.Colour), ∃ p : ℕ, ∃ a : S.Colour,
+        (G.toFiltration r₀ Q hcup hcross).Near (ncross D) [] D (A ++ [.cup p a, .cross p] ++ B)) ∨
+      (G.toFiltration r₀ Q hcup hcross).Near (ncross D) [] D (canon (run d D)) :=
+  MoveInterp.Filtration.near_canon_or_reducible (G.respects r₀ Q hcup hcross hbraid hpitch) hf
+
 end ChordGens
 
 end StringDiagrams.Chord
