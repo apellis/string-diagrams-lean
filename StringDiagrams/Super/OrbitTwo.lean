@@ -183,34 +183,38 @@ end Underlying
 
 /-! ## The shift data on the morphism supercategories -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The unit `F ≅ (F q_μ) q_μ⁻¹` of the adjoint equivalence `(- q_μ, - q_μ⁻¹)`. -/
 def unitIso (a b : B) : 𝟭 (a ⟶ b) ≅ postcomp R (𝐪 b) ⋙ postcomp R (𝐪⁻ b) :=
   NatIso.ofComponents
     (fun f => (rightUnitor f).symm ≪≫ whiskerLeftIso (R := R) f (ii (R := R) b).symm ≪≫
       (associator f (𝐪 b) (𝐪⁻ b)).symm)
     (fun η => by
-      simp only [Functor.id_obj, Functor.comp_obj, postcomp_obj, Functor.id_map,
+      simp only [Functor.id_obj, Functor.comp_obj, Functor.id_map,
         Functor.comp_map, postcomp_map, Iso.trans_hom, Iso.symm_hom, whiskerLeftIso_hom,
         Category.assoc]
       rw [rightUnitor_inv_naturality_assoc R, whisker_exchange_of_even_right_assoc _ (ii_inv_mem b),
         associator_inv_naturality_left R])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The counit `(F q_μ⁻¹) q_μ ≅ F` of the adjoint equivalence `(- q_μ, - q_μ⁻¹)`. -/
 def counitIso (a b : B) : postcomp R (𝐪⁻ b) ⋙ postcomp R (𝐪 b) ≅ 𝟭 (a ⟶ b) :=
   NatIso.ofComponents
     (fun f => associator f (𝐪⁻ b) (𝐪 b) ≪≫ whiskerLeftIso (R := R) f (jj (R := R) b) ≪≫
       rightUnitor f)
     (fun η => by
-      simp only [Functor.id_obj, Functor.comp_obj, postcomp_obj, Functor.id_map,
+      simp only [Functor.id_obj, Functor.comp_obj, Functor.id_map,
         Functor.comp_map, postcomp_map, Iso.trans_hom, whiskerLeftIso_hom, Category.assoc]
       rw [associator_naturality_left_assoc R, whisker_exchange_of_even_right_assoc _ (jj_hom_mem b),
         rightUnitor_naturality R])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem unitIso_hom_app (a b : B) (f : a ⟶ b) :
     (unitIso (R := R) a b).hom.app f = (rightUnitor f).inv ≫ f ◁ (ii (R := R) b).inv ≫
       (associator f (𝐪 b) (𝐪⁻ b)).inv := by
   simp [unitIso]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem counitIso_hom_app (a b : B) (f : a ⟶ b) :
     (counitIso (R := R) a b).hom.app f = (associator f (𝐪⁻ b) (𝐪 b)).hom ≫
       f ◁ (jj (R := R) b).hom ≫ (rightUnitor f).hom := by
@@ -237,12 +241,12 @@ def homShift (a b : B) : ShiftData R (a ⟶ b) where
     rw [unitIso_hom_app]
     have := comp_mem (comp_mem (inv_mem _ (rightUnitor_hom_mem (R := R) f))
       (whiskerLeft_mem f (ii_inv_mem (R := R) b))) (inv_mem _ (associator_hom_mem (R := R) f _ _))
-    simpa using this
+    simpa using! this
   counit_mem f := by
     rw [counitIso_hom_app]
     have := comp_mem (comp_mem (associator_hom_mem (R := R) f _ _)
       (whiskerLeft_mem f (jj_hom_mem (R := R) b))) (rightUnitor_hom_mem (R := R) f)
-    simpa using this
+    simpa using! this
 
 @[simp] theorem homShift_Q (a b : B) : (homShift R a b).Q = postcomp R (𝐪 b) := rfl
 
@@ -256,8 +260,7 @@ the associator `(F G) q_ν ≅ F (G q_ν)`. -/
 def preShift (c : B) (f : a ⟶ b) : ShiftFunctor R (homShift R b c) (homShift R a c) where
   F := precomp R f
   γ := NatIso.ofComponents (fun g => associator f g (𝐪 c)) (fun η => by
-    simp only [Functor.comp_obj, precomp_obj, postcomp_obj, Functor.comp_map, precomp_map,
-      postcomp_map]
+    simp only [Functor.comp_obj, Functor.comp_map, precomp_map]
     exact associator_naturality_middle R f η (𝐪 c))
   γ_mem g := associator_hom_mem (R := R) f g (𝐪 c)
 
@@ -310,7 +313,7 @@ built from `γ_H`. -/
 def postShift (a : B) (h : b ⟶ c) : ShiftFunctor R (homShift R a b) (homShift R a c) where
   F := postcomp R h
   γ := NatIso.ofComponents (fun g => γR (R := R) g h) (fun η => by
-    simp only [Functor.comp_obj, postcomp_obj, Functor.comp_map, postcomp_map]
+    simp only [Functor.comp_obj, Functor.comp_map, postcomp_map]
     exact γR_naturality η h)
   γ_mem g := γR_hom_mem g h
 
@@ -326,7 +329,7 @@ def postShift (a : B) (h : b ⟶ c) : ShiftFunctor R (homShift R a b) (homShift 
 theorem map_postShift_q (a c : B) :
     Orbit.map (postShift R a (𝐪 c)) = Orbit.map (ShiftFunctor.self (homShift R a c)) := by
   refine Orbit.map_congr rfl fun g => ?_
-  simp only [eqToHom_refl, Category.comp_id, Category.id_comp, postShift_γ_hom_app,
+  simp only [Category.id_comp, postShift_γ_hom_app,
     ShiftFunctor.self_γ_hom_app, γR_hom, γ_q, whiskerLeft_id (R := R), Category.id_comp,
     Iso.hom_inv_id]
   rfl
@@ -374,19 +377,21 @@ def αNatMiddle {a b c d : B} (f : a ⟶ b) (h : c ⟶ d) :
 
 variable {R}
 
+set_option backward.isDefEq.respectTransparency false in
 open Bicategory in
 theorem lNat_compat (a b : B) (g : a ⟶ b) :
     (preShift R b (𝟙 a)).γ.hom.app g ≫ (lNat R a b).app ((homShift R a b).Q.obj g) =
       (homShift R a b).Q.map ((lNat R a b).app g) ≫ (ShiftFunctor.id (homShift R a b)).γ.hom.app g := by
-  simp only [preShift_γ_hom_app, lNat, Functor.id_obj, homShift_Q, postcomp_obj, postcomp_map,
+  simp only [preShift_γ_hom_app, lNat, Functor.id_obj, homShift_Q, postcomp_map,
     ShiftFunctor.id_γ_hom_app, Category.comp_id]
   exact (leftUnitor_whiskerRight R g (𝐪 b)).symm
 
+set_option backward.isDefEq.respectTransparency false in
 open Bicategory in
 theorem rNat_compat (a b : B) (g : a ⟶ b) :
     (postShift R a (𝟙 b)).γ.hom.app g ≫ (rNat R a b).app ((homShift R a b).Q.obj g) =
       (homShift R a b).Q.map ((rNat R a b).app g) ≫ (ShiftFunctor.id (homShift R a b)).γ.hom.app g := by
-  simp only [postShift_γ_hom_app, rNat, Functor.id_obj, homShift_Q, postcomp_obj, postcomp_map,
+  simp only [postShift_γ_hom_app, rNat, Functor.id_obj, homShift_Q, postcomp_map,
     ShiftFunctor.id_γ_hom_app, Category.comp_id, γR_hom, Category.assoc]
   have key : ∀ g' : (⟨a⟩ : Underlying2 R B) ⟶ ⟨b⟩,
       (α_ g' (𝟙 _) (Underlying2.hom1 (𝐪 b))).hom ≫
@@ -403,8 +408,8 @@ theorem αNatRight_compat (d : B) {a b c : B} (f : a ⟶ b) (g : b ⟶ c) (h : c
     (preShift R d (f ≫ g)).γ.hom.app h ≫ (αNatRight R d f g).app ((homShift R c d).Q.obj h) =
       (homShift R a d).Q.map ((αNatRight R d f g).app h) ≫
         ((preShift R d g).comp (preShift R d f)).γ.hom.app h := by
-  simp only [preShift_γ_hom_app, αNatRight, Functor.comp_obj, precomp_obj, homShift_Q,
-    postcomp_obj, postcomp_map, ShiftFunctor.comp_γ_hom_app, preShift_F, precomp_map]
+  simp only [preShift_γ_hom_app, αNatRight, Functor.comp_obj, homShift_Q,
+    ShiftFunctor.comp_γ_hom_app, preShift_F]
   have key : ∀ (f' : (⟨a⟩ : Underlying2 R B) ⟶ ⟨b⟩) (g' : (⟨b⟩ : Underlying2 R B) ⟶ ⟨c⟩)
       (h' : (⟨c⟩ : Underlying2 R B) ⟶ ⟨d⟩),
       (α_ (f' ≫ g') h' (Underlying2.hom1 (𝐪 d))).hom ≫ (α_ f' g' (h' ≫ Underlying2.hom1 (𝐪 d))).hom =
@@ -415,12 +420,13 @@ theorem αNatRight_compat (d : B) {a b c : B} (f : a ⟶ b) (g : b ⟶ c) (h : c
     bicategory
   exact congrArg Subtype.val (key (Underlying2.hom1 f) (Underlying2.hom1 g) (Underlying2.hom1 h))
 
+set_option backward.isDefEq.respectTransparency false in
 open Bicategory in
 theorem αNatLeft_compat (a : B) {b c d : B} (g : b ⟶ c) (h : c ⟶ d) (f : a ⟶ b) :
     ((postShift R a g).comp (postShift R a h)).γ.hom.app f ≫
         (αNatLeft R a g h).app ((homShift R a b).Q.obj f) =
       (homShift R a d).Q.map ((αNatLeft R a g h).app f) ≫ (postShift R a (g ≫ h)).γ.hom.app f := by
-  simp only [postShift_γ_hom_app, αNatLeft, Functor.comp_obj, postcomp_obj, homShift_Q,
+  simp only [postShift_γ_hom_app, αNatLeft, Functor.comp_obj, homShift_Q,
     postcomp_map, ShiftFunctor.comp_γ_hom_app, postShift_F, γR_hom, Category.assoc]
   have key : ∀ (f' : (⟨a⟩ : Underlying2 R B) ⟶ ⟨b⟩) (g' : (⟨b⟩ : Underlying2 R B) ⟶ ⟨c⟩)
       (h' : (⟨c⟩ : Underlying2 R B) ⟶ ⟨d⟩),
@@ -440,14 +446,15 @@ theorem αNatLeft_compat (a : B) {b c d : B} (g : b ⟶ c) (h : c ⟶ d) (f : a 
     bicategory
   exact congrArg Subtype.val (key (Underlying2.hom1 f) (Underlying2.hom1 g) (Underlying2.hom1 h))
 
+set_option backward.isDefEq.respectTransparency false in
 open Bicategory in
 theorem αNatMiddle_compat {a b c d : B} (f : a ⟶ b) (h : c ⟶ d) (g : b ⟶ c) :
     ((preShift R c f).comp (postShift R a h)).γ.hom.app g ≫
         (αNatMiddle R f h).app ((homShift R b c).Q.obj g) =
       (homShift R a d).Q.map ((αNatMiddle R f h).app g) ≫
         ((postShift R b h).comp (preShift R d f)).γ.hom.app g := by
-  simp only [postShift_γ_hom_app, preShift_γ_hom_app, αNatMiddle, Functor.comp_obj, postcomp_obj,
-    precomp_obj, homShift_Q, postcomp_map, precomp_map, ShiftFunctor.comp_γ_hom_app, postShift_F,
+  simp only [postShift_γ_hom_app, preShift_γ_hom_app, αNatMiddle, Functor.comp_obj,
+    homShift_Q, postcomp_map, precomp_map, ShiftFunctor.comp_γ_hom_app, postShift_F,
     preShift_F, γR_hom, Category.assoc]
   have key : ∀ (f' : (⟨a⟩ : Underlying2 R B) ⟶ ⟨b⟩) (g' : (⟨b⟩ : Underlying2 R B) ⟶ ⟨c⟩)
       (h' : (⟨c⟩ : Underlying2 R B) ⟶ ⟨d⟩),
@@ -601,6 +608,7 @@ theorem whisker_assoc' (f : a ⟶ b) {g g' : b ⟶ c} (η : g ⟶ g') (h : c ⟶
   change (f ◁ η) ▷ h ≫ (associator f g' h).hom = (associator f g h).hom ≫ f ◁ (η ▷ h) at e
   rw [← Category.assoc, ← e, Category.assoc, Iso.hom_inv_id, Category.comp_id]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem pentagon' (f : a ⟶ b) (g : b ⟶ c) (h : c ⟶ d) {e : Orbit2 R B} (i : d ⟶ e) :
     (associator f g h).hom ▷ i ≫ (associator f (g ≫ h) i).hom ≫ f ◁ (associator g h i).hom =
       (associator (f ≫ g) h i).hom ≫ (associator f g (h ≫ i)).hom := by
@@ -609,6 +617,7 @@ theorem pentagon' (f : a ⟶ b) (g : b ⟶ c) (h : c ⟶ d) {e : Orbit2 R B} (i 
     ← Functor.map_comp]
   exact congrArg _ (TwoSupercategory.pentagon (R := R) f.obj g.obj h.obj i.obj)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem triangle' (f : a ⟶ b) (g : b ⟶ c) :
     (associator f (𝟙 b) g).hom ≫ f ◁ (leftUnitor g).hom = (rightUnitor f).hom ▷ g := by
   rw [associator_hom_def, leftUnitor_hom_def, rightUnitor_hom_def, whiskerLeft_ι, whiskerRight_ι,
@@ -639,6 +648,7 @@ section Interchange
 
 variable {f g : a ⟶ b} {h i : b ⟶ c}
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The super interchange law with a 2-morphism of degree zero on the right. -/
 theorem interchange_ι {p q : ZMod 2} {x : f ⟶ g} (hx : x ∈ parity (R := R) f g p)
     {y : h.obj ⟶ i.obj} (hy : y ∈ parity (R := R) h.obj i.obj q) :
@@ -653,13 +663,14 @@ theorem interchange_ι {p q : ZMod 2} {x : f ⟶ g} (hx : x ∈ parity (R := R) 
   have hγ : ∀ X : a.obj ⟶ b.obj, (postShift R a.obj h.obj).γ.hom.app X ≫
       (homShift R a.obj b.obj).Q.obj X ◁ y =
         (homShift R a.obj c.obj).Q.map (X ◁ y) ≫ (postShift R a.obj i.obj).γ.hom.app X := fun X => by
-    simp only [postShift_γ_hom_app, homShift_Q, postcomp_obj, postcomp_map]
+    simp only [postShift_γ_hom_app, homShift_Q, postcomp_map]
     exact γR_naturality_right X y
   have e := map_map_comp_ι (Φ := postShift R a.obj h.obj) (Ψ := postShift R a.obj i.obj) hnat hγ hx
   rw [whiskerLeft_ι, whiskerLeft_ι, whiskerRight_def, whiskerRight_def, koszulSign_smul (R := R),
     mul_comm]
   exact e
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The super interchange law with `σ` on the right. -/
 theorem interchange_σ (x : f ⟶ g) :
     x ▷ (h ≫ (⟨𝐪 c.obj⟩ : c ⟶ c)) ≫ g ◁ (σIso h).hom = f ◁ (σIso h).hom ≫ x ▷ h := by
@@ -680,6 +691,7 @@ theorem interchange_σ (x : f ⟶ g) :
   rw [Category.assoc]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The super interchange law with `σ⁻¹` on the right. -/
 theorem interchange_σ_inv (x : f ⟶ g) :
     x ▷ h ≫ g ◁ (σIso h).inv = f ◁ (σIso h).inv ≫ x ▷ (h ≫ (⟨𝐪 c.obj⟩ : c ⟶ c)) := by
@@ -699,6 +711,7 @@ theorem interchange_comp {p q₁ q₂ : ZMod 2} {x : f ⟶ g} {h h' i : b ⟶ c}
   rw [whiskerLeft_comp'', whiskerLeft_comp'', ← Category.assoc, e₁, Linear.smul_comp,
     Category.assoc, e₂, Linear.comp_smul, smul_smul, ← koszulSign_add_right, Category.assoc]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The super interchange law with a homogeneous 2-morphism of degree `n` on the right, by
 induction on `n`. -/
 theorem interchange_of_degree {p q : ZMod 2} {x : f ⟶ g} (hx : x ∈ parity (R := R) f g p)
@@ -802,12 +815,13 @@ theorem σ_hom (a : Orbit2 R B) :
 
 theorem σ_hom_mem (a : Orbit2 R B) : (σ a).hom ∈ parity (R := R) _ (𝟙 a) 0 := by
   rw [σ_hom]
-  simpa using comp_mem (map_mem (Orbit.ι _) (inv_mem _ (leftUnitor_hom_mem (R := R) (𝐪 a.obj))))
+  simpa using! comp_mem (map_mem (Orbit.ι _) (inv_mem _ (leftUnitor_hom_mem (R := R) (𝐪 a.obj))))
     (σIso_hom_mem (⟨𝟙 a.obj⟩ : a ⟶ a))
 
 theorem σ_hom_mem_degree (a : Orbit2 R B) : (σ a).hom ∈ degree (R := R) _ (𝟙 a) (-1) := by
   rw [σ_hom]
-  simpa using comp_mem_degree (ι_map_mem_degree (d := homShift R a.obj a.obj) (leftUnitor (𝐪 a.obj)).inv)
+  simpa using!
+    comp_mem_degree (ι_map_mem_degree (d := homShift R a.obj a.obj) (leftUnitor (𝐪 a.obj)).inv)
     (σIso_hom_mem_degree (⟨𝟙 a.obj⟩ : a ⟶ a))
 
 /-- `σ̄_λ : q_λ⁻¹ ⇒ 1_λ` of `Orbit2 R 𝔅`: `σ⁻¹` followed by `jj_λ`, of degree `1`. -/
@@ -820,12 +834,12 @@ theorem σbar_hom (a : Orbit2 R B) :
 
 theorem σbar_hom_mem (a : Orbit2 R B) : (σbar a).hom ∈ parity (R := R) _ (𝟙 a) 0 := by
   rw [σbar_hom]
-  simpa using comp_mem (inv_mem _ (σIso_hom_mem (⟨𝐪⁻ a.obj⟩ : a ⟶ a)))
+  simpa using! comp_mem (inv_mem _ (σIso_hom_mem (⟨𝐪⁻ a.obj⟩ : a ⟶ a)))
     (map_mem (Orbit.ι _) (jj_hom_mem (R := R) a.obj))
 
 theorem σbar_hom_mem_degree (a : Orbit2 R B) : (σbar a).hom ∈ degree (R := R) _ (𝟙 a) 1 := by
   rw [σbar_hom]
-  simpa using comp_mem_degree (inv_mem_degree _ (σIso_hom_mem_degree (⟨𝐪⁻ a.obj⟩ : a ⟶ a)))
+  simpa using! comp_mem_degree (inv_mem_degree _ (σIso_hom_mem_degree (⟨𝐪⁻ a.obj⟩ : a ⟶ a)))
     (ι_map_mem_degree (d := homShift R a.obj a.obj) (jj (R := R) a.obj).hom)
 
 section Pi
@@ -870,6 +884,7 @@ theorem σbar_eq (a : Orbit2 R B) : QPiTwoSupercategory.σbar (R := R) a = σbar
 
 /-! ### The underlying structures of `Orbit2 R 𝔅` are those of `𝔅` -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The `β` of Lemma 3.2 for `Orbit2 R 𝔅` is that of `𝔅`, in degree zero. -/
 theorem β_hom_eq (f : a ⟶ b) :
     (PiTwoSupercategory.β (R := R) f).hom =
@@ -879,6 +894,7 @@ theorem β_hom_eq (f : a ⟶ b) :
   change _ ≫ _ ≫ _ ≫ (Orbit.ι (homShift R a.obj a.obj)).map (PiTwoSupercategory.ζ (R := R) a.obj).inv ▷ f = _
   rw [whiskerRight_ι, ← Functor.map_comp, ← Functor.map_comp, ← Functor.map_comp]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The `ξ = ζζ` of Lemma 3.2(iv) for `Orbit2 R 𝔅` is that of `𝔅`, in degree zero. -/
 theorem ξ_hom_eq (a : Orbit2 R B) :
     (PiTwoSupercategory.ξ (R := R) a).hom =
@@ -887,6 +903,7 @@ theorem ξ_hom_eq (a : Orbit2 R B) :
     leftUnitor_hom_def, ← Functor.map_comp, ← Functor.map_comp]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whiskerLeft_σ_hom (f : a ⟶ b) :
     f ◁ (QPiTwoSupercategory.σ (R := R) b).hom =
       (Orbit.ι (homShift R a.obj b.obj)).map (f.obj ◁ (leftUnitor (𝐪 b.obj)).inv ≫
@@ -897,6 +914,7 @@ theorem whiskerLeft_σ_hom (f : a ⟶ b) :
   rw [preShift_γ_inv_app, Functor.map_comp, Category.assoc]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem σ_inv_whiskerRight (f : a ⟶ b) :
     (QPiTwoSupercategory.σ (R := R) a).inv ▷ f =
       (σIso (⟨𝟙 a.obj ≫ f.obj⟩ : a ⟶ b)).inv ≫ (Orbit.ι (homShift R a.obj b.obj)).map
@@ -909,20 +927,24 @@ theorem σ_inv_whiskerRight (f : a ⟶ b) :
   rw [postShift_γ_hom_app, Functor.map_comp, Category.assoc]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 open Bicategory in
 /-- The half-braiding `γ_F = σ_μ F σ_λ⁻¹` of Lemma 6.6(ii) for `Orbit2 R 𝔅` is the `γ_F` of
 `𝔅`, in degree zero. -/
 theorem γ_hom_eq (f : a ⟶ b) :
     (QPiTwoSupercategory.γ (R := R) f).hom =
       (Orbit.ι (homShift R a.obj b.obj)).map (CentralShift.γ (R := R) f.obj).hom := by
-  have n := σIso_hom_naturality (d := homShift R a.obj b.obj)
-    ((rightUnitor f.obj).hom ≫ (leftUnitor f.obj).inv)
-  simp only [ι_obj, homShift_Q, postcomp_map] at n
+  have n : (σIso (⟨f.obj ≫ 𝟙 b.obj⟩ : Orbit (homShift R a.obj b.obj))).hom ≫
+      (Orbit.ι _).map ((rightUnitor f.obj).hom ≫ (leftUnitor f.obj).inv) =
+      _ ≫ (σIso (⟨𝟙 a.obj ≫ f.obj⟩ : Orbit (homShift R a.obj b.obj))).hom :=
+    σIso_hom_naturality (d := homShift R a.obj b.obj)
+      ((rightUnitor f.obj).hom ≫ (leftUnitor f.obj).inv)
+  simp only [homShift_Q, postcomp_map] at n
   rw [QPiTwoSupercategory.γ_hom, whiskerLeft_σ_hom, σ_inv_whiskerRight, rightUnitor_hom_def,
     leftUnitor_inv_def]
   simp only [Category.assoc]
-  rw [← Functor.map_comp_assoc (Orbit.ι (homShift R a.obj b.obj)) (rightUnitor f.obj).hom,
-    reassoc_of% n, Iso.hom_inv_id_assoc, ← Functor.map_comp, ← Functor.map_comp]
+  rw [← Functor.map_comp_assoc (Orbit.ι (homShift R a.obj b.obj)) (rightUnitor f.obj).hom]
+  rw [reassoc_of% n, Iso.hom_inv_id_assoc, ← Functor.map_comp, ← Functor.map_comp]
   congr 1
   simp only [γR_hom, Category.assoc]
   have key : ∀ f' : (⟨a.obj⟩ : Underlying2 R B) ⟶ ⟨b.obj⟩,
