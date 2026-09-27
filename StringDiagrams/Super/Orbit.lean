@@ -134,8 +134,8 @@ counit for `i < 0`. -/
 def succ : ∀ i : ℤ, d.pow i ⋙ d.Q ≅ d.pow (i + 1)
   | Int.ofNat _ => Iso.refl _
   | Int.negSucc 0 => d.e.counitIso
-  | Int.negSucc (n + 1) => Functor.associator _ _ _ ≪≫ Functor.isoWhiskerLeft (d.powNeg (n + 1)) d.e.counitIso ≪≫
-      Functor.rightUnitor _
+  | Int.negSucc (n + 1) => Functor.associator _ _ _ ≪≫
+      Functor.isoWhiskerLeft (d.powNeg (n + 1)) d.e.counitIso ≪≫ Functor.rightUnitor _
 
 set_option backward.isDefEq.respectTransparency false in
 theorem succ_hom_mem (i : ℤ) (X : S) :
@@ -1143,7 +1143,8 @@ open ShiftData
 def ΓNat : ∀ n : ℕ, Φ.F ⋙ d'.powNat n ≅ d.powNat n ⋙ Φ.F
   | 0 => Functor.rightUnitor _ ≪≫ (Functor.leftUnitor _).symm
   | n + 1 => (Functor.associator _ _ _).symm ≪≫ Functor.isoWhiskerRight (ΓNat n) d'.Q ≪≫
-      Functor.associator _ _ _ ≪≫ Functor.isoWhiskerLeft (d.powNat n) Φ.γ ≪≫ (Functor.associator _ _ _).symm
+      Functor.associator _ _ _ ≪≫ Functor.isoWhiskerLeft (d.powNat n) Φ.γ ≪≫
+      (Functor.associator _ _ _).symm
 
 set_option backward.isDefEq.respectTransparency false in
 theorem ΓNat_succ_hom_app (n : ℕ) (X : S) :
@@ -1342,7 +1343,8 @@ theorem Γ_hom_app_comp_app {Ψ : ShiftFunctor R d d'} (x : Φ.F ⟶ Ψ.F)
     induction i using Int.induction_on with
     | zero => exact h0
     | succ k ih => exact (step k).2 ih
-    | pred k ih => exact (step (-(k : ℤ) - 1)).1 (by rw [show -(k : ℤ) - 1 + 1 = -k by ring]; exact ih)
+    | pred k ih =>
+      exact (step (-(k : ℤ) - 1)).1 (by rw [show -(k : ℤ) - 1 + 1 = -k by ring]; exact ih)
   exact key
 
 end ShiftFunctor

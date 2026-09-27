@@ -35,7 +35,8 @@ theorem Int.forall_of_step {P : ℤ → Prop} (h0 : P 0) (step : ∀ i, P (i + 1
   induction i using Int.induction_on with
   | zero => exact h0
   | succ k ih => exact (step k).2 ih
-  | pred k ih => exact (step (-(k : ℤ) - 1)).1 (by rw [show -(k : ℤ) - 1 + 1 = -k by ring]; exact ih)
+  | pred k ih =>
+    exact (step (-(k : ℤ) - 1)).1 (by rw [show -(k : ℤ) - 1 + 1 = -k by ring]; exact ih)
 
 namespace ShiftFunctor
 
@@ -64,8 +65,8 @@ def id : ShiftFunctor R d d where
 /-- The composite of morphisms of shift data, with `γ_{ΨΦ} = Ψ(γ_Φ) ∘ γ_Ψ Φ`. -/
 def comp (Φ : ShiftFunctor R d d') (Ψ : ShiftFunctor R d' d'') : ShiftFunctor R d d'' where
   F := Φ.F ⋙ Ψ.F
-  γ := (Functor.associator _ _ _).symm ≪≫ Functor.isoWhiskerLeft Φ.F Ψ.γ ≪≫ Functor.associator _ _ _ ≪≫
-    Functor.isoWhiskerRight Φ.γ Ψ.F ≪≫ Functor.associator _ _ _
+  γ := (Functor.associator _ _ _).symm ≪≫ Functor.isoWhiskerLeft Φ.F Ψ.γ ≪≫
+    Functor.associator _ _ _ ≪≫ Functor.isoWhiskerRight Φ.γ Ψ.F ≪≫ Functor.associator _ _ _
   γ_mem X := by
     have := comp_mem (Ψ.γ_mem (Φ.F.obj X)) (map_mem Ψ.F (Φ.γ_mem X))
     simpa using this
