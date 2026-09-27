@@ -70,9 +70,11 @@ omit [TwoSupercategory R B] [TwoSupercategory R C] in
 theorem mapPiMap₂_add {a b : TwoEnvelope R B} {f g : a ⟶ b} (η θ : f ⟶ g) :
     mapPiMap₂ F (η + θ) = mapPiMap₂ F η + mapPiMap₂ F θ := hom_ext (F.map₂_add _ _)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mapPi_naturality_left {a b c : TwoEnvelope R B} {f f' : a ⟶ b} (η : f ⟶ f')
     (g : b ⟶ c) :
-    mapPiMap₂ F η ▷ mapPiMap F g ≫ ofHom (F.mapComp f'.obj g.obj).hom =
+    mapPiMap₂ F η ▷ mapPiMap F g ≫
+      (ofHom (F.mapComp f'.obj g.obj).hom : mapPiMap F f' ≫ mapPiMap F g ⟶ mapPiMap F (f' ≫ g)) =
       (ofHom (F.mapComp f.obj g.obj).hom : mapPiMap F f ≫ mapPiMap F g ⟶ mapPiMap F (f ≫ g)) ≫
         mapPiMap₂ F (η ▷ g) := by
   refine induction_on' (R := R) η ?_ (fun r η hη => ?_) (fun η θ hη hθ => ?_)
@@ -87,9 +89,11 @@ theorem mapPi_naturality_left {a b c : TwoEnvelope R B} {f f' : a ⟶ b} (η : f
   · rw [mapPiMap₂_add, TwoEnvelope.add_whiskerRight', TwoEnvelope.add_whiskerRight',
       mapPiMap₂_add, Preadditive.add_comp, Preadditive.comp_add, hη, hθ]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mapPi_naturality_right {a b c : TwoEnvelope R B} (f : a ⟶ b) {g g' : b ⟶ c}
     (η : g ⟶ g') :
-    mapPiMap F f ◁ mapPiMap₂ F η ≫ ofHom (F.mapComp f.obj g'.obj).hom =
+    mapPiMap F f ◁ mapPiMap₂ F η ≫
+      (ofHom (F.mapComp f.obj g'.obj).hom : mapPiMap F f ≫ mapPiMap F g' ⟶ mapPiMap F (f ≫ g')) =
       (ofHom (F.mapComp f.obj g.obj).hom : mapPiMap F f ≫ mapPiMap F g ⟶ mapPiMap F (f ≫ g)) ≫
         mapPiMap₂ F (f ◁ η) := by
   refine induction_on' (R := R) η ?_ (fun r η hη => ?_) (fun η θ hη hθ => ?_)
@@ -109,6 +113,7 @@ def mapPiComp {a b c : TwoEnvelope R B} (f : a ⟶ b) (g : b ⟶ c) :
     mapPiMap F f ≫ mapPiMap F g ≅ mapPiMap F (f ≫ g) :=
   isoOfIso (F.mapComp f.obj g.obj)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **§4, (4.7).** The 2-superfunctor `ℝ_π : 𝔄_π → 𝔅_π` induced by a 2-superfunctor
 `ℝ : 𝔄 → 𝔅`: `ΠᵃF ↦ Πᵃ(ℝF)`, `x_a^b ↦ (ℝx)_a^b`, `c_π = (c)_{a+b}^{a+b}`, `i_π = i_0^0`. -/
 def mapPi : TwoSuperfunctor R (TwoEnvelope R B) (TwoEnvelope R C) where
@@ -125,11 +130,13 @@ def mapPi : TwoSuperfunctor R (TwoEnvelope R B) (TwoEnvelope R C) where
   mapComp_hom_mem f g := by
     rw [mem_parity_iff]
     convert F.mapComp_hom_mem f.obj g.obj using 2
+    all_goals try rfl
     show (0 : ZMod 2) + (f.par + g.par + (f.par + g.par)) = 0
     rw [zmod2_add_self, add_zero]
   mapId_hom_mem a := by
     rw [mem_parity_iff]
     convert F.mapId_hom_mem a.as using 2
+    all_goals rfl
   mapComp_naturality_left η g := mapPi_naturality_left F η g
   mapComp_naturality_right f _ _ η := mapPi_naturality_right F f η
   map₂_associator f g h := by
@@ -179,6 +186,7 @@ def mapPiX (θ : TwoNatTrans F G) {a b : TwoEnvelope R B} (f : a ⟶ b) :
 theorem toHom_mapPiX (θ : TwoNatTrans F G) {a b : TwoEnvelope R B} (f : a ⟶ b) :
     toHom (mapPiX θ f) ∈ parity (R := R) _ _ 0 := θ.x_mem f.obj
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **§4, (4.7).** The 2-natural transformation `(X_π, x_π) : ℝ_π ⇒ 𝕊_π` induced by
 `(X, x) : ℝ ⇒ 𝕊`: `(X_π)_λ = Π⁰X_λ` and `((x_π)_{μ,λ})_{ΠᵃF} = ((x_{μ,λ})_F)_a^a`. -/
 def mapPiNatTrans (θ : TwoNatTrans F G) : TwoNatTrans (mapPi F) (mapPi G) where
@@ -218,6 +226,7 @@ theorem mapPiNatTrans_X (θ : TwoNatTrans F G) (a : TwoEnvelope R B) :
 theorem toHom_mapPiNatTrans_x (θ : TwoNatTrans F G) {a b : TwoEnvelope R B} (f : a ⟶ b) :
     toHom ((mapPiNatTrans θ).x f) = θ.x f.obj := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mapPi_supermodification_naturality_of_mem {θ θ' : TwoNatTrans F G} {p : ZMod 2}
     (α : ∀ a : B, θ.X a ⟶ θ'.X a) (hα : ∀ a, α a ∈ parity (R := R) _ _ p)
     (nat : ∀ {a b : B} (f : a ⟶ b), θ.x f ≫ α a ▷ G.map f = F.map f ◁ α b ≫ θ'.x f)
@@ -234,6 +243,7 @@ theorem mapPi_supermodification_naturality_of_mem {θ θ' : TwoNatTrans F G} {p 
     sign R (f.par * p) • (F.map f.obj ◁ α b.as ≫ θ'.x f.obj)
   rw [nat, add_zero, add_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Remark 4.10.** The supermodification `α_π : (X_π, x_π) ⇛ (Y_π, y_π)` induced by a
 supermodification `α : (X, x) ⇛ (Y, y)`: `(α_π)_λ = (α_λ)_0^0`. -/
 def mapPiSupermodification {θ θ' : TwoNatTrans F G} (α : θ ⟶ θ') :
