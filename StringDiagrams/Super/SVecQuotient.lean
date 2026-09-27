@@ -39,7 +39,7 @@ variable {V : SVec k}
 
 instance : SetLike (GradedSubmodule V) V where
   coe U := U.toSubmodule
-  coe_injective' U U' h := by
+  coe_injective U U' h := by
     cases U; cases U'
     congr
     exact SetLike.coe_injective h
@@ -129,7 +129,7 @@ theorem quotMk_mem : quotMk V U ∈ parityHom V (quot V U) 0 := by
 
 theorem quotMkFun_mem_part {p : ZMod 2} {v : V} (hv : v ∈ V.part p) :
     quotMkFun V U v ∈ (quot V U).part p := by
-  simpa using apply_mem_part (quotMk_mem V U) (v := v) hv
+  simpa using! apply_mem_part (quotMk_mem V U) (v := v) hv
 
 variable {V U}
 
