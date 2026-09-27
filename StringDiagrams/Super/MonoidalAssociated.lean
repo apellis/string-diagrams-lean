@@ -377,8 +377,8 @@ theorem βF_inv_whiskerRight (Y X' : D) :
     μ F (𝛑D ⊗ Y) X' ≫ F.map (α_ 𝛑D Y X').hom ≫ (hF.βF (Y ⊗ X')).inv =
       (hF.βF Y).inv ▷ F.obj X' ≫ (α_ 𝛑E (F.obj Y) (F.obj X')).hom ≫ 𝛑E ◁ μ F Y X' := by
   rw [βF_inv, βF_inv, Functor.Monoidal.map_associator]
-  simp only [Category.assoc, Functor.Monoidal.μ_δ_assoc, Functor.Monoidal.μ_δ,
-    Category.comp_id, MonoidalCategory.comp_whiskerRight]
+  simp only [Category.assoc, Functor.Monoidal.μ_δ_assoc,
+    MonoidalCategory.comp_whiskerRight]
   rw [whisker_exchange]
   monoidal
 
@@ -434,11 +434,14 @@ local notation "𝛑" => MonoidalPiCategory.pi (R := R) (D := D)
 local notation "𝛃" => MonoidalPiCategory.β (R := R) (D := D)
 local notation "𝛏" => MonoidalPiCategory.ξ (R := R) (D := D)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_map_map {F G : D ⥤ D} [F.Additive] [G.Additive] (hF : PiFunctor R F)
     (hG : PiFunctor R G) {X Y : Associated R D} (f : X ⟶ Y) :
     (map hG).map ((map hF).map f) = (map (hF.comp hG)).map f := by
   ext <;> simp
+  rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_id_map {X Y : Associated R D} (f : X ⟶ Y) : (map (PiFunctor.id R D)).map f = f := by
   ext <;> simp
 
@@ -525,8 +528,8 @@ theorem super_interchange_assoc {X X' Y Y' : Associated R D} {p q : ZMod 2} {f :
     · simp [hf, hg]
     · simp only [comp_snd, whiskerRight_fst, whiskerLeft_snd, whiskerRight_snd, hf, hg,
         whiskerLeft_fst, MonoidalPreadditive.zero_whiskerRight, Limits.zero_comp, add_zero,
-        zero_add, MonoidalPreadditive.whiskerLeft_zero, Limits.comp_zero, tensorLeft_map,
-        Functor.map_zero, Category.assoc, MonoidalPiCategory.pi_obj, MonoidalPiCategory.pi_map]
+        zero_add, MonoidalPreadditive.whiskerLeft_zero, Limits.comp_zero,
+        Category.assoc, MonoidalPiCategory.pi_obj, MonoidalPiCategory.pi_map]
       rw [← whisker_exchange_assoc, βL_inv_naturality_left]
   · rw [mem_parity_one] at hf; rw [mem_parity_zero] at hg
     rw [koszulSign_zero_right, one_smul]
@@ -543,7 +546,7 @@ theorem super_interchange_assoc {X X' Y Y' : Associated R D} {p q : ZMod 2} {f :
     · simp only [comp_fst, whiskerRight_fst, whiskerLeft_snd, whiskerRight_snd, hf, hg,
         whiskerLeft_fst, neg_fst, MonoidalPreadditive.zero_whiskerRight,
         MonoidalPreadditive.whiskerLeft_zero, Limits.zero_comp, zero_sub, neg_neg,
-        Category.assoc, PiCategory.pi, tensorLeft_map, MonoidalCategory.whiskerLeft_comp,
+        Category.assoc, PiCategory.pi, curriedTensor_obj_map, MonoidalCategory.whiskerLeft_comp,
         ξApp_hom, tensorObj_obj]
       rw [reassoc_of% (odd_odd_key (R := R) f.2 g.2)]
       simp
@@ -574,9 +577,9 @@ theorem αMiddle_isPiNatural (X Z : D) :
     PiFunctor.IsPiNatural R ((tensorLeftPi R X).comp (tensorRightPi R Z))
       ((tensorRightPi R Z).comp (tensorLeftPi R X)) (αMiddle X Z) := fun Y => by
   simp only [αMiddle, PiFunctor.comp_β, NatIso.ofComponents_hom_app, Iso.trans_hom, Iso.app_hom,
-    Functor.mapIso_hom, tensorRightPi_β_hom_app, tensorLeftPi_β_hom_app, tensorRight_map,
-    tensorLeft_map, MonoidalPiCategory.pi_obj, MonoidalPiCategory.pi_map, Functor.comp_obj,
-    tensorLeft_obj, tensorRight_obj, βL_hom]
+    Functor.mapIso_hom, tensorRightPi_β_hom_app, tensorLeftPi_β_hom_app, Functor.flip_obj_map,
+    curriedTensor_map_app, curriedTensor_obj_map, MonoidalPiCategory.pi_obj, MonoidalPiCategory.pi_map, Functor.comp_obj,
+    curriedTensor_obj_obj, Functor.flip_obj_obj, βL_hom]
   monoidal
 
 /-- `a_{λ,μ,-}` as a Π-natural transformation. -/
@@ -588,8 +591,9 @@ theorem αRight_isPiNatural (X Y : D) :
     PiFunctor.IsPiNatural R (tensorLeftPi R (X ⊗ Y))
       ((tensorLeftPi R Y).comp (tensorLeftPi R X)) (αRight X Y) := fun Z => by
   simp only [αRight, PiFunctor.comp_β, NatIso.ofComponents_hom_app, Iso.trans_hom, Iso.app_hom,
-    Functor.mapIso_hom, tensorLeftPi_β_hom_app, tensorLeft_map, MonoidalPiCategory.pi_obj,
-    MonoidalPiCategory.pi_map, Functor.comp_obj, tensorLeft_obj, βL_hom, HalfBraiding.monoidal]
+    Functor.mapIso_hom, tensorLeftPi_β_hom_app, curriedTensor_obj_map, MonoidalPiCategory.pi_obj,
+    MonoidalPiCategory.pi_map, Functor.comp_obj, curriedTensor_obj_obj, βL_hom,
+    HalfBraiding.monoidal]
   monoidal
 
 /-- `l` as a Π-natural transformation. -/
@@ -603,7 +607,7 @@ theorem lNat_isPiNatural :
   rw [← Iso.eq_comp_inv] at h
   simp only [lNat, tensorLeftPi_β_hom_app, βL_hom, h, MonoidalPiCategory.pi_obj,
     MonoidalPiCategory.pi_map, PiFunctor.id_β, Iso.refl_hom, NatTrans.id_app, Functor.id_obj,
-    Category.comp_id, tensorLeft_obj]
+    curriedTensor_obj_obj]
   monoidal
 
 /-- `r` as a Π-natural transformation. -/
@@ -614,8 +618,8 @@ def rNat : tensorRight (𝟙_ D) ⟶ 𝟭 D where
 theorem rNat_isPiNatural :
     PiFunctor.IsPiNatural R (tensorRightPi R (𝟙_ D)) (PiFunctor.id R D) rNat := fun Z => by
   simp only [rNat, tensorRightPi_β_hom_app, MonoidalPiCategory.pi_obj, MonoidalPiCategory.pi_map,
-    PiFunctor.id_β, Iso.refl_hom, NatTrans.id_app, Functor.id_obj, Category.comp_id,
-    tensorRight_obj]
+    PiFunctor.id_β, Iso.refl_hom, NatTrans.id_app, Functor.id_obj,
+    Functor.flip_obj_obj, curriedTensor_obj_obj]
   monoidal
 
 end Naturality
@@ -675,7 +679,7 @@ instance monoidalSupercategory : MonoidalSupercategory R (Associated R D) where
       associator_naturality_right_assoc'
   leftUnitor_naturality := leftUnitor_naturality_assoc'
   rightUnitor_naturality := rightUnitor_naturality_assoc'
-  pentagon W X Y Z := by ext <;> simp [homMk_comp_homMk_even, pentagon]
+  pentagon W X Y Z := by ext <;> simp [pentagon]
   triangle X Y := by ext <;> simp [triangle]
   associator_hom_mem _ _ _ := mem_parity_zero.2 rfl
   leftUnitor_hom_mem _ := mem_parity_zero.2 rfl
@@ -689,13 +693,13 @@ printed in (5.5). -/
 theorem superTensorHom_odd_odd {X₁ Y₁ X₂ Y₂ : Associated R D} {f : X₁ ⟶ Y₁} {g : X₂ ⟶ Y₂}
     (hf : f.1 = 0) (hg : g.1 = 0) :
     MonoidalSupercategory.superTensorHom f g =
-      homMk ((f.2 ⊗ g.2) ≫ (α_ 𝛑 Y₁.obj (𝛑 ⊗ Y₂.obj)).hom ≫ 𝛑 ◁ (βL (R := R) Y₁.obj Y₂.obj).inv ≫
+      homMk ((f.2 ⊗ₘ g.2) ≫ (α_ 𝛑 Y₁.obj (𝛑 ⊗ Y₂.obj)).hom ≫ 𝛑 ◁ (βL (R := R) Y₁.obj Y₂.obj).inv ≫
         (ξL (R := R) (Y₁.obj ⊗ Y₂.obj)).hom) 0 := by
   ext
   · simp only [MonoidalSupercategory.superTensorHom, comp_fst, whiskerLeft_fst, whiskerRight_fst,
       whiskerLeft_snd, whiskerRight_snd, hf, hg, homMk_fst, MonoidalPreadditive.whiskerLeft_zero,
       MonoidalPreadditive.zero_whiskerRight, Limits.zero_comp, zero_sub, ξApp_hom,
-      MonoidalPiCategory.pi_map, tensorLeft_map, MonoidalCategory.whiskerLeft_comp,
+      MonoidalPiCategory.pi_map, MonoidalCategory.whiskerLeft_comp,
       Category.assoc, tensorObj_obj]
     rw [reassoc_of% (odd_odd_key (R := R) f.2 g.2)]
     simp only [Preadditive.neg_comp, neg_neg, tensorHom_def, Category.assoc,
@@ -773,6 +777,7 @@ theorem β_hom_eq (X : Associated R D) :
 
 section EDI
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The identification `unit : A ⥤ E(D(A))`, `f ↦ (f, 0)`, is strictly monoidal. -/
 def unitCoreMonoidal : (unit R D).CoreMonoidal where
   εIso := Iso.refl _
@@ -783,13 +788,13 @@ def unitCoreMonoidal : (unit R D).CoreMonoidal where
   left_unitality X := Underlying.hom_ext (by ext <;> simp)
   right_unitality X := Underlying.hom_ext (by ext <;> simp)
 
-attribute [local instance] unitCoreMonoidal in
 instance unitMonoidal : (unit R D).Monoidal := unitCoreMonoidal.toMonoidal
 
 @[simp] theorem unit_ε : Functor.LaxMonoidal.ε (unit R D) = 𝟙 _ := rfl
 
 @[simp] theorem unit_μ (X Y : D) : Functor.LaxMonoidal.μ (unit R D) X Y = 𝟙 _ := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, Theorem 1.15, `E ∘ D = I`.** The identification `A ⥤ E(D(A))` is a
 (strict) monoidal Π-functor with `j = 1`: the monoidal Π-category underlying the monoidal
 Π-supercategory `Â` has the same `π`, `β` and `ξ` as `A` (`β_hom_eq`, `ξ_hom_eq`). With `counit`
@@ -802,7 +807,7 @@ def unitMonoidalPiFunctor : MonoidalPiFunctor R (unit R D) where
     exact (β_hom_eq (R := R) ⟨X⟩).symm)
   ξ_comm := Underlying.hom_ext (by
     simp only [Iso.refl_hom, unit_ε, Category.comp_id, unit_μ, Category.id_comp,
-      MonoidalCategory.tensor_id]
+      MonoidalCategory.id_tensorHom_id]
     exact ξ_hom_eq (R := R))
 
 end EDI
@@ -817,6 +822,7 @@ variable {E : Type w₃} [Category.{w₄} E] [Preadditive E] [Linear R E] [Monoi
 
 open Functor.LaxMonoidal Functor.OplaxMonoidal
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, Theorem 1.15 (functor `D` on morphisms).** A monoidal Π-functor
 `(F, c, i, j)` induces a monoidal superfunctor `F̂ : Â ⥤ B̂` (`F̂ = D₁(F, β_F)` with
 `β_F = μ_{π,-} ∘ (j ⊗ 1)`), with coherence maps `c` and `i` viewed as even isomorphisms. -/
@@ -828,30 +834,42 @@ def mapMonoidal : MonoidalSuperfunctor R (map (hF.toPiFunctor R)) where
   μ_natural_left f X' := by
     ext
     · simp
+      exact μ_natural_left F f.1 X'.obj
     · simp only [comp_snd, whiskerRight_fst, whiskerRight_snd, map_map, homMk_fst, homMk_snd,
-        evenIso_hom, Functor.Monoidal.μIso_hom, MonoidalPiCategory.pi_map, tensorLeft_map,
+        evenIso_hom, Functor.Monoidal.μIso_hom, MonoidalPiCategory.pi_map,
         Limits.comp_zero, zero_add, add_zero, Functor.map_comp, Category.assoc,
         MonoidalPiFunctor.toPiFunctor_β_inv_app, MonoidalCategory.comp_whiskerRight, tensorObj_obj,
-        map_obj_obj, MonoidalPiCategory.pi_obj, Functor.map_zero, Limits.zero_comp]
+        MonoidalPiCategory.pi_obj, Limits.zero_comp]
       rw [← μ_natural_left_assoc, hF.βF_inv_whiskerRight]
+      rfl
   μ_natural_right X' f := by
     ext
     · simp
+      exact μ_natural_right F X'.obj f.1
     · simp only [comp_snd, whiskerLeft_fst, whiskerLeft_snd, map_map, homMk_fst, homMk_snd,
-        evenIso_hom, Functor.Monoidal.μIso_hom, MonoidalPiCategory.pi_map, tensorLeft_map,
+        evenIso_hom, Functor.Monoidal.μIso_hom, MonoidalPiCategory.pi_map,
         Limits.comp_zero, zero_add, add_zero, Functor.map_comp, Category.assoc,
         MonoidalPiFunctor.toPiFunctor_β_inv_app, MonoidalCategory.whiskerLeft_comp, tensorObj_obj,
-        map_obj_obj, MonoidalPiCategory.pi_obj, Functor.map_zero, Limits.zero_comp]
+        MonoidalPiCategory.pi_obj, Limits.zero_comp]
       rw [← μ_natural_right_assoc, ← hF.βL_βF_inv]
-  associativity X Y Z := by ext <;> simp
-  left_unitality X := by ext <;> simp
-  right_unitality X := by ext <;> simp
+      rfl
+  associativity X Y Z := by
+    ext <;> simp
+    exact associativity F X.obj Y.obj Z.obj
+  left_unitality X := by
+    ext <;> simp
+    exact left_unitality F X.obj
+  right_unitality X := by
+    ext <;> simp
+    exact right_unitality F X.obj
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **`E ∘ D = I` on morphisms.** The underlying functor of `F̂` is `F` (under the identifications
 `unit`). -/
 theorem unit_comp_map : unit R D ⋙ Underlying.map (map (hF.toPiFunctor R)) = F ⋙ unit R E :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => Underlying.hom_ext (by ext <;> simp)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **`E ∘ D = I` on morphisms.** The coherence map `ĵ := (F̂ ζ_A)⁻¹ ∘ i ∘ ζ_B` of the monoidal
 Π-functor underlying `F̂` is `j`, viewed as an even morphism. -/
 theorem jIso_mapMonoidal_hom :
@@ -931,18 +949,19 @@ def Tmon : Associated R (Underlying R A) ⥤ A where
     simp only [comp_fst, comp_snd, Underlying.comp_val, Underlying.add_val, Underlying.sub_val,
       MonoidalPiCategory.pi_map, MonoidalPiCategory.ξApp_hom, ξL_und_val,
       Underlying.whiskerLeft_val, Preadditive.add_comp, Preadditive.comp_add,
-      Preadditive.sub_comp, Category.assoc]
+      Category.assoc]
     have h1' : (MonoidalPiCategory.pi (R := R) (D := Underlying R A)).obj ◁ g.1.1 ≫
         (ζL (R := R) Z.obj.obj).hom = (ζL (R := R) Y.obj.obj).hom ≫ g.1.1 := h1
     have h2' : (MonoidalPiCategory.pi (R := R) (D := Underlying R A)).obj ◁ g.2.1 ≫
         (ζL (R := R) (𝛑 ⊗ Z.obj.obj)).hom = (ζL (R := R) Y.obj.obj).hom ≫ g.2.1 := h2
-    simp only [Preadditive.comp_neg, Preadditive.neg_comp]
+    simp only [Preadditive.comp_neg]
     rw [reassoc_of% h2', h1', sub_eq_add_neg, neg_neg]
     abel
 
 instance : (Tmon R A).Additive where
   map_add := by intros; simp [Preadditive.add_comp]; abel
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (Tmon R A).Linear R where
   map_smul _ _ := by simp [smul_add]
 
@@ -954,7 +973,7 @@ instance : IsSuperfunctor R (Tmon R A) where
       exact f.1.2
     · rw [mem_parity_one] at hf
       simp only [Tmon_map, hf, Underlying.zero_val, zero_add]
-      simpa using comp_mem f.2.2 (ζL_hom_mem (R := R) Y.obj.obj)
+      simpa using! comp_mem f.2.2 (ζL_hom_mem (R := R) Y.obj.obj)
 
 /-- `T_A` is injective on morphisms. -/
 theorem Tmon_map_injective {X Y : Associated R (Underlying R A)} {f g : X ⟶ Y}
@@ -976,28 +995,32 @@ theorem Tmon_map_injective {X Y : Associated R (Underlying R A)} {f g : X ⟶ Y}
     exact congrArg (proj R 1) h
   exact hom_ext (Subtype.ext e0) (Subtype.ext ((cancel_mono _).1 e1))
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R A) in
 /-- The inverse of `T_A`: `h ↦ (h₀, ζ_μ⁻¹ ∘ h₁)`. -/
 @[simps obj]
 def TmonInv : A ⥤ Associated R (Underlying R A) where
   obj X := ⟨⟨X⟩⟩
   map {X Y} h := (⟨proj R 0 h, proj_mem 0 h⟩, ⟨proj R 1 h ≫ (ζL (R := R) Y).inv,
-    by simpa using comp_mem (proj_mem 1 h) (inv_mem _ (ζL_hom_mem (R := R) Y))⟩)
+    by simpa using! comp_mem (proj_mem 1 h) (inv_mem _ (ζL_hom_mem (R := R) Y))⟩)
   map_id X := Tmon_map_injective (by simp [proj_id, show ¬((1 : ZMod 2) = 0) by decide])
   map_comp {X Y Z} f g := Tmon_map_injective (by
     rw [(Tmon R A).map_comp]
     simp only [Tmon_map, Category.assoc, Iso.inv_hom_id, Category.comp_id, proj_add_proj])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Tmon_map_TmonInv_map {X Y : A} (h : X ⟶ Y) : (Tmon R A).map ((TmonInv R A).map h) = h := by
   simp [TmonInv, proj_add_proj]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 1.15, `D ∘ E ≅ I`:** `T_A` is an isomorphism of supercategories. -/
 theorem TmonInv_comp_Tmon : TmonInv R A ⋙ Tmon R A = 𝟭 A :=
-  CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by simpa using Tmon_map_TmonInv_map f
+  CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by simpa using! Tmon_map_TmonInv_map f
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Tmon_comp_TmonInv : Tmon R A ⋙ TmonInv R A = 𝟭 _ :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by
-    simpa using Tmon_map_injective (Tmon_map_TmonInv_map ((Tmon R A).map f))
+    simpa using! Tmon_map_injective (Tmon_map_TmonInv_map ((Tmon R A).map f))
 
 /-- `T_A` carries `ζ` of `(A̲)^` to `ζ` of `A`. -/
 theorem Tmon_map_ζ :
@@ -1008,6 +1031,7 @@ theorem Tmon_map_ζ :
   rw [MonoidalSupercategory.rightUnitor_inv_naturality_assoc R,
     MonoidalSupercategory.unitors_equal R, Iso.inv_hom_id, Category.comp_id]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Tmon_map_whiskerRight {X Y : Associated R (Underlying R A)} (f : X ⟶ Y)
     (Z : Associated R (Underlying R A)) :
     (Tmon R A).map (f ▷ Z) = (Tmon R A).map f ▷ Z.obj.obj := by
@@ -1016,6 +1040,7 @@ theorem Tmon_map_whiskerRight {X Y : Associated R (Underlying R A)} (f : X ⟶ Y
     MonoidalSupercategory.add_whiskerRight (R := R), MonoidalSupercategory.comp_whiskerRight (R := R)]
   erw [associator_ζL]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Tmon_map_whiskerLeft (X : Associated R (Underlying R A))
     {Y Z : Associated R (Underlying R A)} (g : Y ⟶ Z) :
     (Tmon R A).map (X ◁ g) = X.obj.obj ◁ (Tmon R A).map g := by
@@ -1041,10 +1066,12 @@ theorem Tmon_map_whiskerLeft (X : Associated R (Underlying R A))
     (MonoidalPiSupercategory.ζ (R := R) (C := A)).hom Z.obj.obj),
     MonoidalSupercategory.triangle (R := R)]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem Tmon_map_homMk {X Y : Associated R (Underlying R A)} (f : X.obj ⟶ Y.obj) :
     (Tmon R A).map (homMk f 0) = f.1 := by
   simp [Tmon_map]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 1.15, `D ∘ E ≅ I`:** `T_A` is a strict monoidal superfunctor. -/
 def TmonMonoidal : MonoidalSuperfunctor R (Tmon R A) where
   μIso _ _ := Iso.refl _
@@ -1060,8 +1087,13 @@ def TmonMonoidal : MonoidalSuperfunctor R (Tmon R A) where
   associativity X Y Z := by
     simp [MonoidalSupercategory.id_whiskerRight (R := R),
       MonoidalSupercategory.whiskerLeft_id (R := R)]
-  left_unitality X := by simp [MonoidalSupercategory.id_whiskerRight (R := R)]
-  right_unitality X := by simp [MonoidalSupercategory.whiskerLeft_id (R := R)]
+    rfl
+  left_unitality X := by
+    simp [MonoidalSupercategory.id_whiskerRight (R := R)]
+    rfl
+  right_unitality X := by
+    simp [MonoidalSupercategory.whiskerLeft_id (R := R)]
+    rfl
 
 section Naturality
 
@@ -1069,11 +1101,12 @@ variable {B : Type w₃} [Category.{w₄} B] [Preadditive B] [Linear R B] [Super
   [MonoidalCategoryStruct B] [MonoidalSupercategory R B] [MonoidalPiSupercategory R B]
   {G : A ⥤ B} [G.Additive] [G.Linear R] [IsSuperfunctor R G] (hG : MonoidalSuperfunctor R G)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem βF_comp_map_ζL (Y : Underlying R A) :
     letI := (MonoidalSuperfunctor.underlyingCoreMonoidal hG).toMonoidal
     ((hG.toMonoidalPiFunctor).βF Y).hom.1 ≫ G.map (ζL (R := R) Y.obj).hom =
       (ζL (R := R) (G.obj Y.obj)).hom := by
-  letI := (MonoidalSuperfunctor.underlyingCoreMonoidal hG).toMonoidal
+  let := (MonoidalSuperfunctor.underlyingCoreMonoidal hG).toMonoidal
   have e : ((hG.toMonoidalPiFunctor).βF Y).hom.1 = (MonoidalSuperfunctor.jIso hG).hom ▷ G.obj Y.obj ≫
       (hG.μIso (MonoidalPiSupercategory.pi (R := R) (C := A)) Y.obj).hom := rfl
   rw [e, ζL, G.map_comp]
@@ -1084,12 +1117,13 @@ theorem βF_comp_map_ζL (Y : Underlying R A) :
     Category.assoc, ← hG.left_unitality]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 1.15, naturality of `T`:** `T_B ∘ (G̲)^ = G ∘ T_A` for a monoidal superfunctor `G`
 between monoidal Π-supercategories. -/
 theorem Tmon_naturality :
     letI := (MonoidalSuperfunctor.underlyingCoreMonoidal hG).toMonoidal
     map ((hG.toMonoidalPiFunctor).toPiFunctor R) ⋙ Tmon R B = Tmon R A ⋙ G := by
-  letI := (MonoidalSuperfunctor.underlyingCoreMonoidal hG).toMonoidal
+  let := (MonoidalSuperfunctor.underlyingCoreMonoidal hG).toMonoidal
   have h2 : ∀ Y : Underlying R A, ((hG.toMonoidalPiFunctor).βF Y).inv.1 ≫ (ζL (R := R) (G.obj Y.obj)).hom =
       G.map (ζL (R := R) Y.obj).hom := fun Y => by
     rw [← βF_comp_map_ζL hG Y, ← Category.assoc, ← Underlying.comp_val, Iso.inv_hom_id]
