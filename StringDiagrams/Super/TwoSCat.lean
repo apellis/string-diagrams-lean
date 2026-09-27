@@ -56,6 +56,7 @@ variable {R : Type w} [CommRing R]
   [∀ a b : E, Preadditive (a ⟶ b)] [∀ a b : E, Linear R (a ⟶ b)]
   [∀ a b : E, Supercategory R (a ⟶ b)] [TwoSupercategory R E]
 
+set_option backward.isDefEq.respectTransparency false in
 omit [TwoSupercategory R B] [TwoSupercategory R C] in
 /-- Composition of 2-superfunctors is associative. -/
 theorem comp_assoc (F : TwoSuperfunctor R B C) (G : TwoSuperfunctor R C D)
@@ -63,38 +64,40 @@ theorem comp_assoc (F : TwoSuperfunctor R B C) (G : TwoSuperfunctor R C D)
   refine TwoEnvelope.twoSuperfunctor_ext rfl HEq.rfl HEq.rfl (heq_of_eq ?_) (heq_of_eq ?_)
   · funext a b c f g
     apply Iso.ext
-    simp only [comp_mapComp, comp_map, comp_obj, Iso.trans_hom, map₂Iso_hom, comp_map₂,
+    simp only [comp_mapComp, Iso.trans_hom, map₂Iso_hom, comp_map₂,
       map₂_comp, Category.assoc]
+    rfl
   · funext a
     apply Iso.ext
-    simp only [comp_mapId, comp_map, comp_obj, Iso.trans_hom, map₂Iso_hom, comp_map₂,
+    simp only [comp_mapId, Iso.trans_hom, map₂Iso_hom, comp_map₂,
       map₂_comp, Category.assoc]
+    rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The identity 2-superfunctor is a left unit for composition. -/
 theorem id_comp (F : TwoSuperfunctor R B C) : (TwoSuperfunctor.id R B).comp F = F := by
   refine TwoEnvelope.twoSuperfunctor_ext rfl HEq.rfl HEq.rfl (heq_of_eq ?_) (heq_of_eq ?_)
   · funext a b c f g
     apply Iso.ext
-    simp only [comp_mapComp, Iso.trans_hom, map₂Iso_hom, id_mapComp, Iso.refl_hom, map₂_id,
+    simp only [comp_mapComp, Iso.trans_hom, map₂Iso_hom, Iso.refl_hom, map₂_id,
       Category.comp_id]
   · funext a
     apply Iso.ext
-    simp only [comp_mapId, Iso.trans_hom, map₂Iso_hom, id_mapId, Iso.refl_hom, map₂_id,
+    simp only [comp_mapId, Iso.trans_hom, map₂Iso_hom, Iso.refl_hom, map₂_id,
       Category.comp_id]
 
+set_option backward.isDefEq.respectTransparency false in
 omit [TwoSupercategory R B] in
 /-- The identity 2-superfunctor is a right unit for composition. -/
 theorem comp_id (F : TwoSuperfunctor R B C) : F.comp (TwoSuperfunctor.id R C) = F := by
   refine TwoEnvelope.twoSuperfunctor_ext rfl HEq.rfl HEq.rfl (heq_of_eq ?_) (heq_of_eq ?_)
   · funext a b c f g
     apply Iso.ext
-    simp only [comp_mapComp, Iso.trans_hom, map₂Iso_hom, id_mapComp, Iso.refl_hom, id_map₂,
-      Category.id_comp]
+    simp only [comp_mapComp, Iso.trans_hom, map₂Iso_hom, Iso.refl_hom]
     exact Category.id_comp _
   · funext a
     apply Iso.ext
-    simp only [comp_mapId, Iso.trans_hom, map₂Iso_hom, id_mapId, Iso.refl_hom, id_map₂,
-      Category.id_comp]
+    simp only [comp_mapId, Iso.trans_hom, map₂Iso_hom, Iso.refl_hom]
     exact Category.id_comp _
 
 end TwoSuperfunctor

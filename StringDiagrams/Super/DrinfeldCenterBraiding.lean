@@ -39,7 +39,7 @@ theorem EndId.x_comp' (θ : EndId R B) {a b c : B} (f : a ⟶ b) (g : b ⟶ c) :
     θ.x (f ≫ g) = (BicategoryStruct.associator f g (θ.X c)).hom ≫ f ◁ θ.x g ≫
       (BicategoryStruct.associator f (θ.X b) g).inv ≫ θ.x f ▷ g ≫ (BicategoryStruct.associator (θ.X a) f g).hom := by
   have h := θ.x_comp f g
-  simp only [TwoSuperfunctor.id_mapComp, Iso.refl_hom, TwoSuperfunctor.id_map] at h
+  simp only [Iso.refl_hom, TwoSuperfunctor.id_map] at h
   erw [id_whiskerRight (R := R), whiskerLeft_id (R := R), Category.id_comp,
     Category.comp_id] at h
   exact h
@@ -59,7 +59,7 @@ theorem braidingApp_naturality {a b : B} (f : a ⟶ b) :
     (X ⊗ Y).toTwoNatTrans.x f ≫ braidingApp X Y a ▷ (TwoSuperfunctor.id R B).map f =
       (TwoSuperfunctor.id R B).map f ◁ braidingApp X Y b ≫ (Y ⊗ X).toTwoNatTrans.x f := by
   have h := X.toTwoNatTrans.naturality (Y.toTwoNatTrans.x f)
-  simp only [TwoSuperfunctor.id_map₂, TwoSuperfunctor.id_map] at h
+  simp only [TwoSuperfunctor.id_map] at h
   rw [TwoNatTrans.EndId.x_comp', TwoNatTrans.EndId.x_comp'] at h
   change ((BicategoryStruct.associator f (Y.toTwoNatTrans.X b) (X.toTwoNatTrans.X b)).inv ≫
       Y.toTwoNatTrans.x f ▷ X.toTwoNatTrans.X b ≫
@@ -79,6 +79,7 @@ theorem braidingApp_naturality {a b : B} (f : a ⟶ b) :
   simp only [Category.assoc, Iso.inv_hom_id, Category.comp_id, Iso.hom_inv_id_assoc]
   simpa only [Category.assoc] using h
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The braiding `c_{(X,x),(Y,y)} : (X, x) ⊗ (Y, y) ≅ (Y, y) ⊗ (X, x)` of the Drinfeld center,
 with components `x_{Y_λ}`. -/
 def braiding : X ⊗ Y ≅ Y ⊗ X where
@@ -88,8 +89,8 @@ def braiding : X ⊗ Y ≅ Y ⊗ X where
         haveI := X.isStrong (Y.toTwoNatTrans.X a)
         exact inv (braidingApp X Y a)
       naturality := fun {a b} f => by
-        haveI := X.isStrong (Y.toTwoNatTrans.X a)
-        haveI := X.isStrong (Y.toTwoNatTrans.X b)
+        have := X.isStrong (Y.toTwoNatTrans.X a)
+        have := X.isStrong (Y.toTwoNatTrans.X b)
         have h := congrArg (fun t => (TwoSuperfunctor.id R B).map f ◁ inv (braidingApp X Y b) ≫
           t ≫ inv (braidingApp X Y a) ▷ (TwoSuperfunctor.id R B).map f)
           (braidingApp_naturality X Y f)
@@ -99,10 +100,10 @@ def braiding : X ⊗ Y ≅ Y ⊗ X where
           whiskerLeft_id (R := R), Category.id_comp] at h
         exact h.symm }
   hom_inv_id := TwoNatTrans.hom_ext fun a => by
-    haveI := X.isStrong (Y.toTwoNatTrans.X a)
+    have := X.isStrong (Y.toTwoNatTrans.X a)
     exact IsIso.hom_inv_id _
   inv_hom_id := TwoNatTrans.hom_ext fun a => by
-    haveI := X.isStrong (Y.toTwoNatTrans.X a)
+    have := X.isStrong (Y.toTwoNatTrans.X a)
     exact IsIso.inv_hom_id _
 
 @[simp] theorem braiding_hom_app (a : B) :
@@ -116,11 +117,11 @@ instance instBraidedMonoidalSupercategory : BraidedMonoidalSupercategory R (Drin
   braiding_naturality_right X _ _ β := TwoNatTrans.hom_ext fun a => by
     simp only [comp_app, mwhiskerLeft_app, mwhiskerRight_app, braiding_hom_app]
     have h := X.toTwoNatTrans.naturality (β.app a)
-    simpa only [TwoSuperfunctor.id_map₂, TwoSuperfunctor.id_map] using h
+    simpa only [TwoSuperfunctor.id_map₂, TwoSuperfunctor.id_map] using! h
   braiding_naturality_left α Z := TwoNatTrans.hom_ext fun a => by
     simp only [comp_app, mwhiskerLeft_app, mwhiskerRight_app, braiding_hom_app]
     have h := α.naturality (Z.toTwoNatTrans.X a)
-    simpa only [TwoSuperfunctor.id_map] using h.symm
+    simpa only [TwoSuperfunctor.id_map] using! h.symm
   hexagon_forward X Y Z := TwoNatTrans.hom_ext fun a => by
     simp only [comp_app, mwhiskerLeft_app, mwhiskerRight_app, braiding_hom_app,
       massociator_hom_app, tensor_X]
