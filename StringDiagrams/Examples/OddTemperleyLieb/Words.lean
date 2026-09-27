@@ -446,7 +446,7 @@ theorem evW_snake' (m : ℕ) {W : ℕ} (hW : m ≤ W) (v : List Step) (c : ℕ) 
   | succ m ih =>
     rw [nestW_succ', capsW_succ', shiftW_append, shiftW_shiftW]
     simp only [shiftW_cons, Step.shift_cap, shiftW_nil, add_zero, List.append_assoc,
-      List.singleton_append, List.cons_append]
+      List.cons_append]
     have h1 := evW_farCup (R := R) (δ := δ) (capsW m) (valid_capsW m (W + m) (by omega))
       (i := m) (j := m + 2) (W := W + (m + m)) (by omega) (by omega)
       (.cap (m + 1) :: v) c
@@ -468,6 +468,7 @@ def toStep (L : Layer sig) : Step :=
 /-- The word of a diagram. -/
 def steps {a b : Obj sig} (d : a ⟶ b) : List Step := (Diagram.layers d).map toStep
 
+set_option backward.isDefEq.respectTransparency false in
 theorem diag_mk_eq_evW (ls : List (Layer sig)) :
     ∀ (a b : ℕ) (h : Chain (strands a) ls (strands b)),
       (pres R δ).diag (Diagram.mk ls h) = evW R δ a (ls.map toStep) b ∧
@@ -500,7 +501,7 @@ theorem diag_mk_eq_evW (ls : List (Layer sig)) :
         exact Layer.ext (Subsingleton.elim _ _) (list_unit_ext (by simp))
           rfl (list_unit_ext (by simp; omega))
       obtain ⟨h1, h2, h3⟩ := ih (a + 2) b hc'
-      refine ⟨?_, ⟨by simp only [List.map_cons, toStep]; omega, h2⟩, h3⟩
+      refine ⟨?_, ⟨by simp only; omega, h2⟩, h3⟩
       rw [e, Presentation.diag_comp, h1, ← cup_def]
       simp only [List.map_cons, toStep, evW_cup]
     | cap =>
@@ -519,7 +520,7 @@ theorem diag_mk_eq_evW (ls : List (Layer sig)) :
         exact Layer.ext (Subsingleton.elim _ _) (list_unit_ext (by simp))
           rfl (list_unit_ext (by simp; omega))
       obtain ⟨h1, h2, h3⟩ := ih a b hc'
-      refine ⟨?_, ⟨by simp only [List.map_cons, toStep]; omega, h2⟩, h3⟩
+      refine ⟨?_, ⟨by simp only; omega, h2⟩, h3⟩
       rw [e, Presentation.diag_comp, h1, ← cap_def]
       simp only [List.map_cons, toStep, evW_cap]
 
@@ -545,6 +546,7 @@ theorem hom_induction_evW {a b : ℕ} {p : (X R δ a ⟶ X R δ b) → Prop}
 
 /-! ## Left whiskering by `m` strands -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem strands_tensor (m a : ℕ) : (strands m).tensor (strands a) = strands (m + a) :=
   obj_ext (by simp [strands, Obj.tensor])
 
@@ -581,6 +583,7 @@ theorem wLs_eqToHom (m : ℕ) {a b : ℕ} (h : X R δ a = X R δ b) :
   obtain rfl : a = b := by simpa using congrArg (fun o : Obj sig => o.word.length) this
   simp [wLs, Presentation.wL_id]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem wLs_cup (m : ℕ) {a i : ℕ} (h : i ≤ a) :
     wLs R δ m (cup R δ a i) = cup R δ (m + a) (m + i) := by
   rw [cup_def h, cup_def (by omega), wLs, Presentation.wL_diag,
@@ -593,6 +596,7 @@ theorem wLs_cup (m : ℕ) {a i : ℕ} (h : i ≤ a) :
     exact Layer.ext rfl (list_unit_ext (by simp [Layer.wl, strands])) rfl
       (list_unit_ext (by simp [Layer.wl]; omega))
 
+set_option backward.isDefEq.respectTransparency false in
 theorem wLs_cap (m : ℕ) {a i : ℕ} (h : i ≤ a) :
     wLs R δ m (cap R δ a i) = cap R δ (m + a) (m + i) := by
   rw [cap_def h, cap_def (by omega), wLs, Presentation.wL_diag,

@@ -51,6 +51,7 @@ theorem flip_map_dcap {m i : ℕ} (h : i ≤ m) : flip.toOpLayerMap.map (dcap h)
 
 theorem flip_map_id (n : ℕ) : flip.toOpLayerMap.map (𝟙 (strands n)) = 𝟙 (strands n) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem flip_rel (r : (pres R δ).Rel) :
     (freeLift R (flip.toOpLayerMap.toPresented (pres R δ) fun _ => 1)).map
       ((pres R δ).rel r) = 0 := by
@@ -81,22 +82,27 @@ and caps. -/
 def flipFunctor : (pres R δ).Presented ⥤ (pres R δ).Presentedᵒᵖ :=
   flip.lift (pres R δ) (fun _ => rfl) (flip_rel R δ)
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (flipFunctor R δ).Additive := by unfold flipFunctor; infer_instance
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (flipFunctor R δ).Linear R := by unfold flipFunctor; infer_instance
 
 variable {R δ}
 
+set_option backward.isDefEq.respectTransparency false in
 theorem flipFunctor_cup {m i : ℕ} (h : i ≤ m) :
     (flipFunctor R δ).map ((pres R δ).diag (dcup h)) = ((pres R δ).diag (dcap h)).op := by
   unfold flipFunctor
   rw [SigFlip.lift_diag, flip_map_dcup, Diagram.weight_one, one_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem flipFunctor_cap {m i : ℕ} (h : i ≤ m) :
     (flipFunctor R δ).map ((pres R δ).diag (dcap h)) = ((pres R δ).diag (dcup h)).op := by
   unfold flipFunctor
   rw [SigFlip.lift_diag, flip_map_dcap, Diagram.weight_one, one_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The reflection fixes the Temperley–Lieb generators `e_i = cup_i ∘ cap_i`. -/
 theorem flipFunctor_e (m i : ℕ) : ((flipFunctor R δ).map (e δ m i)).unop = e δ m i := by
   by_cases h : i ≤ m
@@ -142,6 +148,7 @@ theorem mirror_map_dcap₁ (i : ℕ) (h : i ≤ 1) :
   apply Diagram.ext
   rcases Nat.le_one_iff_eq_zero_or_eq_one.mp h with rfl | rfl <;> rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mirror_rel (r : (pres R δ).Rel) :
     (freeLift R (mirror.toLayerMap.toPresented (pres R δ) fun _ => 1)).map
       ((pres R δ).rel r) = 0 := by
@@ -218,6 +225,7 @@ def loopLayer : Layer loopSig := ⟨(), [], (), []⟩
 
 theorem loopLayer_valid : loopLayer.Valid := ⟨trivial, rfl, trivial, rfl, trivial, rfl, trivial⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The closed generator goes to `δ`. -/
 theorem loopFunctor_loop :
     (loopFunctor R δ).map ((loopPres R).diag (Diagram.ofLayer loopLayer loopLayer_valid)) =
@@ -257,6 +265,7 @@ abbrev dot : strands 1 ⟶ strands 1 := dlay (n := 1) (i := 0) (by decide)
 
 theorem mirror_map_dot : mirror.toLayerMap.map dot = dot := Diagram.ext rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mirror_rel (r : (pres R).Rel) :
     (freeLift R (mirror.toLayerMap.toPresented (pres R) fun _ => 1)).map ((pres R).rel r) = 0 := by
   rw [LayerMap.freeLift_toPresented_one]
@@ -274,6 +283,7 @@ def mirrorFunctor : (pres R).Presented ⥤ (pres R).Presented :=
 theorem composable_strands (m n : ℕ) : (strands m).Composable (strands n) :=
   ⟨Signature.ok_of_subsingleton _ _, rfl, Signature.ok_of_subsingleton _ _⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The Koszul rule for the reflection of two odd dots**: the reflection of `dot ⊗ dot` is
 `-(dot ⊗ dot)`, the horizontal composite of the reflected dots in the reverse order, with the
 sign `(-1)^{|dot||dot|} = -1`. -/
