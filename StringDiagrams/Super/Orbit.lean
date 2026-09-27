@@ -88,29 +88,29 @@ def pow : ℤ → S ⥤ S
 
 instance powNat_additive : ∀ n, (d.powNat n).Additive
   | 0 => inferInstanceAs (𝟭 S).Additive
-  | n + 1 => by haveI := powNat_additive n; exact inferInstanceAs (d.powNat n ⋙ d.Q).Additive
+  | n + 1 => by have := powNat_additive n; exact inferInstanceAs (d.powNat n ⋙ d.Q).Additive
 
 instance powNat_linear : ∀ n, (d.powNat n).Linear R
   | 0 => inferInstanceAs ((𝟭 S).Linear R)
-  | n + 1 => by haveI := powNat_linear n; exact inferInstanceAs ((d.powNat n ⋙ d.Q).Linear R)
+  | n + 1 => by have := powNat_linear n; exact inferInstanceAs ((d.powNat n ⋙ d.Q).Linear R)
 
 instance powNat_isSuperfunctor : ∀ n, IsSuperfunctor R (d.powNat n)
   | 0 => inferInstanceAs (IsSuperfunctor R (𝟭 S))
   | n + 1 => by
-    haveI := powNat_isSuperfunctor n; exact inferInstanceAs (IsSuperfunctor R (d.powNat n ⋙ d.Q))
+    have := powNat_isSuperfunctor n; exact inferInstanceAs (IsSuperfunctor R (d.powNat n ⋙ d.Q))
 
 instance powNeg_additive : ∀ n, (d.powNeg n).Additive
   | 0 => inferInstanceAs (𝟭 S).Additive
-  | n + 1 => by haveI := powNeg_additive n; exact inferInstanceAs (d.powNeg n ⋙ d.Qi).Additive
+  | n + 1 => by have := powNeg_additive n; exact inferInstanceAs (d.powNeg n ⋙ d.Qi).Additive
 
 instance powNeg_linear : ∀ n, (d.powNeg n).Linear R
   | 0 => inferInstanceAs ((𝟭 S).Linear R)
-  | n + 1 => by haveI := powNeg_linear n; exact inferInstanceAs ((d.powNeg n ⋙ d.Qi).Linear R)
+  | n + 1 => by have := powNeg_linear n; exact inferInstanceAs ((d.powNeg n ⋙ d.Qi).Linear R)
 
 instance powNeg_isSuperfunctor : ∀ n, IsSuperfunctor R (d.powNeg n)
   | 0 => inferInstanceAs (IsSuperfunctor R (𝟭 S))
   | n + 1 => by
-    haveI := powNeg_isSuperfunctor n
+    have := powNeg_isSuperfunctor n
     exact inferInstanceAs (IsSuperfunctor R (d.powNeg n ⋙ d.Qi))
 
 instance pow_additive : ∀ i, (d.pow i).Additive
@@ -134,17 +134,20 @@ counit for `i < 0`. -/
 def succ : ∀ i : ℤ, d.pow i ⋙ d.Q ≅ d.pow (i + 1)
   | Int.ofNat _ => Iso.refl _
   | Int.negSucc 0 => d.e.counitIso
-  | Int.negSucc (n + 1) => Functor.associator _ _ _ ≪≫ isoWhiskerLeft (d.powNeg (n + 1)) d.e.counitIso ≪≫
+  | Int.negSucc (n + 1) => Functor.associator _ _ _ ≪≫ Functor.isoWhiskerLeft (d.powNeg (n + 1)) d.e.counitIso ≪≫
       Functor.rightUnitor _
 
+set_option backward.isDefEq.respectTransparency false in
 theorem succ_hom_mem (i : ℤ) (X : S) :
     (d.succ i).hom.app X ∈ parity (R := R) (d.Q.obj ((d.pow i).obj X)) ((d.pow (i + 1)).obj X) 0 := by
   rcases i with n | (_ | n)
   · exact id_mem _
   · exact d.counit_mem X
-  · convert d.counit_mem ((d.powNeg (n + 1)).obj X) using 1
-    show 𝟙 _ ≫ _ ≫ 𝟙 _ = _
-    rw [Category.id_comp, Category.comp_id]; rfl
+  · have h : (d.succ (Int.negSucc (n + 1))).hom.app X =
+        d.e.counitIso.hom.app ((d.powNeg (n + 1)).obj X) := by
+      show 𝟙 _ ≫ _ ≫ 𝟙 _ = _
+      rw [Category.id_comp, Category.comp_id]; rfl
+    rw [h]; exact d.counit_mem _
 
 theorem succ_inv_mem (i : ℤ) (X : S) :
     (d.succ i).inv.app X ∈ parity (R := R) ((d.pow (i + 1)).obj X) (d.Q.obj ((d.pow i).obj X)) 0 :=
@@ -155,12 +158,12 @@ theorem succ_inv_mem (i : ℤ) (X : S) :
 /-- `Qⁿ Q ≅ Qⁿ⁺¹` for `n ∈ ℕ`. -/
 def commNat : ∀ n : ℕ, d.Q ⋙ d.powNat n ≅ d.powNat (n + 1)
   | 0 => Functor.rightUnitor _ ≪≫ (Functor.leftUnitor _).symm
-  | n + 1 => (Functor.associator _ _ _).symm ≪≫ isoWhiskerRight (commNat n) d.Q
+  | n + 1 => (Functor.associator _ _ _).symm ≪≫ Functor.isoWhiskerRight (commNat n) d.Q
 
 /-- `Q⁻ⁿ⁻¹ Q ≅ Q⁻ⁿ` for `n ∈ ℕ`. -/
 def commNeg : ∀ n : ℕ, d.Q ⋙ d.powNeg (n + 1) ≅ d.powNeg n
-  | 0 => isoWhiskerLeft d.Q (Functor.leftUnitor _) ≪≫ d.e.unitIso.symm
-  | n + 1 => (Functor.associator _ _ _).symm ≪≫ isoWhiskerRight (commNeg n) d.Qi
+  | 0 => Functor.isoWhiskerLeft d.Q (Functor.leftUnitor _) ≪≫ d.e.unitIso.symm
+  | n + 1 => (Functor.associator _ _ _).symm ≪≫ Functor.isoWhiskerRight (commNeg n) d.Qi
 
 /-- `Qⁱ Q ≅ Qⁱ⁺¹` (in diagrammatic order `Q ⋙ Qⁱ ≅ Qⁱ⁺¹`): built from identities for
 `i ≥ 0` and from the unit for `i < 0`. -/
@@ -173,23 +176,26 @@ theorem comm_zero_hom_app (X : S) : (d.comm 0).hom.app X = 𝟙 (d.Q.obj X) := b
   show 𝟙 _ ≫ 𝟙 _ = _
   exact Category.id_comp _
 
+set_option backward.isDefEq.respectTransparency false in
 theorem commNat_hom_mem (n : ℕ) (X : S) :
     (d.commNat n).hom.app X ∈ parity (R := R) ((d.powNat n).obj (d.Q.obj X)) ((d.powNat (n + 1)).obj X) 0 := by
   induction n with
-  | zero => simpa [commNat] using id_mem (R := R) (d.Q.obj X)
+  | zero => simpa [commNat] using! id_mem (R := R) (d.Q.obj X)
   | succ n ih =>
-    convert map_mem d.Q ih using 1
-    exact Category.id_comp _
+    have h : (d.commNat (n + 1)).hom.app X = d.Q.map ((d.commNat n).hom.app X) :=
+      Category.id_comp _
+    rw [h]; exact map_mem d.Q ih
 
 theorem commNeg_hom_mem (n : ℕ) (X : S) :
     (d.commNeg n).hom.app X ∈ parity (R := R) ((d.powNeg (n + 1)).obj (d.Q.obj X)) ((d.powNeg n).obj X) 0 := by
   induction n with
   | zero =>
-    convert d.unit_inv_mem X using 1
-    exact Category.id_comp _
+    have h : (d.commNeg 0).hom.app X = d.e.unitIso.inv.app X := Category.id_comp _
+    rw [h]; exact d.unit_inv_mem X
   | succ n ih =>
-    convert map_mem d.Qi ih using 1
-    exact Category.id_comp _
+    have h : (d.commNeg (n + 1)).hom.app X = d.Qi.map ((d.commNeg n).hom.app X) :=
+      Category.id_comp _
+    rw [h]; exact map_mem d.Qi ih
 
 theorem comm_hom_mem (i : ℤ) (X : S) :
     (d.comm i).hom.app X ∈ parity (R := R) ((d.pow i).obj (d.Q.obj X)) ((d.pow (i + 1)).obj X) 0 := by
@@ -202,17 +208,20 @@ theorem comm_inv_mem (i : ℤ) (X : S) :
     (d.comm i).inv.app X ∈ parity (R := R) ((d.pow (i + 1)).obj X) ((d.pow i).obj (d.Q.obj X)) 0 :=
   inv_mem ((d.comm i).app X) (d.comm_hom_mem i X)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem succ_negSucc_succ_hom_app (n : ℕ) (X : S) :
     (d.succ (Int.negSucc (n + 1))).hom.app X = d.e.counitIso.hom.app ((d.powNeg (n + 1)).obj X) := by
   show 𝟙 _ ≫ _ ≫ 𝟙 _ = _
   rw [Category.id_comp, Category.comp_id]; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem succ_negSucc_succ_inv_app (n : ℕ) (X : S) :
     (d.succ (Int.negSucc (n + 1))).inv.app X = d.e.counitIso.inv.app ((d.powNeg (n + 1)).obj X) := by
   rw [← cancel_mono ((d.succ (Int.negSucc (n + 1))).hom.app X), Iso.inv_hom_id_app,
     succ_negSucc_succ_hom_app]
   exact (Iso.inv_hom_id_app d.e.counitIso _).symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem commNeg_succ_hom_app (n : ℕ) (X : S) :
     (d.commNeg (n + 1)).hom.app X = d.Qi.map ((d.commNeg n).hom.app X) := by
   show 𝟙 _ ≫ _ = _
@@ -330,10 +339,10 @@ theorem idFam_self (X : S) (i : ℤ) : d.idFam X i i = 𝟙 _ := by simp [idFam]
 
 theorem idFam_mem (X : S) : d.idFam X ∈ d.Fam R 0 X X := by
   refine ⟨fun i j h => ?_, fun i j => ?_⟩
-  · rw [idFam, dif_neg (by omega)]
+  · rw [idFam, dite_eq_right (by omega)]
   · by_cases h : i = j
     · subst h; simp [idFam_self]
-    · rw [idFam, idFam, dif_neg h, dif_neg (by omega)]; simp
+    · rw [idFam, idFam, dite_eq_right h, dite_eq_right (by omega)]; simp
 
 theorem famComp_idFam_left {X Y : S} (f : d.FamAll X Y) : d.famComp 0 (d.idFam X) f = f := by
   ext i k
@@ -346,7 +355,7 @@ theorem famComp_idFam_right {m : ℤ} {X Y : S} {f : d.FamAll X Y} (hf : f ∈ d
   simp only [famComp, idFam]
   by_cases h : i - m = k
   · subst h; simp
-  · rw [dif_neg h, Limits.comp_zero, Fam.eq_zero hf (by omega)]
+  · rw [dite_eq_right h, Limits.comp_zero, Fam.eq_zero hf (by omega)]
 
 theorem famComp_assoc (m n : ℤ) {W X Y Z : S} (f : d.FamAll W X) (g : d.FamAll X Y)
     (h : d.FamAll Y Z) :
@@ -399,7 +408,7 @@ def component (m : ℤ) (X Y : S) : d.Hom X Y →ₗ[R] d.Fam R m X Y :=
 
 theorem component_lof_of_ne {m n : ℤ} {X Y : S} (f : d.Fam R m X Y) (h : m ≠ n) :
     d.component n X Y (d.lof m X Y f) = 0 :=
-  (DirectSum.component.of (M := fun m => d.Fam R m X Y) R n m f).trans (dif_neg h)
+  (DirectSum.component.of (M := fun m => d.Fam R m X Y) R n m f).trans (dite_eq_right h)
 
 variable {d}
 
@@ -618,10 +627,10 @@ theorem diagFam_mem {X Y : S} {φ : ∀ i : ℤ, (d.pow i).obj X ⟶ (d.pow i).o
     (hφ : ∀ i, φ (i + 1) = (d.succ i).inv.app X ≫ d.Q.map (φ i) ≫ (d.succ i).hom.app Y) :
     d.diagFam φ ∈ d.Fam R 0 X Y := by
   refine ⟨fun i j h => ?_, fun i j => ?_⟩
-  · rw [diagFam, dif_neg (by omega)]
+  · rw [diagFam, dite_eq_right (by omega)]
   · by_cases h : i = j
     · subst h; rw [diagFam_self, diagFam_self, hφ]
-    · rw [diagFam, diagFam, dif_neg h, dif_neg (by omega)]; simp
+    · rw [diagFam, diagFam, dite_eq_right h, dite_eq_right (by omega)]; simp
 
 theorem famComp_diagFam {X Y Z : S} (φ : ∀ i : ℤ, (d.pow i).obj X ⟶ (d.pow i).obj Y)
     (ψ : ∀ i : ℤ, (d.pow i).obj Y ⟶ (d.pow i).obj Z) :
@@ -653,13 +662,13 @@ theorem Fam.eq_of_entry {m : ℤ} {X Y : S} {f g : d.FamAll X Y} (hf : f ∈ d.F
   have key : ∀ k : ℤ, f (i₀ + k) (j₀ + k) = g (i₀ + k) (j₀ + k) := by
     intro k
     induction k using Int.induction_on with
-    | hz => exact FamAll.congr_entry (by ring) (by ring) h
-    | hp k ih =>
+    | zero => exact FamAll.congr_entry (by ring) (by ring) h
+    | succ k ih =>
       have e := FamAll.congr_entry (f := f) (g := g) (i' := i₀ + (k + 1)) (j' := j₀ + (k + 1))
         (by ring) (by ring) (show f (i₀ + k + 1) (j₀ + k + 1) = g (i₀ + k + 1) (j₀ + k + 1) by
           rw [Fam.compat hf, Fam.compat hg, ih])
       exact e
-    | hn k ih =>
+    | pred k ih =>
       have e := FamAll.congr_entry (f := f) (g := g)
         (i' := i₀ + (-(k : ℤ) - 1) + 1) (j' := j₀ + (-(k : ℤ) - 1) + 1) (by ring) (by ring) ih
       rw [Fam.compat hf, Fam.compat hg] at e
@@ -690,15 +699,15 @@ theorem famσinv_succ (X : S) (j : ℤ) : d.famσinv X (j + 1) j = (d.comm j).in
 
 theorem famσ_mem (X : S) : d.famσ X ∈ d.Fam R (-1) (d.Q.obj X) X := by
   refine ⟨fun i j h => ?_, fun i j => ?_⟩
-  · rw [famσ, dif_neg (by omega)]
+  · rw [famσ, dite_eq_right (by omega)]
   · by_cases h : j = i + 1
     · subst h
       rw [famσ_succ, famσ_succ, d.comm_succ]
-    · rw [famσ, famσ, dif_neg h, dif_neg (by omega)]; simp
+    · rw [famσ, famσ, dite_eq_right h, dite_eq_right (by omega)]; simp
 
 theorem famσinv_mem (X : S) : d.famσinv X ∈ d.Fam R 1 X (d.Q.obj X) := by
   refine ⟨fun i j h => ?_, fun i j => ?_⟩
-  · rw [famσinv, dif_neg (by omega)]
+  · rw [famσinv, dite_eq_right (by omega)]
   · by_cases h : i = j + 1
     · subst h
       rw [famσinv_succ, famσinv_succ, ← cancel_epi ((d.comm (j + 1)).hom.app X),
@@ -707,7 +716,7 @@ theorem famσinv_mem (X : S) : d.famσinv X ∈ d.Fam R 1 X (d.Q.obj X) := by
       rw [← Functor.map_comp_assoc, Iso.hom_inv_id_app]
       erw [CategoryTheory.Functor.map_id, Category.id_comp, Iso.inv_hom_id_app]
       rfl
-    · rw [famσinv, famσinv, dif_neg h, dif_neg (by omega)]; simp
+    · rw [famσinv, famσinv, dite_eq_right h, dite_eq_right (by omega)]; simp
 
 theorem famComp_famσ_famσinv (X : S) :
     d.famComp (-1) (d.famσ X) (d.famσinv X) = d.idFam (d.Q.obj X) := by
@@ -716,7 +725,7 @@ theorem famComp_famσ_famσinv (X : S) :
   rw [show i - -1 = i + 1 by ring, famσ_succ]
   by_cases h : i = k
   · subst h; rw [famσinv_succ, Iso.hom_inv_id_app, idFam_self]; rfl
-  · rw [famσinv, dif_neg (by omega), Limits.comp_zero, idFam, dif_neg h]
+  · rw [famσinv, dite_eq_right (by omega), Limits.comp_zero, idFam, dite_eq_right h]
 
 theorem famComp_famσinv_famσ (X : S) :
     d.famComp 1 (d.famσinv X) (d.famσ X) = d.idFam X := by
@@ -726,7 +735,7 @@ theorem famComp_famσinv_famσ (X : S) :
   rw [show j + 1 - 1 = j by ring, famσinv_succ]
   by_cases h : k = j + 1
   · subst h; rw [famσ_succ, Iso.inv_hom_id_app, idFam_self]
-  · rw [famσ, dif_neg h, Limits.comp_zero, idFam, dif_neg (Ne.symm h)]
+  · rw [famσ, dite_eq_right h, Limits.comp_zero, idFam, dite_eq_right (Ne.symm h)]
 
 end ShiftData
 
@@ -877,7 +886,7 @@ instance : IsSuperfunctor R (ι d) where
     · subst h
       simp only [component_lof_self, mapFam, diagFam]
       split_ifs with hij
-      · subst hij; simpa using map_mem (d.pow i) hf
+      · subst hij; simpa using! map_mem (d.pow i) hf
       · exact Submodule.zero_mem _
     · rw [d.component_lof_of_ne _ (Ne.symm h)]; exact Submodule.zero_mem _
 
@@ -951,11 +960,13 @@ theorem ιZ_comp_π₀_map {X Y : S} (g : X ⟶ Y) : (π₀ d).map ((ιZ d).map 
   rw [component_lof_self]
   simp [mapFam, diagFam_self]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem ιZ_comp_π₀ : ιZ d ⋙ π₀ d = 𝟭 S :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y g => by simpa using ιZ_comp_π₀_map g
 
+set_option backward.isDefEq.respectTransparency false in
 theorem π₀_comp_ιZ : π₀ d ⋙ ιZ d = 𝟭 _ :=
-  CategoryTheory.Functor.ext (fun _ => rfl) fun X Y x => by simpa using π₀_comp_ιZ_map x
+  CategoryTheory.Functor.ext (fun _ => rfl) fun X Y x => by simpa using! π₀_comp_ιZ_map x
 
 instance : (π₀ d).Additive where
   map_add {X Y x y} := by
@@ -994,6 +1005,7 @@ theorem ζ_eq (X : Orbit d) : PiSupercategory.ζ (R := R) X = ζIso X := rfl
 @[simp] theorem pi_obj (X : Orbit d) :
     (PiSupercategory.pi (R := R)).obj X = ⟨(PiSupercategory.pi (R := R)).obj X.obj⟩ := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `Π` commutes with `ι`. -/
 theorem pi_map_ι {X Y : S} (g : X ⟶ Y) :
     (PiSupercategory.pi (R := R)).map ((ι d).map g) =
@@ -1003,6 +1015,7 @@ theorem pi_map_ι {X Y : S} (g : X ⟶ Y) :
     ← Functor.map_comp, PiSupercategory.pi_map_eq (R := R) g]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `ξ = ζζ` of the orbit supercategory is `ξ` of `S`. -/
 theorem ξ_hom_eq (X : S) :
     (PiSupercategory.ξ (R := R) (⟨X⟩ : Orbit d)).hom = (ι d).map (PiSupercategory.ξ (R := R) X).hom := by
@@ -1043,6 +1056,7 @@ theorem σIso_hom_mem_degree (X : Orbit d) :
     (σIso X).hom ∈ GradedSupercategory.degree (R := R) (⟨d.Q.obj X.obj⟩ : Orbit d) X (-1) :=
   ⟨_, rfl⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `σ` is natural with respect to the morphisms of `S`: `σ_Y ∘ ι(Q g) = ι(g) ∘ σ_X`. -/
 theorem σIso_hom_naturality {X Y : S} (g : X ⟶ Y) :
     (σIso ((ι d).obj X)).hom ≫ (ι d).map g = (ι d).map (d.Q.map g) ≫ (σIso ((ι d).obj Y)).hom := by
@@ -1057,7 +1071,7 @@ theorem σIso_hom_naturality {X Y : S} (g : X ⟶ Y) :
   · subst h
     rw [famσ_succ, famσ_succ, diagFam_self]
     exact ((d.comm i).hom.naturality g).symm
-  · rw [famσ_succ, diagFam, dif_neg (Ne.symm h), Limits.comp_zero, famσ, dif_neg h,
+  · rw [famσ_succ, diagFam, dite_eq_right (Ne.symm h), Limits.comp_zero, famσ, dite_eq_right h,
       Limits.comp_zero]
 
 /-- The even isomorphism `σ̄_X : Q⁻¹ X ≅ X` of degree `1`: `σ_{Q⁻¹X}⁻¹` followed by the counit. -/
@@ -1068,14 +1082,14 @@ theorem σbarIso_hom_mem (X : Orbit d) :
     (σbarIso X).hom ∈ parity (R := R) (⟨d.Qi.obj X.obj⟩ : Orbit d) X 0 := by
   have := comp_mem (inv_mem _ (σIso_hom_mem (⟨d.Qi.obj X.obj⟩ : Orbit d)))
     (map_mem (ι d) (d.counit_mem X.obj))
-  simpa [σbarIso] using this
+  simpa [σbarIso] using! this
 
 theorem σbarIso_hom_mem_degree (X : Orbit d) :
     (σbarIso X).hom ∈ GradedSupercategory.degree (R := R) (⟨d.Qi.obj X.obj⟩ : Orbit d) X 1 := by
   have := GradedSupercategory.comp_mem_degree
     (GradedSupercategory.inv_mem_degree _ (σIso_hom_mem_degree (⟨d.Qi.obj X.obj⟩ : Orbit d)))
     (ι_map_mem_degree (d := d) (d.e.counitIso.hom.app X.obj))
-  simpa [σbarIso] using this
+  simpa [σbarIso] using! this
 
 /-- **The orbit supercategory of a Π-supercategory is a graded `(Q, Π)`-supercategory**, with
 `Q X = Q X` and `σ` of degree `-1` given by the isomorphisms `Qⁱ Q ≅ Qⁱ⁺¹`, and
@@ -1085,6 +1099,7 @@ instance instQPiSupercategory [PiSupercategory R S] : QPiSupercategory R (Orbit 
     (fun X => ⟨d.Q.obj X.obj⟩) σIso σIso_hom_mem σIso_hom_mem_degree
     (fun X => ⟨d.Qi.obj X.obj⟩) σbarIso σbarIso_hom_mem σbarIso_hom_mem_degree
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Q_map_ι [PiSupercategory R S] {X Y : S} (g : X ⟶ Y) :
     (QPiSupercategory.Q (R := R) (C := Orbit d)).map ((ι d).map g) = (ι d).map (d.Q.map g) := by
   show (σIso _).hom ≫ (ι d).map g ≫ (σIso _).inv = _
@@ -1127,14 +1142,16 @@ open ShiftData
 /-- `Γⁿ : Q'ⁿ F ≅ F Qⁿ` for `n ∈ ℕ`. -/
 def ΓNat : ∀ n : ℕ, Φ.F ⋙ d'.powNat n ≅ d.powNat n ⋙ Φ.F
   | 0 => Functor.rightUnitor _ ≪≫ (Functor.leftUnitor _).symm
-  | n + 1 => (Functor.associator _ _ _).symm ≪≫ isoWhiskerRight (ΓNat n) d'.Q ≪≫
-      Functor.associator _ _ _ ≪≫ isoWhiskerLeft (d.powNat n) Φ.γ ≪≫ (Functor.associator _ _ _).symm
+  | n + 1 => (Functor.associator _ _ _).symm ≪≫ Functor.isoWhiskerRight (ΓNat n) d'.Q ≪≫
+      Functor.associator _ _ _ ≪≫ Functor.isoWhiskerLeft (d.powNat n) Φ.γ ≪≫ (Functor.associator _ _ _).symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem ΓNat_succ_hom_app (n : ℕ) (X : S) :
     (Φ.ΓNat (n + 1)).hom.app X = d'.Q.map ((Φ.ΓNat n).hom.app X) ≫ Φ.γ.hom.app ((d.powNat n).obj X) := by
   show 𝟙 _ ≫ _ ≫ 𝟙 _ ≫ _ ≫ 𝟙 _ = _
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The isomorphism `Q'⁻ⁿ⁻¹ F ≅ F Q⁻ⁿ⁻¹` determined by the compatibility with `Γ⁻ⁿ`, using that
 `Q'` is fully faithful. -/
 def ΓNegAux (n : ℕ) (Γ' : Φ.F ⋙ d'.pow (Int.negSucc n + 1) ≅ d.pow (Int.negSucc n + 1) ⋙ Φ.F) :
@@ -1167,6 +1184,7 @@ def Γ : ∀ i : ℤ, Φ.F ⋙ d'.pow i ≅ d.pow i ⋙ Φ.F
 theorem Γ_negSucc (n : ℕ) : Φ.Γ (Int.negSucc n) = Φ.ΓNegAux n (Φ.Γ (Int.negSucc n + 1)) := by
   rcases n with _ | n <;> rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The recursion (the paper's definition of `γ_F^n`):
 `Γⁱ⁺¹ = F(Q Qⁱ ≅ Qⁱ⁺¹) ∘ γ_{Qⁱ} ∘ Q' Γⁱ ∘ (Q' Q'ⁱ ≅ Q'ⁱ⁺¹)⁻¹`. -/
 theorem Γ_succ_hom_app (i : ℤ) (X : S) :
@@ -1179,7 +1197,7 @@ theorem Γ_succ_hom_app (i : ℤ) (X : S) :
   · rw [Γ_negSucc]
     simp only [ΓNegAux, NatIso.ofComponents_hom_app, Functor.preimageIso_hom, Functor.map_preimage,
       Iso.trans_hom, Iso.app_hom, Functor.mapIso_hom, Iso.symm_hom, Iso.app_inv, Category.assoc,
-      Iso.inv_hom_id_app_assoc, Iso.inv_hom_id_app, Category.comp_id]
+      Iso.inv_hom_id_app_assoc]
     rw [← Φ.F.map_comp, Iso.inv_hom_id_app]
     erw [CategoryTheory.Functor.map_id, Category.comp_id]
 
@@ -1196,11 +1214,12 @@ theorem Γ_succ_inv_app (i : ℤ) (X : S) :
 
 theorem ΓNat_hom_mem (n : ℕ) (X : S) : (Φ.ΓNat n).hom.app X ∈ parity (R := R) _ _ 0 := by
   induction n with
-  | zero => show 𝟙 _ ≫ 𝟙 _ ∈ _; simpa using id_mem (R := R) (Φ.F.obj X)
+  | zero => show 𝟙 _ ≫ 𝟙 _ ∈ _; simpa using! id_mem (R := R) (Φ.F.obj X)
   | succ n ih =>
     rw [ΓNat_succ_hom_app]
-    simpa using comp_mem (map_mem d'.Q ih) (Φ.γ_mem _)
+    simpa using! comp_mem (map_mem d'.Q ih) (Φ.γ_mem _)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Γ_hom_mem (i : ℤ) (X : S) : (Φ.Γ i).hom.app X ∈ parity (R := R) _ _ 0 := by
   have step : ∀ (n : ℕ), (Φ.Γ (Int.negSucc n + 1)).hom.app X ∈ parity (R := R) _ _ 0 →
       (Φ.Γ (Int.negSucc n)).hom.app X ∈ parity (R := R) _ _ 0 := by
@@ -1212,7 +1231,7 @@ theorem Γ_hom_mem (i : ℤ) (X : S) : (Φ.Γ i).hom.app X ∈ parity (R := R) _
     have := comp_mem (d'.succ_hom_mem (Int.negSucc n) (Φ.F.obj X)) (comp_mem h
       (comp_mem (map_mem Φ.F (d.succ_inv_mem (Int.negSucc n) X))
         (inv_mem (Φ.γ.app _) (Φ.γ_mem ((d.pow (Int.negSucc n)).obj X)))))
-    simpa using this
+    simpa using! this
   rcases i with n | n
   · exact Φ.ΓNat_hom_mem n X
   · induction n with
@@ -1321,9 +1340,9 @@ theorem Γ_hom_app_comp_app {Ψ : ShiftFunctor R d d'} (x : Φ.F ⟶ Ψ.F)
     simp
   have key : P i := by
     induction i using Int.induction_on with
-    | hz => exact h0
-    | hp k ih => exact (step k).2 ih
-    | hn k ih => exact (step (-(k : ℤ) - 1)).1 (by rw [show -(k : ℤ) - 1 + 1 = -k by ring]; exact ih)
+    | zero => exact h0
+    | succ k ih => exact (step k).2 ih
+    | pred k ih => exact (step (-(k : ℤ) - 1)).1 (by rw [show -(k : ℤ) - 1 + 1 = -k by ring]; exact ih)
   exact key
 
 end ShiftFunctor
@@ -1386,13 +1405,14 @@ instance (Φ : ShiftFunctor R d d') : IsGradedSuperfunctor R (map Φ) where
       · subst h
         erw [component_lof_self]
         show (Φ.Γ i).hom.app _ ≫ Φ.F.map (proj R p (f.1 i j)) ≫ (Φ.Γ j).inv.app _ ∈ _
-        simpa using comp_mem (comp_mem (Φ.Γ_hom_mem i _) (map_mem Φ.F (proj_mem p _)))
+        simpa using! comp_mem (comp_mem (Φ.Γ_hom_mem i _) (map_mem Φ.F (proj_mem p _)))
           (Φ.Γ_inv_mem j _)
       · erw [d'.component_lof_of_ne _ h]; exact Submodule.zero_mem _
   map_mem_degree {X Y n x} hx := by
     obtain ⟨f, rfl⟩ := hx
     exact ⟨_, (map_map_lof Φ f).symm⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `map Φ` extends `F`: `F̃ ∘ ι = ι ∘ F`. -/
 theorem ι_comp_map (Φ : ShiftFunctor R d d') : ι d ⋙ map Φ = Φ.F ⋙ ι d' :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y g => by
