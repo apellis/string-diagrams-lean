@@ -256,19 +256,24 @@ def EvenlyDense.inverse : D ⥤ C where
   map_id Y := F.map_injective (by simp)
   map_comp f g := F.map_injective (by simp)
 
+set_option backward.isDefEq.respectTransparency false in
 instance EvenlyDense.inverse_additive : (hF.inverse F).Additive where
   map_add := F.map_injective (by simp)
 
+set_option backward.isDefEq.respectTransparency false in
 instance EvenlyDense.inverse_linear : (hF.inverse F).Linear R where
   map_smul _ _ := F.map_injective (by simp [F.map_smul])
 
+set_option backward.isDefEq.respectTransparency false in
 instance EvenlyDense.inverse_isSuperfunctor : IsSuperfunctor R (hF.inverse F) where
   map_mem {Y Y' p g} hg := by
     apply mem_of_map_mem F
     rw [EvenlyDense.inverse_map, F.map_preimage]
     have := comp_mem (comp_mem (hF.iso_mem F Y) hg) (inv_mem _ (hF.iso_mem F Y'))
-    simpa using this
+    simp only [Category.assoc, zero_add, add_zero] at this
+    exact this
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, Definition 1.1(iv).** A full, faithful and evenly dense superfunctor is
 a superequivalence. -/
 def Superequivalence.ofFullyFaithful : Superequivalence R F where
@@ -278,7 +283,9 @@ def Superequivalence.ofFullyFaithful : Superequivalence R F where
   counitIso := NatIso.ofComponents (fun Y => hF.iso F Y) (fun g => by simp)
   unitIso_mem X := by
     apply mem_of_map_mem F
-    simpa using inv_mem _ (hF.iso_mem F (F.obj X))
+    have h := inv_mem _ (hF.iso_mem F (F.obj X))
+    simp at h ⊢
+    exact h
   counitIso_mem Y := hF.iso_mem F Y
 
 end OfFullyFaithful
