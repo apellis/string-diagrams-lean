@@ -177,7 +177,7 @@ instance : Linear R (Associated R C) where
         r • (f.1 ≫ g.1 - f.2 ≫ 𝚷.map g.2 ≫ (PiCategory.ξApp (R := R) Z.obj).hom)
       simp only [Linear.comp_smul, Functor.map_smul, Linear.smul_comp, smul_sub]
     · change f.1 ≫ (r • g.2) + f.2 ≫ 𝚷.map (r • g.1) = r • (f.1 ≫ g.2 + f.2 ≫ 𝚷.map g.1)
-      simp only [Linear.comp_smul, Functor.map_smul, Linear.smul_comp, smul_add]
+      simp only [Linear.comp_smul, Functor.map_smul, smul_add]
 
 @[simp] theorem smul_fst (r : R) (f : X ⟶ Y) : (r • f).1 = r • f.1 := rfl
 
@@ -190,10 +190,10 @@ def parityAssoc (X Y : Associated R C) (p : ZMod 2) : Submodule R (X ⟶ Y) :=
   if p = 0 then LinearMap.ker (LinearMap.snd R _ _) else LinearMap.ker (LinearMap.fst R _ _)
 
 theorem mem_parityAssoc_zero {f : X ⟶ Y} : f ∈ parityAssoc X Y 0 ↔ f.2 = 0 := by
-  simp only [parityAssoc, if_pos rfl, LinearMap.mem_ker]; rfl
+  simp only [parityAssoc]; rfl
 
 theorem mem_parityAssoc_one {f : X ⟶ Y} : f ∈ parityAssoc X Y 1 ↔ f.1 = 0 := by
-  simp only [parityAssoc, if_neg (show ¬((1 : ZMod 2) = 0) by decide), LinearMap.mem_ker]; rfl
+  simp only [parityAssoc, ite_eq_right (show ¬((1 : ZMod 2) = 0) by decide), LinearMap.mem_ker]; rfl
 
 instance : Supercategory R (Associated R C) where
   parity := parityAssoc
@@ -268,9 +268,9 @@ theorem pi_map_fst (f : X ⟶ Y) :
     ((PiSupercategory.pi (R := R)).map f).1 = 𝚷.map f.1 := by
   show ((ζIso X).hom ≫ twist R 1 f ≫ (ζIso Y).inv).1 = _
   simp only [twist_one, ζIso, comp_fst, comp_snd, homMk_fst, homMk_snd]
-  simp only [Limits.zero_comp, Category.id_comp, Functor.map_neg, Functor.map_add,
+  simp only [Limits.zero_comp, Category.id_comp, Functor.map_neg,
     Functor.map_comp, Functor.map_zero, Preadditive.neg_comp, Preadditive.comp_neg,
-    Preadditive.add_comp, zero_add, zero_sub, neg_neg, Limits.comp_zero, add_zero,
+    zero_sub, neg_neg, Limits.comp_zero, add_zero,
     Category.assoc]
   rw [PiCategory.ξApp_pi, ← Functor.map_comp, Iso.inv_hom_id, CategoryTheory.Functor.map_id,
     Category.comp_id]
@@ -281,14 +281,14 @@ theorem pi_map_snd (f : X ⟶ Y) :
     ((PiSupercategory.pi (R := R)).map f).2 = -𝚷.map f.2 := by
   show ((ζIso X).hom ≫ twist R 1 f ≫ (ζIso Y).inv).2 = _
   simp only [twist_one, ζIso, comp_fst, comp_snd, homMk_fst, homMk_snd]
-  simp only [Limits.zero_comp, Category.id_comp, Functor.map_neg, Functor.map_add,
+  simp only [Limits.zero_comp, Category.id_comp, Functor.map_neg,
     Functor.map_comp, Functor.map_zero, Preadditive.neg_comp, Preadditive.comp_neg,
-    Preadditive.add_comp, zero_add, zero_sub, neg_neg, Limits.comp_zero, add_zero,
-    Category.assoc, Iso.hom_inv_id, Category.comp_id]
+    zero_sub, neg_neg, Limits.comp_zero, add_zero]
   rw [PiCategory.ξApp_pi]
   simp only [← Functor.map_comp, Iso.inv_hom_id, CategoryTheory.Functor.map_id,
     Category.comp_id, neg_zero, zero_add]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The even isomorphism `ξ̂ = ζ̂ζ̂` of `Â` is `ξ` (with the corrected sign). -/
 theorem ξ_hom (X : Associated R C) :
     (PiSupercategory.ξ (R := R) X).hom = homMk (X := ⟨𝚷.obj (𝚷.obj X.obj)⟩)
@@ -334,17 +334,20 @@ def counit : Underlying R (Associated R C) ⥤ C where
 
 theorem unit_comp_counit : unit R C ⋙ counit R C = 𝟭 C := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem counit_comp_unit : counit R C ⋙ unit R C = 𝟭 _ :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by
     simp only [Functor.comp_obj, Functor.comp_map, Functor.id_obj, Functor.id_map, eqToHom_refl,
       Category.comp_id, Category.id_comp]
     exact Underlying.hom_ext (hom_ext rfl (mem_parity_zero.1 f.2).symm)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem unit_map_pi {X Y : C} (f : X ⟶ Y) :
     (PiCategory.pi (R := R)).map ((unit R C).map f) =
       (unit R C).map ((PiCategory.pi (R := R)).map f) :=
   Underlying.hom_ext (hom_ext (pi_map_fst _) (by simp [pi_map_snd]))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `unit` commutes with `Π` on the nose. -/
 theorem unit_comp_pi :
     unit R C ⋙ PiCategory.pi (R := R) = PiCategory.pi (R := R) ⋙ unit R C :=
@@ -360,6 +363,7 @@ theorem ξ_unit (X : C) :
       (unit R C).map (PiCategory.ξApp (R := R) X).hom :=
   Underlying.hom_ext (ξ_hom _)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `unit` as a Π-functor with `β = 1`. -/
 def unitPiFunctor : PiFunctor R (unit R C) where
   β := NatIso.ofComponents (fun X => Iso.refl _) fun f => by
@@ -402,7 +406,7 @@ def map {F : C ⥤ D} [F.Additive] (hF : PiFunctor R F) : Associated R C ⥤ Ass
         ((PiCategory.ξ (R := R)).hom.app (F.obj Z.obj) ≫
           F.map ((PiCategory.ξ (R := R)).inv.app Z.obj))]
       rw [Category.assoc, ← F.map_comp, Iso.inv_hom_id_app]
-      simp only [CategoryTheory.Functor.map_id, Category.comp_id, Category.assoc]
+      simp only [Category.assoc]
       rw [reassoc_of% c]
       simp only [Iso.hom_inv_id_app_assoc]
       rw [← Functor.map_comp_assoc, Iso.hom_inv_id_app]
@@ -415,12 +419,15 @@ def map {F : C ⥤ D} [F.Additive] (hF : PiFunctor R F) : Associated R C ⥤ Ass
         Category.assoc, Preadditive.add_comp]
       rw [n1]
 
+set_option backward.isDefEq.respectTransparency false in
 instance {F : C ⥤ D} [F.Additive] (hF : PiFunctor R F) : (map hF).Additive where
   map_add := by intros; ext <;> simp [Preadditive.add_comp]
 
+set_option backward.isDefEq.respectTransparency false in
 instance {F : C ⥤ D} [F.Additive] [F.Linear R] (hF : PiFunctor R F) : (map hF).Linear R where
   map_smul _ _ := by ext <;> simp
 
+set_option backward.isDefEq.respectTransparency false in
 instance {F : C ⥤ D} [F.Additive] [F.Linear R] (hF : PiFunctor R F) :
     IsSuperfunctor R (map hF) where
   map_mem {X Y p f} hf := by
@@ -428,14 +435,18 @@ instance {F : C ⥤ D} [F.Additive] [F.Linear R] (hF : PiFunctor R F) :
     · rw [mem_parity_zero] at hf ⊢; simp [hf]
     · rw [mem_parity_one] at hf ⊢; simp [hf]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_id : map (PiFunctor.id R C) = 𝟭 (Associated R C) :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by ext <;> simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_comp {F : C ⥤ D} [F.Additive] {G : D ⥤ E} [G.Additive] (hF : PiFunctor R F)
     (hG : PiFunctor R G) : map (hF.comp hG) = map hF ⋙ map hG :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by
     ext <;> simp
+    rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, (5.3).** `D₁` on 2-morphisms: a Π-natural transformation `y : F ⟶ G`
 gives the even supernatural transformation `ŷ_λ := y_λ` between `F̂` and `Ĝ`. -/
 theorem isSupernatural_mapNatTrans {F G : C ⥤ D} [F.Additive] [F.Linear R] [G.Additive]
@@ -452,7 +463,7 @@ theorem isSupernatural_mapNatTrans {F G : C ⥤ D} [F.Additive] [F.Linear R] [G.
     exact (Category.comp_id _).symm
   ext
   · simp [y.naturality]
-  · simp only [comp_snd, map_map, homMk_fst, homMk_snd, Category.assoc, Functor.map_zero,
+  · simp only [comp_snd, map_map, homMk_fst, homMk_snd, Category.assoc,
       Limits.comp_zero, zero_add, add_zero, Limits.zero_comp]
     rw [h, ← Category.assoc, ← Category.assoc, y.naturality]
 
@@ -465,6 +476,7 @@ section T
 variable {R : Type w} [CommRing R] {A : Type w₁} [Category.{w₂} A] [Preadditive A] [Linear R A]
   [Supercategory R A] [PiSupercategory R A]
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R A) in
 /-- **Lemma 5.1.** The superfunctor `T_A : (A̲)^ ⥤ A`: `(f₀, f₁) ↦ f₀ + ζ_μ ∘ f₁`. -/
 @[simps]
@@ -481,17 +493,20 @@ def T : Associated R (Underlying R A) ⥤ A where
       zero_add, sign_one, neg_one_smul, Functor.map_comp, Category.assoc] at h2
     simp only [comp_fst, comp_snd, Underlying.comp_val, Underlying.pi_map_val,
       Underlying.ξApp_hom_val, Underlying.add_val, Underlying.sub_val, PiSupercategory.ξ_hom,
-      Preadditive.add_comp, Preadditive.comp_add, Preadditive.sub_comp, Category.assoc]
+      Preadditive.add_comp, Preadditive.comp_add, Category.assoc]
     rw [h1, h2]
-    simp only [Preadditive.comp_neg, Preadditive.neg_comp]
+    simp only [Preadditive.comp_neg]
     abel
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (T R A).Additive where
   map_add := by intros; simp [Preadditive.add_comp]; abel
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (T R A).Linear R where
   map_smul _ _ := by simp [smul_add]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : IsSuperfunctor R (T R A) where
   map_mem {X Y p f} hf := by
     rcases parity_eq_zero_or_one p with rfl | rfl
@@ -500,8 +515,9 @@ instance : IsSuperfunctor R (T R A) where
       exact f.1.2
     · rw [mem_parity_one] at hf
       simp only [T_map, hf, Underlying.zero_val, zero_add]
-      simpa using comp_mem f.2.2 (PiSupercategory.ζ_hom_mem (R := R) Y.obj.obj)
+      simpa using! comp_mem f.2.2 (PiSupercategory.ζ_hom_mem (R := R) Y.obj.obj)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `T_A` is injective on morphisms. -/
 theorem T_map_injective {X Y : Associated R (Underlying R A)} {f g : X ⟶ Y}
     (h : (T R A).map f = (T R A).map g) : f = g := by
@@ -523,37 +539,43 @@ theorem T_map_injective {X Y : Associated R (Underlying R A)} {f g : X ⟶ Y}
     exact congrArg (proj R 1) h
   exact hom_ext (Subtype.ext e0) (Subtype.ext ((cancel_mono _).1 e1))
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R A) in
 /-- **Lemma 5.1.** The inverse of `T_A`: `h ↦ (h₀, ζ_μ⁻¹ ∘ h₁)`. -/
 @[simps obj]
 def Tinv : A ⥤ Associated R (Underlying R A) where
   obj X := ⟨⟨X⟩⟩
   map {X Y} h := (⟨proj R 0 h, proj_mem 0 h⟩, ⟨proj R 1 h ≫ (PiSupercategory.ζ (R := R) Y).inv,
-    by simpa using comp_mem (proj_mem 1 h) (PiSupercategory.ζ_inv_mem (R := R) Y)⟩)
+    by simpa using! comp_mem (proj_mem 1 h) (PiSupercategory.ζ_inv_mem (R := R) Y)⟩)
   map_id X := T_map_injective (by simp [proj_id, show ¬((1 : ZMod 2) = 0) by decide])
   map_comp {X Y Z} f g := T_map_injective (by
     rw [(T R A).map_comp]
     simp only [T_map, Category.assoc, Iso.inv_hom_id, Category.comp_id, proj_add_proj])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem T_map_Tinv_map {X Y : A} (h : X ⟶ Y) : (T R A).map ((Tinv R A).map h) = h := by
   simp [Tinv, proj_add_proj]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem Tinv_comp_T : Tinv R A ⋙ T R A = 𝟭 A :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by simpa using T_map_Tinv_map f
 
+set_option backward.isDefEq.respectTransparency false in
 theorem T_comp_Tinv : T R A ⋙ Tinv R A = 𝟭 _ :=
   CategoryTheory.Functor.ext (fun _ => rfl) fun X Y f => by
     simpa using T_map_injective (T_map_Tinv_map ((T R A).map f))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `T_A` carries `ζ` of `(A̲)^` to `ζ` of `A`. -/
 theorem T_map_ζ (X : Associated R (Underlying R A)) :
     (T R A).map (PiSupercategory.ζ (R := R) X).hom =
       (PiSupercategory.ζ (R := R) X.obj.obj).hom := by
-  simp [ζ_hom, ζIso]
+  simp [ζ_hom]
 
 variable {B : Type w₃} [Category.{w₄} B] [Preadditive B] [Linear R B] [Supercategory R B]
   [PiSupercategory R B]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 5.1**, naturality of `T`: `F ∘ T_A = T_B ∘ (F̲)^` for a superfunctor `F` between
 Π-supercategories. -/
 theorem T_naturality (F : A ⥤ B) [F.Additive] [F.Linear R] [IsSuperfunctor R F] :
