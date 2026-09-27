@@ -102,7 +102,51 @@ instance pivotal_isEven [S.IsEven] : (S.pivotal D).IsEven :=
   | nil => rfl
   | cons c w ih => exact ih _
 
+variable {D}
+
+@[simp] theorem pivotal_dom_gen (g : S.Gen) : (S.pivotal D).dom (.gen g) = S.dom g := rfl
+@[simp] theorem pivotal_cod_gen (g : S.Gen) : (S.pivotal D).cod (.gen g) = S.cod g := rfl
+@[simp] theorem pivotal_left_gen (g : S.Gen) : (S.pivotal D).left (.gen g) = S.left g := rfl
+@[simp] theorem pivotal_right_gen (g : S.Gen) : (S.pivotal D).right (.gen g) = S.right g := rfl
+@[simp] theorem pivotal_odd_gen (g : S.Gen) : (S.pivotal D).odd (.gen g) = S.odd g := rfl
+
+@[simp] theorem pivotal_dom_cup (c : S.Colour) : (S.pivotal D).dom (.cup c) = [] := rfl
+@[simp] theorem pivotal_cod_cup (c : S.Colour) :
+    (S.pivotal D).cod (.cup c) = [c, D.dual c] := rfl
+@[simp] theorem pivotal_left_cup (c : S.Colour) :
+    (S.pivotal D).left (.cup c) = S.colourSrc c := rfl
+@[simp] theorem pivotal_right_cup (c : S.Colour) :
+    (S.pivotal D).right (.cup c) = S.colourSrc c := rfl
+@[simp] theorem pivotal_odd_cup (c : S.Colour) : (S.pivotal D).odd (.cup c) = false := rfl
+
+@[simp] theorem pivotal_dom_cap (c : S.Colour) :
+    (S.pivotal D).dom (.cap c) = [D.dual c, c] := rfl
+@[simp] theorem pivotal_cod_cap (c : S.Colour) : (S.pivotal D).cod (.cap c) = [] := rfl
+@[simp] theorem pivotal_left_cap (c : S.Colour) :
+    (S.pivotal D).left (.cap c) = S.colourTgt c := rfl
+@[simp] theorem pivotal_right_cap (c : S.Colour) :
+    (S.pivotal D).right (.cap c) = S.colourTgt c := rfl
+@[simp] theorem pivotal_odd_cap (c : S.Colour) : (S.pivotal D).odd (.cap c) = false := rfl
+
 end Signature
+
+namespace Signature.ColourInvolution
+
+variable (E : S.ColourInvolution)
+
+attribute [simp] Signature.ColourInvolution.dual_dual
+
+theorem dual_injective : Function.Injective E.dual := fun c c' h => by
+  rw [← E.dual_dual c, h, E.dual_dual]
+
+@[simp] theorem dual_inj {c c' : S.Colour} : E.dual c = E.dual c' ↔ c = c' :=
+  E.dual_injective.eq_iff
+
+@[simp] theorem dualWord_dualWord (w : List S.Colour) :
+    E.dualWord (E.dualWord w) = w := by
+  simp [Signature.ColourDuality.dualWord_eq, List.map_reverse, List.map_map, Function.comp_def]
+
+end Signature.ColourInvolution
 
 /-! ## The inclusion of the original diagrams -/
 
@@ -244,6 +288,12 @@ def Signature.ColourDuality.pivotal (D : S.ColourDuality) : (S.pivotal D).Colour
   src_dual := D.src_dual
   tgt_dual := D.tgt_dual
 
+@[simp] theorem Signature.ColourDuality.pivotal_dualWord (D : S.ColourDuality)
+    (w : List S.Colour) : D.pivotal.dualWord w = D.dualWord w := by
+  induction w with
+  | nil => rfl
+  | cons c w ih => simp [ih]
+
 namespace Presentation
 
 open Pivotal
@@ -266,13 +316,13 @@ def pivotalCupsCaps (hz : Q.PivotalZigzags E.toColourDuality) :
   right_zigzag c := diag_eq_id_of_layers _ _ rfl rfl (hz c).2
   left_zigzag' c := diag_eq_id_of_layers _ (zigL E.toColourDuality (E.dual c))
     (Obj.ext (E.src_dual c).symm rfl)
-    (by simp [zigL, cupD, capD, Layer.wl, Layer.wr]; exact ⟨rfl, (E.src_dual c).symm, rfl⟩)
+    (by simp [zigL, cupD, capD, Layer.wl, Layer.wr]; exact ⟨rfl, rfl, rfl⟩)
     (hz (E.dual c)).1
   right_zigzag' c := diag_eq_id_of_layers _ (zigR E.toColourDuality (E.dual c))
     (Obj.ext (E.tgt_dual c).symm (by simp [E.dual_dual]; rfl))
     (by
       simp [zigR, cupD, capD, Layer.wl, Layer.wr]
-      exact ⟨(E.tgt_dual c).symm, by rw [E.dual_dual]; rfl⟩)
+      exact ⟨rfl, rfl⟩)
     (hz (E.dual c)).2
 
 /-- The biadjunctions `c ⊣⊢ c*` of the colours of the pivotal extension, at every placement. -/

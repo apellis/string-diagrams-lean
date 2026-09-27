@@ -48,6 +48,9 @@ namespace Obj
 /-- An object is well formed when its regions match up. -/
 def WF (a : Obj S) : Prop := S.ok a.start a.word
 
+@[simp] theorem wf_mk (r : S.Region) (w : List S.Colour) : (⟨r, w⟩ : Obj S).WF ↔ S.ok r w :=
+  Iff.rfl
+
 /-- The objects `a` and `b` can be placed side by side: both are well formed and `a` ends in
 the region where `b` starts. -/
 structure Composable (a b : Obj S) : Prop where

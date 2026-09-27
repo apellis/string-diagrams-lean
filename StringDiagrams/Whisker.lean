@@ -21,7 +21,7 @@ this never happens.
   `LinDiagram.whisk_comp` (functoriality, unconditional).
 * `Presentation.whisk_mem_ideal`: the tensor ideal is closed under whiskering.
 * `Presentation.whisk` with `whisk_lin`, `whisk_diag`, `whisk_comp`, `whisk_id`,
-  `whisk_add`, `whisk_smul`.
+  `whisk_eqToHom`, `whisk_add`, `whisk_smul`, and `whisk_whisk` (whiskering twice).
 -/
 
 noncomputable section
@@ -257,6 +257,30 @@ theorem whisk_sub {a b : Obj S} (f g : P.obj a ⟶ P.obj b) (u : Obj S) (v : Lis
 theorem whisk_zero {a b : Obj S} (u : Obj S) (v : List S.Colour) :
     P.whisk (0 : P.obj a ⟶ P.obj b) u v = 0 := by
   rw [← P.lin_zero, whisk_lin, LinDiagram.whisk_zero, lin_zero]
+
+@[simp] theorem lin_eqToHom {a b : Obj S} (h : a = b) :
+    P.lin (eqToHom (congrArg (Free.of R) h)) = eqToHom (congrArg P.obj h) := by
+  subst h; exact P.lin_id a
+
+theorem whisk_eqToHom {a b : Obj S} (h : a = b) (u : Obj S) (v : List S.Colour)
+    (hw : a.WhiskerOK u v) :
+    P.whisk (eqToHom (congrArg P.obj h)) u v =
+      eqToHom (congrArg P.obj (congrArg (Obj.whisker · u v) h)) := by
+  subst h; exact P.whisk_id a u v hw
+
+/-- Whiskering twice is whiskering once by the composite objects. -/
+theorem whisk_whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) (u' u : Obj S) (v' v : List S.Colour)
+    (h' : a.WhiskerOK u' v') (h : (a.whisker u' v').WhiskerOK u v) :
+    P.whisk (P.whisk f u' v') u v =
+      eqToHom (congrArg P.obj (Obj.whisker_whisker a u' u v' v)) ≫
+        P.whisk f (u.tensor u') (v' ++ v) ≫
+          eqToHom (congrArg P.obj (Obj.whisker_whisker b u' u v' v).symm) := by
+  obtain ⟨f, rfl⟩ := P.lin_surjective f
+  rw [whisk_lin, whisk_lin, whisk_lin, LinDiagram.whisk_of_ok _ h', LinDiagram.whisk_of_ok _ h,
+    LinDiagram.whisk_of_ok _ (h'.trans h), LinDiagram.whisker_whisker _ _ _ _ _ h' h,
+    LinDiagram.cast_eq_comp, lin_comp, lin_comp, lin_eqToHom, lin_eqToHom]
+  · exact (Obj.whisker_whisker _ _ _ _ _).symm
+  · exact Obj.whisker_whisker _ _ _ _ _
 
 /-- Whiskering as an `R`-linear map. -/
 def whiskLinearMap (a b : Obj S) (u : Obj S) (v : List S.Colour) :

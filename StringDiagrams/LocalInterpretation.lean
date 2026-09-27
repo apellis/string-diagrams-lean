@@ -113,6 +113,20 @@ def opList : List (Layer S) → (V →ₗ[R] V)
   | nil => rfl
   | cons L ls ih => rw [List.cons_append, opList_cons, ih, opList_cons, LinearMap.comp_assoc]
 
+/-- A single layer: no trailing identity (`LinearMap.id ∘ₗ`) is left behind. The priority
+makes `simp` prefer it to `opList_cons`, so that composites of explicit layers normalise to
+`op Lₙ ∘ₗ ⋯ ∘ₗ op L₁`. -/
+@[simp 1100] theorem opList_singleton (L : Layer S) : Q.opList [L] = Q.op L := rfl
+
+/-- Pointwise form of `opList_nil`. -/
+@[simp] theorem opList_nil_apply (x : V) : Q.opList [] x = x := rfl
+
+/-- Pointwise form of `opList_cons`: the bottom layer acts first. Together with
+`opList_nil_apply` this evaluates the operator of an explicit list of layers on a vector
+without ever forming composites of linear maps. -/
+@[simp] theorem opList_cons_apply (L : Layer S) (ls : List (Layer S)) (x : V) :
+    Q.opList (L :: ls) x = Q.opList ls (Q.op L x) := rfl
+
 /-- Locality of a chain of layers. -/
 theorem res_opList_ext_res {a b : Obj S} {ls : List (Layer S)} (h : Chain a ls b) (x : V) :
     Q.res (Q.κ b) (Q.opList ls (Q.ext (Q.κ a) (Q.res (Q.κ a) x))) =
@@ -265,6 +279,18 @@ variable (u : Obj S) (v : List S.Colour)
 
 @[simp] theorem evalW_smul (r : R) (X : LinDiagram R a b) :
     Q.evalW i j u v (r • X : LinDiagram R a b) = r • Q.evalW i j u v X := map_smul _ r X
+
+/-- Pointwise evaluation of a single diagram. -/
+theorem eval_of_apply (d : a ⟶ b) (x : M i) :
+    Q.eval i j (LinDiagram.of d : LinDiagram R a b) x =
+      Q.res j (Q.opList (Diagram.layers d) (Q.ext i x)) := by
+  rw [eval_of]; rfl
+
+/-- Pointwise whiskered evaluation of a single diagram. -/
+theorem evalW_of_apply (d : a ⟶ b) (x : M i) :
+    Q.evalW i j u v (LinDiagram.of d : LinDiagram R a b) x =
+      Q.res j (Q.opList ((Diagram.layers d).map (·.whisker u v)) (Q.ext i x)) := by
+  rw [evalW_of]; rfl
 
 /-- Evaluating a whiskered linear combination is whiskered evaluation. -/
 theorem eval_whisker (X : LinDiagram R a b) (hw : a.WhiskerOK u v) :
@@ -421,6 +447,12 @@ theorem uniform_functor_map_hom {a b : Obj S} (f : a ⟶ b) :
 @[simp] theorem uniform_opList_cons (L : Layer S) (ls : List (Layer S)) :
     (uniform op).opList (L :: ls) = (uniform op).opList ls ∘ₗ op L := rfl
 
+@[simp 1100] theorem uniform_opList_singleton (L : Layer S) :
+    (uniform op).opList [L] = op L := rfl
+
+@[simp] theorem uniform_opList_cons_apply (L : Layer S) (ls : List (Layer S)) (x : V) :
+    (uniform op).opList (L :: ls) x = (uniform op).opList ls (op L x) := rfl
+
 @[simp] theorem uniform_eval_of (i j : Unit) {a b : Obj S} (d : a ⟶ b) :
     (uniform op).eval i j (LinDiagram.of d : LinDiagram R a b) =
       (uniform op).opList (Diagram.layers d) :=
@@ -431,6 +463,20 @@ theorem uniform_functor_map_hom {a b : Obj S} (f : a ⟶ b) :
     (uniform op).evalW i j u v (LinDiagram.of d : LinDiagram R a b) =
       (uniform op).opList ((Diagram.layers d).map (·.whisker u v)) :=
   (uniform op).evalW_of i j u v d
+
+/-- Pointwise evaluation of a single diagram under a uniform interpretation (no `ext`/`res`
+and no composites of linear maps). -/
+theorem uniform_eval_of_apply (i j : Unit) {a b : Obj S} (d : a ⟶ b) (x : V) :
+    (uniform op).eval i j (LinDiagram.of d : LinDiagram R a b) x =
+      (uniform op).opList (Diagram.layers d) x := by
+  rw [uniform_eval_of]
+
+/-- Pointwise whiskered evaluation of a single diagram under a uniform interpretation. -/
+theorem uniform_evalW_of_apply (i j : Unit) (u : Obj S) (v : List S.Colour) {a b : Obj S}
+    (d : a ⟶ b) (x : V) :
+    (uniform op).evalW i j u v (LinDiagram.of d : LinDiagram R a b) x =
+      (uniform op).opList ((Diagram.layers d).map (·.whisker u v)) x := by
+  rw [uniform_evalW_of]
 
 end Uniform
 
@@ -465,6 +511,10 @@ def piList (i : ι) : List (Layer S) → Module.End R (M i)
 
 @[simp] theorem piList_cons (i : ι) (L : Layer S) (ls : List (Layer S)) :
     piList A i (L :: ls) = piList A i ls * A L i := rfl
+
+/-- A single layer: no trailing `1 *`. -/
+@[simp 1100] theorem piList_singleton (i : ι) (L : Layer S) : piList A i [L] = A L i :=
+  one_mul _
 
 variable {κ A hκ}
 
@@ -511,6 +561,45 @@ theorem pi_evalW_of (i : ι) (u : Obj S) (v : List S.Colour) {a b : Obj S} (d : 
 end Pi
 
 end LocalInterpretation
+
+/-! ## Functors to modules, pointwise -/
+
+section ModuleFunctor
+
+variable {S : Signature.{u₀, u₁, u₂}} {R : Type w} [CommRing R]
+
+/-- The linear extension of a functor to modules, evaluated at a vector: the sum over the
+diagrams of the combination. -/
+theorem freeLift_map_hom_apply (F : Obj S ⥤ ModuleCat.{w₂} R) {a b : Obj S}
+    (X : LinDiagram R a b) (x : F.obj a) :
+    ((freeLift R F).map X).hom x = X.sum fun d r => r • (F.map d).hom x := by
+  rw [freeLift_map]
+  change (ModuleCat.homLinearEquiv (S := R) (X.sum fun d r => r • F.map d)) x = _
+  rw [map_finsuppSum, Finsupp.sum, Finsupp.sum, LinearMap.coeFn_sum, Finset.sum_apply]
+  rfl
+
+/-- The linear extension of a functor to modules on `of d₁ - c • of d₂`, at a vector. -/
+theorem freeLift_map_sub_smul_hom_apply (F : Obj S ⥤ ModuleCat.{w₂} R) {a b : Obj S}
+    (d₁ d₂ : a ⟶ b) (c : R) (x : F.obj a) :
+    ((freeLift R F).map (LinDiagram.of d₁ - c • LinDiagram.of d₂ : LinDiagram R a b)).hom x =
+      (F.map d₁).hom x - c • (F.map d₂).hom x := by
+  rw [Functor.map_sub, Functor.map_smul, freeLift_map_of, freeLift_map_of, ModuleCat.hom_sub,
+    ModuleCat.hom_smul, LinearMap.sub_apply, LinearMap.smul_apply]
+  rfl
+
+/-- The linear extension of a functor to modules on a whiskered `of d₁ - c • of d₂`, at a
+vector. -/
+theorem freeLift_map_whisker_sub_smul_hom_apply (F : Obj S ⥤ ModuleCat.{w₂} R) {a b : Obj S}
+    (d₁ d₂ : a ⟶ b) (c : R) (u : Obj S) (v : List S.Colour) (hw : a.WhiskerOK u v)
+    (x : F.obj (a.whisker u v)) :
+    ((freeLift R F).map (LinDiagram.whisker
+        (LinDiagram.of d₁ - c • LinDiagram.of d₂ : LinDiagram R a b) u v hw)).hom x =
+      (F.map (Diagram.whisker d₁ u v hw)).hom x - c • (F.map (Diagram.whisker d₂ u v hw)).hom x := by
+  rw [freeLift_map_whisker_sub_smul, ModuleCat.hom_sub, ModuleCat.hom_smul,
+    LinearMap.sub_apply, LinearMap.smul_apply]
+  rfl
+
+end ModuleFunctor
 
 /-! ## Integer coefficients -/
 

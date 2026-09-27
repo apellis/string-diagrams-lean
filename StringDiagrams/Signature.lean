@@ -25,6 +25,11 @@ Conventions: diagrams are read from bottom to top and boundary words from left t
 A word `w` of colours read from a starting region `r` is *well formed* (`S.ok r w`) if the
 left region of each strand is the right region of the previous one (or `r`); its final
 region is `S.endR r w`.
+
+For a concrete signature `sig` whose boundaries are given by pattern matching on the
+generators, tagging its definition with `@[simps dom cod odd]` (Mathlib's `simps`) produces
+the simp lemmas `sig_dom`, `sig_cod`, `sig_odd`, so that `simp` computes `sig.dom g`,
+`sig.cod g`, `sig.odd g` for every explicit generator `g` without unfolding `sig`.
 -/
 
 namespace StringDiagrams
@@ -119,6 +124,9 @@ namespace Obj
 
 /-- The rightmost region of an object. -/
 def endR (a : Obj S) : S.Region := S.endR a.start a.word
+
+@[simp] theorem endR_mk (r : S.Region) (w : List S.Colour) :
+    (⟨r, w⟩ : Obj S).endR = S.endR r w := rfl
 
 /-- Whiskering of an object: `u ⊗ a ⊗ v` (the start of `u` is kept; `v` is a word). -/
 def whisker (a : Obj S) (u : Obj S) (v : List S.Colour) : Obj S :=
