@@ -403,6 +403,37 @@ theorem kIso_mapQ_hom (a : B) :
     rw [hF.toPiTwoFunctor.map₂_zero]
     simp
 
+/-! #### In terms of the 2-functor `𝔼` -/
+
+/-- **`𝔼 ∘ 𝔻 = 𝕀` on 1-morphisms**, on 2-morphisms: `𝔼(ℝ̂) ∘ unit = unit ∘ ℝ`. -/
+theorem toQPiTwoFunctor_mapQ_map₂ {a b : B} {f g : a ⟶ b} (η : f ⟶ g) :
+    (hF.mapQ.toDegreeZero2 hF.mapQ_isGraded).toPseudofunctor.map₂
+        ((QAssociated2.unit R B).map₂ η) = (QAssociated2.unit R C).map₂ (F.map₂ η) :=
+  Subtype.ext (Subtype.ext (hF.mapQ_map₂_hom2 η))
+
+/-- **`𝔼 ∘ 𝔻 = 𝕀` on 1-morphisms**, the coherence maps `c` (`unit` is strict). -/
+theorem toQPiTwoFunctor_mapQ_mapComp {a b c : B} (f : a ⟶ b) (g : b ⟶ c) :
+    ((hF.mapQ.toDegreeZero2 hF.mapQ_isGraded).toPseudofunctor.mapComp
+        ((QAssociated2.unit R B).map f) ((QAssociated2.unit R B).map g)).hom =
+      (QAssociated2.unit R C).map₂ (F.mapComp f g).hom := rfl
+
+/-- **`𝔼 ∘ 𝔻 = 𝕀` on 1-morphisms**, the coherence maps `i`. -/
+theorem toQPiTwoFunctor_mapQ_mapId (a : B) :
+    ((hF.mapQ.toDegreeZero2 hF.mapQ_isGraded).toPseudofunctor.mapId
+        ((QAssociated2.unit R B).obj a)).hom = (QAssociated2.unit R C).map₂ (F.mapId a).hom := rfl
+
+/-- **`𝔼 ∘ 𝔻 = 𝕀` on 1-morphisms**, the coherence maps `j`. -/
+theorem toQPiTwoFunctor_mapQ_j (a : B) :
+    ((hF.mapQ.toQPiTwoFunctor hF.mapQ_isGraded).j ((QAssociated2.unit R B).obj a)).hom =
+      (QAssociated2.unit R C).map₂ (hF.j a).hom :=
+  Subtype.ext (Subtype.ext (hF.jIso_mapQ_hom a))
+
+/-- **`𝔼 ∘ 𝔻 = 𝕀` on 1-morphisms**, the coherence maps `k`. -/
+theorem toQPiTwoFunctor_mapQ_k (a : B) :
+    ((hF.mapQ.toQPiTwoFunctor hF.mapQ_isGraded).k ((QAssociated2.unit R B).obj a)).hom =
+      (QAssociated2.unit R C).map₂ (hF.k a).hom :=
+  Subtype.ext (Subtype.ext (hF.kIso_mapQ_hom a))
+
 end QPiTwoFunctor
 
 end StringDiagrams
