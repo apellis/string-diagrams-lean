@@ -46,7 +46,7 @@ def sign (p : ZMod 2) : R := if p = 0 then 1 else -1
 
 @[simp] theorem sign_zero : sign R 0 = 1 := rfl
 
-@[simp] theorem sign_one : sign R 1 = -1 := if_neg (by decide)
+@[simp] theorem sign_one : sign R 1 = -1 := ite_eq_right (by decide)
 
 variable {R}
 
@@ -87,6 +87,7 @@ variable {R : Type w} [CommRing R] {C : Type w₁} [Category.{w₂} C] [Preaddit
 
 variable (R) in
 /-- The decomposition of a Hom-module into its even and odd parts. -/
+@[instance_reducible]
 def decomposition (X Y : C) : DirectSum.Decomposition (parity (R := R) X Y) :=
   (isInternal X Y).chooseDecomposition
 
@@ -190,7 +191,7 @@ theorem inv_mem {p : ZMod 2} {X Y : C} (e : X ≅ Y) (he : e.hom ∈ parity (R :
   have key : proj R (p + 1) e.inv = 0 := by
     have h1 : e.hom ≫ proj R (p + 1) e.inv = 0 := by
       rw [← proj_comp_of_mem_left _ he, e.hom_inv_id, proj_id,
-        if_neg (by rcases parity_eq_zero_or_one p with rfl | rfl <;> decide)]
+        ite_eq_right (by rcases parity_eq_zero_or_one p with rfl | rfl <;> decide)]
     calc proj R (p + 1) e.inv = e.inv ≫ e.hom ≫ proj R (p + 1) e.inv := by
           rw [← Category.assoc, e.inv_hom_id, Category.id_comp]
       _ = 0 := by rw [h1, Limits.comp_zero]
