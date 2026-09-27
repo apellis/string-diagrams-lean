@@ -160,7 +160,6 @@ theorem mem_freeObj_part_iff (M : Mat_ (D 𝒜)) {q : ZMod 2} {v : M.ι → A} :
     rw [← h, freeObj_proj_apply]; exact aproj_mem _ _
   · intro h
     funext i
-    change (freeObj 𝒜 M).proj q v i = v i
     rw [freeObj_proj_apply, aproj_of_mem (h i)]
 
 /-- The right action of `a ∈ A` on `⊕ᵢ Π^{aᵢ} A`. -/
@@ -186,7 +185,7 @@ def matHom {M N : Mat_ (D 𝒜)} (f : M ⟶ N) : freeObj 𝒜 M ⟶ freeObj 𝒜
   SVec.ofHom
     { toFun := fun v j => ∑ i, elem (f i j) * v i
       map_add' := fun v w => by funext j; simp [mul_add, Finset.sum_add_distrib]
-      map_smul' := fun r v => by funext j; simp [Finset.smul_sum, mul_smul_comm] }
+      map_smul' := fun r v => by funext j; simp [Finset.smul_sum] }
 
 theorem matHom_apply {M N : Mat_ (D 𝒜)} (f : M ⟶ N) (v : M.ι → A) (j : N.ι) :
     matHom f v j = ∑ i, elem (f i j) * v i := rfl
@@ -295,7 +294,7 @@ abbrev toModObj (P : SKar k (SuperalgebraCat 𝒜)) : SuperBimodule (trivialGrad
   ract := ractHom P
   lact_one := one_smul k _
   lact_mul r r' := by
-    simp only [LinearMap.toSpanSingleton_apply, Linear.smul_comp, Linear.comp_smul,
+    simp only [LinearMap.toSpanSingleton_apply, Linear.comp_smul,
       Category.comp_id, smul_smul, mul_comm r r']
   ract_one := SVec.hom_ext fun v => Subtype.ext (funext fun i => mul_one (v.1 i))
   ract_mul b b' := SVec.hom_ext fun v => Subtype.ext (funext fun i => (mul_assoc (v.1 i) b b').symm)
@@ -381,6 +380,7 @@ variable {P Q : SKar k (SuperalgebraCat 𝒜)} (g : (toMod 𝒜).obj P ⟶ (toMo
 /-- The map `v ↦ g(p v)`. -/
 def fullMap (v : P.X.ι → A) : Q.X.ι → A := (g.1.1 ⟨matHom P.p v, matHom_p_mem P v⟩).1
 
+set_option backward.isDefEq.respectTransparency false in
 theorem fullMap_add (v w : P.X.ι → A) : fullMap g (v + w) = fullMap g v + fullMap g w := by
   have e : (⟨matHom P.p (v + w), matHom_p_mem P _⟩ : imgSubmodule P) =
       ⟨matHom P.p v, matHom_p_mem P _⟩ + ⟨matHom P.p w, matHom_p_mem P _⟩ :=
@@ -389,6 +389,7 @@ theorem fullMap_add (v w : P.X.ι → A) : fullMap g (v + w) = fullMap g v + ful
   rw [e, map_add]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem fullMap_zero : fullMap g 0 = 0 := by
   have e : (⟨matHom P.p 0, matHom_p_mem P 0⟩ : imgSubmodule P) = 0 :=
     Subtype.ext (map_zero (SVec.toLinearMap (matHom P.p)))
@@ -449,6 +450,7 @@ theorem matHom_fullMatrix (v : P.X.ι → A) : matHom (fullMatrix g) v = fullMap
   rw [fullMap_rmul]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem fullMap_p (v : P.X.ι → A) : fullMap g (matHom P.p v) = fullMap g v := by
   simp only [fullMap]
   congr 3
@@ -500,12 +502,14 @@ def IsFGProjective (V : SuperBimodule (trivialGrading k) 𝒜) : Prop :=
       ⟨freeMod 𝒜 M⟩) (r : (⟨freeMod 𝒜 M⟩ : Underlying k (SuperBimodule (trivialGrading k) 𝒜)) ⟶
       ⟨V⟩), i ≫ r = 𝟙 _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Example 1.17(i).** The supermodules `p(⊕ᵢ Π^{aᵢ} A)` are finitely generated projective. -/
 theorem isFGProjective_toMod_obj (P : SKar k (SuperalgebraCat 𝒜)) :
     IsFGProjective ((toMod 𝒜).obj P).obj :=
   ⟨P.X, (toMod 𝒜).map (Karoubi.decompId_i P), (toMod 𝒜).map (Karoubi.decompId_p P), by
     rw [← Functor.map_comp, ← Karoubi.decompId, CategoryTheory.Functor.map_id]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Example 1.17(i).** Every finitely generated projective supermodule is evenly isomorphic to
 `p(⊕ᵢ Π^{aᵢ} A)` for an object `(M, p)` of `SKar(A)`. Together with `toMod_full` and
 `toMod_faithful`, `SKar(A)` is equivalent to the category of finitely generated projective
@@ -520,9 +524,9 @@ theorem exists_iso_toMod_obj {V : SuperBimodule (trivialGrading k) 𝒜} (hV : I
   have idem : ε.f ≫ ε.f = ε.f := congrArg Idempotents.Karoubi.Hom.f hεε
   let P : SKar k (SuperalgebraCat 𝒜) := ⟨M, ε.f, idem⟩
   let a : P ⟶ (toKaroubi _).obj M := ⟨ε.f, by
-    rw [Idempotents.Karoubi.comp_p]; exact idem.symm⟩
+    rw [Idempotents.Karoubi.comp_p]; exact idem⟩
   let b : (toKaroubi _).obj M ⟶ P := ⟨ε.f, by
-    rw [← Category.assoc, Idempotents.Karoubi.p_comp]; exact idem.symm⟩
+    rw [← Category.assoc, Idempotents.Karoubi.p_comp]; exact idem⟩
   have hab : a ≫ ε ≫ b = 𝟙 P := Idempotents.Karoubi.hom_ext _ _ (by
     change ε.f ≫ ε.f ≫ ε.f = ε.f; rw [idem, idem])
   have hba : b ≫ a = ε := Idempotents.Karoubi.hom_ext _ _ idem
