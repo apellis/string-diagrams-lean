@@ -285,37 +285,37 @@ theorem hom_ext {α β : θ ⟶ θ'} (h : ∀ a, α.app a = β.app a) : α = β 
 section Linear
 
 instance : Zero (θ ⟶ θ') where
-  zero := ⟨fun _ => 0, fun f => by dsimp only; simp [zero_whiskerRight R, whiskerLeft_zero R]⟩
+  zero := ⟨fun _ => 0, fun f => by simp [zero_whiskerRight R, whiskerLeft_zero R]⟩
 
 instance : Add (θ ⟶ θ') where
   add α β := ⟨fun a => α.app a + β.app a, fun f => by
-    dsimp only; rw [add_whiskerRight (R := R), whiskerLeft_add (R := R), Preadditive.comp_add,
+    rw [add_whiskerRight (R := R), whiskerLeft_add (R := R), Preadditive.comp_add,
       Preadditive.add_comp, α.naturality, β.naturality]⟩
 
 instance : Neg (θ ⟶ θ') where
   neg α := ⟨fun a => -α.app a, fun f => by
-    dsimp only; rw [neg_whiskerRight R, whiskerLeft_neg R, Preadditive.comp_neg, Preadditive.neg_comp,
+    rw [neg_whiskerRight R, whiskerLeft_neg R, Preadditive.comp_neg, Preadditive.neg_comp,
       α.naturality]⟩
 
 instance : Sub (θ ⟶ θ') where
   sub α β := ⟨fun a => α.app a - β.app a, fun f => by
-    dsimp only; rw [sub_eq_add_neg, sub_eq_add_neg, add_whiskerRight (R := R), whiskerLeft_add (R := R),
+    rw [sub_eq_add_neg, sub_eq_add_neg, add_whiskerRight (R := R), whiskerLeft_add (R := R),
       neg_whiskerRight R, whiskerLeft_neg R, Preadditive.comp_add, Preadditive.add_comp,
       Preadditive.comp_neg, Preadditive.neg_comp, α.naturality, β.naturality]⟩
 
 instance : SMul R (θ ⟶ θ') where
   smul r α := ⟨fun a => r • α.app a, fun f => by
-    dsimp only; rw [smul_whiskerRight (R := R), whiskerLeft_smul (R := R), Linear.comp_smul,
+    rw [smul_whiskerRight (R := R), whiskerLeft_smul (R := R), Linear.comp_smul,
       Linear.smul_comp, α.naturality]⟩
 
 instance : SMul ℕ (θ ⟶ θ') where
   smul n α := ⟨fun a => n • α.app a, fun f => by
-    dsimp only; simp only [← Nat.cast_smul_eq_nsmul R]; rw [smul_whiskerRight (R := R), whiskerLeft_smul (R := R),
+    simp only [← Nat.cast_smul_eq_nsmul R]; rw [smul_whiskerRight (R := R), whiskerLeft_smul (R := R),
       Linear.comp_smul, Linear.smul_comp, α.naturality]⟩
 
 instance : SMul ℤ (θ ⟶ θ') where
   smul n α := ⟨fun a => n • α.app a, fun f => by
-    dsimp only; simp only [← Int.cast_smul_eq_zsmul R]; rw [smul_whiskerRight (R := R), whiskerLeft_smul (R := R),
+    simp only [← Int.cast_smul_eq_zsmul R]; rw [smul_whiskerRight (R := R), whiskerLeft_smul (R := R),
       Linear.comp_smul, Linear.smul_comp, α.naturality]⟩
 
 @[simp] theorem zero_app (a : B) : (0 : θ ⟶ θ').app a = 0 := rfl
@@ -486,6 +486,7 @@ def natIsoOfEvenIso {C D : SCat.{w, v₁, u₁} R} {F G : C ⟶ D} (e : F ≅ G)
           exact this })
     (fun f => (SuperNatTrans.toNatTrans e.hom).naturality f)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Definition 1.1(iv) and Definition 2.2(i).** A superfunctor is a superequivalence of
 supercategories (`Supercategory.Superequivalence`) if and only if it is a superequivalence
 in the 2-supercategory `𝔖ℭ𝔞𝔱`. -/
