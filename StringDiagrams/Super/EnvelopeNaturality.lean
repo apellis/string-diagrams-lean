@@ -69,6 +69,7 @@ def _root_.StringDiagrams.Supercategory.Superfunctor.precompose (K : Superfuncto
   map_id F := Superfunctor.whiskerLeft_id K F
   map_comp x y := Superfunctor.whiskerLeft_comp K x y
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R A B) in
 /-- **Theorem 4.3, naturality in `A`.** The superequivalences `ℋom(A, νB) → ℋom(A_π, B)`
 commute strictly with precomposition: `(- ∘ K)~ = -~ ∘ K_π`. -/
@@ -115,6 +116,7 @@ theorem ζPow_inv_map (L : B ⥤ B') (a : ZMod 2) (Y : B) :
   rw [Iso.inv_comp_eq, ζPow_map, Category.assoc, ← L.map_comp, Iso.hom_inv_id, L.map_id,
     Category.comp_id]
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R) in
 /-- **Theorem 4.3, naturality in `B`.** For a superfunctor `L : B ⥤ B'` between
 Π-supercategories, `(L ∘ F)~ ≅ L ∘ F̃` by the even isomorphisms `βᵃ_L`. -/
