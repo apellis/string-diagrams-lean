@@ -57,6 +57,7 @@ def extendSuperNatTrans {F G : Superfunctor R A B} (x : F ⟶ G) :
     (X : Envelope R A) :
     (extendSuperNatTrans x).app p X = extendNat R F.toFunctor G.toFunctor p (x.app p) X := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R A B) in
 /-- **Theorem 4.3 / Theorem 1.9.** The superfunctor `ℋom(A, νB) → ℋom(A_π, B)`,
 `F ↦ F̃`, `x ↦ x̃`. -/
@@ -88,9 +89,10 @@ instance : (extendHom R A B).Additive where
 
 instance : (extendHom R A B).Linear R where
   map_smul {F G} x r := Superfunctor.hom_ext fun p X => by
-    simp only [extendHom_map, extendSuperNatTrans_app, Superfunctor.smul_app]
+    simp only [extendHom_map, extendSuperNatTrans_app]
     exact congrFun (extendNat_smul r (x.app p)) X
 
+set_option backward.isDefEq.respectTransparency false in
 instance : IsSuperfunctor R (extendHom R A B) where
   map_mem {F G p x} hx := by
     rw [Superfunctor.mem_parity_iff] at hx ⊢
@@ -98,12 +100,14 @@ instance : IsSuperfunctor R (extendHom R A B) where
     simp only [extendHom_map, extendSuperNatTrans_app, hx]
     simp [extendNat]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (extendHom R A B).Faithful where
   map_injective {F G x y} h := Superfunctor.hom_ext fun p X => by
     have := congrArg (fun t : (extendHom R A B).obj F ⟶ (extendHom R A B).obj G =>
       t.app p ((J R A).obj X)) h
     simpa using this
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The restriction `y J : F ⇒ G` of a supernatural transformation `y : F̃ ⇒ G̃`. -/
 def restrictSuperNatTrans {F G : Superfunctor R A B}
     (y : (extendHom R A B).obj F ⟶ (extendHom R A B).obj G) : F ⟶ G :=
@@ -111,7 +115,12 @@ def restrictSuperNatTrans {F G : Superfunctor R A B}
     { mem := fun X => y.app_mem p ((J R A).obj X)
       naturality := fun {X Y q f} hf => by
         have := (SuperNatTrans.isSupernatural y p).naturality (map_mem (J R A) hf)
-        simpa using this }
+        have e1 : ((extendHom R A B).obj F).toFunctor.map ((J R A).map f) = F.toFunctor.map f :=
+          extend_map_J R F.toFunctor f
+        have e2 : ((extendHom R A B).obj G).toFunctor.map ((J R A).map f) = G.toFunctor.map f :=
+          extend_map_J R G.toFunctor f
+        rw [e1, e2] at this
+        exact this }
 
 instance : (extendHom R A B).Full where
   map_surjective {F G} y := ⟨restrictSuperNatTrans y, Superfunctor.hom_ext fun p X =>
@@ -120,6 +129,7 @@ instance : (extendHom R A B).Full where
       (SuperNatTrans.isSupernatural y p) fun Y => by
         rw [extendNat_zero_par]; rfl) X⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The even isomorphism `(H J)~ ≅ H` of Theorem 4.3, in the supercategory `ℋom(A_π, B)`. -/
 def extendRestrictSuperIso (H : Superfunctor R (Envelope R A) B) :
     (extendHom R A B).obj ⟨J R A ⋙ H.toFunctor⟩ ≅ H where
@@ -129,7 +139,7 @@ def extendRestrictSuperIso (H : Superfunctor R (Envelope R A) B) :
     (fun X => inv_mem ((extendRestrictIso H.toFunctor).app X)
       (extendRestrictIso_hom_mem H.toFunctor X))
   hom_inv_id := Superfunctor.hom_ext_parity (fun X => by
-      simp [SuperNatTrans.ofNatTrans]; rfl)
+      simp [SuperNatTrans.ofNatTrans])
     (fun X => by simp [SuperNatTrans.ofNatTrans])
   inv_hom_id := Superfunctor.hom_ext_parity (fun X => by
       simp [SuperNatTrans.ofNatTrans])
