@@ -91,7 +91,7 @@ theorem coherence_yoneda_assoc {a b c d e : B} (k : e ⟶ d) (h : d ⟶ c) (u : 
             (Bicategory.associator k (h ≫ u) f).inv =
         (Bicategory.associator (k ≫ h) u f).inv ≫
           Bicategory.whiskerRight (Bicategory.associator k h u).hom f := by
-    intros; coherence
+    intros; bicategory
   have h' := congrArg Subtype.val (hU (Underlying2.hom1 k) (Underlying2.hom1 h)
     (Underlying2.hom1 u) (Underlying2.hom1 f))
   underlying2_val h'
@@ -106,7 +106,7 @@ theorem coherence_yoneda_mapComp {a b c d e : B} (h : e ⟶ d) (u : d ⟶ a) (f 
             (Bicategory.associator (h ≫ u) f g).hom =
         Bicategory.whiskerLeft h (Bicategory.associator u f g).hom ≫
           (Bicategory.associator h u (f ≫ g)).inv := by
-    intros; coherence
+    intros; bicategory
   have h' := congrArg Subtype.val (hU (Underlying2.hom1 h) (Underlying2.hom1 u)
     (Underlying2.hom1 f) (Underlying2.hom1 g))
   underlying2_val h'
@@ -120,7 +120,7 @@ theorem coherence_yoneda_associator {a b c d e : B} (u : e ⟶ a) (f : a ⟶ b) 
           Bicategory.whiskerLeft u (Bicategory.associator f g h).inv =
         Bicategory.whiskerRight (Bicategory.associator u f g).hom h ≫
           (Bicategory.associator u (f ≫ g) h).hom := by
-    intros; coherence
+    intros; bicategory
   have h' := congrArg Subtype.val (hU (Underlying2.hom1 u) (Underlying2.hom1 f)
     (Underlying2.hom1 g) (Underlying2.hom1 h))
   underlying2_val h'
@@ -131,7 +131,7 @@ theorem coherence_yoneda_leftUnitor {a b e : B} (u : e ⟶ a) (f : a ⟶ b) :
       Bicategory.whiskerRight (Bicategory.rightUnitor u).inv f ≫
           (Bicategory.associator u (𝟙 a) f).hom ≫
             Bicategory.whiskerLeft u (Bicategory.leftUnitor f).hom = 𝟙 _ := by
-    intros; coherence
+    intros; bicategory
   have h' := congrArg Subtype.val (hU (Underlying2.hom1 u) (Underlying2.hom1 f))
   underlying2_val h'
 
@@ -141,7 +141,7 @@ theorem coherence_yoneda_rightUnitor {a b e : B} (u : e ⟶ a) (f : a ⟶ b) :
   have hU : ∀ {a b e : Underlying2 R B} (u : e ⟶ a) (f : a ⟶ b),
       (Bicategory.rightUnitor (u ≫ f)).inv ≫ (Bicategory.associator u f (𝟙 b)).hom ≫
           Bicategory.whiskerLeft u (Bicategory.rightUnitor f).hom = 𝟙 _ := by
-    intros; coherence
+    intros; bicategory
   have h' := congrArg Subtype.val (hU (Underlying2.hom1 u) (Underlying2.hom1 f))
   underlying2_val h'
 
@@ -308,7 +308,7 @@ instance (a b : TwoStrictification R B) : Supercategory R (Hom1 a b) where
       refine hom2_ext fun c => ?_
       have h0' := (Superfunctor.mem_parity_iff (p := 0)).1 (h0 c)
       have h1' := (Superfunctor.mem_parity_iff (p := 1)).1 (h1 c)
-      exact Superfunctor.hom_ext_parity (fun X => by simpa using congrFun h1' X)
+      exact Superfunctor.hom_ext_parity (fun X => by simpa using! congrFun h1' X)
         (fun X => by simpa using congrFun h0' X)
     · rw [codisjoint_iff, eq_top_iff]
       intro θ _
@@ -361,6 +361,7 @@ def comp1 {a b c : TwoStrictification R B} (F : Hom1 a b) (G : Hom1 b c) : Hom1 
     rw [G.γ_naturality_right_assoc, G.γ_assoc_assoc, ← Functor.map_comp, ← Functor.map_comp,
       F.γ_assoc, Functor.map_comp]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `F ◁ η := η_{F -}`. -/
 def whiskerLeft2 {a b c : TwoStrictification R B} (F : Hom1 a b) {G H : Hom1 b c}
     (η : G ⟶ H) : comp1 F G ⟶ comp1 F H :=
@@ -372,6 +373,7 @@ def whiskerLeft2 {a b c : TwoStrictification R B} (F : Hom1 a b) {G H : Hom1 b c
     erw [hn]
     rw [← Category.assoc, Hom1.hom2_compat, Category.assoc]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `η ▷ H := H(η_-)`. -/
 def whiskerRight2 {a b c : TwoStrictification R B} {F G : Hom1 a b} (η : F ⟶ G)
     (H : Hom1 b c) : comp1 F H ⟶ comp1 G H :=
@@ -380,15 +382,19 @@ def whiskerRight2 {a b c : TwoStrictification R B} {F G : Hom1 a b} (η : F ⟶ 
       Superfunctor.map, Category.assoc]
     rw [← Functor.map_comp, Hom1.hom2_compat, Functor.map_comp, ← H.γ_naturality_right_assoc]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem comp1_assoc {a b c d : TwoStrictification R B} (F : Hom1 a b) (G : Hom1 b c)
     (H : Hom1 c d) : comp1 (comp1 F G) H = comp1 F (comp1 G H) :=
-  Hom1.ext_of_heq rfl fun k u => heq_of_eq (by simp [Functor.map_comp])
+  Hom1.ext_of_heq rfl fun k u => heq_of_eq (by simp; rfl)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem id1_comp {a b : TwoStrictification R B} (F : Hom1 a b) : comp1 (id1 a) F = F :=
-  Hom1.ext_of_heq rfl fun k u => heq_of_eq (by simp)
+  Hom1.ext_of_heq rfl fun k u => heq_of_eq (by
+    simp; erw [CategoryTheory.Functor.map_id, Category.comp_id]; rfl)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem comp1_id {a b : TwoStrictification R B} (F : Hom1 a b) : comp1 F (id1 b) = F :=
-  Hom1.ext_of_heq rfl fun k u => heq_of_eq (by simp)
+  Hom1.ext_of_heq rfl fun k u => heq_of_eq (by simp; erw [Category.id_comp]; rfl)
 
 instance instBicategoryStruct :
     BicategoryStruct.{max u₁ v₁ w₁, max u₁ v₁ w₁} (TwoStrictification R B) where
@@ -480,40 +486,38 @@ theorem hom2_ext' {a b : TwoStrictification R B} {F G : a ⟶ b} {θ θ' : F ⟶
     θ = θ' :=
   Hom1.hom2_ext fun e => Superfunctor.hom_ext fun p u => h e p u
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, after Definition 2.2.** The strictification is a 2-supercategory. -/
 instance instTwoSupercategory : TwoSupercategory R (TwoStrictification R B) where
   whiskerLeft_id F G := Hom1.hom2_ext fun e => Superfunctor.whiskerLeft_id _ _
   whiskerLeft_comp F _ _ _ η θ := Hom1.hom2_ext fun e => Superfunctor.whiskerLeft_comp _ _ _
   id_whiskerLeft η := hom2_ext' fun e p u => by
     rcases parity_eq_zero_or_one p with rfl | rfl <;>
-      simp [Superfunctor.comp_app, SuperNatTrans.zmod2_one_add_one, Superfunctor.obj,
-        Superfunctor.map]
+      simp [Superfunctor.obj]
   comp_whiskerLeft F G _ _ η := hom2_ext' fun e p u => by
     rcases parity_eq_zero_or_one p with rfl | rfl <;>
-      simp [Superfunctor.comp_app, SuperNatTrans.zmod2_one_add_one, Superfunctor.obj,
-        Superfunctor.map]
+      simp [Superfunctor.obj]
   id_whiskerRight F G := Hom1.hom2_ext fun e => Superfunctor.id_whiskerRight _ _
   comp_whiskerRight η θ H := Hom1.hom2_ext fun e => Superfunctor.comp_whiskerRight _ _ _
   whiskerRight_id η := hom2_ext' fun e p u => by
     rcases parity_eq_zero_or_one p with rfl | rfl <;>
-      simp [Superfunctor.comp_app, SuperNatTrans.zmod2_one_add_one, Superfunctor.obj,
-        Superfunctor.map]
+      simp [Superfunctor.map]
   whiskerRight_comp η G H := hom2_ext' fun e p u => by
     rcases parity_eq_zero_or_one p with rfl | rfl <;>
-      simp [Superfunctor.comp_app, SuperNatTrans.zmod2_one_add_one, Superfunctor.obj,
-        Superfunctor.map]
+      simp [Superfunctor.map]
   whisker_assoc F _ _ η H := hom2_ext' fun e p u => by
     rcases parity_eq_zero_or_one p with rfl | rfl <;>
-      simp [Superfunctor.comp_app, SuperNatTrans.zmod2_one_add_one, Superfunctor.obj,
-        Superfunctor.map]
+      simp [Superfunctor.obj, Superfunctor.map]
   pentagon F G H I := hom2_ext' fun e p u => by
-    rcases parity_eq_zero_or_one p with rfl | rfl <;>
-      simp [Superfunctor.comp_app, SuperNatTrans.zmod2_one_add_one, Superfunctor.obj,
-        Superfunctor.map]
+    rcases parity_eq_zero_or_one p with rfl | rfl
+    · simp [Superfunctor.comp_app, Superfunctor.obj]
+      exact Category.comp_id _
+    · simp [Superfunctor.comp_app, SuperNatTrans.zmod2_one_add_one, Superfunctor.obj]
   triangle F G := hom2_ext' fun e p u => by
-    rcases parity_eq_zero_or_one p with rfl | rfl <;>
-      simp [Superfunctor.comp_app, SuperNatTrans.zmod2_one_add_one, Superfunctor.obj,
-        Superfunctor.map]
+    rcases parity_eq_zero_or_one p with rfl | rfl
+    · simp [Superfunctor.obj]
+      rfl
+    · simp
   whiskerLeft_add F _ _ η θ := Hom1.hom2_ext fun e => Superfunctor.whiskerLeft_add _ _ _
   add_whiskerRight η θ H := Hom1.hom2_ext fun e => Superfunctor.add_whiskerRight _ _ _
   whiskerLeft_smul F _ _ r η := Hom1.hom2_ext fun e => Superfunctor.whiskerLeft_smul _ _ _
@@ -572,10 +576,11 @@ variable (x : ∀ (c : B) (u : c ⟶ a.as), (Hom1.F F c).obj u ⟶ (Hom1.F G c).
 theorem homMk2_mem : homMk2 x mem nat compat ∈ parity (R := R) F G 0 := fun c => by
   rw [Superfunctor.mem_parity_iff]
   funext u
-  simp [zmod2_one_ne_zero]
+  simp
 
 end homMk2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- An even 2-isomorphism given by a natural family of even 2-isomorphisms of `𝔄` compatible
 with the module structures. -/
 def isoMk2 (e : ∀ (c : B) (u : c ⟶ a.as), (Hom1.F F c).obj u ≅ (Hom1.F G c).obj u)
@@ -588,7 +593,6 @@ def isoMk2 (e : ∀ (c : B) (u : c ⟶ a.as), (Hom1.F F c).obj u ≅ (Hom1.F G c
   hom := homMk2 (fun c u => (e c u).hom) mem nat compat
   inv := homMk2 (fun c u => (e c u).inv) (fun c u => inv_mem _ (mem c u))
     (fun c {u u'} θ => by
-      dsimp only
       rw [← cancel_mono (e c u').hom, Category.assoc, Iso.inv_hom_id, Category.comp_id,
         Category.assoc, nat, Iso.inv_hom_id_assoc])
     (fun {c d} h u => by
@@ -599,12 +603,10 @@ def isoMk2 (e : ∀ (c : B) (u : c ⟶ a.as), (Hom1.F F c).obj u ≅ (Hom1.F G c
             rw [Category.assoc, ← reassoc_of% (compat h u), Iso.hom_inv_id, Category.comp_id])
   hom_inv_id := hom2_ext' fun c p u => by
     rcases parity_eq_zero_or_one p with rfl | rfl <;>
-      simp [Superfunctor.comp_app, zmod2_one_ne_zero,
-        SuperNatTrans.zmod2_one_add_one]
+      simp [Superfunctor.comp_app, SuperNatTrans.zmod2_one_add_one]
   inv_hom_id := hom2_ext' fun c p u => by
     rcases parity_eq_zero_or_one p with rfl | rfl <;>
-      simp [Superfunctor.comp_app, zmod2_one_ne_zero,
-        SuperNatTrans.zmod2_one_add_one]
+      simp [Superfunctor.comp_app, SuperNatTrans.zmod2_one_add_one]
 
 section isoMk2
 
@@ -730,6 +732,7 @@ theorem yonedaMapId_hom_val_app (a e : B) (p : ZMod 2) (u : e ⟶ a) :
     (((yonedaMapId (R := R) a).hom).1 e).app p u =
       if p = 0 then (rightUnitor u).inv else 0 := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R B) in
 /-- **Brundan–Ellis, after Definition 2.2.** The 2-superfunctor
 `yoneda : 𝔄 → TwoStrictification R 𝔄`: the identity on objects, `f ↦ (- ≫ f, a⁻¹)`,
@@ -741,9 +744,9 @@ def yoneda : TwoSuperfunctor R B (TwoStrictification R B) where
   map₂_id f := hom2_ext' fun c p u => by
     rw [yonedaMap₂_val_app, proj_id]
     rcases parity_eq_zero_or_one p with rfl | rfl
-    · simp only [if_pos, TwoSupercategory.whiskerLeft_id (R := R)]
+    · simp only [ite_eq_left, TwoSupercategory.whiskerLeft_id (R := R)]
       rfl
-    · simp [zmod2_one_ne_zero, TwoSupercategory.whiskerLeft_zero R]
+    · simp [TwoSupercategory.whiskerLeft_zero R]
   map₂_comp η θ := hom2_ext' fun c r u => by
     rw [yonedaMap₂_val_app, Supercategory.proj_comp, comp2_val', Superfunctor.comp_app,
       yonedaMap₂_val_app, yonedaMap₂_val_app, yonedaMap₂_val_app, yonedaMap₂_val_app,
@@ -765,66 +768,67 @@ def yoneda : TwoSuperfunctor R B (TwoStrictification R B) where
   mapComp_hom_mem f g c := by
     rw [Superfunctor.mem_parity_iff]
     funext u
-    simp [yonedaMapComp_hom_val_app, zmod2_one_ne_zero]
+    simp [yonedaMapComp_hom_val_app]
   mapId_hom_mem a c := by
     rw [Superfunctor.mem_parity_iff]
     funext u
-    simp [yonedaMapId_hom_val_app, zmod2_one_ne_zero]
+    simp [yonedaMapId_hom_val_app]
   mapComp_naturality_left {a b c f f'} η g := hom2_ext' fun e r u => by
     simp only [comp2_val', Superfunctor.comp_app, whiskerRight_val, Superfunctor.whiskerRight_app,
       yonedaMapComp_hom_val_app, yonedaMap₂_val_app]
     rcases parity_eq_zero_or_one r with rfl | rfl
-    · simp only [if_pos, zmod2_one_ne_zero, ite_false, Limits.comp_zero, Limits.zero_comp,
-        add_zero, zero_add, proj_whiskerRight', Superfunctor.map, Functor.map_zero]
+    · simp only [ite_eq_left, zmod2_one_ne_zero, ite_false, Limits.comp_zero, Limits.zero_comp,
+        add_zero, zero_add, proj_whiskerRight', Superfunctor.map]
       exact TwoSupercategory.associator_naturality_middle R u (proj R 0 η) g
-    · simp only [if_pos, zmod2_one_ne_zero, ite_false, Limits.comp_zero, Limits.zero_comp,
+    · simp only [ite_eq_left, zmod2_one_ne_zero, ite_false, Limits.comp_zero, Limits.zero_comp,
         add_zero, zero_add, proj_whiskerRight', SuperNatTrans.zmod2_one_add_one,
-        Superfunctor.map, Functor.map_zero]
+        Superfunctor.map]
       exact TwoSupercategory.associator_naturality_middle R u (proj R 1 η) g
   mapComp_naturality_right {a b c} f {g g'} η := hom2_ext' fun e r u => by
     simp only [comp2_val', Superfunctor.comp_app, whiskerLeft_val, Superfunctor.whiskerLeft_app,
       yonedaMapComp_hom_val_app, yonedaMap₂_val_app]
     rcases parity_eq_zero_or_one r with rfl | rfl
-    · simp only [if_pos, zmod2_one_ne_zero, ite_false, Limits.comp_zero, Limits.zero_comp,
-        add_zero, zero_add, proj_whiskerLeft', Superfunctor.map, Functor.map_zero]
+    · simp only [ite_eq_left, zmod2_one_ne_zero, ite_false, Limits.comp_zero, Limits.zero_comp,
+        add_zero, zero_add, proj_whiskerLeft']
       exact TwoSupercategory.associator_naturality_right R u f (proj R 0 η)
-    · simp only [if_pos, zmod2_one_ne_zero, ite_false, Limits.comp_zero, Limits.zero_comp,
-        add_zero, zero_add, proj_whiskerLeft', SuperNatTrans.zmod2_one_add_one,
-        Superfunctor.map, Functor.map_zero]
+    · simp only [ite_eq_left, zmod2_one_ne_zero, ite_false, Limits.comp_zero, Limits.zero_comp,
+        add_zero, zero_add, proj_whiskerLeft', SuperNatTrans.zmod2_one_add_one]
       exact TwoSupercategory.associator_naturality_right R u f (proj R 1 η)
   map₂_associator {a b c d} f g h := hom2_ext' fun e r u => by
     have ha := Strictification.proj_of_even
       (inv_mem _ (TwoSupercategory.associator_hom_mem (R := R) f g h))
     rcases parity_eq_zero_or_one r with rfl | rfl
-    · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, ha, zmod2_one_ne_zero,
+    · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, ha,
         TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
-        Superfunctor.map, Functor.map_zero, TwoSupercategory.zero_whiskerRight R]
+        Superfunctor.map]
       exact TwoSupercategory.coherence_yoneda_associator R u f g h
-    · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, ha, zmod2_one_ne_zero,
+    · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, ha,
         TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
-        Superfunctor.map, Functor.map_zero, TwoSupercategory.zero_whiskerRight R]
+        Superfunctor.map]
+      change _ = (postcomp R h e).map 0 ≫ _
+      rw [CategoryTheory.Functor.map_zero, Limits.zero_comp]
   map₂_leftUnitor {a b} f := hom2_ext' fun e r u => by
     have hl := Strictification.proj_of_even
       (TwoSupercategory.leftUnitor_hom_mem (R := R) f)
     rcases parity_eq_zero_or_one r with rfl | rfl
     · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, yonedaMapId_hom_val_app, hl,
-        zmod2_one_ne_zero, TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
-        Superfunctor.map, Functor.map_zero, TwoSupercategory.zero_whiskerRight R]
+        TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
+        Superfunctor.map]
       exact TwoSupercategory.coherence_yoneda_leftUnitor R u f
     · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, yonedaMapId_hom_val_app, hl,
-        zmod2_one_ne_zero, TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
-        Superfunctor.map, Functor.map_zero, TwoSupercategory.zero_whiskerRight R]
+        TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
+        Superfunctor.map]
+      change (postcomp R f e).map 0 ≫ _ = _
+      rw [CategoryTheory.Functor.map_zero, Limits.zero_comp]
   map₂_rightUnitor {a b} f := hom2_ext' fun e r u => by
     have hr := Strictification.proj_of_even
       (TwoSupercategory.rightUnitor_hom_mem (R := R) f)
     rcases parity_eq_zero_or_one r with rfl | rfl
     · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, yonedaMapId_hom_val_app, hr,
-        zmod2_one_ne_zero, TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
-        Superfunctor.map, Functor.map_zero, TwoSupercategory.zero_whiskerRight R]
+        TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one]
       exact TwoSupercategory.coherence_yoneda_rightUnitor R u f
     · simp [Superfunctor.comp_app, yonedaMapComp_hom_val_app, yonedaMapId_hom_val_app, hr,
-        zmod2_one_ne_zero, TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one,
-        Superfunctor.map, Functor.map_zero]
+        TwoSupercategory.whiskerLeft_zero R, SuperNatTrans.zmod2_one_add_one]
 
 @[simp] theorem yoneda_obj (a : B) : (yoneda R B).obj a = ⟨a⟩ := rfl
 
@@ -839,6 +843,7 @@ section FullyFaithful
 
 variable {a b : B} {f f' : a ⟶ b}
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A 2-morphism `θ : (- ≫ f) ⇒ (- ≫ f')` of the strictification is `- ◁ η` for
 `η = l_{f'} ∘ θ_a(1_a) ∘ l_f⁻¹` (componentwise in the parity). -/
 theorem yoneda_app_eq (θ : (yonedaMap (R := R) f : (⟨a⟩ : TwoStrictification R B) ⟶ ⟨b⟩) ⟶
@@ -867,6 +872,7 @@ def yonedaPreimage (θ : (yonedaMap (R := R) f : (⟨a⟩ : TwoStrictification R
     yonedaMap f') : f ⟶ f' :=
   (leftUnitor f).inv ≫ ((θ.1 a).app 0 (𝟙 a) + (θ.1 a).app 1 (𝟙 a)) ≫ (leftUnitor f').hom
 
+set_option backward.isDefEq.respectTransparency false in
 theorem proj_yonedaPreimage
     (θ : (yonedaMap (R := R) f : (⟨a⟩ : TwoStrictification R B) ⟶ ⟨b⟩) ⟶ yonedaMap f')
     (p : ZMod 2) :
@@ -888,6 +894,7 @@ theorem proj_yonedaPreimage
 
 end FullyFaithful
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, after Definition 2.2.** `yoneda` is fully faithful on morphism
 supercategories. -/
 def yonedaFullyFaithful (a b : B) : ((yoneda R B).mapFunctor a b).FullyFaithful where
@@ -903,6 +910,7 @@ def yonedaFullyFaithful (a b : B) : ((yoneda R B).mapFunctor a b).FullyFaithful 
 
 instance (a b : B) : ((yoneda R B).mapFunctor a b).Full := (yonedaFullyFaithful a b).full
 
+set_option backward.isDefEq.respectTransparency false in
 instance (a b : B) : ((yoneda R B).mapFunctor a b).Faithful := (yonedaFullyFaithful a b).faithful
 
 /-- The even 2-isomorphism `- ≫ F_a(1_a) ≅ F`, with components `F(r_u) ∘ γ_{u,1}`. -/
@@ -910,7 +918,7 @@ def yonedaObjIso {a b : B} (F : Hom1 (⟨a⟩ : TwoStrictification R B) ⟨b⟩)
     (yonedaMap (R := R) ((Hom1.F F a).obj (𝟙 a)) : Hom1 _ _) ≅ F :=
   isoMk2 (fun c u => Hom1.γ F u (𝟙 a) ≪≫ (Hom1.F F c).mapIso (rightUnitor u))
     (fun c u => by
-      simpa using comp_mem (Hom1.γ_mem F u (𝟙 a))
+      simpa using! comp_mem (Hom1.γ_mem F u (𝟙 a))
         ((Hom1.sf F c).map_mem (TwoSupercategory.rightUnitor_hom_mem (R := R) u)))
     (fun c {u u'} θ => by
       change θ ▷ (Hom1.F F a).obj (𝟙 a) ≫ (Hom1.γ F u' (𝟙 a)).hom ≫
@@ -938,7 +946,7 @@ theorem yonedaObjIso_hom_mem {a b : B} (F : Hom1 (⟨a⟩ : TwoStrictification R
     (yonedaObjIso F).hom ∈ parity (R := R) _ _ 0 := fun c => by
   rw [Superfunctor.mem_parity_iff]
   funext u
-  rw [zero_add, yonedaObjIso_hom_val_app, if_neg zmod2_one_ne_zero]
+  rw [zero_add, yonedaObjIso_hom_val_app, ite_eq_right zmod2_one_ne_zero]
   rfl
 
 /-- **Brundan–Ellis, after Definition 2.2.** `yoneda` is evenly dense on morphism
