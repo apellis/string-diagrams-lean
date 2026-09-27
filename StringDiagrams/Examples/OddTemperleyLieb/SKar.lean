@@ -116,23 +116,26 @@ variable {q} in
 def mor {m n : ℕ} {a b : ZMod 2} (φ : jwObj q hq m a ⟶ jwObj q hq n b) : X k δq m ⟶ X k δq n :=
   Envelope.toHom (φ.f PUnit.unit PUnit.unit).1
 
+set_option backward.isDefEq.respectTransparency false in
 omit hq in
 theorem mat_comp_single {x y z : DD q} (f : (Mat_.embedding (DD q)).obj x ⟶ (Mat_.embedding (DD q)).obj y)
     (g : (Mat_.embedding (DD q)).obj y ⟶ (Mat_.embedding (DD q)).obj z) :
     (f ≫ g) PUnit.unit PUnit.unit = f PUnit.unit PUnit.unit ≫ g PUnit.unit PUnit.unit := by
   rw [Mat_.comp_apply]
-  simp
+  exact Fintype.sum_unique (ι := PUnit) _
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mor_comp {l m n : ℕ} {a b c : ZMod 2} (φ : jwObj q hq l a ⟶ jwObj q hq m b)
     (ψ : jwObj q hq m b ⟶ jwObj q hq n c) : mor hq (φ ≫ ψ) = mor hq φ ≫ mor hq ψ := by
   simp only [mor, Karoubi.comp_f, mat_comp_single, Underlying.comp_val, Envelope.toHom_comp]
 
 theorem mor_id (n : ℕ) (a : ZMod 2) : mor hq (𝟙 (jwObj q hq n a)) = jw q n := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mor_eq {m n : ℕ} {a b : ZMod 2} (φ : jwObj q hq m a ⟶ jwObj q hq n b) :
     mor hq φ = jw q m ≫ mor hq φ ≫ jw q n := by
   have := congrArg (fun f => Envelope.toHom (f PUnit.unit PUnit.unit).1) φ.comm
-  simpa only [mat_comp_single, Underlying.comp_val, Envelope.toHom_comp] using this
+  simpa only [mat_comp_single, Underlying.comp_val, Envelope.toHom_comp] using! this.symm
 
 theorem mor_mem_parity {m n : ℕ} {a b : ZMod 2} (φ : jwObj q hq m a ⟶ jwObj q hq n b) :
     mor hq φ ∈ (pres k δq).homDeg (Presentation.parityDeg sig) (strands m) (strands n) (a + b) :=
@@ -184,6 +187,7 @@ theorem id_jwObj_ne_zero (n : ℕ) (a : ZMod 2) : 𝟙 (jwObj q hq n a) ≠ 0 :=
 
 /-! ## Decomposing the objects `Πᵃ m` -/
 
+set_option backward.isDefEq.respectTransparency false in
 omit hq in
 theorem wR1_mem_homDeg {m n : ℕ} {p : ZMod 2} {f : X k δq m ⟶ X k δq n}
     (hf : f ∈ (pres k δq).homDeg (Presentation.parityDeg sig) (strands m) (strands n) p) :
@@ -194,7 +198,7 @@ theorem wR1_mem_homDeg {m n : ℕ} {p : ZMod 2} {f : X k δq m ⟶ X k δq n}
     (Presentation.comp_mem_homDeg ((pres k δq).wR_mem (Presentation.parityDeg sig) hf (strands 1))
       (Presentation.eqToHom_mem_homDeg (P := pres k δq) (Presentation.parityDeg sig)
         (congrArg (pres k δq).obj (strands_tensor_one n))))
-  simpa using h
+  simpa using! h
 
 variable {q} in
 /-- A piece of `m`: a Jones–Wenzl projector `f_n` with maps `α : m → n`, `β : n → m` of parity
@@ -225,10 +229,12 @@ def splitPiece {m : ℕ} : DPiece (q := q) m → List (DPiece (q := q) (m + 1))
       by simpa [add_comm] using Presentation.comp_mem_homDeg (uDec_mem_parity N) (wR1_mem_homDeg q hβ),
       by rw [Category.assoc, vDec_comp_jw hq], by rw [← Category.assoc, jw_comp_uDec hq]⟩]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The pieces of `m`. -/
 def pieces : (m : ℕ) → List (DPiece (q := q) m)
-  | 0 => [⟨0, 0, 𝟙 _, 𝟙 _, by simpa using jw_mem_parity q 0 0, by simpa using jw_mem_parity q 0 0,
-      by rw [jw_zero, Category.comp_id], by rw [jw_zero, Category.id_comp]⟩]
+  | 0 => [⟨0, 0, 𝟙 _, 𝟙 _, by simpa using! jw_mem_parity q 0 0,
+      by simpa using! jw_mem_parity q 0 0, by rw [jw_zero, Category.comp_id],
+      by rw [jw_zero, Category.id_comp]⟩]
   | m + 1 => (pieces m).flatMap (splitPiece q hq)
 
 omit hq in
@@ -253,6 +259,7 @@ theorem splitPiece_sum {m : ℕ} (p : DPiece (q := q) m) :
       rw [← Category.assoc (jw q (N + 2)) (jw q (N + 2)), jw_idem hq]
     rw [e, ← wR1_jw_eq, ← wR1_comp, ← wR1_comp, ← Category.assoc, hαj]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The pieces of `m` resolve the identity**: `Σ α ≫ β = 1_m`. -/
 theorem pieces_sum (m : ℕ) : ((pieces q hq m).map fun p => p.α ≫ p.β).sum = 𝟙 (X k δq m) := by
   induction m with
@@ -331,23 +338,27 @@ theorem parity_shift {a b : ZMod 2} {m n : ℕ} {f : X k δq m ⟶ X k δq n}
     f ∈ (pres k δq).homDeg (Presentation.parityDeg sig) (strands m) (strands n) (a + (a + b)) := by
   rwa [← add_assoc, ZModModule.add_self, zero_add]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The piece of `SKar` given by a piece of `m`. -/
 def skarPiece (a : ZMod 2) {m : ℕ} (p : DPiece (q := q) m) :
     Piece ((SKar.of k (STL k δq)).obj (genD q a m)) where
   obj := jwObj q hq p.n (a + p.b)
   a := ⟨(Mat_.embedding (DD q)).map (homD p.α (parity_shift q p.hα)), by
+    symm
     show _ = 𝟙 _ ≫ _ ≫ _
     dsimp only [jwObj]
     rw [Category.id_comp, ← Functor.map_comp]
     congr 1
     exact Underlying.hom_ext p.hαj.symm⟩
   b := ⟨(Mat_.embedding (DD q)).map (homD p.β (by simpa [add_comm] using parity_shift q p.hβ)), by
+    symm
     show _ = _ ≫ _ ≫ 𝟙 _
     dsimp only [jwObj]
     rw [Category.comp_id, ← Functor.map_comp]
     congr 1
     exact Underlying.hom_ext p.hjβ.symm⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem isRetractJw_gen (a : ZMod 2) (m : ℕ) :
     IsRetractJw q hq ((SKar.of k (STL k δq)).obj (genD q a m)) := by
   set l := (pieces q hq m).map (skarPiece q hq a)
@@ -367,7 +378,7 @@ theorem isRetractJw_gen (a : ZMod 2) (m : ℕ) :
     rw [this, pieces_sum]
     show 𝟙 (X k δq m) = Envelope.toHom ((𝟙 ((Mat_.embedding (DD q)).obj (genD q a m))) PUnit.unit
       PUnit.unit).1
-    simp [Mat_.id_apply]
+    simp
     rfl
 
 theorem isRetractJw_of (x : DD q) : IsRetractJw q hq ((SKar.of k (STL k δq)).obj x) := by
@@ -380,6 +391,7 @@ theorem isRetractJw_of (x : DD q) : IsRetractJw q hq ((SKar.of k (STL k δq)).ob
   rw [hx]
   exact isRetractJw_gen q hq a _
 
+set_option backward.isDefEq.respectTransparency false in
 theorem isRetractJw (Z : SKar k (STL k δq)) : IsRetractJw q hq Z := by
   -- `Z` is a retract of `Z.X`, which is a direct sum of objects `Πᵃ m`
   refine IsRetractJw.of_retract q hq ?_ (Karoubi.decompId_i Z) (Karoubi.decompId_p Z)
@@ -401,7 +413,7 @@ theorem isRetractJw (Z : SKar k (STL k δq)) : IsRetractJw q hq Z := by
     rw [this, Finset.sum_map_toList (f := fun i => (toKaroubi (Mat_ (DD q))).map
       (e.hom ≫ biproduct.π F i ≫ biproduct.ι F i ≫ e.inv))]
     rw [← Functor.map_sum]
-    simp only [← Preadditive.comp_sum, ← Preadditive.sum_comp, ← Category.assoc]
+    simp only [← Preadditive.sum_comp, ← Category.assoc]
     have ht : ∑ j, (e.hom ≫ biproduct.π F j) ≫ biproduct.ι F j = e.hom := by
       simp only [Category.assoc, ← Preadditive.comp_sum, biproduct.total, Category.comp_id]
     rw [ht, e.hom_inv_id, CategoryTheory.Functor.map_id]

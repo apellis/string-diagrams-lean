@@ -54,12 +54,13 @@ instance : Supercategory R (Triv R) where
     by_cases hp : p = 0
     · by_cases hq : q = 0
       · subst hp hq; simp
-      · simp only [hq, if_false, Submodule.mem_bot] at hg; subst hg; simp
-    · simp only [hp, if_false, Submodule.mem_bot] at hf; subst hf; simp
+      · simp only [hq, ite_false, Submodule.mem_bot] at hg; subst hg; simp
+    · simp only [hp, ite_false, Submodule.mem_bot] at hf; subst hf; simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mem_parity_one {X Y : Triv R} {f : X ⟶ Y} (hf : f ∈ parity (R := R) X Y 1) : f = 0 := by
   have : f ∈ (⊥ : Submodule R (X ⟶ Y)) := by
-    simpa [show ¬((1 : ZMod 2) = 0) by decide] using hf
+    simpa [show ¬((1 : ZMod 2) = 0) by decide] using! hf
   simpa using this
 
 /-- All morphisms have degree zero. -/
@@ -70,7 +71,7 @@ instance : GradedSupercategory R (Triv R) where
     refine ⟨fun n => ?_, ?_⟩
     · by_cases hn : n = 0
       · subst hn
-        simp only [if_true]
+        simp only [ite_true]
         rw [disjoint_iff, eq_bot_iff]
         intro x hx
         have : x ∈ ⨆ (j : ℤ) (_ : j ≠ 0), (if j = 0 then ⊤ else ⊥ : Submodule R (X ⟶ Y)) :=
@@ -84,14 +85,14 @@ instance : GradedSupercategory R (Triv R) where
   proj_mem_degree {X Y n f} p hf := by
     by_cases hn : n = 0
     · simp [hn]
-    · simp only [hn, if_false, Submodule.mem_bot] at hf ⊢; subst hf; simp
+    · simp only [hn, ite_false, Submodule.mem_bot] at hf ⊢; subst hf; simp
   id_mem_degree _ := by simp
   comp_mem_degree {X Y Z m n f g} hf hg := by
     by_cases hm : m = 0
     · by_cases hn : n = 0
       · subst hm hn; simp
-      · simp only [hn, if_false, Submodule.mem_bot] at hg; subst hg; simp
-    · simp only [hm, if_false, Submodule.mem_bot] at hf; subst hf; simp
+      · simp only [hn, ite_false, Submodule.mem_bot] at hg; subst hg; simp
+    · simp only [hm, ite_false, Submodule.mem_bot] at hf; subst hf; simp
 
 /-- The graded `(Q, Π)`-supercategory `B`: the `(Q, Π)`-envelope of `Triv R`. -/
 abbrev B := QPiEnvelope R (Triv R)
@@ -112,6 +113,7 @@ theorem map_eq_zero_of_par_ne {X Y : A R} (f : X ⟶ Y) (h : X.obj.obj.par ≠ Y
   rw [h1] at hf
   exact mem_parity_one R hf
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The automorphism `α` of `Q`: `(-1)^a` on `Q^m Π^a M`. -/
 def α : QPiCategory.Q (R := R) (C := A R) ≅ QPiCategory.Q (R := R) :=
   NatIso.ofComponents (fun X =>
@@ -146,6 +148,7 @@ theorem two_smul_id_ne_zero (h2 : (2 : R) ≠ 0) (a : ZMod 2) (m : ℤ) :
   change (2 : R) • (1 : R) = 0 at h''
   exact h2 (by simpa using h'')
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The compatibility is not automatic**: if `2 ≠ 0` in `R`, the data `(I, 1, α)` is not
 compatible, so it is not the data of a `(Q, Π)`-functor in the adopted sense
 (`StringDiagrams.QPiFunctor`). -/
