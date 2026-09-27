@@ -65,6 +65,14 @@ theorem lstep_cup_append (u t : List α) (a : α) :
     lstep d (u ++ t) (.cup u.length a) = u ++ a :: d a :: t := by
   simp [lstep, insAt]
 
+theorem lstep_cup_append' (u t : List α) (a : α) {g : ℕ} (hg : u.length = g) :
+    lstep d (u ++ t) (.cup g a) = u ++ a :: d a :: t := by
+  subst hg; exact lstep_cup_append d u t a
+
+theorem lstep_cross_append' (u : List α) (x y : α) (t : List α) {p : ℕ} (hp : u.length = p) :
+    lstep d (u ++ x :: y :: t) (.cross p) = u ++ y :: x :: t := by
+  subst hp; exact swapAt_append_cons_cons u x y t
+
 theorem lstep_cross_append (u : List α) (x y : α) (t : List α) :
     lstep d (u ++ x :: y :: t) (.cross u.length) = u ++ y :: x :: t :=
   swapAt_append_cons_cons u x y t
@@ -151,6 +159,11 @@ def moveLayers (l : List S.Colour) : Move S.Colour → List (Layer S)
     if h : p + 1 < l.length then [⟨r₀, l.take p, G.cross l[p] l[p + 1], l.drop (p + 2)⟩] else []
 
 omit [Subsingleton S.Region] in
+theorem moveLayers_cup' (u t : List S.Colour) (a : S.Colour) {g : ℕ} (hg : u.length = g) :
+    G.moveLayers r₀ (u ++ t) (.cup g a) = [⟨r₀, u, G.cup a, t⟩] := by
+  subst hg; simp [moveLayers]
+
+omit [Subsingleton S.Region] in
 theorem moveLayers_cup (u t : List S.Colour) (a : S.Colour) :
     G.moveLayers r₀ (u ++ t) (.cup u.length a) = [⟨r₀, u, G.cup a, t⟩] := by
   simp [moveLayers]
@@ -165,6 +178,11 @@ theorem moveLayers_cross (u : List S.Colour) (x y : S.Colour) (t : List S.Colour
   · simp [List.getElem_append_right]
   · simp [List.getElem_append_right]
   · rw [show u.length + 2 = u.length + 2 from rfl, List.drop_length_add_append]; rfl
+
+omit [Subsingleton S.Region] in
+theorem moveLayers_cross' (u : List S.Colour) (x y : S.Colour) (t : List S.Colour) {p : ℕ}
+    (hp : u.length = p) : G.moveLayers r₀ (u ++ x :: y :: t) (.cross p) = [⟨r₀, u, G.cross x y, t⟩] := by
+  subst hp; exact G.moveLayers_cross r₀ u x y t
 
 theorem chain_moveLayers (l : List S.Colour) (m : Move S.Colour) :
     Chain ⟨r₀, l⟩ (G.moveLayers r₀ l m) ⟨r₀, lstep d l m⟩ := by
@@ -198,7 +216,7 @@ variable {R : Type w} [CommRing R] (P : Presentation.{w, v} S R)
 
 /-- The interpretation of chord diagrams in the presented category: the boundary word `l` goes
 to `⟨r₀, l⟩`, and a move to its whiskered cup or crossing. -/
-def interp : MoveInterp d P.Presented where
+abbrev interp : MoveInterp d P.Presented where
   obj l := P.obj ⟨r₀, l⟩
   map l m := P.diag ⟨G.moveLayers r₀ l m, G.chain_moveLayers r₀ l m⟩
 
@@ -213,12 +231,27 @@ theorem eval_interp (l : List S.Colour) (D : List (Move S.Colour)) :
 
 /-! ## Retyping classes of diagrams given by their layers -/
 
+/-- The image of a chord diagram, retyped, is the class of any diagram with its layers. -/
+theorem eval_comp_eqToHom_eq {l : List S.Colour} {X Y : List (Move S.Colour)}
+    (e : X.foldl (lstep d) l = Y.foldl (lstep d) l)
+    (f : (⟨r₀, l⟩ : Obj S) ⟶ ⟨r₀, Y.foldl (lstep d) l⟩) (hf : Diagram.layers f = G.layersOf r₀ l X) :
+    (G.interp r₀ P).eval l X ≫ eqToHom (congrArg (G.interp r₀ P).obj e) = P.diag f := by
+  have key : ∀ (t : List S.Colour) (c : Chain ⟨r₀, l⟩ (G.layersOf r₀ l X) ⟨r₀, t⟩)
+      (e : t = Y.foldl (lstep d) l),
+      P.diag ⟨G.layersOf r₀ l X, c⟩ ≫ eqToHom (congrArg (G.interp r₀ P).obj e) =
+        P.diag ⟨G.layersOf r₀ l X, e ▸ c⟩ := by
+    intro t c e; subst e; simp
+  rw [eval_interp, key _ _ e]
+  obtain ⟨ls, hc⟩ := f
+  simp only [Diagram.layers] at hf
+  subst hf
+  rfl
+
 omit [Subsingleton S.Region] in
-theorem diag_mk_comp_eqToHom {a : Obj S} {t t' : List S.Colour} (ls : List (Layer S))
-    (h : Chain a ls ⟨r₀, t⟩) (e : t = t') :
-    P.diag ⟨ls, h⟩ ≫ eqToHom (congrArg (fun t => P.obj ⟨r₀, t⟩) e) =
-      P.diag ⟨ls, e ▸ h⟩ := by
-  subst e; simp
+theorem diag_comp_eqToHom_of_layers_eq {a b b' : Obj S} (f : a ⟶ b) (f' : a ⟶ b') (h : b = b')
+    (hl : Diagram.layers f = Diagram.layers f') :
+    P.diag f ≫ eqToHom (congrArg P.obj h) = P.diag f' := by
+  subst h; simpa using P.diag_eq_of_layers_eq hl
 
 omit [Subsingleton S.Region] in
 theorem diag_mk_congr {a b : Obj S} {ls ls' : List (Layer S)} (h : Chain a ls b) (e : ls = ls') :
@@ -314,6 +347,120 @@ theorem moveLayers_eq_singleton {l : List S.Colour} {m : Move S.Colour} (hm : m.
   | cross p =>
     simp only [Move.Ok] at hm
     exact ⟨_, dite_eq_left hm⟩
+
+variable (P) in
+/-- To show that two chord diagrams have the same image, it suffices to compare classes of
+diagrams with their layers. -/
+theorem near_of_diag_eq (Φ : (G.interp r₀ P).Filtration) {n : ℕ} {l : List S.Colour}
+    {X Y : List (Move S.Colour)}
+    (h : ∀ f₁ f₂ : (⟨r₀, l⟩ : Obj S) ⟶ ⟨r₀, Y.foldl (lstep d) l⟩,
+      Diagram.layers f₁ = G.layersOf r₀ l X → Diagram.layers f₂ = G.layersOf r₀ l Y →
+        P.diag f₁ = P.diag f₂) :
+    Φ.Near n l X Y := by
+  intro e
+  rw [G.eval_comp_eqToHom_eq r₀ P e ⟨G.layersOf r₀ l X, e ▸ G.chain_layersOf r₀ l X⟩ rfl,
+    eval_interp, h _ ⟨G.layersOf r₀ l Y, G.chain_layersOf r₀ l Y⟩ rfl rfl, sub_self]
+  exact zero_mem _
+
+omit [Subsingleton S.Region] in
+theorem layersOf_pair (l : List S.Colour) (m₁ m₂ : Move S.Colour) :
+    G.layersOf r₀ l [m₁, m₂] = G.moveLayers r₀ l m₁ ++ G.moveLayers r₀ (lstep d l m₁) m₂ := by
+  simp [layersOf]
+
+variable (P) in
+/-- Distant crossings commute (the interchange law). -/
+theorem near_xx (Φ : (G.interp r₀ P).Filtration) {n p p' : ℕ} (hp : p + 2 ≤ p')
+    {l : List S.Colour} (hf : Fits l.length ([.cross p, .cross p'] : List (Move S.Colour))) :
+    Φ.Near n l [.cross p, .cross p'] [.cross p', .cross p] := by
+  have hl : p' + 1 < l.length := by simp [Fits, Move.Ok, Move.len] at hf; omega
+  obtain ⟨u, x, y, t, rfl, rfl⟩ := exists_eq_append_cons_cons (show p + 1 < l.length by omega)
+  obtain ⟨m, z, w, v, rfl, hm⟩ :=
+    exists_eq_append_cons_cons (show p' - u.length - 2 + 1 < t.length by simp at hl; omega)
+  apply near_of_diag_eq G r₀ P
+  intro f₁ f₂ h₁ h₂
+  refine P.diag_interchange_of_layers_of_even r₀ u m v (G.cross x y) (G.cross z w)
+    (Or.inl (G.cross_even _ _)) f₁ f₂ ?_ ?_
+  · rw [h₁, layersOf_pair, moveLayers_cross, lstep_cross_append,
+      show u ++ y :: x :: (m ++ z :: w :: v) = (u ++ y :: x :: m) ++ z :: w :: v by simp,
+      moveLayers_cross' _ _ _ _ _ _ (by simp; omega)]
+    simp [G.cross_dom, G.cross_cod]
+  · rw [h₂, layersOf_pair,
+      show u ++ x :: y :: (m ++ z :: w :: v) = (u ++ x :: y :: m) ++ z :: w :: v by simp,
+      moveLayers_cross' _ _ _ _ _ _ (by simp; omega),
+      lstep_cross_append' _ _ _ _ _ (by simp; omega),
+      show (u ++ x :: y :: m) ++ w :: z :: v = u ++ x :: y :: (m ++ w :: z :: v) by simp,
+      moveLayers_cross]
+    simp [G.cross_dom, G.cross_cod]
+
+variable (P) in
+/-- A crossing commutes with a cup to its right (the interchange law). -/
+theorem near_xuL (Φ : (G.interp r₀ P).Filtration) {n p g : ℕ} (a : S.Colour) (hp : p + 2 ≤ g)
+    {l : List S.Colour} (hf : Fits l.length [.cross p, (.cup g a : Move S.Colour)]) :
+    Φ.Near n l [.cross p, .cup g a] [.cup g a, .cross p] := by
+  have hl : p + 1 < l.length ∧ g ≤ l.length := by simp [Fits, Move.Ok, Move.len] at hf; omega
+  obtain ⟨u, x, y, t, rfl, rfl⟩ := exists_eq_append_cons_cons hl.1
+  obtain ⟨m, v, rfl, hm⟩ :=
+    exists_eq_append (show g - u.length - 2 ≤ t.length by have := hl.2; simp at this; omega)
+  apply near_of_diag_eq G r₀ P
+  intro f₁ f₂ h₁ h₂
+  refine P.diag_interchange_of_layers_of_even r₀ u m v (G.cross x y) (G.cup a)
+    (Or.inl (G.cross_even _ _)) f₁ f₂ ?_ ?_
+  · rw [h₁, layersOf_pair, moveLayers_cross, lstep_cross_append,
+      show u ++ y :: x :: (m ++ v) = (u ++ y :: x :: m) ++ v by simp,
+      moveLayers_cup' _ _ _ _ _ (by simp; omega)]
+    simp [G.cross_cod, G.cup_dom]
+  · rw [h₂, layersOf_pair,
+      show u ++ x :: y :: (m ++ v) = (u ++ x :: y :: m) ++ v by simp,
+      moveLayers_cup' _ _ _ _ _ (by simp; omega),
+      lstep_cup_append' _ _ _ _ (by simp; omega),
+      show (u ++ x :: y :: m) ++ a :: d a :: v = u ++ x :: y :: (m ++ a :: d a :: v) by simp,
+      moveLayers_cross]
+    simp [G.cross_dom, G.cup_cod]
+
+variable (P) in
+/-- A crossing commutes with a cup to its left (the interchange law). -/
+theorem near_xuR (Φ : (G.interp r₀ P).Filtration) {n p g : ℕ} (a : S.Colour) (hg : g ≤ p)
+    {l : List S.Colour} (hf : Fits l.length [.cross p, (.cup g a : Move S.Colour)]) :
+    Φ.Near n l [.cross p, .cup g a] [.cup g a, .cross (p + 2)] := by
+  have hl : p + 1 < l.length := by simp [Fits, Move.Ok, Move.len] at hf; omega
+  obtain ⟨w, x, y, v, rfl, rfl⟩ := exists_eq_append_cons_cons hl
+  obtain ⟨u, m, rfl, rfl⟩ := exists_eq_append (show g ≤ w.length by omega)
+  apply near_of_diag_eq G r₀ P
+  intro f₁ f₂ h₁ h₂
+  refine (P.diag_interchange_of_layers_of_even r₀ u m v (G.cup a) (G.cross x y)
+    (Or.inl (G.cup_even _)) f₂ f₁ ?_ ?_).symm
+  · rw [h₂, layersOf_pair,
+      show (u ++ m) ++ x :: y :: v = u ++ (m ++ x :: y :: v) by simp,
+      moveLayers_cup, lstep_cup_append,
+      show u ++ a :: d a :: (m ++ x :: y :: v) = (u ++ a :: d a :: m) ++ x :: y :: v by simp,
+      moveLayers_cross' _ _ _ _ _ _ (by simp; omega)]
+    simp [G.cross_dom, G.cup_cod]
+  · rw [h₁, layersOf_pair, moveLayers_cross' _ _ _ _ _ _ (by simp),
+      lstep_cross_append' _ _ _ _ _ (by simp),
+      show (u ++ m) ++ y :: x :: v = u ++ (m ++ y :: x :: v) by simp, moveLayers_cup]
+    simp [G.cross_cod, G.cup_dom]
+
+variable (P) in
+/-- Two cups commute (the interchange law). -/
+theorem near_uu (Φ : (G.interp r₀ P).Filtration) {n g g' : ℕ} (a b : S.Colour) (hg : g' ≤ g)
+    {l : List S.Colour} (hf : Fits l.length [(.cup g a : Move S.Colour), .cup g' b]) :
+    Φ.Near n l [.cup g a, .cup g' b] [.cup g' b, .cup (g + 2) a] := by
+  have hl : g ≤ l.length := by simp [Fits, Move.Ok, Move.len] at hf; omega
+  obtain ⟨w, v, rfl, rfl⟩ := exists_eq_append hl
+  obtain ⟨u, m, rfl, rfl⟩ := exists_eq_append hg
+  apply near_of_diag_eq G r₀ P
+  intro f₁ f₂ h₁ h₂
+  refine (P.diag_interchange_of_layers_of_even r₀ u m v (G.cup b) (G.cup a)
+    (Or.inl (G.cup_even _)) f₂ f₁ ?_ ?_).symm
+  · rw [h₂, layersOf_pair, show (u ++ m) ++ v = u ++ (m ++ v) by simp, moveLayers_cup,
+      lstep_cup_append,
+      show u ++ b :: d b :: (m ++ v) = (u ++ b :: d b :: m) ++ v by simp,
+      moveLayers_cup' _ _ _ _ _ (by simp; omega)]
+    simp [G.cup_dom, G.cup_cod]
+  · rw [h₁, layersOf_pair, moveLayers_cup' _ _ _ _ _ (by simp),
+      lstep_cup_append' _ _ _ _ (by simp),
+      show (u ++ m) ++ a :: d a :: v = u ++ (m ++ a :: d a :: v) by simp, moveLayers_cup]
+    simp [G.cup_dom, G.cup_cod]
 
 /-- The filtration of the interpretation of chord diagrams induced by a filtration of the
 presented category, when cups have weight `0` and crossings weight `1`. -/
