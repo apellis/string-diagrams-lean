@@ -28,11 +28,11 @@ variable {R : Type w} [CommRing R] {D : Type u} [Category.{v} D] [Preadditive D]
   [MonoidalCategory D] [MonoidalPreadditive D] [MonoidalLinear R D]
 
 theorem tensor_smul' {W X Y Z : D} (f : W ⟶ X) (r : R) (g : Y ⟶ Z) :
-    f ⊗ (r • g) = r • (f ⊗ g) := by
+    f ⊗ₘ (r • g) = r • (f ⊗ₘ g) := by
   rw [tensorHom_def, tensorHom_def, MonoidalLinear.whiskerLeft_smul, Linear.comp_smul]
 
 theorem smul_tensor' {W X Y Z : D} (r : R) (f : W ⟶ X) (g : Y ⟶ Z) :
-    (r • f) ⊗ g = r • (f ⊗ g) := by
+    (r • f) ⊗ₘ g = r • (f ⊗ₘ g) := by
   rw [tensorHom_def, tensorHom_def, MonoidalLinear.smul_whiskerRight, Linear.smul_comp]
 
 instance Mat_.instMonoidalLinear : MonoidalLinear R (Mat_ D) where
@@ -62,6 +62,7 @@ variable {D : Type u} [Category.{v} D] [Preadditive D] [MonoidalCategory D]
 def swapIdx (ι : Type) : PUnit × ι ≃ ι × PUnit :=
   (Equiv.punitProd ι).trans (Equiv.prodPUnit ι).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The half-braiding of `X` extended to the additive envelope. -/
 @[simps]
 def halfBraidingIso {X : D} (b : HalfBraiding X) (M : Mat_ D) :
@@ -79,6 +80,7 @@ def halfBraidingIso {X : D} (b : HalfBraiding X) (M : Mat_ D) :
     exact permMat_eq_id _ (fun _ => rfl) _ fun _ => by
       rw [eqToHom_refl, Category.comp_id]; exact Iso.inv_hom_id _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **A half-braiding extends to the additive envelope.** -/
 def halfBraiding {X : D} (b : HalfBraiding X) : HalfBraiding ((embedding D).obj X) where
   β := halfBraidingIso b
@@ -93,7 +95,7 @@ def halfBraiding {X : D} (b : HalfBraiding X) : HalfBraiding ((embedding D).obj 
       permMat_comp_permMat]
     refine permMat_congr (fun _ => rfl) _ _ fun x => ?_
     rw [eqToHom_refl, Category.comp_id]
-    simp only [id_tensorHom, tensorHom_id, Category.assoc]
+    simp only [id_tensorHom, tensorHom_id]
     exact b.monoidal _ _
   naturality {U U'} f := by
     refine hom_ext_equiv (swapIdx U'.ι) fun m i => ?_
@@ -109,8 +111,8 @@ def halfBraiding {X : D} (b : HalfBraiding X) : HalfBraiding ((embedding D).obj 
     obtain ⟨⟨⟩, m⟩ := m
     obtain ⟨⟨⟩, i⟩ := i
     rw [tensorHom_apply, tensorHom_apply]
-    change (𝟙 ((embedding D).obj X) PUnit.unit PUnit.unit ⊗ f m i) ≫ _ =
-      _ ≫ (f m i ⊗ 𝟙 ((embedding D).obj X) PUnit.unit PUnit.unit)
+    change (𝟙 ((embedding D).obj X) PUnit.unit PUnit.unit ⊗ₘ f m i) ≫ _ =
+      _ ≫ (f m i ⊗ₘ 𝟙 ((embedding D).obj X) PUnit.unit PUnit.unit)
     rw [id_apply_self, id_tensorHom, tensorHom_id]
     exact b.naturality _
 
@@ -129,6 +131,7 @@ variable {R : Type w} [CommRing R] [Linear R D] [MonoidalLinear R D] [MonoidalPi
 
 local notation "𝛑" => MonoidalPiCategory.pi (R := R) (D := D)
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R D) in
 /-- `ξ : π ⊗ π ≅ 1` in the additive envelope. -/
 @[simps]
@@ -146,6 +149,7 @@ def ξIso : (embedding D).obj 𝛑 ⊗ (embedding D).obj 𝛑 ≅ 𝟙_ (Mat_ D)
     exact permMat_eq_id _ (fun _ => rfl) _ fun _ => by
       rw [eqToHom_refl, Category.comp_id]; exact Iso.inv_hom_id _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **A monoidal Π-category structure extends to the additive envelope.** -/
 instance instMonoidalPiCategory : MonoidalPiCategory R (Mat_ D) where
   pi := (embedding D).obj 𝛑
@@ -170,7 +174,7 @@ instance instMonoidalPiCategory : MonoidalPiCategory R (Mat_ D) where
       permMat_comp_permMat, permMat_comp_permMat, permMat_comp_permMat]
     refine permMat_congr (fun _ => rfl) _ _ fun x => ?_
     rw [eqToHom_refl, Category.comp_id]
-    simp only [id_tensorHom, tensorHom_id, Category.assoc]
+    simp only [id_tensorHom, tensorHom_id]
     exact MonoidalPiCategory.ξ_comm _
 
 end Mat_
@@ -196,29 +200,32 @@ theorem whiskerLeft_p_idem (Y : C) (P : Karoubi C) : Y ◁ P.p ≫ Y ◁ P.p = Y
 
 variable {X : C} (b : HalfBraiding X)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The half-braiding extended to the idempotent completion:
 `β_{(Y, p)} = β_Y ∘ (1 ⊗ p) = (p ⊗ 1) ∘ β_Y`. -/
 @[simps]
 def halfBraidingIso (P : Karoubi C) : (toKaroubi C).obj X ⊗ P ≅ P ⊗ (toKaroubi C).obj X where
-  hom := ⟨(b.β P.X).hom ≫ (P.p ⊗ 𝟙 X), by
-    change _ = (𝟙 X ⊗ P.p) ≫ ((b.β P.X).hom ≫ (P.p ⊗ 𝟙 X)) ≫ (P.p ⊗ 𝟙 X)
+  hom := ⟨(b.β P.X).hom ≫ (P.p ⊗ₘ 𝟙 X), by
+    symm
+    change _ = (𝟙 X ⊗ₘ P.p) ≫ ((b.β P.X).hom ≫ (P.p ⊗ₘ 𝟙 X)) ≫ (P.p ⊗ₘ 𝟙 X)
     rw [id_tensorHom, tensorHom_id, Category.assoc, b.naturality_assoc, p_whiskerRight_idem,
       p_whiskerRight_idem]⟩
-  inv := ⟨(b.β P.X).inv ≫ (𝟙 X ⊗ P.p), by
-    change _ = (P.p ⊗ 𝟙 X) ≫ ((b.β P.X).inv ≫ (𝟙 X ⊗ P.p)) ≫ (𝟙 X ⊗ P.p)
-    have h : (P.p ⊗ 𝟙 X) ≫ (b.β P.X).inv = (b.β P.X).inv ≫ (𝟙 X ⊗ P.p) := by
+  inv := ⟨(b.β P.X).inv ≫ (𝟙 X ⊗ₘ P.p), by
+    symm
+    change _ = (P.p ⊗ₘ 𝟙 X) ≫ ((b.β P.X).inv ≫ (𝟙 X ⊗ₘ P.p)) ≫ (𝟙 X ⊗ₘ P.p)
+    have h : (P.p ⊗ₘ 𝟙 X) ≫ (b.β P.X).inv = (b.β P.X).inv ≫ (𝟙 X ⊗ₘ P.p) := by
       rw [Iso.comp_inv_eq, Category.assoc, id_tensorHom, b.naturality, tensorHom_id,
         Iso.inv_hom_id_assoc]
     rw [Category.assoc, reassoc_of% h, id_tensorHom, whiskerLeft_p_idem, whiskerLeft_p_idem]⟩
   hom_inv_id := Idempotents.Karoubi.hom_ext _ _ (by
-    change ((b.β P.X).hom ≫ (P.p ⊗ 𝟙 X)) ≫ (b.β P.X).inv ≫ (𝟙 X ⊗ P.p) = 𝟙 X ⊗ P.p
-    have h : (P.p ⊗ 𝟙 X) ≫ (b.β P.X).inv = (b.β P.X).inv ≫ (𝟙 X ⊗ P.p) := by
+    change ((b.β P.X).hom ≫ (P.p ⊗ₘ 𝟙 X)) ≫ (b.β P.X).inv ≫ (𝟙 X ⊗ₘ P.p) = 𝟙 X ⊗ₘ P.p
+    have h : (P.p ⊗ₘ 𝟙 X) ≫ (b.β P.X).inv = (b.β P.X).inv ≫ (𝟙 X ⊗ₘ P.p) := by
       rw [Iso.comp_inv_eq, Category.assoc, id_tensorHom, b.naturality, tensorHom_id,
         Iso.inv_hom_id_assoc]
     rw [Category.assoc, reassoc_of% h, Iso.hom_inv_id_assoc, id_tensorHom,
       ← MonoidalCategory.whiskerLeft_comp, P.idem])
   inv_hom_id := Idempotents.Karoubi.hom_ext _ _ (by
-    change ((b.β P.X).inv ≫ (𝟙 X ⊗ P.p)) ≫ (b.β P.X).hom ≫ (P.p ⊗ 𝟙 X) = P.p ⊗ 𝟙 X
+    change ((b.β P.X).inv ≫ (𝟙 X ⊗ₘ P.p)) ≫ (b.β P.X).hom ≫ (P.p ⊗ₘ 𝟙 X) = P.p ⊗ₘ 𝟙 X
     rw [Category.assoc, id_tensorHom, b.naturality_assoc, Iso.inv_hom_id_assoc, tensorHom_id,
       ← comp_whiskerRight, P.idem])
 
@@ -226,42 +233,44 @@ def halfBraidingIso (P : Karoubi C) : (toKaroubi C).obj X ⊗ P ≅ P ⊗ (toKar
 def halfBraiding : HalfBraiding ((toKaroubi C).obj X) where
   β := halfBraidingIso b
   monoidal U U' := Idempotents.Karoubi.hom_ext _ _ (by
-    change (b.β (U.X ⊗ U'.X)).hom ≫ ((U.p ⊗ U'.p) ⊗ 𝟙 X) =
-      ((α_ X U.X U'.X).inv ≫ ((𝟙 X ⊗ U.p) ⊗ U'.p)) ≫
-        (((b.β U.X).hom ≫ (U.p ⊗ 𝟙 X)) ⊗ U'.p) ≫
-          ((α_ U.X X U'.X).hom ≫ (U.p ⊗ (𝟙 X ⊗ U'.p))) ≫
-            (U.p ⊗ ((b.β U'.X).hom ≫ (U'.p ⊗ 𝟙 X))) ≫
-              ((α_ U.X U'.X X).inv ≫ ((U.p ⊗ U'.p) ⊗ 𝟙 X))
-    have hn : ∀ (Y : Karoubi C), (𝟙 X ⊗ Y.p) ≫ (b.β Y.X).hom = (b.β Y.X).hom ≫ (Y.p ⊗ 𝟙 X) :=
+    change (b.β (U.X ⊗ U'.X)).hom ≫ ((U.p ⊗ₘ U'.p) ⊗ₘ 𝟙 X) =
+      ((α_ X U.X U'.X).inv ≫ ((𝟙 X ⊗ₘ U.p) ⊗ₘ U'.p)) ≫
+        (((b.β U.X).hom ≫ (U.p ⊗ₘ 𝟙 X)) ⊗ₘ U'.p) ≫
+          ((α_ U.X X U'.X).hom ≫ (U.p ⊗ₘ (𝟙 X ⊗ₘ U'.p))) ≫
+            (U.p ⊗ₘ ((b.β U'.X).hom ≫ (U'.p ⊗ₘ 𝟙 X))) ≫
+              ((α_ U.X U'.X X).inv ≫ ((U.p ⊗ₘ U'.p) ⊗ₘ 𝟙 X))
+    have hn : ∀ (Y : Karoubi C), (𝟙 X ⊗ₘ Y.p) ≫ (b.β Y.X).hom = (b.β Y.X).hom ≫ (Y.p ⊗ₘ 𝟙 X) :=
       fun Y => by rw [id_tensorHom, tensorHom_id, b.naturality]
-    have e2 : ((b.β U.X).hom ≫ (U.p ⊗ 𝟙 X)) ⊗ U'.p =
-        ((b.β U.X).hom ⊗ 𝟙 U'.X) ≫ ((U.p ⊗ 𝟙 X) ⊗ U'.p) := by
-      rw [← tensor_comp, Category.id_comp]
-    have e4 : U.p ⊗ ((b.β U'.X).hom ≫ (U'.p ⊗ 𝟙 X)) =
-        (𝟙 U.X ⊗ (b.β U'.X).hom) ≫ (U.p ⊗ (U'.p ⊗ 𝟙 X)) := by
-      rw [← tensor_comp, Category.id_comp]
-    have c12 : ((𝟙 X ⊗ U.p) ⊗ U'.p) ≫ ((b.β U.X).hom ⊗ 𝟙 U'.X) =
-        ((b.β U.X).hom ⊗ 𝟙 U'.X) ≫ ((U.p ⊗ 𝟙 X) ⊗ U'.p) := by
-      rw [← tensor_comp, ← tensor_comp, hn, Category.id_comp, Category.comp_id]
-    have c23 : ((U.p ⊗ 𝟙 X) ⊗ U'.p) ≫ (α_ U.X X U'.X).hom =
-        (α_ U.X X U'.X).hom ≫ (U.p ⊗ (𝟙 X ⊗ U'.p)) := associator_naturality _ _ _
-    have c34 : (U.p ⊗ (𝟙 X ⊗ U'.p)) ≫ (𝟙 U.X ⊗ (b.β U'.X).hom) =
-        (𝟙 U.X ⊗ (b.β U'.X).hom) ≫ (U.p ⊗ (U'.p ⊗ 𝟙 X)) := by
-      rw [← tensor_comp, ← tensor_comp, hn, Category.id_comp, Category.comp_id]
-    have c45 : (U.p ⊗ (U'.p ⊗ 𝟙 X)) ≫ (α_ U.X U'.X X).inv =
-        (α_ U.X U'.X X).inv ≫ ((U.p ⊗ U'.p) ⊗ 𝟙 X) := associator_inv_naturality _ _ _
-    have idem : ((U.p ⊗ U'.p) ⊗ 𝟙 X) ≫ ((U.p ⊗ U'.p) ⊗ 𝟙 X) = (U.p ⊗ U'.p) ⊗ 𝟙 X := by
-      simp only [← tensor_comp, U.idem, U'.idem, Category.comp_id]
+    have e2 : ((b.β U.X).hom ≫ (U.p ⊗ₘ 𝟙 X)) ⊗ₘ U'.p =
+        ((b.β U.X).hom ⊗ₘ 𝟙 U'.X) ≫ ((U.p ⊗ₘ 𝟙 X) ⊗ₘ U'.p) := by
+      rw [tensorHom_comp_tensorHom, Category.id_comp]
+    have e4 : U.p ⊗ₘ ((b.β U'.X).hom ≫ (U'.p ⊗ₘ 𝟙 X)) =
+        (𝟙 U.X ⊗ₘ (b.β U'.X).hom) ≫ (U.p ⊗ₘ (U'.p ⊗ₘ 𝟙 X)) := by
+      rw [tensorHom_comp_tensorHom, Category.id_comp]
+    have c12 : ((𝟙 X ⊗ₘ U.p) ⊗ₘ U'.p) ≫ ((b.β U.X).hom ⊗ₘ 𝟙 U'.X) =
+        ((b.β U.X).hom ⊗ₘ 𝟙 U'.X) ≫ ((U.p ⊗ₘ 𝟙 X) ⊗ₘ U'.p) := by
+      rw [tensorHom_comp_tensorHom, tensorHom_comp_tensorHom, hn, Category.id_comp,
+        Category.comp_id]
+    have c23 : ((U.p ⊗ₘ 𝟙 X) ⊗ₘ U'.p) ≫ (α_ U.X X U'.X).hom =
+        (α_ U.X X U'.X).hom ≫ (U.p ⊗ₘ (𝟙 X ⊗ₘ U'.p)) := associator_naturality _ _ _
+    have c34 : (U.p ⊗ₘ (𝟙 X ⊗ₘ U'.p)) ≫ (𝟙 U.X ⊗ₘ (b.β U'.X).hom) =
+        (𝟙 U.X ⊗ₘ (b.β U'.X).hom) ≫ (U.p ⊗ₘ (U'.p ⊗ₘ 𝟙 X)) := by
+      rw [tensorHom_comp_tensorHom, tensorHom_comp_tensorHom, hn, Category.id_comp,
+        Category.comp_id]
+    have c45 : (U.p ⊗ₘ (U'.p ⊗ₘ 𝟙 X)) ≫ (α_ U.X U'.X X).inv =
+        (α_ U.X U'.X X).inv ≫ ((U.p ⊗ₘ U'.p) ⊗ₘ 𝟙 X) := associator_inv_naturality _ _ _
+    have idem : ((U.p ⊗ₘ U'.p) ⊗ₘ 𝟙 X) ≫ ((U.p ⊗ₘ U'.p) ⊗ₘ 𝟙 X) = (U.p ⊗ₘ U'.p) ⊗ₘ 𝟙 X := by
+      simp only [tensorHom_comp_tensorHom, U.idem, U'.idem, Category.comp_id]
     rw [e2, e4, sandwich' _ _ _ _ c45 idem,
       sandwich' _ _ _ _ (comm_comp c34 c45) idem,
       sandwich' _ _ _ _ (comm_comp c23 (comm_comp c34 c45)) idem,
       sandwich' _ _ _ _ (comm_comp c12 (comm_comp c23 (comm_comp c34 c45))) idem]
     congr 1
-    simp only [Category.assoc, tensorHom_id, id_tensorHom]
+    simp only [tensorHom_id, id_tensorHom]
     exact b.monoidal _ _)
   naturality {U U'} f := Idempotents.Karoubi.hom_ext _ _ (by
-    change (𝟙 X ⊗ f.f) ≫ (b.β U'.X).hom ≫ (U'.p ⊗ 𝟙 X) =
-      ((b.β U.X).hom ≫ (U.p ⊗ 𝟙 X)) ≫ (f.f ⊗ 𝟙 X)
+    change (𝟙 X ⊗ₘ f.f) ≫ (b.β U'.X).hom ≫ (U'.p ⊗ₘ 𝟙 X) =
+      ((b.β U.X).hom ≫ (U.p ⊗ₘ 𝟙 X)) ≫ (f.f ⊗ₘ 𝟙 X)
     rw [id_tensorHom, tensorHom_id, tensorHom_id, tensorHom_id, b.naturality_assoc,
       Category.assoc, ← comp_whiskerRight, ← comp_whiskerRight, Idempotents.Karoubi.comp_p,
       Idempotents.Karoubi.p_comp])
@@ -276,15 +285,17 @@ variable (R C) in
 @[simps]
 def ξMonoidalIso : (toKaroubi C).obj 𝛑 ⊗ (toKaroubi C).obj 𝛑 ≅ 𝟙_ (Karoubi C) where
   hom := ⟨(MonoidalPiCategory.ξ (R := R)).hom, by
-    change _ = (𝟙 𝛑 ⊗ 𝟙 𝛑) ≫ (MonoidalPiCategory.ξ (R := R)).hom ≫ 𝟙 (𝟙_ C)
-    rw [tensor_id, Category.id_comp, Category.comp_id]⟩
+    symm
+    change _ = (𝟙 𝛑 ⊗ₘ 𝟙 𝛑) ≫ (MonoidalPiCategory.ξ (R := R)).hom ≫ 𝟙 (𝟙_ C)
+    rw [id_tensorHom_id, Category.id_comp, Category.comp_id]⟩
   inv := ⟨(MonoidalPiCategory.ξ (R := R)).inv, by
-    change _ = 𝟙 (𝟙_ C) ≫ (MonoidalPiCategory.ξ (R := R)).inv ≫ (𝟙 𝛑 ⊗ 𝟙 𝛑)
-    rw [tensor_id, Category.id_comp, Category.comp_id]⟩
+    symm
+    change _ = 𝟙 (𝟙_ C) ≫ (MonoidalPiCategory.ξ (R := R)).inv ≫ (𝟙 𝛑 ⊗ₘ 𝟙 𝛑)
+    rw [id_tensorHom_id, Category.id_comp, Category.comp_id]⟩
   hom_inv_id := Idempotents.Karoubi.hom_ext _ _ (by
     change (MonoidalPiCategory.ξ (R := R)).hom ≫ (MonoidalPiCategory.ξ (R := R)).inv =
-      (𝟙 𝛑 ⊗ 𝟙 𝛑 : 𝛑 ⊗ 𝛑 ⟶ 𝛑 ⊗ 𝛑)
-    rw [Iso.hom_inv_id, tensor_id])
+      (𝟙 𝛑 ⊗ₘ 𝟙 𝛑 : 𝛑 ⊗ 𝛑 ⟶ 𝛑 ⊗ 𝛑)
+    rw [Iso.hom_inv_id, id_tensorHom_id])
   inv_hom_id := Idempotents.Karoubi.hom_ext _ _ (Iso.inv_hom_id _)
 
 set_option maxHeartbeats 1000000 in
@@ -293,61 +304,61 @@ instance instMonoidalPiCategory : MonoidalPiCategory R (Karoubi C) where
   pi := (toKaroubi C).obj 𝛑
   β := halfBraiding (MonoidalPiCategory.β (R := R))
   β_pi := Idempotents.Karoubi.hom_ext _ _ (by
-    change ((MonoidalPiCategory.β (R := R)).β 𝛑).hom ≫ (𝟙 𝛑 ⊗ 𝟙 𝛑) = -(𝟙 𝛑 ⊗ 𝟙 𝛑)
-    rw [MonoidalPiCategory.β_pi, tensor_id, Category.comp_id])
+    change ((MonoidalPiCategory.β (R := R)).β 𝛑).hom ≫ (𝟙 𝛑 ⊗ₘ 𝟙 𝛑) = -(𝟙 𝛑 ⊗ₘ 𝟙 𝛑)
+    rw [MonoidalPiCategory.β_pi, id_tensorHom_id, Category.comp_id])
   ξ := ξMonoidalIso (R := R) (C := C)
   ξ_comm P := Idempotents.Karoubi.hom_ext _ _ (by
     let b := MonoidalPiCategory.β (R := R) (D := C)
     let ξ := MonoidalPiCategory.ξ (R := R) (D := C)
-    change (ξ.hom ⊗ P.p) ≫ ((λ_ P.X).hom ≫ P.p) ≫ (P.p ≫ (ρ_ P.X).inv) ≫ (P.p ⊗ ξ.inv) =
-      ((α_ 𝛑 𝛑 P.X).hom ≫ (𝟙 𝛑 ⊗ (𝟙 𝛑 ⊗ P.p))) ≫
-        (𝟙 𝛑 ⊗ ((b.β P.X).hom ≫ (P.p ⊗ 𝟙 𝛑))) ≫
-          ((α_ 𝛑 P.X 𝛑).inv ≫ ((𝟙 𝛑 ⊗ P.p) ⊗ 𝟙 𝛑)) ≫
-            (((b.β P.X).hom ≫ (P.p ⊗ 𝟙 𝛑)) ⊗ 𝟙 𝛑) ≫
-              ((α_ P.X 𝛑 𝛑).hom ≫ (P.p ⊗ (𝟙 𝛑 ⊗ 𝟙 𝛑)))
-    have hn : (𝟙 𝛑 ⊗ P.p) ≫ (b.β P.X).hom = (b.β P.X).hom ≫ (P.p ⊗ 𝟙 𝛑) := by
+    change (ξ.hom ⊗ₘ P.p) ≫ ((λ_ P.X).hom ≫ P.p) ≫ (P.p ≫ (ρ_ P.X).inv) ≫ (P.p ⊗ₘ ξ.inv) =
+      ((α_ 𝛑 𝛑 P.X).hom ≫ (𝟙 𝛑 ⊗ₘ (𝟙 𝛑 ⊗ₘ P.p))) ≫
+        (𝟙 𝛑 ⊗ₘ ((b.β P.X).hom ≫ (P.p ⊗ₘ 𝟙 𝛑))) ≫
+          ((α_ 𝛑 P.X 𝛑).inv ≫ ((𝟙 𝛑 ⊗ₘ P.p) ⊗ₘ 𝟙 𝛑)) ≫
+            (((b.β P.X).hom ≫ (P.p ⊗ₘ 𝟙 𝛑)) ⊗ₘ 𝟙 𝛑) ≫
+              ((α_ P.X 𝛑 𝛑).hom ≫ (P.p ⊗ₘ (𝟙 𝛑 ⊗ₘ 𝟙 𝛑)))
+    have hn : (𝟙 𝛑 ⊗ₘ P.p) ≫ (b.β P.X).hom = (b.β P.X).hom ≫ (P.p ⊗ₘ 𝟙 𝛑) := by
       rw [id_tensorHom, tensorHom_id, b.naturality]
-    have idem : (P.p ⊗ (𝟙 𝛑 ⊗ 𝟙 𝛑)) ≫ (P.p ⊗ (𝟙 𝛑 ⊗ 𝟙 𝛑)) = P.p ⊗ (𝟙 𝛑 ⊗ 𝟙 𝛑) := by
-      simp only [← tensor_comp, P.idem, Category.comp_id]
+    have idem : (P.p ⊗ₘ (𝟙 𝛑 ⊗ₘ 𝟙 𝛑)) ≫ (P.p ⊗ₘ (𝟙 𝛑 ⊗ₘ 𝟙 𝛑)) = P.p ⊗ₘ (𝟙 𝛑 ⊗ₘ 𝟙 𝛑) := by
+      simp only [tensorHom_comp_tensorHom, P.idem, Category.comp_id]
     -- the left-hand side
-    have l1 : ξ.hom ⊗ P.p = (ξ.hom ⊗ 𝟙 P.X) ≫ (𝟙 (𝟙_ C) ⊗ P.p) := by
-      rw [← tensor_comp, Category.id_comp, Category.comp_id]
-    have l3 : P.p ≫ (ρ_ P.X).inv = (ρ_ P.X).inv ≫ (P.p ⊗ 𝟙 (𝟙_ C)) := by
+    have l1 : ξ.hom ⊗ₘ P.p = (ξ.hom ⊗ₘ 𝟙 P.X) ≫ (𝟙 (𝟙_ C) ⊗ₘ P.p) := by
+      rw [tensorHom_comp_tensorHom, Category.id_comp, Category.comp_id]
+    have l3 : P.p ≫ (ρ_ P.X).inv = (ρ_ P.X).inv ≫ (P.p ⊗ₘ 𝟙 (𝟙_ C)) := by
       rw [tensorHom_id, rightUnitor_inv_naturality]
-    have l4 : P.p ⊗ ξ.inv = (𝟙 P.X ⊗ ξ.inv) ≫ (P.p ⊗ (𝟙 𝛑 ⊗ 𝟙 𝛑)) := by
-      rw [← tensor_comp, tensor_id, Category.id_comp, Category.comp_id]
-    have d12 : (𝟙 (𝟙_ C) ⊗ P.p) ≫ (λ_ P.X).hom = (λ_ P.X).hom ≫ P.p := by
+    have l4 : P.p ⊗ₘ ξ.inv = (𝟙 P.X ⊗ₘ ξ.inv) ≫ (P.p ⊗ₘ (𝟙 𝛑 ⊗ₘ 𝟙 𝛑)) := by
+      rw [tensorHom_comp_tensorHom, id_tensorHom_id, Category.id_comp, Category.comp_id]
+    have d12 : (𝟙 (𝟙_ C) ⊗ₘ P.p) ≫ (λ_ P.X).hom = (λ_ P.X).hom ≫ P.p := by
       rw [id_tensorHom, leftUnitor_naturality]
-    have d23 : P.p ≫ (ρ_ P.X).inv = (ρ_ P.X).inv ≫ (P.p ⊗ 𝟙 (𝟙_ C)) := l3
-    have d34 : (P.p ⊗ 𝟙 (𝟙_ C)) ≫ (𝟙 P.X ⊗ ξ.inv) =
-        (𝟙 P.X ⊗ ξ.inv) ≫ (P.p ⊗ (𝟙 𝛑 ⊗ 𝟙 𝛑)) := by
-      rw [← tensor_comp, ← tensor_comp, tensor_id, Category.id_comp, Category.comp_id,
-        Category.id_comp, Category.comp_id]
+    have d23 : P.p ≫ (ρ_ P.X).inv = (ρ_ P.X).inv ≫ (P.p ⊗ₘ 𝟙 (𝟙_ C)) := l3
+    have d34 : (P.p ⊗ₘ 𝟙 (𝟙_ C)) ≫ (𝟙 P.X ⊗ₘ ξ.inv) =
+        (𝟙 P.X ⊗ₘ ξ.inv) ≫ (P.p ⊗ₘ (𝟙 𝛑 ⊗ₘ 𝟙 𝛑)) := by
+      rw [tensorHom_comp_tensorHom, tensorHom_comp_tensorHom, id_tensorHom_id, Category.id_comp,
+        Category.comp_id, Category.id_comp, Category.comp_id]
     rw [l1, l3, l4, sandwich' _ _ _ _ d34 idem, sandwich' _ _ _ _ (comm_comp d23 d34) idem,
       sandwich' _ _ _ _ (comm_comp d12 (comm_comp d23 d34)) idem]
     -- the right-hand side
-    have r2 : 𝟙 𝛑 ⊗ ((b.β P.X).hom ≫ (P.p ⊗ 𝟙 𝛑)) =
-        (𝟙 𝛑 ⊗ (b.β P.X).hom) ≫ (𝟙 𝛑 ⊗ (P.p ⊗ 𝟙 𝛑)) := by
-      rw [← tensor_comp, Category.id_comp]
-    have r4 : ((b.β P.X).hom ≫ (P.p ⊗ 𝟙 𝛑)) ⊗ 𝟙 𝛑 =
-        ((b.β P.X).hom ⊗ 𝟙 𝛑) ≫ ((P.p ⊗ 𝟙 𝛑) ⊗ 𝟙 𝛑) := by
-      rw [← tensor_comp, Category.id_comp]
-    have e12 : (𝟙 𝛑 ⊗ (𝟙 𝛑 ⊗ P.p)) ≫ (𝟙 𝛑 ⊗ (b.β P.X).hom) =
-        (𝟙 𝛑 ⊗ (b.β P.X).hom) ≫ (𝟙 𝛑 ⊗ (P.p ⊗ 𝟙 𝛑)) := by
-      rw [← tensor_comp, ← tensor_comp, hn]
-    have e23 : (𝟙 𝛑 ⊗ (P.p ⊗ 𝟙 𝛑)) ≫ (α_ 𝛑 P.X 𝛑).inv =
-        (α_ 𝛑 P.X 𝛑).inv ≫ ((𝟙 𝛑 ⊗ P.p) ⊗ 𝟙 𝛑) := associator_inv_naturality _ _ _
-    have e34 : ((𝟙 𝛑 ⊗ P.p) ⊗ 𝟙 𝛑) ≫ ((b.β P.X).hom ⊗ 𝟙 𝛑) =
-        ((b.β P.X).hom ⊗ 𝟙 𝛑) ≫ ((P.p ⊗ 𝟙 𝛑) ⊗ 𝟙 𝛑) := by
-      rw [← tensor_comp, ← tensor_comp, hn]
-    have e45 : ((P.p ⊗ 𝟙 𝛑) ⊗ 𝟙 𝛑) ≫ (α_ P.X 𝛑 𝛑).hom =
-        (α_ P.X 𝛑 𝛑).hom ≫ (P.p ⊗ (𝟙 𝛑 ⊗ 𝟙 𝛑)) := associator_naturality _ _ _
+    have r2 : 𝟙 𝛑 ⊗ₘ ((b.β P.X).hom ≫ (P.p ⊗ₘ 𝟙 𝛑)) =
+        (𝟙 𝛑 ⊗ₘ (b.β P.X).hom) ≫ (𝟙 𝛑 ⊗ₘ (P.p ⊗ₘ 𝟙 𝛑)) := by
+      rw [tensorHom_comp_tensorHom, Category.id_comp]
+    have r4 : ((b.β P.X).hom ≫ (P.p ⊗ₘ 𝟙 𝛑)) ⊗ₘ 𝟙 𝛑 =
+        ((b.β P.X).hom ⊗ₘ 𝟙 𝛑) ≫ ((P.p ⊗ₘ 𝟙 𝛑) ⊗ₘ 𝟙 𝛑) := by
+      rw [tensorHom_comp_tensorHom, Category.id_comp]
+    have e12 : (𝟙 𝛑 ⊗ₘ (𝟙 𝛑 ⊗ₘ P.p)) ≫ (𝟙 𝛑 ⊗ₘ (b.β P.X).hom) =
+        (𝟙 𝛑 ⊗ₘ (b.β P.X).hom) ≫ (𝟙 𝛑 ⊗ₘ (P.p ⊗ₘ 𝟙 𝛑)) := by
+      rw [tensorHom_comp_tensorHom, tensorHom_comp_tensorHom, hn]
+    have e23 : (𝟙 𝛑 ⊗ₘ (P.p ⊗ₘ 𝟙 𝛑)) ≫ (α_ 𝛑 P.X 𝛑).inv =
+        (α_ 𝛑 P.X 𝛑).inv ≫ ((𝟙 𝛑 ⊗ₘ P.p) ⊗ₘ 𝟙 𝛑) := associator_inv_naturality _ _ _
+    have e34 : ((𝟙 𝛑 ⊗ₘ P.p) ⊗ₘ 𝟙 𝛑) ≫ ((b.β P.X).hom ⊗ₘ 𝟙 𝛑) =
+        ((b.β P.X).hom ⊗ₘ 𝟙 𝛑) ≫ ((P.p ⊗ₘ 𝟙 𝛑) ⊗ₘ 𝟙 𝛑) := by
+      rw [tensorHom_comp_tensorHom, tensorHom_comp_tensorHom, hn]
+    have e45 : ((P.p ⊗ₘ 𝟙 𝛑) ⊗ₘ 𝟙 𝛑) ≫ (α_ P.X 𝛑 𝛑).hom =
+        (α_ P.X 𝛑 𝛑).hom ≫ (P.p ⊗ₘ (𝟙 𝛑 ⊗ₘ 𝟙 𝛑)) := associator_naturality _ _ _
     rw [r2, r4, sandwich' _ _ _ _ e45 idem, sandwich' _ _ _ _ (comm_comp e34 e45) idem,
       sandwich' _ _ _ _ (comm_comp e23 (comm_comp e34 e45)) idem,
       sandwich' _ _ _ _ (comm_comp e12 (comm_comp e23 (comm_comp e34 e45))) idem]
     congr 1
     have := MonoidalPiCategory.ξ_comm (R := R) P.X
-    simp only [tensorHom_id, id_tensorHom, Category.assoc] at this ⊢
+    simp only [tensorHom_id, id_tensorHom] at this ⊢
     exact this)
 
 end Karoubi
