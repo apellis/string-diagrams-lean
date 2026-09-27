@@ -28,6 +28,7 @@ namespace FreeDots
 def deg : Gen → ℤ
   | .dot => 2
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem degree_dlay {n i : ℕ} (h : i < n) :
     Diagram.degree (S := sig) deg (dlay h) = 2 := by
   simp [dlay, lay, deg]
@@ -45,16 +46,20 @@ theorem x_mem_endDeg (n i : ℕ) : x R n i ∈ (pres R).endDeg deg (strands n) 2
   · exact Presentation.diag_mem_homDeg' (degree_dlay h)
   · exact Submodule.zero_mem _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A product of `k` dots has degree `2 k`. -/
 theorem x_pow_mem_endDeg (n i k : ℕ) :
     x R n i ^ k ∈ (pres R).endDeg deg (strands n) (2 * k) := by
   induction k with
-  | zero => simpa using SetLike.GradedOne.one_mem
+  | zero =>
+    simp only [pow_zero, Nat.cast_zero, mul_zero]
+    exact SetLike.GradedOne.one_mem
   | succ k ih =>
     rw [pow_succ, show (2 : ℤ) * ↑(k + 1) = 2 * k + 2 by push_cast; ring]
     exact SetLike.GradedMul.mul_mem ih (x_mem_endDeg R n i)
 
 /-- The endomorphism algebra of `n` strands is a `ℤ`-graded `R`-algebra. -/
+@[instance_reducible]
 def gradedAlgebra (n : ℕ) : GradedAlgebra ((pres R).endDeg deg (strands n)) :=
   (pres R).gradedAlgebra (pres_isHomogeneous R) (strands n)
 
@@ -75,16 +80,19 @@ def deg (t : ℤ) : Gen → ℤ
   | .cup => t
   | .cap => -t
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem degree_dcup (t : ℤ) {m i : ℕ} (h : i ≤ m) :
     Diagram.degree (S := sig) (deg t) (dcup h) = t := by
   simp [dcup, lay, deg]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem degree_dcap (t : ℤ) {m i : ℕ} (h : i ≤ m) :
     Diagram.degree (S := sig) (deg t) (dcap h) = -t := by
   simp [dcap, lay, deg]
 
 variable {R : Type*} [CommRing R] (δ : R)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The Temperley–Lieb presentation is homogeneous for every grading `deg t`. -/
 theorem pres_isHomogeneous (t : ℤ) : (pres R δ).IsHomogeneous (S := sig) (deg t) := by
   intro r

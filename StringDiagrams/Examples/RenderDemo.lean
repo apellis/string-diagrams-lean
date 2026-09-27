@@ -59,9 +59,9 @@ instance : LawfulDSLNames dotCross where
   regionOfName_regionName _ := rfl
   regionName_valid _ := Or.inl rfl
   colourOfName_colourName _ := rfl
-  colourName_valid _ := rfl
+  colourName_valid _ := show validName "s" = true by decide
   genOfName_genName g _ := by cases g <;> rfl
-  genName_valid g := by cases g <;> rfl
+  genName_valid g := by cases g <;> decide
   soleColour_eq _ _ := rfl
 
 instance : DrawStyle dotCross where
@@ -116,7 +116,9 @@ instance : LawfulDSLNames klr where
   colourOfName_colourName c := by cases c <;> rfl
   colourName_valid c := by cases c <;> decide
   genOfName_genName g rest := by cases g <;> cases rest <;> rfl
-  genName_valid g := by cases g <;> rfl
+  genName_valid
+    | .x _ => show validName "x" = true by decide
+    | .psi _ _ => show validName "psi" = true by decide
   soleColour_eq h := nomatch h
 
 instance : DrawStyle klr where
