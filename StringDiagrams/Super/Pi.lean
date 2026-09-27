@@ -74,9 +74,11 @@ def ofIsoFunctor : C ⥤ C where
   map_id X := by simp
   map_comp f g := by simp [twist_comp]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (ofIsoFunctor (R := R) obj e).Additive where
   map_add := by simp [Preadditive.add_comp, Preadditive.comp_add]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (ofIsoFunctor (R := R) obj e).Linear R where
   map_smul _ _ := by simp
 
@@ -88,8 +90,10 @@ theorem ofIsoFunctor_preservesParity (he : ∀ X, (e X).hom ∈ parity (R := R) 
       Category.assoc] at this
     exact this
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, remark after Definition 1.7.** A Π-supercategory structure is determined
 by objects `obj X` and odd isomorphisms `e X : obj X ≅ X`. -/
+@[instance_reducible]
 def ofIso (he : ∀ X, (e X).hom ∈ parity (R := R) (obj X) X 1) : PiSupercategory R C where
   pi := ofIsoFunctor (R := R) obj e
   pi_isSuperfunctor := ofIsoFunctor_preservesParity obj e he
