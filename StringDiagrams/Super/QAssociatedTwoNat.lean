@@ -126,6 +126,7 @@ noncomputable def natHomQ (a b : Associated2 R B) :
   app f := (PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).x f
   naturality _ _ θ := (PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).naturality θ
 
+set_option backward.isDefEq.respectTransparency false in
 theorem natHomQ_compat (a b : Associated2 R B) (f : a ⟶ b) :
     ((hF.homShiftFunctor R a b).comp (postShift R _
         ((PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).X b))).γ.hom.app f ≫
@@ -136,36 +137,37 @@ theorem natHomQ_compat (a b : Associated2 R B) (f : a ⟶ b) :
   apply Associated2.hom₂_ext
   · simp only [natHomQ, ShiftFunctor.comp_γ_hom_app, preShift_γ_hom_app, postShift_γ_hom_app,
       QPiTwoFunctor.homShiftFunctor_γ_hom_app, QPiTwoFunctor.homShiftFunctor_F, preShift_F,
-      postShift_F, TwoSuperfunctor.mapFunctor_map, TwoSuperfunctor.mapFunctor_obj,
-      TwoSupercategory.postcomp_map, TwoSupercategory.postcomp_obj, TwoSupercategory.precomp_map,
-      TwoSupercategory.precomp_obj, homShift_Q, Iso.symm_hom, PiTwoFunctor.homFunctor_map,
+      postShift_F,
+      TwoSupercategory.postcomp_map, TwoSupercategory.precomp_map,
+      homShift_Q,
       Functor.comp_obj, γR_hom, Associated2.comp₂_fst, Associated2.comp₂_snd,
       Associated2.whiskerLeft_fst, Associated2.whiskerLeft_snd, Associated2.whiskerRight_fst,
       Associated2.whiskerRight_snd, Associated2.associator_hom_fst, Associated2.associator_hom_snd,
       Associated2.associator_inv_fst, Associated2.associator_inv_snd,
       Associated2.centralShift_γ_eq, Associated2.γhat_hom_fst, Associated2.γhat_hom_snd,
       QPiTwoFunctor.γhat_hom_app_fst, QPiTwoFunctor.γhat_hom_app_snd,
-      PiTwoFunctor.mapTwoNat_x, PiTwoFunctor.mapTwoNat_X_obj, PiTwoFunctor.mapTwo_map_obj,
+      PiTwoFunctor.mapTwoNat_x,
       Associated.homMk_fst, Associated.homMk_snd, Limits.zero_comp, Limits.comp_zero,
       PreadditiveBicategory.whiskerLeft_zero, PreadditiveBicategory.zero_whiskerRight, sub_zero,
-      add_zero, zero_add, Functor.map_zero, Category.assoc]
+      add_zero, Category.assoc]
     exact natHom_γ hη f.obj
   · simp only [natHomQ, ShiftFunctor.comp_γ_hom_app, preShift_γ_hom_app, postShift_γ_hom_app,
       QPiTwoFunctor.homShiftFunctor_γ_hom_app, QPiTwoFunctor.homShiftFunctor_F, preShift_F,
-      postShift_F, TwoSuperfunctor.mapFunctor_map, TwoSuperfunctor.mapFunctor_obj,
-      TwoSupercategory.postcomp_map, TwoSupercategory.postcomp_obj, TwoSupercategory.precomp_map,
-      TwoSupercategory.precomp_obj, homShift_Q, Iso.symm_hom, PiTwoFunctor.homFunctor_map,
+      postShift_F,
+      TwoSupercategory.postcomp_map, TwoSupercategory.precomp_map,
+      homShift_Q,
       Functor.comp_obj, γR_hom, Associated2.comp₂_fst, Associated2.comp₂_snd,
       Associated2.whiskerLeft_fst, Associated2.whiskerLeft_snd, Associated2.whiskerRight_fst,
       Associated2.whiskerRight_snd, Associated2.associator_hom_fst, Associated2.associator_hom_snd,
       Associated2.associator_inv_fst, Associated2.associator_inv_snd,
       Associated2.centralShift_γ_eq, Associated2.γhat_hom_fst, Associated2.γhat_hom_snd,
       QPiTwoFunctor.γhat_hom_app_fst, QPiTwoFunctor.γhat_hom_app_snd,
-      PiTwoFunctor.mapTwoNat_x, PiTwoFunctor.mapTwoNat_X_obj, PiTwoFunctor.mapTwo_map_obj,
+      PiTwoFunctor.mapTwoNat_x,
       Associated.homMk_fst, Associated.homMk_snd, Limits.zero_comp, Limits.comp_zero,
       PreadditiveBicategory.whiskerLeft_zero, PreadditiveBicategory.zero_whiskerRight, sub_zero,
-      add_zero, zero_add, Functor.map_zero, Category.assoc]
+      add_zero, Category.assoc]
 
+set_option backward.isDefEq.respectTransparency false in
 set_option maxHeartbeats 1000000 in
 /-- **`𝔻` on 2-morphisms** (the §6 analogue of (5.6)): a `(Q, Π)`-2-natural transformation
 `(Y, y) : ℝ ⇒ 𝕊` gives the 2-natural transformation `(Ŷ, ŷ) : ℝ̂ ⇒ 𝕊̂` of the associated graded
@@ -183,14 +185,14 @@ noncomputable def mapQNat : TwoNatTrans hF.mapQ hG.mapQ where
     rw [← map_map_comp, ← map_map_comp] at e
     exact e
   x_comp {a b c} f g := by
-    simp only [Functor.mapIso_hom, mapQ_mapComp_hom']
+    simp only [mapQ_mapComp_hom']
     rw [Orbit2.whiskerRight_ι, Orbit2.whiskerLeft_ι, Orbit2.whiskerRight_ι, Orbit2.whiskerLeft_ι,
       Orbit2.associator_hom_def, Orbit2.associator_inv_def, Orbit2.associator_hom_def]
     simp only [← Functor.map_comp]
     exact congrArg (Orbit.ι (homShift R (hF.mapQ.obj a).obj (hG.mapQ.obj c).obj)).map
       ((PiTwoFunctor.mapTwoNat hF.toPiTwoFunctor hG.toPiTwoFunctor hη.1).x_comp f.obj g.obj)
   x_id a := by
-    simp only [Functor.mapIso_hom, mapQ_mapId_hom']
+    simp only [mapQ_mapId_hom']
     rw [Orbit2.whiskerRight_ι, Orbit2.whiskerLeft_ι, Orbit2.rightUnitor_hom_def,
       Orbit2.leftUnitor_inv_def]
     simp only [← Functor.map_comp]
@@ -225,6 +227,7 @@ theorem toOplax_mapQNat_app (a : B) :
         (mapQNat_isGraded hη)).toOplaxTrans).app ((QAssociated2.unit R B).obj a) =
       (QAssociated2.unit R C).map (η.app a) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 omit hη in
 /-- **`𝔻` preserves identity 2-morphisms.** -/
 theorem mapQNat_id (hF : QPiTwoFunctor R F) :
@@ -240,6 +243,7 @@ theorem mapQNat_id (hF : QPiTwoFunctor R F) :
     rfl
   · simp
 
+set_option backward.isDefEq.respectTransparency false in
 omit hη in
 /-- **`𝔻` preserves vertical composition of 2-morphisms.** -/
 theorem mapQNat_vcomp {η : Oplax.OplaxTrans F.toOplax G.toOplax}
@@ -260,7 +264,7 @@ theorem mapQNat_vcomp {η : Oplax.OplaxTrans F.toOplax G.toOplax}
       Associated2.associator_hom_snd, Associated2.associator_inv_fst,
       Associated2.associator_inv_snd, Associated.homMk_fst, Associated.homMk_snd,
       PreadditiveBicategory.zero_whiskerRight, PreadditiveBicategory.whiskerLeft_zero,
-      Limits.zero_comp, Limits.comp_zero, sub_zero, Category.assoc,
+      Limits.zero_comp, Limits.comp_zero, sub_zero,
       Pseudofunctor.toOplax_toPrelaxFunctor]
     rfl
   · simp only [Associated2.comp₂_snd, Associated2.whiskerLeft_fst, Associated2.whiskerLeft_snd,
@@ -268,7 +272,7 @@ theorem mapQNat_vcomp {η : Oplax.OplaxTrans F.toOplax G.toOplax}
       Associated2.associator_hom_snd, Associated2.associator_inv_fst,
       Associated2.associator_inv_snd, Associated.homMk_fst, Associated.homMk_snd,
       PreadditiveBicategory.zero_whiskerRight, PreadditiveBicategory.whiskerLeft_zero,
-      Limits.zero_comp, Limits.comp_zero, add_zero, zero_add, PiTwoCategory.pi_map]
+      Limits.zero_comp, Limits.comp_zero, add_zero, PiTwoCategory.pi_map]
 
 end QPiTwoFunctor
 
@@ -293,6 +297,7 @@ attribute [local instance] QPiTwoSupercategory.centralShift
 local notation "𝐪" => QPiTwoSupercategory.q (R := R)
 local notation "𝛔" => QPiTwoSupercategory.σ (R := R)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A 2-superfunctor between graded `(Q, Π)`-2-supercategories as a morphism of shift data
 `(- q_μ) → (- q_{ℝμ})` on the morphism supercategories, with `γ = c ∘ (ℝX) k`. -/
 noncomputable def homShiftFunctor (a b : A) :
@@ -301,13 +306,14 @@ noncomputable def homShiftFunctor (a b : A) :
   γ := NatIso.ofComponents
     (fun X => whiskerLeftIso (R := R) (G.map X) (G.kIso b) ≪≫ G.mapComp X (𝐪 b))
     (fun {X Y} x => by
-      simp only [Functor.comp_obj, Functor.comp_map, mapFunctor_obj, mapFunctor_map, homShift_Q,
-        postcomp_obj, postcomp_map, Iso.trans_hom, TwoSupercategory.whiskerLeftIso_hom,
+      simp only [Functor.comp_obj, Functor.comp_map, mapFunctor_map, homShift_Q,
+        postcomp_map, Iso.trans_hom, TwoSupercategory.whiskerLeftIso_hom,
         Category.assoc, QPiTwoSupercategory.centralShift_q]
-      rw [whisker_exchange_of_even_right_assoc _ (G.kIso_hom_mem b),
-        G.mapComp_naturality_left])
+      erw [whisker_exchange_of_even_right_assoc _ (G.kIso_hom_mem b)]
+      rw [G.mapComp_naturality_left]
+      rfl)
   γ_mem X := by
-    simpa using comp_mem (whiskerLeft_mem (G.map X) (G.kIso_hom_mem b))
+    simpa using! comp_mem (whiskerLeft_mem (G.map X) (G.kIso_hom_mem b))
       (G.mapComp_hom_mem X (𝐪 b))
 
 theorem homShiftFunctor_γ_hom_app {a b : A} (X : a ⟶ b) :
@@ -358,6 +364,7 @@ theorem TΦ_comp_γ_hom_app {a b : Associated2 R (GUnderlying2 R B)} {S : Type*}
   exact (congrArg (Ψ.γ.hom.app ((TΦ R B a b).F.obj X) ≫ ·) (Ψ.F.map_id _)).trans
     (Category.comp_id _)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two morphisms of shift data underlying `𝕋 ∘ 𝔻(𝔼 ℝ)` and `ℝ ∘ 𝕋` agree. -/
 theorem map_DE_comp_TΦ (a b : Associated2 R (GUnderlying2 R B)) :
     Orbit.map (((G.toQPiTwoFunctor hG).homShiftFunctor R a b).comp
@@ -374,6 +381,7 @@ theorem map_DE_comp_TΦ (a b : Associated2 R (GUnderlying2 R B)) :
       Limits.zero_comp, add_zero]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 set_option maxHeartbeats 1000000 in
 /-- **Naturality of `𝕋` in 1-morphisms** (the §6 analogue of Lemma 5.4 / Theorem 5.5): for a
 graded 2-superfunctor `ℝ : 𝔅 → 𝔅'` between graded `(Q, Π)`-2-supercategories,
@@ -394,6 +402,7 @@ theorem T_map₂_mapQ {a b : QAssociated2 R (GUnderlying2 R B)} {f g : a ⟶ b} 
   rw [key]
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Naturality of `𝕋` in 1-morphisms**, on the coherence maps `c`: both composites have the
 coherence maps `c` of `ℝ`. -/
 theorem T_map₂_mapQ_mapComp {a b c : QAssociated2 R (GUnderlying2 R B)} (f : a ⟶ b)
@@ -403,12 +412,14 @@ theorem T_map₂_mapQ_mapComp {a b c : QAssociated2 R (GUnderlying2 R B)} (f : a
   rw [T_map₂, QPiTwoFunctor.mapQ_mapComp_hom', Thom_ι_map, TF_map]
   simp [Associated2.T_map₂]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Naturality of `𝕋` in 1-morphisms**, on the coherence maps `i`. -/
 theorem T_map₂_mapQ_mapId (a : QAssociated2 R (GUnderlying2 R B)) :
     (T R B').map₂ ((G.toQPiTwoFunctor hG).mapQ.mapId a).hom = (G.mapId a.obj.obj.obj.as).hom := by
   rw [T_map₂, QPiTwoFunctor.mapQ_mapId_hom', Thom_ι_map, TF_map]
   simp [Associated2.T_map₂]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Naturality of `𝕋` in 2-morphisms** (the §6 analogue of Theorem 5.5): for a graded 2-natural
 transformation `(X, x) : ℝ ⇒ ℝ'` between graded 2-superfunctors of graded
 `(Q, Π)`-2-supercategories, `𝕋_{𝔅'}(𝔻 𝔼 (X, x)) = (X, x) 𝕋_𝔅`: the components `X_λ` agree (by
