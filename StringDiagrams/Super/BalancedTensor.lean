@@ -134,7 +134,7 @@ variable {V}
 
 instance : SetLike (SubBimodule V) V.toSVec where
   coe U := U.toSubmodule
-  coe_injective' U U' h := by
+  coe_injective U U' h := by
     cases U; cases U'
     congr
     exact SVec.GradedSubmodule.toSubmodule_injective (SetLike.coe_injective h)
@@ -148,6 +148,7 @@ end SubBimodule
 
 variable (U : SubBimodule V)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The quotient of a superbimodule by a graded sub-bimodule. -/
 def quotient : SuperBimodule 𝒜 ℬ where
   toSVec := SVec.quot V.toSVec U.toGradedSubmodule
@@ -275,7 +276,7 @@ def tensorK : SuperBimodule 𝒜 𝒞 where
   lact_ract a c := TensorProduct.ext' fun _ _ => rfl
   lact_mem p a ha := SVec.whiskerRight_mem (M.lact_mem p a ha) N.toSVec
   ract_mem p c hc := by
-    simpa using SVec.map_mem (SVec.instSupercategory.id_mem M.toSVec) (N.ract_mem p c hc)
+    simpa using! SVec.map_mem (SVec.instSupercategory.id_mem M.toSVec) (N.ract_mem p c hc)
 
 theorem tensorK_lact_tmul (a : A) (m : M.toSVec) (n : N.toSVec) :
     (tensorK M N).lact a (m ⊗ₜ n) = M.lact a m ⊗ₜ n := rfl
@@ -351,6 +352,7 @@ theorem balance_mem (m : M.toSVec) (b : B) (n : N.toSVec) : balance M N m b n �
   exact balance_mem_balanceRel_of_mem M N (SVec.proj_mem_part _ _ _) (algProj_mem ℬ _ _)
     (SVec.proj_mem_part _ _ _)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem balanceRel_lact (a : A) : ∀ x ∈ balanceRel M N, (tensorK M N).lact a x ∈ balanceRel M N := by
   intro x hx
   refine balanceRel_le M N (S := (balanceRel M N).comap (SVec.toLinearMap ((tensorK M N).lact a)))
@@ -362,6 +364,7 @@ theorem balanceRel_lact (a : A) : ∀ x ∈ balanceRel M N, (tensorK M N).lact a
   rw [this]
   exact balance_mem M N _ b n
 
+set_option backward.isDefEq.respectTransparency false in
 theorem balanceRel_ract (c : C) : ∀ x ∈ balanceRel M N, (tensorK M N).ract c x ∈ balanceRel M N := by
   intro x hx
   refine balanceRel_le M N (S := (balanceRel M N).comap (SVec.toLinearMap ((tensorK M N).ract c)))
@@ -496,13 +499,13 @@ theorem proj_tensorMk (p : ZMod 2) (x : SVec.tensorObj M.toSVec N.toSVec) :
 
 variable {M N}
 
+set_option linter.unusedVariables false in
 /-- Induction on `M ⊗_B N`: every element is a sum of classes `m ⊗ n`. -/
 theorem tensor_induction_on {P : (tensor M N).toSVec → Prop} (x : (tensor M N).toSVec) (zero : P 0)
     (btmul : ∀ m n, P (btmul M N m n)) (add : ∀ x y, P x → P y → P (x + y)) : P x := by
   induction x using SVec.quot_induction_on with
   | h v =>
-    induction v using TensorProduct.induction_on with
-    | zero => exact zero
+    induction v using TensorProduct.inductionOn with
     | tmul m n => exact btmul m n
     | add x y hx hy => exact add _ _ hx hy
 
@@ -525,7 +528,7 @@ variable (M N) in
 theorem tensor_hom_ext {W : SVec k} {f g : (tensor M N).toSVec ⟶ W}
     (h : ∀ m n, f (btmul M N m n) = g (btmul M N m n)) : f = g :=
   SVec.hom_ext fun x => tensor_induction_on (P := fun x => f x = g x) x (by simp) h
-    (fun x y hx hy => by dsimp only at hx hy ⊢; rw [map_add, map_add, hx, hy])
+    (fun x y hx hy => by rw [map_add, map_add, hx, hy])
 
 variable (M N) in
 /-- Linear maps out of `M ⊗_B N` are determined by their values on the classes `m ⊗ n` with `m`,
@@ -534,7 +537,7 @@ theorem tensor_hom_ext_homogeneous {W : SVec k} {f g : (tensor M N).toSVec ⟶ W
     (h : ∀ (p q : ZMod 2) (m : M.toSVec) (n : N.toSVec), m ∈ M.toSVec.part p →
       n ∈ N.toSVec.part q → f (btmul M N m n) = g (btmul M N m n)) : f = g :=
   SVec.hom_ext fun x => tensor_induction_on_homogeneous (P := fun x => f x = g x) x (by simp) h
-    (fun x y hx hy => by dsimp only at hx hy ⊢; rw [map_add, map_add, hx, hy])
+    (fun x y hx hy => by rw [map_add, map_add, hx, hy])
 
 variable (M N) in
 /-- A linear map out of `M ⊗_B N` whose values on homogeneous classes `m ⊗ n` have parity
@@ -549,8 +552,8 @@ theorem tensor_mem_parity_of_btmul {W : SVec k} {f : (tensor M N).toSVec ⟶ W} 
   rw [SVec.proj_apply_of_mem_part _ (btmul_mem_part M N hm hn),
     SVec.proj_apply_of_mem_part _ (h p r m n hm hn)]
   by_cases hq : q = p + r
-  · rw [if_pos hq, if_pos (by rw [hq])]
-  · rw [if_neg hq, if_neg (fun e => hq (add_right_cancel e)), map_zero]
+  · rw [ite_eq_left hq, ite_eq_left (by rw [hq])]
+  · rw [ite_eq_right hq, ite_eq_right (fun e => hq (add_right_cancel e)), map_zero]
 
 /-! ### The universal property -/
 
@@ -668,6 +671,7 @@ theorem whiskerLeft_mem_balanceRel_of_mem {q : ZMod 2} {g : N.toSVec ⟶ N'.toSV
 
 variable (g : N ⟶ N')
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whiskerLeft_mem_balanceSub :
     ∀ x ∈ balanceSub M N, SVec.whiskerLeft M.toSVec g.1 x ∈ balanceSub M N' := by
   intro x hx
@@ -769,6 +773,7 @@ theorem whiskerRight_mem {M' : SuperBimodule 𝒜 ℬ} {p : ZMod 2} {f : M ⟶ M
   mem_parity_iff.2 (SVec.quotMap_mem (SVec.whiskerRight_mem (mem_parity_iff.1 hf) N.toSVec)
     (whiskerRight_mem_balanceSub f N))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The super interchange law** for the balanced tensor product:
 `(f ⊗ 1) ≫ (1 ⊗ g) = (-1)^{|f||g|} (1 ⊗ g) ≫ (f ⊗ 1)`. -/
 theorem super_interchange {M' : SuperBimodule 𝒜 ℬ} {p q : ZMod 2} {f : M ⟶ M'}
@@ -841,8 +846,8 @@ theorem tensor_mem_parity_of_btmul_left {W : SVec k} {f : (tensor (tensor M N) P
   rw [SVec.proj_apply_of_mem_part _ (btmul_mem_part _ P (btmul_mem_part M N hm hn) hx),
     SVec.proj_apply_of_mem_part _ (h p q r m n x hm hn hx)]
   by_cases ht : t = p + q + r
-  · rw [if_pos ht, if_pos (by rw [ht])]
-  · rw [if_neg ht, if_neg (fun e => ht (add_right_cancel e)), SVec.hom_map_zero]
+  · rw [ite_eq_left ht, ite_eq_left (by rw [ht])]
+  · rw [ite_eq_right ht, ite_eq_right (fun e => ht (add_right_cancel e)), SVec.hom_map_zero]
 
 /-! ### The associator -/
 
@@ -883,7 +888,7 @@ def assocHom : (tensor (tensor M N) P).toSVec ⟶ (tensor M (tensor N P)).toSVec
 
 /-- The trilinear map `(n, p, m) ↦ (m ⊗ n) ⊗ p`. -/
 def assocInvTri : N.toSVec →ₗ[k] P.toSVec →ₗ[k] M.toSVec →ₗ[k] (tensor (tensor M N) P).toSVec :=
-  LinearMap.lflip ∘ₗ (curry (curry (SVec.toLinearMap (tensorMkHom (tensor M N) P) ∘ₗ
+  (LinearMap.lflip (R₀ := k)).toLinearMap ∘ₗ (curry (curry (SVec.toLinearMap (tensorMkHom (tensor M N) P) ∘ₗ
     map (SVec.toLinearMap (tensorMkHom M N)) LinearMap.id))).flip
 
 @[simp] theorem assocInvTri_apply (n : N.toSVec) (p : P.toSVec) (m : M.toSVec) :
@@ -908,7 +913,7 @@ theorem assocInvBi_balanced (m : M.toSVec) (b : B) (y : (tensor N P).toSVec) :
     rw [LinearMap.flip_apply, LinearMap.flip_apply, lact_btmul, assocInvBi, tensorLift_btmul,
       tensorLift_btmul, assocInvTri_apply, assocInvTri_apply, btmul_ract_lact]
   | add y z hy hz =>
-    simp only [LinearMap.flip_apply, SVec.hom_map_add, map_add, LinearMap.add_apply] at hy hz ⊢
+    simp only [LinearMap.flip_apply, map_add] at hy hz ⊢
     rw [hy, hz]
 
 /-- The inverse associator `M ⊗_B (N ⊗_C P) → (M ⊗_B N) ⊗_C P` on underlying superspaces. -/
@@ -1165,6 +1170,7 @@ def leftUnitorInv : M.toSVec ⟶ (tensor (regular 𝒜) M).toSVec :=
     leftUnitorInv M m = btmul (regular 𝒜) M (1 : A) m :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The left unitor on underlying superspaces. -/
 def leftUnitorSVecIso : (tensor (regular 𝒜) M).toSVec ≅ M.toSVec where
   hom := leftUnitorHom M
@@ -1175,12 +1181,14 @@ def leftUnitorSVecIso : (tensor (regular 𝒜) M).toSVec ≅ M.toSVec where
   inv_hom_id := SVec.hom_ext fun m => by
     rw [SVec.comp_apply, leftUnitorInv_apply, leftUnitorHom_btmul, M.lact_one]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem leftUnitorHom_mem :
     leftUnitorHom M ∈ SVec.parityHom (tensor (regular 𝒜) M).toSVec M.toSVec 0 :=
   tensor_mem_parity_of_btmul (regular 𝒜) M fun p q a m ha hm => by
     rw [leftUnitorHom_btmul, add_zero, add_comm]
     exact SVec.apply_mem_part (M.lact_mem p a ((mem_regularSVec_part_iff 𝒜).1 ha)) hm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem isHom_leftUnitorHom : IsHom (tensor (regular 𝒜) M) M (leftUnitorHom M) :=
   isHom_of_even (leftUnitorHom_mem M)
     (fun a => tensor_hom_ext (regular 𝒜) M fun a' m => by
@@ -1191,6 +1199,7 @@ theorem isHom_leftUnitorHom : IsHom (tensor (regular 𝒜) M) M (leftUnitorHom M
       simp only [SVec.comp_apply] at h
       rw [SVec.comp_apply, SVec.comp_apply, ract_btmul, leftUnitorHom_btmul, leftUnitorHom_btmul, h])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem isHom_leftUnitorInv : IsHom M (tensor (regular 𝒜) M) (leftUnitorInv M) :=
   isHom_of_even (inv_mem (leftUnitorSVecIso M) (leftUnitorHom_mem M))
     (fun a => SVec.hom_ext fun m => by
@@ -1228,6 +1237,7 @@ def rightUnitorBi : M.toSVec →ₗ[k] (regular ℬ).toSVec →ₗ[k] M.toSVec :
 
 theorem rightUnitorBi_apply (m : M.toSVec) (b : B) : rightUnitorBi M m b = M.ract b m := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rightUnitorBi_balanced (m : M.toSVec) (b b' : B) :
     rightUnitorBi M (M.ract b m) b' = rightUnitorBi M m ((regular ℬ).lact b b') := by
   rw [rightUnitorBi_apply, rightUnitorBi_apply, regular_lact_apply, M.ract_mul]; rfl
@@ -1250,6 +1260,7 @@ def rightUnitorInv : M.toSVec ⟶ (tensor M (regular ℬ)).toSVec :=
 @[simp] theorem rightUnitorInv_apply (m : M.toSVec) :
     rightUnitorInv M m = btmul M (regular ℬ) m (1 : B) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The right unitor on underlying superspaces. -/
 def rightUnitorSVecIso : (tensor M (regular ℬ)).toSVec ≅ M.toSVec where
   hom := rightUnitorHom M
@@ -1260,12 +1271,14 @@ def rightUnitorSVecIso : (tensor M (regular ℬ)).toSVec ≅ M.toSVec where
   inv_hom_id := SVec.hom_ext fun m => by
     rw [SVec.comp_apply, rightUnitorInv_apply, rightUnitorHom_btmul, M.ract_one]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rightUnitorHom_mem :
     rightUnitorHom M ∈ SVec.parityHom (tensor M (regular ℬ)).toSVec M.toSVec 0 :=
   tensor_mem_parity_of_btmul M (regular ℬ) fun p q m b hm hb => by
     rw [rightUnitorHom_btmul, add_zero]
     exact SVec.apply_mem_part (M.ract_mem q b ((mem_regularSVec_part_iff ℬ).1 hb)) hm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem isHom_rightUnitorHom : IsHom (tensor M (regular ℬ)) M (rightUnitorHom M) :=
   isHom_of_even (rightUnitorHom_mem M)
     (fun a => tensor_hom_ext M (regular ℬ) fun m b => by
@@ -1276,6 +1289,7 @@ theorem isHom_rightUnitorHom : IsHom (tensor M (regular ℬ)) M (rightUnitorHom 
       rw [SVec.comp_apply, SVec.comp_apply, ract_btmul, rightUnitorHom_btmul, rightUnitorHom_btmul,
         regular_ract_apply, M.ract_mul, SVec.comp_apply])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem isHom_rightUnitorInv : IsHom M (tensor M (regular ℬ)) (rightUnitorInv M) :=
   isHom_of_even (inv_mem (rightUnitorSVecIso M) (rightUnitorHom_mem M))
     (fun a => SVec.hom_ext fun m => by
@@ -1313,6 +1327,7 @@ theorem leftUnitor_hom_mem : (leftUnitor M).hom ∈ parity (R := k) (tensor (reg
 
 /-! ### Naturality of the unitors and the triangle identity -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem leftUnitor_naturality {M' : SuperBimodule 𝒜 ℬ} (f : M ⟶ M') :
     whiskerLeft (regular 𝒜) f ≫ (leftUnitor M').hom = (leftUnitor M).hom ≫ f := by
   refine Supercategory.induction_on (R := k) f ?_ (fun q f hf => ?_) (fun f f' hf hf' => ?_)
@@ -1325,6 +1340,7 @@ theorem leftUnitor_naturality {M' : SuperBimodule 𝒜 ℬ} (f : M ⟶ M') :
       SVec.hom_map_smul, leftUnitor_hom_btmul, leftUnitor_hom_btmul, h]
   · rw [whiskerLeft_add, Preadditive.add_comp, hf, hf', Preadditive.comp_add]
 
+set_option backward.isDefEq.respectTransparency false in
 omit [GradedAlgebra 𝒜] in
 theorem rightUnitor_naturality {M' : SuperBimodule 𝒜 ℬ} (f : M ⟶ M') :
     whiskerRight f (regular ℬ) ≫ (rightUnitor M').hom = (rightUnitor M).hom ≫ f :=
@@ -1334,6 +1350,7 @@ theorem rightUnitor_naturality {M' : SuperBimodule 𝒜 ℬ} (f : M ⟶ M') :
     rw [comp_val, comp_val, SVec.comp_apply, SVec.comp_apply, whiskerRight_btmul,
       rightUnitor_hom_btmul, rightUnitor_hom_btmul, h])
 
+set_option backward.isDefEq.respectTransparency false in
 omit [GradedAlgebra 𝒜] in
 /-- **The triangle identity** for balanced tensor products. -/
 theorem triangle [GradedAlgebra 𝒞] (N : SuperBimodule ℬ 𝒞) :
