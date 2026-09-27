@@ -177,6 +177,7 @@ theorem hom_ext {F G : A ⟶ B} {x y : F ⟶ G} (h0 : ∀ X, x.app 0 X = y.app 0
 
 end App
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, Section 2.** Supercategories, superfunctors and supernatural
 transformations form a 2-supercategory `𝔖ℭ𝔞𝔱`. -/
 instance : TwoSupercategory R (SCat.{w, v, u} R) where
