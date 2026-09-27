@@ -39,6 +39,7 @@ namespace Mat_
 
 variable {D : Type u} [Category.{v} D] [Preadditive D]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A natural isomorphism of additive functors extends to their matrix functors. -/
 def mapMatNatIso {D' : Type*} [Category.{v} D'] [Preadditive D'] {F G : D ⥤ D'} [F.Additive]
     [G.Additive] (η : F ≅ G) : F.mapMat_ ≅ G.mapMat_ :=
@@ -46,12 +47,13 @@ def mapMatNatIso {D' : Type*} [Category.{v} D'] [Preadditive D'] {F G : D ⥤ D'
       fun i => η.app (M.X i))
     (fun {M N} f => by
       ext i k
-      simp only [Functor.mapMat__map, diagIso_hom]
+      simp only [diagIso_hom]
       rw [comp_diag_apply, diag_comp_apply]
       exact η.hom.naturality (f i k))
 
 variable [MonoidalCategory D] [MonoidalPreadditive D]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `(X ⊗ Mᵢ)ᵢ ≅ X ⊗ (Mᵢ)ᵢ` in `Mat_ D`. -/
 def mapMatTensorLeftIso (X : D) :
     (tensorLeft X).mapMat_ ≅ tensorLeft ((CategoryTheory.Mat_.embedding D).obj X) :=
@@ -76,10 +78,11 @@ def mapMatTensorLeftIso (X : D) :
         (Y := fun x : PUnit × M.ι => X ⊗ M.X x.2) (Equiv.punitProd M.ι).symm (fun _ => 𝟙 _)
         _ i _).symm
       change (X ◁ f i j) ≫ 𝟙 _ = 𝟙 _ ≫ (𝟙 ((CategoryTheory.Mat_.embedding D).obj X) PUnit.unit
-        PUnit.unit ⊗ f i j)
+        PUnit.unit ⊗ₘ f i j)
       rw [CategoryTheory.Mat_.id_apply_self, id_tensorHom, Category.comp_id, Category.id_comp]
       rfl)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `(Mᵢ ⊗ X)ᵢ ≅ (Mᵢ)ᵢ ⊗ X` in `Mat_ D`. -/
 def mapMatTensorRightIso (X : D) :
     (tensorRight X).mapMat_ ≅ tensorRight ((CategoryTheory.Mat_.embedding D).obj X) :=
@@ -103,7 +106,7 @@ def mapMatTensorRightIso (X : D) :
       refine Eq.trans ?_ (permMat_comp_apply (X := fun i => M.X i ⊗ X)
         (Y := fun x : M.ι × PUnit => M.X x.1 ⊗ X) (Equiv.prodPUnit M.ι).symm (fun _ => 𝟙 _)
         _ i _).symm
-      change (f i j ▷ X) ≫ 𝟙 _ = 𝟙 _ ≫ (f i j ⊗
+      change (f i j ▷ X) ≫ 𝟙 _ = 𝟙 _ ≫ (f i j ⊗ₘ
         𝟙 ((CategoryTheory.Mat_.embedding D).obj X) PUnit.unit PUnit.unit)
       rw [CategoryTheory.Mat_.id_apply_self, tensorHom_id, Category.comp_id, Category.id_comp]
       rfl)
@@ -127,14 +130,14 @@ theorem ζ_comp_ζL_inv_mem (X : C) :
       parity (R := R) _ _ 0 := by
   have := comp_mem (PiSupercategory.ζ_hom_mem (R := R) X)
     (inv_mem _ (MonoidalPiSupercategory.ζL_hom_mem (R := R) X))
-  simpa using this
+  simpa using! this
 
 theorem ζ_comp_ζR_inv_mem (X : C) :
     ((PiSupercategory.ζ (R := R) X).hom ≫ (MonoidalPiSupercategory.ζR (R := R) X).inv) ∈
       parity (R := R) _ _ 0 := by
   have := comp_mem (PiSupercategory.ζ_hom_mem (R := R) X)
     (inv_mem _ (MonoidalPiSupercategory.ζR_hom_mem (R := R) X))
-  simpa using this
+  simpa using! this
 
 variable (R C) in
 /-- In the underlying category of a supercategory with both a Π-supercategory structure and a
