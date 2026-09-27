@@ -126,8 +126,8 @@ def comp {F : C ⥤ D} {G : D ⥤ E} (hF : PiFunctor R F) (hG : PiFunctor R G) :
 def pi : PiFunctor R (pi (R := R) (C := C)) where
   β := NatIso.ofComponents (fun X => { hom := -𝟙 _, inv := -𝟙 _ }) (fun f => by simp)
   comm X := by
-    simp only [Functor.comp_obj, NatIso.ofComponents_hom_app, Functor.map_neg, Functor.map_id,
-      Preadditive.neg_comp, Preadditive.comp_neg, Category.id_comp, neg_neg]
+    simp only [Functor.comp_obj, NatIso.ofComponents_hom_app, Functor.map_neg,
+      Preadditive.neg_comp, Preadditive.comp_neg, neg_neg]
     rw [ξ_pi, ← Functor.map_comp, Iso.hom_inv_id_app]
     simp
 
