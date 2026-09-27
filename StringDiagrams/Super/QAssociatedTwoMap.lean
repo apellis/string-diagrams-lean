@@ -145,6 +145,7 @@ noncomputable def mapCompLeftNat (a : Associated2 R B) {b c : Associated2 R B} (
   app f := (hF.mapTwo.mapComp f h).hom
   naturality _ _ x := hF.mapTwo.mapComp_naturality_left x h
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mapCompLeftNat_compat (a : Associated2 R B) {b c : Associated2 R B} (h : b ⟶ c)
     (f : a ⟶ b) :
     ((hF.homShiftFunctor R a b).comp (postShift R _ (hF.mapTwo.map h))).γ.hom.app f ≫
@@ -154,7 +155,7 @@ theorem mapCompLeftNat_compat (a : Associated2 R B) {b c : Associated2 R B} (h :
   apply hom₂_ext
   · simp only [ShiftFunctor.comp_γ_hom_app, postShift_γ_hom_app, homShiftFunctor_γ_hom_app,
       homShiftFunctor_F, postShift_F, TwoSuperfunctor.mapFunctor_map,
-      TwoSuperfunctor.mapFunctor_obj, TwoSupercategory.postcomp_map, TwoSupercategory.postcomp_obj,
+      TwoSupercategory.postcomp_map,
       homShift_Q, mapCompLeftNat, Iso.symm_hom, PiTwoFunctor.homFunctor_map, Functor.comp_obj,
       γR_hom, comp₂_fst, comp₂_snd, whiskerLeft_fst, whiskerLeft_snd, whiskerRight_fst,
       whiskerRight_snd, associator_hom_fst, associator_hom_snd, associator_inv_fst,
@@ -162,12 +163,12 @@ theorem mapCompLeftNat_compat (a : Associated2 R B) {b c : Associated2 R B} (h :
       γhat_hom_app_fst, γhat_hom_app_snd, PiTwoFunctor.mapTwo_mapComp, Associated.evenIso_hom,
       Associated.homMk_fst, Associated.homMk_snd, PiTwoFunctor.mapTwo_map₂, Associated.map_map,
       Limits.zero_comp, Limits.comp_zero, PreadditiveBicategory.whiskerLeft_zero,
-      PreadditiveBicategory.zero_whiskerRight, sub_zero, add_zero, zero_add, Functor.map_zero,
+      PreadditiveBicategory.zero_whiskerRight, sub_zero, add_zero,
       Category.assoc]
     exact hF.mapCompLeft_γ f.obj h.obj
   · simp only [ShiftFunctor.comp_γ_hom_app, postShift_γ_hom_app, homShiftFunctor_γ_hom_app,
       homShiftFunctor_F, postShift_F, TwoSuperfunctor.mapFunctor_map,
-      TwoSuperfunctor.mapFunctor_obj, TwoSupercategory.postcomp_map, TwoSupercategory.postcomp_obj,
+      TwoSupercategory.postcomp_map,
       homShift_Q, mapCompLeftNat, Iso.symm_hom, PiTwoFunctor.homFunctor_map, Functor.comp_obj,
       γR_hom, comp₂_fst, comp₂_snd, whiskerLeft_fst, whiskerLeft_snd, whiskerRight_fst,
       whiskerRight_snd, associator_hom_fst, associator_hom_snd, associator_inv_fst,
@@ -175,7 +176,7 @@ theorem mapCompLeftNat_compat (a : Associated2 R B) {b c : Associated2 R B} (h :
       γhat_hom_app_fst, γhat_hom_app_snd, PiTwoFunctor.mapTwo_mapComp, Associated.evenIso_hom,
       Associated.homMk_fst, Associated.homMk_snd, PiTwoFunctor.mapTwo_map₂, Associated.map_map,
       Limits.zero_comp, Limits.comp_zero, PreadditiveBicategory.whiskerLeft_zero,
-      PreadditiveBicategory.zero_whiskerRight, add_zero, zero_add, Functor.map_zero]
+      PreadditiveBicategory.zero_whiskerRight, add_zero]
     rw [hF.toPiTwoFunctor.map₂_zero]
     simp
 
@@ -187,6 +188,7 @@ noncomputable def mapCompRightNat (c : Associated2 R B) {a b : Associated2 R B} 
   app g := (hF.mapTwo.mapComp f g).hom
   naturality _ _ x := hF.mapTwo.mapComp_naturality_right f x
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mapCompRightNat_compat (c : Associated2 R B) {a b : Associated2 R B} (f : a ⟶ b)
     (g : b ⟶ c) :
     ((hF.homShiftFunctor R b c).comp (preShift R _ (hF.mapTwo.map f))).γ.hom.app g ≫
@@ -194,36 +196,35 @@ theorem mapCompRightNat_compat (c : Associated2 R B) {a b : Associated2 R B} (f 
       (homShift R _ _).Q.map ((hF.mapCompRightNat c f).app g) ≫
         ((preShift R c f).comp (hF.homShiftFunctor R a c)).γ.hom.app g := by
   apply hom₂_ext
-  · simp only [mapCompRightNat, ShiftFunctor.comp_γ_hom_app, preShift_γ_hom_app, postShift_γ_hom_app,
-      homShiftFunctor_γ_hom_app, homShiftFunctor_F, preShift_F, postShift_F,
-      TwoSuperfunctor.mapFunctor_map, TwoSuperfunctor.mapFunctor_obj,
-      TwoSupercategory.postcomp_map, TwoSupercategory.postcomp_obj, TwoSupercategory.precomp_map,
-      TwoSupercategory.precomp_obj, homShift_Q, Iso.symm_hom, PiTwoFunctor.homFunctor_map,
-      Functor.comp_obj, γR_hom, comp₂_fst, comp₂_snd, whiskerLeft_fst, whiskerLeft_snd,
+  · simp only [mapCompRightNat, ShiftFunctor.comp_γ_hom_app, preShift_γ_hom_app,
+      homShiftFunctor_γ_hom_app, homShiftFunctor_F, preShift_F,
+      TwoSuperfunctor.mapFunctor_map,
+      TwoSupercategory.postcomp_map, TwoSupercategory.precomp_map,
+      homShift_Q, Iso.symm_hom, PiTwoFunctor.homFunctor_map,
+      Functor.comp_obj, comp₂_fst, comp₂_snd, whiskerLeft_fst, whiskerLeft_snd,
       whiskerRight_fst, whiskerRight_snd, associator_hom_fst, associator_hom_snd,
-      associator_inv_fst, associator_inv_snd, centralShift_γ_eq, Associated2.γhat_hom_fst,
-      Associated2.γhat_hom_snd, γhat_hom_app_fst, γhat_hom_app_snd, PiTwoFunctor.mapTwo_mapComp,
+      γhat_hom_app_fst, γhat_hom_app_snd, PiTwoFunctor.mapTwo_mapComp,
       Associated.evenIso_hom, Associated.homMk_fst, Associated.homMk_snd,
       PiTwoFunctor.mapTwo_map₂, Associated.map_map, Limits.zero_comp, Limits.comp_zero,
       PreadditiveBicategory.whiskerLeft_zero, PreadditiveBicategory.zero_whiskerRight, sub_zero,
-      add_zero, zero_add, Functor.map_zero, Category.assoc]
+      add_zero, Category.assoc]
     exact hF.mapCompRight_γ f.obj g.obj
-  · simp only [mapCompRightNat, ShiftFunctor.comp_γ_hom_app, preShift_γ_hom_app, postShift_γ_hom_app,
-      homShiftFunctor_γ_hom_app, homShiftFunctor_F, preShift_F, postShift_F,
-      TwoSuperfunctor.mapFunctor_map, TwoSuperfunctor.mapFunctor_obj,
-      TwoSupercategory.postcomp_map, TwoSupercategory.postcomp_obj, TwoSupercategory.precomp_map,
-      TwoSupercategory.precomp_obj, homShift_Q, Iso.symm_hom, PiTwoFunctor.homFunctor_map,
-      Functor.comp_obj, γR_hom, comp₂_fst, comp₂_snd, whiskerLeft_fst, whiskerLeft_snd,
+  · simp only [mapCompRightNat, ShiftFunctor.comp_γ_hom_app, preShift_γ_hom_app,
+      homShiftFunctor_γ_hom_app, homShiftFunctor_F, preShift_F,
+      TwoSuperfunctor.mapFunctor_map,
+      TwoSupercategory.postcomp_map, TwoSupercategory.precomp_map,
+      homShift_Q, Iso.symm_hom, PiTwoFunctor.homFunctor_map,
+      Functor.comp_obj, comp₂_fst, comp₂_snd, whiskerLeft_fst, whiskerLeft_snd,
       whiskerRight_fst, whiskerRight_snd, associator_hom_fst, associator_hom_snd,
-      associator_inv_fst, associator_inv_snd, centralShift_γ_eq, Associated2.γhat_hom_fst,
-      Associated2.γhat_hom_snd, γhat_hom_app_fst, γhat_hom_app_snd, PiTwoFunctor.mapTwo_mapComp,
+      γhat_hom_app_fst, γhat_hom_app_snd, PiTwoFunctor.mapTwo_mapComp,
       Associated.evenIso_hom, Associated.homMk_fst, Associated.homMk_snd,
       PiTwoFunctor.mapTwo_map₂, Associated.map_map, Limits.zero_comp, Limits.comp_zero,
       PreadditiveBicategory.whiskerLeft_zero, PreadditiveBicategory.zero_whiskerRight, sub_zero,
-      add_zero, zero_add, Functor.map_zero, Category.assoc]
+      add_zero, Category.assoc]
     rw [hF.toPiTwoFunctor.map₂_zero]
     simp
 
+set_option backward.isDefEq.respectTransparency false in
 set_option maxHeartbeats 1000000 in
 open Orbit in
 /-- **`𝔻` on 1-morphisms** (the §6 analogue of (5.5); the paper leaves it to the reader): a
@@ -283,12 +284,15 @@ noncomputable def mapQ : TwoSuperfunctor R (QAssociated2 R B) (QAssociated2 R C)
 theorem mapQ_map₂ {a b : QAssociated2 R B} {f g : a ⟶ b} (x : f ⟶ g) :
     hF.mapQ.map₂ x = (Orbit.map (hF.homShiftFunctor R a.obj b.obj)).map x := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mapQ_mapComp_hom' {a b c : QAssociated2 R B} (f : a ⟶ b) (g : b ⟶ c) :
     (hF.mapQ.mapComp f g).hom = (Orbit.ι _).map (hF.mapTwo.mapComp f.obj g.obj).hom := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mapQ_mapId_hom' (a : QAssociated2 R B) :
     (hF.mapQ.mapId a).hom = (Orbit.ι _).map (hF.mapTwo.mapId a.obj).hom := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 open Orbit in
 /-- **`𝔻 ℝ` is a graded 2-superfunctor** (Definition 6.3). -/
 theorem mapQ_isGraded : hF.mapQ.IsGraded where
@@ -310,6 +314,7 @@ theorem k_eq_γHom_id (a : B) :
 
 open QAssociated2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **`𝔼 ∘ 𝔻 = 𝕀` on 2-morphisms of 1-morphisms**: `ℝ̂(x, 0) = (ℝx, 0)` in degree zero. -/
 theorem mapQ_map₂_hom2 {a b : B} {f g : a ⟶ b} (η : f ⟶ g) :
     hF.mapQ.map₂ (hom2 (R := R) η) = hom2 (F.map₂ η) := by
@@ -328,6 +333,7 @@ theorem mapQ_mapComp_hom {a b c : B} (f : a ⟶ b) (g : b ⟶ c) :
 theorem mapQ_mapId_hom (a : B) :
     (hF.mapQ.mapId (⟨⟨a⟩⟩ : QAssociated2 R B)).hom = hom2 (F.mapId a).inv := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem jIso_mapQ_hom' (a : QAssociated2 R B) :
     (hF.mapQ.jIso a).hom = (Orbit.ι _).map (hF.mapTwo.jIso a.obj).hom := by
   rw [TwoSuperfunctor.jIso_hom, TwoSuperfunctor.jIso_hom, Functor.map_comp, Functor.map_comp,
@@ -341,6 +347,7 @@ theorem jIso_mapQ_hom (a : B) :
   rw [jIso_mapQ_hom', hF.toPiTwoFunctor.jIso_mapTwo_hom]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **`𝔼 ∘ 𝔻 = 𝕀`, the coherence maps `k`**: the `k` of `𝔼(ℝ̂)`, `(ℝ̂σ)⁻¹ ∘ i ∘ σ`, is `k`. -/
 theorem kIso_mapQ_hom (a : B) :
     (hF.mapQ.kIso (⟨⟨a⟩⟩ : QAssociated2 R B)).hom = hom2 (hF.k a).hom := by
@@ -370,8 +377,9 @@ theorem kIso_mapQ_hom (a : B) :
             (hF.mapTwo.obj (⟨a⟩ : Associated2 R B))))).hom :=
     Orbit.σIso_hom_naturality _
   rw [reassoc_of% hn]
-  simp only [homShiftFunctor_F, TwoSuperfunctor.mapFunctor_obj]
-  rw [Iso.hom_inv_id_assoc, ← Functor.map_comp, ← Functor.map_comp, ← Functor.map_comp]
+  simp only [homShiftFunctor_F]
+  erw [Iso.hom_inv_id_assoc]
+  rw [← Functor.map_comp, ← Functor.map_comp, ← Functor.map_comp]
   refine congrArg (Orbit.ι (homShift R (hF.mapTwo.obj (⟨a⟩ : Associated2 R B))
     (hF.mapTwo.obj (⟨a⟩ : Associated2 R B)))).map ?_
   apply Associated2.hom₂_ext
@@ -381,9 +389,8 @@ theorem kIso_mapQ_hom (a : B) :
       homShiftFunctor_γ_hom_app, γhat_hom_app_fst, γhat_hom_app_snd, PiTwoFunctor.mapTwo_mapId,
       Associated.evenIso_hom, Associated.homMk_fst, Associated.homMk_snd, Iso.symm_hom,
       TwoSuperfunctor.mapFunctor_map, PiTwoFunctor.mapTwo_map₂, Associated.map_map,
-      PiTwoFunctor.homFunctor_map, Limits.zero_comp, Limits.comp_zero,
-      PreadditiveBicategory.zero_whiskerRight, sub_zero, add_zero, zero_add, Functor.map_zero,
-      Category.assoc]
+      PiTwoFunctor.homFunctor_map, Limits.zero_comp,
+      PreadditiveBicategory.zero_whiskerRight, sub_zero, add_zero]
     exact hF.k_eq_γHom_id a
   · simp only [comp₂_fst, comp₂_snd, Associated2.leftUnitor_inv_fst,
       Associated2.leftUnitor_inv_snd, Associated2.leftUnitor_hom_fst, Associated2.leftUnitor_hom_snd,
@@ -391,9 +398,8 @@ theorem kIso_mapQ_hom (a : B) :
       homShiftFunctor_γ_hom_app, γhat_hom_app_fst, γhat_hom_app_snd, PiTwoFunctor.mapTwo_mapId,
       Associated.evenIso_hom, Associated.homMk_fst, Associated.homMk_snd, Iso.symm_hom,
       TwoSuperfunctor.mapFunctor_map, PiTwoFunctor.mapTwo_map₂, Associated.map_map,
-      PiTwoFunctor.homFunctor_map, Limits.zero_comp, Limits.comp_zero,
-      PreadditiveBicategory.zero_whiskerRight, sub_zero, add_zero, zero_add, Functor.map_zero,
-      Category.assoc]
+      PiTwoFunctor.homFunctor_map, Limits.zero_comp,
+      PreadditiveBicategory.zero_whiskerRight, sub_zero, add_zero]
     rw [hF.toPiTwoFunctor.map₂_zero]
     simp
 
