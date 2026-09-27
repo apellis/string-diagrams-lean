@@ -75,6 +75,7 @@ abbrev tensorDegK (n : ℤ) :
     Submodule k (SVec.tensorObj M.toSuperBimodule.toSVec N.toSuperBimodule.toSVec) :=
   GradedSuperspace.tensorDeg M.toGradedSuperspace N.toGradedSuperspace n
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The projection of `M ⊗_k N` onto `(M ⊗_k N)ₙ` carries the balancing elements into the
 balancing relations: the balancing relations form a homogeneous submodule. -/
 theorem tensorProj_balance_mem (n : ℤ) (m : M.toSuperBimodule.toSVec) (b : B)
@@ -101,9 +102,9 @@ theorem tensorProj_balance_mem (n : ℤ) (m : M.toSuperBimodule.toSVec) (b : B)
           GradedSuperspace.tensorProj_tmul _ _ n (r + s) t (M.ract_mem b.2 hm) hx,
           GradedSuperspace.tensorProj_tmul _ _ n r (t + s) hm (N.lact_mem b.2 hx)]
         by_cases h : r + s + t = n
-        · rw [if_pos h, if_pos (by omega)]
+        · rw [ite_eq_left h, ite_eq_left (by omega)]
           exact balance_mem _ _ m b x
-        · rw [if_neg h, if_neg (by omega), sub_zero]
+        · rw [ite_eq_right h, ite_eq_right (by omega), sub_zero]
           exact Submodule.zero_mem _
       · rw [balance_add_right, map_add]; exact Submodule.add_mem _ hx hx'
     · dsimp only at hb hb' ⊢
@@ -142,6 +143,7 @@ theorem btmul_mem_tensorDeg {r s : ℤ} {m : M.toSuperBimodule.toSVec} {x : N.to
     btmul M.toSuperBimodule N.toSuperBimodule m x ∈ tensorDeg M N (r + s) :=
   Submodule.mem_map_of_mem (GradedSuperspace.tmul_mem_tensorDeg _ _ hm hx)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `(M ⊗_B N)ₙ` is spanned by the `m ⊗ n` with `m ∈ Mᵣ`, `n ∈ Nₛ`, `r + s = n`. -/
 theorem tensorDeg_le_iff {n : ℤ}
     {S : Submodule k (SuperBimodule.tensor M.toSuperBimodule N.toSuperBimodule).toSVec} :
@@ -150,6 +152,7 @@ theorem tensorDeg_le_iff {n : ℤ}
   rw [tensorDeg, Submodule.map_le_iff_le_comap, GradedSuperspace.tensorDeg_le_iff]
   exact Iff.rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `M ⊗_B N = ⨁ₙ (M ⊗_B N)ₙ`. -/
 theorem isInternal_tensorDeg : DirectSum.IsInternal (tensorDeg M N) := by
   rw [DirectSum.isInternal_submodule_iff_iSupIndep_and_iSup_eq_top]
@@ -171,6 +174,7 @@ theorem isInternal_tensorDeg : DirectSum.IsInternal (tensorDeg M N) := by
       LinearMap.range_eq_top]
     exact tensorMk_surjective _ _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, §6.** The graded balanced tensor product `M ⊗_B N` of graded
 superbimodules: the balanced tensor product with `(M ⊗_B N)ₙ` the image of
 `⨁_{r+s=n} Mᵣ ⊗ Nₛ`. -/
@@ -226,6 +230,7 @@ def tensor : GradedSuperBimodule 𝒢 𝒦 where
 
 variable {M N}
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whiskerRight_mem_degHom {M M' : GradedSuperBimodule 𝒢 ℋ} {n : ℤ}
     {f : M.toSuperBimodule ⟶ M'.toSuperBimodule} (hf : f ∈ degHom M M' n)
     (N : GradedSuperBimodule ℋ 𝒦) :
@@ -240,6 +245,7 @@ theorem whiskerRight_mem_degHom {M M' : GradedSuperBimodule 𝒢 ℋ} {n : ℤ}
   rw [add_right_comm]
   exact btmul_mem_tensorDeg M' N ((mem_degHom_iff _).1 hf r m hm) hy
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whiskerLeft_mem_degHom (M : GradedSuperBimodule 𝒢 ℋ) {N N' : GradedSuperBimodule ℋ 𝒦}
     {n : ℤ} {g : N.toSuperBimodule ⟶ N'.toSuperBimodule} (hg : g ∈ degHom N N' n) :
     SuperBimodule.whiskerLeft M.toSuperBimodule g ∈ degHom (M.tensor N) (M.tensor N') n := by
@@ -254,6 +260,7 @@ theorem whiskerLeft_mem_degHom (M : GradedSuperBimodule 𝒢 ℋ) {N N' : Graded
     (show g.1 ∈ GradedSuperspace.degHom N.toGradedSuperspace N'.toGradedSuperspace n from hg)
     (r + s) _ (GradedSuperspace.tmul_mem_tensorDeg _ _ hm hy))
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whiskerRight_mem_hom {M M' : GradedSuperBimodule 𝒢 ℋ}
     {f : M.toSuperBimodule ⟶ M'.toSuperBimodule} (hf : f ∈ (family 𝒢 ℋ).hom M M')
     (N : GradedSuperBimodule ℋ 𝒦) :
@@ -264,6 +271,7 @@ theorem whiskerRight_mem_hom {M M' : GradedSuperBimodule 𝒢 ℋ}
   · intro f f' hf hf'
     rw [SuperBimodule.add_whiskerRight]; exact Submodule.add_mem _ hf hf'
 
+set_option backward.isDefEq.respectTransparency false in
 theorem whiskerLeft_mem_hom (M : GradedSuperBimodule 𝒢 ℋ) {N N' : GradedSuperBimodule ℋ 𝒦}
     {g : N.toSuperBimodule ⟶ N'.toSuperBimodule} (hg : g ∈ (family ℋ 𝒦).hom N N') :
     SuperBimodule.whiskerLeft M.toSuperBimodule g ∈ (family 𝒢 𝒦).hom (M.tensor N) (M.tensor N') := by
@@ -275,6 +283,7 @@ theorem whiskerLeft_mem_hom (M : GradedSuperBimodule 𝒢 ℋ) {N N' : GradedSup
 
 variable (M N) (P : GradedSuperBimodule 𝒦 𝒟)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem assoc_hom_mem_degHom :
     (SuperBimodule.assoc M.toSuperBimodule N.toSuperBimodule P.toSuperBimodule).hom ∈
       degHom ((M.tensor N).tensor P) (M.tensor (N.tensor P)) 0 := by
@@ -295,6 +304,7 @@ theorem assoc_hom_mem_degHom :
   rw [add_zero, add_assoc]
   exact btmul_mem_tensorDeg M (N.tensor P) hm (btmul_mem_tensorDeg N P hn hp)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem assoc_inv_mem_degHom :
     (SuperBimodule.assoc M.toSuperBimodule N.toSuperBimodule P.toSuperBimodule).inv ∈
       degHom (M.tensor (N.tensor P)) ((M.tensor N).tensor P) 0 := by
@@ -354,6 +364,7 @@ def regular : GradedSuperBimodule 𝒢 𝒢 where
 
 variable (M : GradedSuperBimodule 𝒢 ℋ)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem leftUnitor_hom_mem_degHom :
     (SuperBimodule.leftUnitor M.toSuperBimodule).hom ∈ degHom ((regular 𝒢).tensor M) M 0 := by
   refine (mem_degHom_iff _).2 fun d x hx => ?_
@@ -375,6 +386,7 @@ theorem leftUnitor_inv_mem_degHom :
     have := btmul_mem_tensorDeg (regular 𝒢) M (SetLike.GradedOne.one_mem : (1 : A) ∈ 𝒢.degree 0) hm
     rwa [zero_add] at this
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rightUnitor_hom_mem_degHom :
     (SuperBimodule.rightUnitor M.toSuperBimodule).hom ∈ degHom (M.tensor (regular ℋ)) M 0 := by
   refine (mem_degHom_iff _).2 fun d x hx => ?_

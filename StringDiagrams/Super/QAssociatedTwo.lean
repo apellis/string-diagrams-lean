@@ -56,6 +56,7 @@ def γhat (f : a ⟶ b) : f ≫ (⟨𝐪 b.obj⟩ : b ⟶ b) ≅ (⟨𝐪 a.obj�
 
 @[simp] theorem γhat_hom_snd (f : a ⟶ b) : (γhat (R := R) f).hom.2 = 0 := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Definition 6.14(ii), `γ_{π_λ} = β_{q_λ}⁻¹`, at work.** `γ` is natural with respect to all
 2-morphisms of `𝔄̂`, including the odd ones. -/
 theorem γhat_naturality {f g : a ⟶ b} (η : f ⟶ g) :
@@ -74,6 +75,7 @@ theorem γhat_naturality {f g : a ⟶ b} (η : f ⟶ g) :
     rw [γ_pi, βR_inv]
     simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, after Definition 6.14.** The Π-2-supercategory `𝔄̂` of a
 `(Q, Π)`-2-category `𝔄` carries the central invertible family `(q, q⁻¹, ii, jj, γ)` of `𝔄`, in
 degree zero. -/
@@ -150,16 +152,19 @@ theorem hom2_mem_degree {a b : B} {f g : a ⟶ b} (η : f ⟶ g) :
 theorem hom2_id {a b : B} (f : a ⟶ b) : hom2 (R := R) (𝟙 f) = 𝟙 (hom1 f) :=
   (Orbit.ι _).map_id _
 
+set_option backward.isDefEq.respectTransparency false in
 theorem hom2_comp {a b : B} {f g h : a ⟶ b} (η : f ⟶ g) (θ : g ⟶ h) :
     hom2 (R := R) (η ≫ θ) = hom2 η ≫ hom2 θ := by
   rw [← Functor.map_comp, Associated.homMk_comp_homMk_even]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem hom2_whiskerLeft {a b c : B} (f : a ⟶ b) {g h : b ⟶ c} (η : g ⟶ h) :
     hom2 (R := R) (f ◁ η) = BicategoryStruct.whiskerLeft (hom1 (R := R) f) (hom2 η) := by
   rw [hom2, Orbit2.whiskerLeft_ι]
   congr 1
   apply Associated2.hom₂_ext <;> simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem hom2_whiskerRight {a b c : B} {f g : a ⟶ b} (η : f ⟶ g) (h : b ⟶ c) :
     hom2 (R := R) (η ▷ h) = BicategoryStruct.whiskerRight (hom2 (R := R) η) (hom1 h) := by
   rw [hom2, Orbit2.whiskerRight_ι]
@@ -231,14 +236,14 @@ def unit : Pseudofunctor B (GUnderlying2 R (QAssociated2 R B)) where
       TwoSupercategory.whiskerLeft_id (R := R), Category.id_comp, Category.comp_id]
     exact hom2_associator_hom f g h
   map₂_left_unitor f := by
-    simp only [Iso.refl_hom, Iso.refl_inv, Category.comp_id]
+    simp only [Iso.refl_hom]
     refine Subtype.ext (Subtype.ext ?_)
     change hom2 (λ_ f).hom = 𝟙 _ ≫ BicategoryStruct.whiskerRight (𝟙 (𝟙 _)) (hom1 f) ≫
       (BicategoryStruct.leftUnitor (hom1 f)).hom
     rw [Category.id_comp, TwoSupercategory.id_whiskerRight (R := R), Category.id_comp]
     exact hom2_leftUnitor_hom f
   map₂_right_unitor f := by
-    simp only [Iso.refl_hom, Iso.refl_inv, Category.comp_id]
+    simp only [Iso.refl_hom]
     refine Subtype.ext (Subtype.ext ?_)
     change hom2 (ρ_ f).hom = 𝟙 _ ≫ BicategoryStruct.whiskerLeft (hom1 f) (𝟙 (𝟙 _)) ≫
       (BicategoryStruct.rightUnitor (hom1 f)).hom
