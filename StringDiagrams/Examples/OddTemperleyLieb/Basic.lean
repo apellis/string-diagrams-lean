@@ -226,9 +226,11 @@ def cap (n i : ℕ) : X R δ (n + 2) ⟶ X R δ n :=
 
 variable {R δ}
 
-theorem cup_def {n i : ℕ} (h : i ≤ n) : cup R δ n i = (pres R δ).diag (dcup h) := dite_eq_left h
+theorem cup_def {n i : ℕ} (h : i ≤ n) : cup R δ n i = (pres R δ).diag (dcup h) :=
+  dite_eq_left h
 
-theorem cap_def {n i : ℕ} (h : i ≤ n) : cap R δ n i = (pres R δ).diag (dcap h) := dite_eq_left h
+theorem cap_def {n i : ℕ} (h : i ≤ n) : cap R δ n i = (pres R δ).diag (dcap h) :=
+  dite_eq_left h
 
 theorem cup_of_lt {n i : ℕ} (h : n < i) : cup R δ n i = 0 := dite_eq_right (by omega)
 

@@ -113,7 +113,7 @@ theorem bal_take_ins (i k : ℕ) (a b : Fin 2) {x : List (Fin 2)} (hi : i ≤ x.
         · simp [h1, show k + 1 ≤ i + 1 by omega]
         · by_cases h2 : k = i + 1
           · subst h2; simp; ring
-          · simp only [h1, h2, if_false, show ¬(k + 1 ≤ i + 1) by omega,
+          · simp only [h1, h2, ite_false, show ¬(k + 1 ≤ i + 1) by omega,
               show ¬(k + 1 = i + 1 + 1) by omega]
             obtain ⟨k, rfl⟩ : ∃ k', k = k' + 2 := ⟨k - 2, by omega⟩
             simp only [show k + 2 + 1 - 2 = k + 1 by omega, show k + 2 - 2 = k by omega,
@@ -124,7 +124,8 @@ theorem bal_ins (i : ℕ) (a b : Fin 2) {x : List (Fin 2)} (hi : i ≤ x.length)
     bal (ins i a b x) = bal x + step a + step b := by
   have := bal_take_ins i (x.length + 2) a b hi
   rw [List.take_of_length_le (by simp)] at this
-  rw [this, if_neg (by omega), if_neg (by omega), show x.length + 2 - 2 = x.length by omega,
+  rw [this, ite_eq_right (by omega), ite_eq_right (by omega),
+    show x.length + 2 - 2 = x.length by omega,
     List.take_length]
 
 /-! ## Dyck sequences -/
@@ -132,10 +133,11 @@ theorem bal_ins (i : ℕ) (a b : Fin 2) {x : List (Fin 2)} (hi : i ≤ x.length)
 /-- The Dyck condition: all partial sums are `≥ 0` and the total sum is `0`. -/
 def IsDyck (w : List (Fin 2)) : Prop := (∀ k, 0 ≤ bal (w.take k)) ∧ bal w = 0
 
+set_option backward.isDefEq.respectTransparency false in
 theorem isDyck_iff (w : List (Fin 2)) :
     IsDyck w ↔ (∀ k ∈ Finset.range (w.length + 1), 0 ≤ bal (w.take k)) ∧ bal w = 0 := by
   refine ⟨fun h => ⟨fun k _ => h.1 k, h.2⟩, fun h => ⟨fun k => ?_, h.2⟩⟩
-  rcases le_or_lt k w.length with hk | hk
+  rcases le_or_gt k w.length with hk | hk
   · exact h.1 k (Finset.mem_range.mpr (by omega))
   · rw [List.take_of_length_le hk.le, h.2]
 
@@ -193,8 +195,8 @@ theorem length_eq_bal (w : List (Fin 2)) : (w.length : ℤ) = bal w + 2 * (w.cou
   | nil => simp
   | cons a w ih =>
     obtain rfl | rfl : a = 0 ∨ a = 1 := by fin_cases a <;> simp
-    · simp [List.count_cons, ih]; ring
-    · simp [List.count_cons, ih]; ring
+    · simp [ih]; ring
+    · simp [ih]; ring
 
 theorem IsDyck.length_even {w : List (Fin 2)} (hw : IsDyck w) : Even w.length := by
   have := length_eq_bal w
@@ -235,7 +237,7 @@ theorem decomp_of_head {w : List (Fin 2)} (h0 : w.head? = some 0) (h1 : (1 : Fin
       · have ⟨r, hr⟩ := ih rfl (by simpa using h1)
         refine ⟨r, ?_⟩
         simp only [firstPair]
-        rw [if_neg (by decide), List.replicate_succ, List.cons_append, ← hr]
+        rw [ite_eq_right (by decide), List.replicate_succ, List.cons_append, ← hr]
       · exact ⟨w, by simp [firstPair]⟩
 
 /-- A non-empty Dyck sequence is `+1^{p+1} -1 ⋯` with `p = firstPair w`. -/
@@ -371,7 +373,7 @@ theorem ins_eq_append {p : ℕ} (a b : Fin 2) {w : List (Fin 2)} (hp : p ≤ w.l
 theorem reverse_ins {p : ℕ} (a b : Fin 2) {w : List (Fin 2)} (hp : p ≤ w.length) :
     (ins p a b w).reverse = ins (w.length - p) b a w.reverse := by
   rw [ins_eq_append _ _ hp, ins_eq_append _ _ (by simp)]
-  simp only [List.reverse_append, List.reverse_cons, List.append_assoc, List.singleton_append,
+  simp only [List.reverse_append, List.reverse_cons, List.append_assoc,
     List.cons_append]
   rw [List.reverse_take, List.reverse_drop]
   simp
@@ -434,7 +436,7 @@ theorem fwd_ins (d : ℕ) {k : ℕ} {v : List (Fin 2)} (hk : k ≤ v.length) :
   induction v generalizing d k with
   | nil =>
     obtain rfl : k = 0 := by simpa using hk
-    simp [ins, fwd_cons_zero, fwd_cons_one_succ, fwd]
+    simp [ins, fwd_cons_zero, fwd]
   | cons x v ih =>
     rcases k with _ | k
     · simp [ins, fwd_cons_zero, fwd_cons_one_succ]
@@ -605,7 +607,7 @@ theorem capT_rep_self (p : ℕ) (r : List (Fin 2)) :
   have g1 := getD_rep_add p 1 0 (0 :: 1 :: r)
   simp only [add_zero, List.getD_cons_zero, List.getD_cons_succ] at g0 g1
   refine ⟨?_, by unfold loopT; rw [g0, g1]; simp⟩
-  simp [capT, g0, g1, del_rep]
+  simp [capT, del_rep]
 
 /-- The cap to the right of the first adjacent pair: a zigzag. -/
 theorem capT_rep_succ (p : ℕ) (c : Fin 2) (r : List (Fin 2)) :
@@ -622,7 +624,7 @@ theorem capT_rep_succ (p : ℕ) (c : Fin 2) (r : List (Fin 2)) :
   rw [g0, g1, del_rep]
   obtain rfl | rfl : c = 0 ∨ c = 1 := by fin_cases c <;> simp
   · simp [List.replicate_succ']
-  · rw [if_neg (by decide), if_pos (by decide)]
+  · rw [ite_eq_right (by decide), ite_eq_left (by decide)]
     have ho : opener (List.replicate (p + 1) 0 ++ 1 :: 1 :: r) (p + 1) = p := by
       unfold opener bwdList
       rw [take_rep]
@@ -643,7 +645,7 @@ theorem capT_rep_pred (p : ℕ) (r : List (Fin 2)) :
   refine ⟨?_, by unfold loopT; rw [g0, g1]; simp⟩
   unfold capT
   rw [g0, g1, del_rep]
-  simp only [and_self, if_true]
+  simp only [and_self, ite_true]
   have hc : closer (List.replicate p 0 ++ 0 :: 0 :: 1 :: r) (p + 1) = p + 2 := by
     unfold closer
     rw [show p + 1 + 1 = p + 2 by omega, show List.replicate p (0 : Fin 2) ++ 0 :: 0 :: 1 :: r =

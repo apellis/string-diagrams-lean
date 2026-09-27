@@ -242,7 +242,8 @@ theorem cup_def {n i : ℕ} (h : i ≤ n) : cup R n i = (pres R).diag (dcup h) :
 
 theorem cap_def {n i : ℕ} (h : i ≤ n) : cap R n i = (pres R).diag (dcap h) := dite_eq_left h
 
-theorem cross_def {n i : ℕ} (h : i + 2 ≤ n) : cross R n i = (pres R).diag (dcross h) := dite_eq_left h
+theorem cross_def {n i : ℕ} (h : i + 2 ≤ n) : cross R n i = (pres R).diag (dcross h) :=
+  dite_eq_left h
 
 /-! ## The relations at symbolic positions -/
 
