@@ -1,3 +1,4 @@
+import Mathlib.Tactic.LinearCombination
 import StringDiagrams.Examples.OddTemperleyLieb.Basic
 import StringDiagrams.Examples.TemperleyLieb.Representation
 import StringDiagrams.Examples.OddTemperleyLieb.Dyck
@@ -108,7 +109,7 @@ theorem psign_del_le {p q : ℕ} (w : List (Fin 2)) (h : p ≤ q) :
     | zero => simp
     | succ p => cases w with
       | nil => simp [del]
-      | cons x w => simp only [del, List.take_succ_cons, nOdd_cons]; rw [ih _ (by omega)]
+      | cons x w => simp only [del, List.take_succ_cons]; rw [ih _ (by omega)]
 
 theorem psign_del_ge {p q : ℕ} {w : List (Fin 2)} (h : p + 2 ≤ q) (hq : q ≤ w.length) :
     psign R q w =
@@ -190,6 +191,7 @@ def op (L : Layer sig) : Fn R →ₗ[R] Fn R :=
 
 variable {R q}
 
+set_option backward.isDefEq.respectTransparency false in
 theorem op_agree (L : Layer sig) {F F' : Fn R} (h : Agree L.dom.word.length F F') :
     Agree L.cod.word.length (op R q L F) (op R q L F') := by
   obtain ⟨s, l, g, r⟩ := L
@@ -344,7 +346,7 @@ theorem cap_cup_op {p k : ℕ} (F : Fn R) {w : List (Fin 2)} (h : p + k + 2 ≤ 
     cupOp R q (p + k) (capOp R q p F) w = -capOp R q p (cupOp R q (p + 2 + k) F) w := by
   simp only [cupOp_apply, capOp_apply, del_ins_far _ _ h,
     psign_del_le (R := R) w (show p ≤ p + k by omega)]
-  simp only [show p + 2 + k + 1 = (p + k + 1) + 2 by omega, show p + 2 + k = (p + k) + 2 by omega,
+  simp only [show p + 2 + k = (p + k) + 2 by omega,
     getD_ins_ge _ _ (show p ≤ p + k by omega) (show p ≤ w.length by omega),
     getD_ins_ge _ _ (show p ≤ p + k + 1 by omega) (show p ≤ w.length by omega),
     psign_ins_ge (w := w) _ _ (show p ≤ p + k by omega) (show p ≤ w.length by omega)]
@@ -360,6 +362,7 @@ abbrev delta (q : Rˣ) : R := -((q : R) - ((q⁻¹ : Rˣ) : R))
 
 variable (R q)
 
+set_option backward.isDefEq.respectTransparency false in
 open LocalInterpretation in
 /-- The interpretation respects the relations of `STL(δ)` with `δ = -(q - q⁻¹)` (at every
 position) and every instance of the super interchange law. This is the check of the three
@@ -372,11 +375,11 @@ theorem respects : (pres R (delta q)).Respects (loc R q).functor := by
       add_eq_zero_iff_eq_neg] <;>
     refine LinearMap.ext fun f => funext fun w => ?_ <;>
     have hl := w.2 <;>
-    simp only [loc_κ, Obj.whisker_word, List.length_append, pres, strands, Rel.width,
+    simp only [loc_κ, Obj.whisker_word, List.length_append, strands, Rel.width,
       List.length_replicate, add_zero] at hl <;>
-    simp only [Diagram.layers_comp, Diagram.layers_layer, Diagram.layers_id, dcup, dcap, gl,
+    simp only [Diagram.layers_comp, Diagram.layers_layer, dcup, dcap, gl,
       List.map_cons, List.map_nil, List.cons_append, List.nil_append, opList_cons, opList_nil,
-      LinearMap.id_comp, LinearMap.smul_apply, LinearMap.comp_apply, LinearMap.id_apply,
+      LinearMap.id_comp, LinearMap.smul_apply, LinearMap.comp_apply,
       LinearMap.neg_apply, Pi.neg_apply,
       Pi.smul_apply, loc_res, res_apply, loc_op, loc_ext, Layer.whisker, op_cup, op_cap,
       List.length_append, List.length_replicate, add_zero, smul_eq_mul]
@@ -390,11 +393,11 @@ theorem respects : (pres R (delta q)).Respects (loc R q).functor := by
     rw [LinearMap.smul_apply, Pi.smul_apply, smul_eq_mul, neg_one_mul]
     have hl := w.2
     cases g <;> cases g' <;>
-    simp only [loc_κ, List.length_append, sig_dom_cup, sig_cod_cup, sig_dom_cap, sig_cod_cap,
+    simp only [loc_κ, List.length_append, sig_cod_cup, sig_cod_cap,
       List.length_nil, List.length_cons] at hl <;>
-    simp only [LinearMap.comp_apply, LinearMap.neg_apply, loc_res, res_apply, loc_op, loc_ext,
+    simp only [LinearMap.comp_apply, loc_res, res_apply, loc_op, loc_ext,
       op_cup, op_cap, List.length_append, sig_dom_cup, sig_cod_cup, sig_dom_cap, sig_cod_cap,
-      List.length_nil, List.length_cons, List.nil_append, map_neg, Pi.neg_apply]
+      List.length_nil, List.length_cons, List.nil_append]
     all_goals rw [show l.length + (0 + 1 + 1 + m.length) = l.length + 2 + m.length by omega]
     · exact cup_cup_op _ (by omega)
     · exact cup_cap_op _ (by omega)
@@ -424,6 +427,7 @@ theorem rep_map_apply {a b : Obj sig} (d : a ⟶ b) (f : Word a.word.length → 
   rw [rep_map_diag]
   exact congrFun (LocalInterpretation.functor_map_apply (loc R q) d f) w
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The value of `G` on a cup at position `i`. -/
 theorem rep_cup_apply {n i : ℕ} (h : i ≤ n) (f : Word (strands n).word.length → R)
     (w : Word (strands (n + 2)).word.length) :
@@ -432,6 +436,7 @@ theorem rep_cup_apply {n i : ℕ} (h : i ≤ n) (f : Word (strands n).word.lengt
   rw [cup_def h, rep_map_apply]
   simp [dcup, gl]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The value of `G` on a cap at position `i`. -/
 theorem rep_cap_apply {n i : ℕ} (h : i ≤ n) (f : Word (strands (n + 2)).word.length → R)
     (w : Word (strands n).word.length) :
@@ -443,6 +448,7 @@ theorem rep_cap_apply {n i : ℕ} (h : i ≤ n) (f : Word (strands (n + 2)).word
 /-- The basis vector `v_w = v_{w₁} ⊗ ⋯ ⊗ v_{wₙ}` of `V^{⊗n}`, as a function on words. -/
 def vec {n : ℕ} (w : Word n) : Word n → R := fun t => if t = w then 1 else 0
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma A.1, the cup.** `G(cup) : k → V ⊗ V` sends `1 = v_∅` to the vector with
 coefficients `u(a, b)`, i.e. to `v₋₁ ⊗ v₁ - q v₁ ⊗ v₋₁` (letter `0` is `v₁`, letter `1` is
 `v₋₁`). -/
@@ -464,6 +470,7 @@ theorem rep_cup_vec (w : Word (strands 2).word.length) :
 example : cupCoeff R q 1 0 = 1 ∧ cupCoeff R q 0 1 = -(q : R) ∧ cupCoeff R q 0 0 = 0 ∧
     cupCoeff R q 1 1 = 0 := ⟨rfl, rfl, rfl, rfl⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma A.1, the cap.** `G(cap) : V ⊗ V → k` sends `v_a ⊗ v_b` to `β(a, b)`:
 `v₁ ⊗ v₁ ↦ 0`, `v₁ ⊗ v₋₁ ↦ 1`, `v₋₁ ⊗ v₁ ↦ -ε q⁻¹ = q⁻¹`, `v₋₁ ⊗ v₋₁ ↦ 0`. -/
 theorem rep_cap_vec (a b : Fin 2) :
