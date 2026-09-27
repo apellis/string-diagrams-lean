@@ -165,7 +165,7 @@ theorem β_hom_mem (f : a ⟶ b) :
   have h := comp_mem (comp_mem (comp_mem (whiskerLeft_mem f (ζ_hom_mem (R := R) b))
     (rightUnitor_hom_mem (R := R) f)) (inv_mem _ (leftUnitor_hom_mem (R := R) f)))
     (whiskerRight_mem f (ζ_inv_mem (R := R) a))
-  simpa [Category.assoc] using h
+  simpa [Category.assoc] using! h
 
 /-- `β_F` followed by `ζ_λ F` is `ζ_μ` on the other side: `ζ_λ F ∘ β_F = F ζ_μ` up to unitors.
 This says that `ζ` is an (odd) morphism from `(π, β)` to the unit of the Drinfeld center. -/
@@ -235,41 +235,45 @@ theorem ξ_hom_mem (a : B) :
   rw [ξ_hom]
   have h := comp_mem (comp_mem (whiskerRight_mem (pi (R := R) a) (ζ_hom_mem (R := R) a))
     (leftUnitor_hom_mem (R := R) (pi (R := R) a))) (ζ_hom_mem (R := R) a)
-  simpa [Category.assoc] using h
+  simpa [Category.assoc] using! h
 
 /-! ### The Π-supercategories `ℋom(λ, μ)` -/
 
+set_option backward.isDefEq.respectTransparency false in
 variable (a b) in
 /-- Each morphism supercategory `ℋom(λ, μ)` of a Π-2-supercategory is a Π-supercategory with
 `Π := π_μ -` (i.e. `f ↦ f ≫ π_μ`) and `ζ_F := F ζ_μ` (followed by the unitor). -/
+@[instance_reducible]
 def homPiLeft : PiSupercategory R (a ⟶ b) where
   pi := postcomp R (pi (R := R) b)
   ζ f := whiskerLeftIso (R := R) f (ζ (R := R) b) ≪≫ rightUnitor f
   ζ_isSupernatural :=
     { mem := fun f => by
-        simpa using comp_mem (whiskerLeft_mem f (ζ_hom_mem (R := R) b))
+        simpa using! comp_mem (whiskerLeft_mem f (ζ_hom_mem (R := R) b))
           (rightUnitor_hom_mem (R := R) f)
       naturality := fun {f g q η} hη => by
-        simp only [postcomp_obj, postcomp_map, Functor.id_obj, Functor.id_map, Iso.trans_hom,
+        simp only [postcomp_map, Functor.id_obj, Functor.id_map, Iso.trans_hom,
           whiskerLeftIso_hom, one_mul]
         rw [← Category.assoc, super_interchange hη (ζ_hom_mem (R := R) b), Linear.smul_comp,
           Category.assoc, rightUnitor_naturality R, koszulSign_smul (R := R), mul_one,
           Category.assoc] }
 
+set_option backward.isDefEq.respectTransparency false in
 variable (a b) in
 /-- Each morphism supercategory `ℋom(λ, μ)` of a Π-2-supercategory is also a Π-supercategory
 with `Π := - π_λ` (i.e. `f ↦ π_λ ≫ f`) and `ζ_F := ζ_λ F` (followed by the unitor); by
 Lemma 3.2, `β_{μ,λ}` is an even supernatural isomorphism between the two parity-switching
 functors (`β_isSupernatural`). -/
+@[instance_reducible]
 def homPiRight : PiSupercategory R (a ⟶ b) where
   pi := precomp R (pi (R := R) a)
   ζ f := whiskerRightIso (R := R) (ζ (R := R) a) f ≪≫ leftUnitor f
   ζ_isSupernatural :=
     { mem := fun f => by
-        simpa using comp_mem (whiskerRight_mem f (ζ_hom_mem (R := R) a))
+        simpa using! comp_mem (whiskerRight_mem f (ζ_hom_mem (R := R) a))
           (leftUnitor_hom_mem (R := R) f)
       naturality := fun {f g q η} hη => by
-        simp only [precomp_obj, precomp_map, Functor.id_obj, Functor.id_map, Iso.trans_hom,
+        simp only [precomp_map, Functor.id_obj, Functor.id_map, Iso.trans_hom,
           whiskerRightIso_hom, one_mul]
         have h := super_interchange (R := R) (ζ_hom_mem (R := R) a) hη
         rw [← Category.assoc, ← koszulSign_smul_smul 1 q (pi (R := R) a ◁ η ≫ _), ← h,
@@ -287,7 +291,7 @@ theorem β_isSupernatural :
       (G := precomp R (c := b) (pi (R := R) a)) fun f => (β (R := R) f).hom where
   mem f := β_hom_mem f
   naturality {f g q x} _ := by
-    simp only [postcomp_obj, postcomp_map, precomp_obj, precomp_map, zero_mul, sign_zero,
+    simp only [postcomp_map, precomp_map, zero_mul, sign_zero,
       one_smul]
     exact (β_naturality x).symm
 
@@ -367,7 +371,7 @@ theorem ξ_comm (f : a ⟶ b) :
       whiskerLeft_neg R, whiskerLeft_comp' R, whiskerLeft_comp' R]
     simp only [Preadditive.neg_comp, Category.assoc]
   rw [← reassoc_of% key]
-  simp only [Category.assoc, hom_inv_whiskerRight R, Category.comp_id]
+  simp only [hom_inv_whiskerRight R, Category.comp_id]
 
 end
 
@@ -391,6 +395,7 @@ theorem ζ_inv_isSupernatural (A : PiSCat.{w₁, v, u} R) :
   IsSupernatural.of_twist (fun X => PiSupercategory.ζ_inv_mem X) fun {X Y} f => by
     rw [pi_map_eq, twist_twist, Iso.inv_hom_id_assoc]; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The odd supernatural isomorphism `ζ_A : Π_A ⇒ I_A`, as a 2-isomorphism of `Π-𝔖ℭ𝔞𝔱`. -/
 def ζHom (A : PiSCat.{w₁, v, u} R) : piHom A ≅ 𝟙 A where
   hom := (PiSupercategory.ζ_isSupernatural (R := R) (C := A)).toSuperNatTrans
@@ -434,28 +439,32 @@ variable {A B C : PiSCat.{w₁, v, u} R}
     Superfunctor.map (PiTwoSupercategory.pi (R := R) A) f = (PiSupercategory.pi (R := R)).map f :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- In `Π-𝔖ℭ𝔞𝔱`, the components of `β_F` of Lemma 3.2 are those of `β_F` of Corollary 3.3
 (`PiSupercategory.β`). -/
 theorem β_app_zero (F : A ⟶ B) (X : A.carrier) :
     (PiTwoSupercategory.β (R := R) F).hom.app 0 X = (PiSupercategory.β R F.toFunctor X).hom := by
   simp [PiTwoSupercategory.β_hom, PiSupercategory.β_hom]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem β_app_one (F : A ⟶ B) (X : A.carrier) :
     (PiTwoSupercategory.β (R := R) F).hom.app 1 X = 0 := by
   simp [PiTwoSupercategory.β_hom]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- In `Π-𝔖ℭ𝔞𝔱`, the components of `ξ` of Lemma 3.2 are those of `ξ` of (1.4)
 (`PiSupercategory.ξ`). -/
 theorem ξ_app_zero (A : PiSCat.{w₁, v, u} R) (X : A.carrier) :
     (PiTwoSupercategory.ξ (R := R) A).hom.app 0 X = (PiSupercategory.ξ (R := R) X).hom := by
   simp [PiTwoSupercategory.ξ_hom, PiSupercategory.ξ_hom]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Corollary 3.3(i)**, derived from Lemma 3.2(iii): `Π ζ = -ζ Π`. (Proved directly as
 `PiSupercategory.pi_map_ζ`.) -/
 theorem pi_map_ζ (A : PiSCat.{w₁, v, u} R) (X : A.carrier) :
     (PiSupercategory.pi (R := R)).map (PiSupercategory.ζ (R := R) X).hom =
       -(PiSupercategory.ζ (R := R) ((PiSupercategory.pi (R := R)).obj X)).hom := by
-  simpa using congrArg (fun t => t.app 1 X) (PiTwoSupercategory.pi_whisker_ζ (R := R) A)
+  simpa using! congrArg (fun t => t.app 1 X) (PiTwoSupercategory.pi_whisker_ζ (R := R) A)
 
 /-- **Corollary 3.3(i)**, derived from Lemma 3.2(iii): `Π ξ = ξ Π`. (Proved directly as
 `PiSupercategory.ξ_pi`.) -/
@@ -468,6 +477,7 @@ theorem ξ_pi (A : PiSCat.{w₁, v, u} R) (X : A.carrier) :
   rw [PiSupercategory.ξ_hom, PiSupercategory.ξ_hom, h, Functor.map_neg, Preadditive.neg_comp,
     Preadditive.comp_neg, neg_neg, Functor.map_comp]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Corollary 3.3(ii)**, derived from Lemma 3.2(iv):
 `ξ_B F ξ_A⁻¹ = β_F Π_A ∘ Π_B β_F`. (Proved directly as `PiSupercategory.β_comm`.) -/
 theorem β_comm (F : A ⟶ B) (X : A.carrier) :
@@ -476,8 +486,9 @@ theorem β_comm (F : A ⟶ B) (X : A.carrier) :
         (PiSupercategory.β R F.toFunctor ((PiSupercategory.pi (R := R)).obj X)).hom := by
   have h := congrArg (fun t => t.app 0 X) (PiTwoSupercategory.ξ_comm (R := R) F)
   simp [PiTwoSupercategory.ξ_hom, PiTwoSupercategory.ξ_inv, PiTwoSupercategory.β_hom] at h
-  simpa [PiSupercategory.ξ_hom, PiSupercategory.β_hom, PiSupercategory.ξ] using h
+  simpa [PiSupercategory.ξ_hom, PiSupercategory.β_hom, PiSupercategory.ξ] using! h
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Corollary 3.3(iii)**, derived from Lemma 3.2 (equation (3.1)): for a supernatural
 transformation `x : F ⇒ G` of parity `p`, `β_G ∘ Π_B x = x Π_A ∘ β_F`. (Proved directly as
 `PiSupercategory.β_naturality_supernatural`.) -/
@@ -491,8 +502,9 @@ theorem β_naturality_supernatural {F G : A ⟶ B} {p : ZMod 2}
       (Superfunctor.homMk hx.toSuperNatTrans : F ⟶ G))
   rcases parity_eq_zero_or_one p with rfl | rfl <;>
     simpa [comp_app, ← β_app_zero, β_app_one, IsSupernatural.toSuperNatTrans,
-      SuperNatTrans.zmod2_one_add_one] using h.symm
+      SuperNatTrans.zmod2_one_add_one] using! h.symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Corollary 3.3(iv)**, derived from Lemma 3.2(i): `β_{GF} = G β_F ∘ β_G F`. (Proved
 directly as `PiSupercategory.β_comp`.) -/
 theorem β_comp (F : A ⟶ B) (G : B ⟶ C) (X : A.carrier) :
@@ -502,15 +514,16 @@ theorem β_comp (F : A ⟶ B) (G : B ⟶ C) (X : A.carrier) :
   have h := congrArg (fun t => t.app 0 X) (PiTwoSupercategory.β_comp (R := R) F G)
   simp only [comp_app_zero, associator_hom, associator_inv, id_app_zero, id_app_one,
     whiskerLeft_app, whiskerRight_app, β_app_zero, β_app_one] at h
-  simpa using h
+  simpa using! h
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Corollary 3.3(iv)**, derived from Lemma 3.2(ii): `β_I = 1_Π`. (Proved directly as
 `PiSupercategory.β_id`.) -/
 theorem β_id (A : PiSCat.{w₁, v, u} R) (X : A.carrier) :
     (PiSupercategory.β R (𝟭 A.carrier) X).hom = 𝟙 _ := by
   have h := congrArg (fun t => t.app 0 X) (PiTwoSupercategory.β_id (R := R) A)
   simp only [β_app_zero] at h
-  simpa using h
+  simpa using! h
 
 /-- **Corollary 3.3(iv)**, derived from Lemma 3.2(iii): `β_Π = -1_{Π²}`. (Proved directly as
 `PiSupercategory.β_pi`.) -/
@@ -518,7 +531,7 @@ theorem β_pi (A : PiSCat.{w₁, v, u} R) (X : A.carrier) :
     (PiSupercategory.β R (PiSupercategory.pi (R := R) (C := A.carrier)) X).hom = -𝟙 _ := by
   have h := congrArg (fun t => t.app 0 X) (PiTwoSupercategory.β_pi (R := R) A)
   simp only [β_app_zero] at h
-  simpa using h
+  simpa using! h
 
 end Corollary
 
