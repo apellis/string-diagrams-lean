@@ -38,9 +38,9 @@ theorem par_tensorObj (X Y : D k) : par (X ⊗ Y) = par X + par Y := rfl
 /-- In `I̲_π`, the tensor product of morphisms is the product of scalars: the signs of
 Definition 1.16 are trivial because every morphism of `I` is even. -/
 theorem scal_tensorHom {X X' Y Y' : D k} (f : X ⟶ X') (g : Y ⟶ Y') :
-    scal (f ⊗ g) = scal f * scal g := by
+    scal (f ⊗ₘ g) = scal f * scal g := by
   by_cases hY : par Y = par Y'
-  · change SuperalgebraCat.toElem (Envelope.toHom (f.1 ⊗ g.1)) = _
+  · change SuperalgebraCat.toElem (Envelope.toHom (f.1 ⊗ₘ g.1)) = _
     rw [Envelope.tensorHom_def', Envelope.toHom_comp,
       Envelope.toHom_whiskerRight_of_mem (UnitSupercat.mem_parity_zero _),
       Envelope.toHom_whiskerLeft_of_mem _ (UnitSupercat.mem_parity_zero _), mul_zero, sign_zero,
@@ -52,7 +52,7 @@ theorem scal_tensorHom {X X' Y Y' : D k} (f : X ⟶ X') (g : Y ⟶ Y') :
       MonoidalPreadditive.tensor_zero, scal_zero, scal_zero, mul_zero]
 
 theorem scalMat_tensorHom {M M' N N' : Mat_ (D k)} (f : M ⟶ M') (g : N ⟶ N') :
-    scalMat (f ⊗ g) = kroneckerMap (· * ·) (scalMat f) (scalMat g) := by
+    scalMat (f ⊗ₘ g) = kroneckerMap (· * ·) (scalMat f) (scalMat g) := by
   ext x y
   exact scal_tensorHom (f x.1 y.1) (g x.2 y.2)
 
@@ -68,15 +68,16 @@ theorem scalMat_permMat {ι κ : Type} [Fintype ι] [Fintype κ] [DecidableEq κ
     (j : κ) : scalMat (Mat_.permMat e φ) i j = if e i = j then 1 else 0 := by
   by_cases h : e i = j
   · subst h
-    rw [if_pos rfl, scalMat, Mat_.permMat_apply_self, hφ]
-  · rw [if_neg h, scalMat, Mat_.permMat_apply_of_ne _ _ h, scal_zero]
+    rw [ite_eq_left rfl, scalMat, Mat_.permMat_apply_self, hφ]
+  · rw [ite_eq_right h, scalMat, Mat_.permMat_apply_of_ne _ _ h, scal_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem vecMul_perm {ι κ : Type} [Fintype ι] [Fintype κ] [DecidableEq κ] (e : ι ≃ κ)
     (u : ι → k) (j : κ) : (u ᵥ* fun i j => if e i = j then (1 : k) else 0) j = u (e.symm j) := by
   rw [vecMul, dotProduct, Finset.sum_eq_single (e.symm j)]
-  · rw [Equiv.apply_symm_apply, if_pos rfl, mul_one]
+  · rw [Equiv.apply_symm_apply, ite_eq_left rfl, mul_one]
   · intro i _ hi
-    rw [if_neg, mul_zero]
+    rw [ite_eq_right, mul_zero]
     intro h; exact hi (by rw [← h, Equiv.symm_apply_apply])
   · intro h; exact absurd (Finset.mem_univ _) h
 
@@ -117,8 +118,7 @@ theorem tmulFun_vecMul' {ι κ ι' κ' : Type} [Fintype ι] [Fintype κ] (A : Ma
     (B : Matrix κ κ' k) (t : (ι → k) ⊗[k] (κ → k)) :
     tmulFun ι' κ' (TensorProduct.map A.vecMulLinear B.vecMulLinear t) =
       tmulFun ι κ t ᵥ* kroneckerMap (· * ·) A B := by
-  induction t using TensorProduct.induction_on with
-  | zero => rw [LinearMap.map_zero, LinearMap.map_zero, LinearMap.map_zero, Matrix.zero_vecMul]
+  induction t using TensorProduct.inductionOn with
   | tmul v w => exact tmulFun_vecMul A B v w
   | add t t' ht ht' => rw [map_add, map_add, ht, ht', map_add, add_vecMul]
 
@@ -163,6 +163,7 @@ theorem freeTensor_apply (M N : Mat_ (D k)) (t : (M.ι → k) ⊗[k] (N.ι → k
 theorem par_tensor_X (M N : Mat_ (D k)) (x : M.ι × N.ι) :
     par ((M ⊗ N).X x) = par (M.X x.1) + par (N.X x.2) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `freeTensor` is even. -/
 theorem freeTensor_mem (M N : Mat_ (D k)) :
     freeTensor M N ∈ SVec.parityHom (freeObj M ⊗ freeObj N) (freeObj (M ⊗ N)) 0 := by
@@ -180,16 +181,17 @@ theorem freeTensor_mem (M N : Mat_ (D k)) :
     rcases parity_eq_zero_or_one (par (N.X x.2)) with h2 | h2 <;>
     rcases parity_eq_zero_or_one q with rfl | rfl <;> simp [h1, h2]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem matHom_tensor_apply {M M' N N' : Mat_ (D k)} (f : M ⟶ M') (g : N ⟶ N')
     (t : (M.ι → k) ⊗[k] (N.ι → k)) :
-    matHom (f ⊗ g) (tmulFun M.ι N.ι t) = tmulFun M'.ι N'.ι
+    matHom (f ⊗ₘ g) (tmulFun M.ι N.ι t) = tmulFun M'.ι N'.ι
       (TensorProduct.map (SVec.toLinearMap (matHom f)) (SVec.toLinearMap (matHom g)) t) := by
   rw [matHom_apply, scalMat_tensorHom, ← tmulFun_vecMul']
   rfl
 
 /-! ## The tensorator on the images of idempotents -/
 
-theorem tensorObj_p (P Q : SKar k (UnitSupercat k)) : (P ⊗ Q).p = P.p ⊗ Q.p := rfl
+theorem tensorObj_p (P Q : SKar k (UnitSupercat k)) : (P ⊗ Q).p = P.p ⊗ₘ Q.p := rfl
 
 /-- The tensorator `p(⊕ᵢ Π^{aᵢ} k) ⊗ q(⊕ⱼ Π^{bⱼ} k) → ⊕_{(i,j)} Π^{aᵢ+bⱼ} k`. -/
 def μLin (P Q : SKar k (UnitSupercat k)) :
@@ -199,22 +201,23 @@ def μLin (P Q : SKar k (UnitSupercat k)) :
 theorem μLin_tmul (P Q : SKar k (UnitSupercat k)) (v : imgSubmodule P) (w : imgSubmodule Q) :
     μLin P Q (v ⊗ₜ w) = fun x => v.1 x.1 * w.1 x.2 := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The tensorator takes values in the image of `p ⊗ q`. -/
 theorem μLin_mem (P Q : SKar k (UnitSupercat k)) (t : imgSubmodule P ⊗[k] imgSubmodule Q) :
     μLin P Q t ∈ imgSubmodule (P ⊗ Q) := by
   rw [mem_imgSubmodule, tensorObj_p]
-  induction t using TensorProduct.induction_on with
-  | zero => rw [LinearMap.map_zero]; exact LinearMap.map_zero (matHom (P.p ⊗ Q.p))
+  induction t using TensorProduct.inductionOn with
   | tmul v w =>
-    change matHom (P.p ⊗ Q.p) (tmulFun _ _ (v.1 ⊗ₜ w.1)) = tmulFun _ _ (v.1 ⊗ₜ w.1)
+    change matHom (P.p ⊗ₘ Q.p) (tmulFun _ _ (v.1 ⊗ₜ w.1)) = tmulFun _ _ (v.1 ⊗ₜ w.1)
     rw [matHom_tensor_apply, TensorProduct.map_tmul]
     change tmulFun _ _ (matHom P.p v.1 ⊗ₜ matHom Q.p w.1) = _
     rw [mem_imgSubmodule.1 v.2, mem_imgSubmodule.1 w.2]
   | add t t' h h' =>
     rw [LinearMap.map_add]
-    erw [LinearMap.map_add (matHom (P.p ⊗ Q.p))]
+    erw [LinearMap.map_add (matHom (P.p ⊗ₘ Q.p))]
     exact congrArg₂ (· + ·) h h'
 
+set_option backward.isDefEq.respectTransparency false in
 theorem μLin_apply_mem_imgSubmodule (P Q : SKar k (UnitSupercat k)) (u : P.X.ι × Q.X.ι → k)
     (hu : u ∈ imgSubmodule (P ⊗ Q)) (t : (P.X.ι → k) ⊗[k] (Q.X.ι → k)) (ht : tmulFun _ _ t = u) :
     μLin P Q (TensorProduct.map
@@ -263,6 +266,7 @@ theorem μLin_injective (P Q : SKar K (UnitSupercat K)) : Function.Injective (μ
   exact (Module.Flat.lTensor_preserves_injective_linearMap _ (Submodule.injective_subtype _)).comp
     (Module.Flat.rTensor_preserves_injective_linearMap _ (Submodule.injective_subtype _))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The tensorator**, as a linear isomorphism
 `p(⊕ᵢ Π^{aᵢ} K) ⊗ q(⊕ⱼ Π^{bⱼ} K) ≅ (p ⊗ q)(⊕_{(i,j)} Π^{aᵢ+bⱼ} K)`. -/
 def μEquiv (P Q : SKar K (UnitSupercat K)) :
@@ -273,13 +277,16 @@ def μEquiv (P Q : SKar K (UnitSupercat K)) :
       obtain ⟨t, ht⟩ := hu
       exact ⟨t, Subtype.ext ht⟩⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem μEquiv_apply_coe (P Q : SKar K (UnitSupercat K)) (t : imgSubmodule P ⊗[K] imgSubmodule Q) :
     (μEquiv P Q t).1 = μLin P Q t := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem μEquiv_tmul_coe (P Q : SKar K (UnitSupercat K)) (v : imgSubmodule P)
     (w : imgSubmodule Q) : (μEquiv P Q (v ⊗ₜ w)).1 = fun x => v.1 x.1 * w.1 x.2 :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The tensorator is even. -/
 theorem μEquiv_hom_mem (P Q : SKar K (UnitSupercat K)) :
     (SVec.isoOfLinearEquiv (μEquiv P Q)).hom ∈
@@ -296,6 +303,7 @@ def μIso (P Q : SKar K (UnitSupercat K)) :
     (toSVec K).obj P ⊗ (toSVec K).obj Q ≅ (toSVec K).obj (P ⊗ Q) :=
   Underlying.isoMk (SVec.isoOfLinearEquiv (μEquiv P Q)) (μEquiv_hom_mem P Q)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem μIso_hom_apply_coe (P Q : SKar K (UnitSupercat K))
     (t : imgSubmodule P ⊗[K] imgSubmodule Q) :
     ((μIso P Q).hom.1 t).1 = μLin P Q t := rfl
@@ -376,7 +384,7 @@ theorem matHom_rightUnitor_hom (M : Mat_ (D K)) (y : (M ⊗ 𝟙_ (Mat_ (D K))).
     y i
 
 theorem associator_hom_f (P Q R : SKar K (UnitSupercat K)) :
-    (α_ P Q R).hom.f = (α_ P.X Q.X R.X).hom ≫ (P.p ⊗ (Q.p ⊗ R.p)) := rfl
+    (α_ P Q R).hom.f = (α_ P.X Q.X R.X).hom ≫ (P.p ⊗ₘ (Q.p ⊗ₘ R.p)) := rfl
 
 theorem leftUnitor_hom_f (P : SKar K (UnitSupercat K)) :
     (λ_ P).hom.f = (λ_ P.X).hom ≫ P.p := rfl
@@ -386,8 +394,8 @@ theorem rightUnitor_hom_f (P : SKar K (UnitSupercat K)) :
 
 theorem matHom_associator_hom_f (P Q R : SKar K (UnitSupercat K))
     (y : (freeObj ((P ⊗ Q) ⊗ R).X).carrier) :
-    matHom (α_ P Q R).hom.f y = matHom (P.p ⊗ (Q.p ⊗ R.p)) (matHom (α_ P.X Q.X R.X).hom y) :=
-  congrArg (fun φ => φ y) (matHom_comp (α_ P.X Q.X R.X).hom (P.p ⊗ (Q.p ⊗ R.p)))
+    matHom (α_ P Q R).hom.f y = matHom (P.p ⊗ₘ (Q.p ⊗ₘ R.p)) (matHom (α_ P.X Q.X R.X).hom y) :=
+  congrArg (fun φ => φ y) (matHom_comp (α_ P.X Q.X R.X).hom (P.p ⊗ₘ (Q.p ⊗ₘ R.p)))
 
 theorem matHom_leftUnitor_hom_f (P : SKar K (UnitSupercat K))
     (y : (freeObj (𝟙_ (SKar K (UnitSupercat K)) ⊗ P).X).carrier) :
@@ -401,36 +409,35 @@ theorem matHom_rightUnitor_hom_f (P : SKar K (UnitSupercat K))
 
 theorem tensor_p_apply_tmul (P Q : SKar K (UnitSupercat K)) (v : imgSubmodule P)
     (w : imgSubmodule Q) :
-    matHom (P.p ⊗ Q.p) (tmulFun P.X.ι Q.X.ι (v.1 ⊗ₜ w.1)) = tmulFun P.X.ι Q.X.ι (v.1 ⊗ₜ w.1) :=
+    matHom (P.p ⊗ₘ Q.p) (tmulFun P.X.ι Q.X.ι (v.1 ⊗ₜ w.1)) = tmulFun P.X.ι Q.X.ι (v.1 ⊗ₜ w.1) :=
   mem_imgSubmodule.1 (μLin_mem P Q (v ⊗ₜ w))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Naturality of the tensorator with respect to tensor products of morphisms. -/
 theorem μIso_natural {P P' Q Q' : SKar K (UnitSupercat K)} (φ : P ⟶ P') (ψ : Q ⟶ Q')
     (t : imgSubmodule P ⊗[K] imgSubmodule Q) :
     (μIso P' Q').hom.1 (TensorProduct.map (SVec.toLinearMap ((toSVec K).map φ).1)
       (SVec.toLinearMap ((toSVec K).map ψ).1) t) =
-      ((toSVec K).map (φ ⊗ ψ)).1 ((μIso P Q).hom.1 t) := by
+      ((toSVec K).map (φ ⊗ₘ ψ)).1 ((μIso P Q).hom.1 t) := by
   apply Subtype.ext
   rw [μIso_hom_apply_coe, toSVec_map_apply, μIso_hom_apply_coe]
-  induction t using TensorProduct.induction_on with
-  | zero =>
-    rw [LinearMap.map_zero, LinearMap.map_zero, LinearMap.map_zero]
-    exact (LinearMap.map_zero (matHom (φ ⊗ ψ).f)).symm
+  induction t using TensorProduct.inductionOn with
   | tmul v w =>
     rw [TensorProduct.map_tmul]
     change tmulFun _ _ (matHom φ.f v.1 ⊗ₜ matHom ψ.f w.1) =
-      matHom (φ.f ⊗ ψ.f) (tmulFun _ _ (v.1 ⊗ₜ w.1))
+      matHom (φ.f ⊗ₘ ψ.f) (tmulFun _ _ (v.1 ⊗ₜ w.1))
     rw [matHom_tensor_apply, TensorProduct.map_tmul]
     rfl
   | add t t' h h' =>
     rw [LinearMap.map_add, LinearMap.map_add, LinearMap.map_add]
-    erw [LinearMap.map_add (matHom (φ ⊗ ψ).f)]
+    erw [LinearMap.map_add (matHom (φ ⊗ₘ ψ).f)]
     exact congrArg₂ (· + ·) h h'
 
 theorem toSVec_map_id_toLinearMap (P : SKar K (UnitSupercat K)) :
     SVec.toLinearMap ((toSVec K).map (𝟙 P)).1 = LinearMap.id := by
   rw [CategoryTheory.Functor.map_id]; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Associativity of the tensorator. -/
 theorem μIso_associativity (P Q R : SKar K (UnitSupercat K)) :
     (μIso P Q).hom ▷ (toSVec K).obj R ≫ (μIso (P ⊗ Q) R).hom ≫ (toSVec K).map (α_ P Q R).hom =
@@ -439,12 +446,10 @@ theorem μIso_associativity (P Q R : SKar K (UnitSupercat K)) :
   apply Underlying.hom_ext
   apply SVec.hom_ext
   intro t
-  induction t using TensorProduct.induction_on with
-  | zero => rw [map_zero, map_zero]
+  induction t using TensorProduct.inductionOn with
   | add t t' h h' => rw [map_add, map_add, h, h']
   | tmul t u =>
-    induction t using TensorProduct.induction_on with
-    | zero => rw [TensorProduct.zero_tmul, map_zero, map_zero]
+    induction t using TensorProduct.inductionOn with
     | add t t' h h' => rw [TensorProduct.add_tmul, map_add, map_add, h, h']
     | tmul v w =>
       simp only [Underlying.comp_val, Underlying.whiskerRight_val, Underlying.whiskerLeft_val,
@@ -464,12 +469,13 @@ theorem μIso_associativity (P Q R : SKar K (UnitSupercat K)) :
         change (v.1 x.1 * w.1 x.2.1) * u.1 x.2.2 = v.1 x.1 * (w.1 x.2.1 * u.1 x.2.2)
         rw [mul_assoc]
       rw [e1]
-      refine (matHom_tensor_apply P.p (Q.p ⊗ R.p) _).trans ?_
+      refine (matHom_tensor_apply P.p (Q.p ⊗ₘ R.p) _).trans ?_
       rw [TensorProduct.map_tmul]
       refine (congrArg (tmulFun P.X.ι (Q.X.ι × R.X.ι)) (congrArg₂ (fun a b => a ⊗ₜ[K] b)
         (mem_imgSubmodule.1 v.2) (tensor_p_apply_tmul Q R w u))).trans ?_
       rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Left unitality of the tensorator. -/
 theorem μIso_left_unitality (P : SKar K (UnitSupercat K)) :
     (λ_ ((toSVec K).obj P)).hom = εIso.hom ▷ (toSVec K).obj P ≫
@@ -477,8 +483,7 @@ theorem μIso_left_unitality (P : SKar K (UnitSupercat K)) :
   apply Underlying.hom_ext
   apply SVec.hom_ext
   intro t
-  induction t using TensorProduct.induction_on with
-  | zero => rw [map_zero, map_zero]
+  induction t using TensorProduct.inductionOn with
   | add t t' h h' => rw [map_add, map_add, h, h']
   | tmul c v =>
     simp only [Underlying.comp_val, Underlying.whiskerRight_val, Underlying.leftUnitor_hom_val]
@@ -498,6 +503,7 @@ theorem μIso_left_unitality (P : SKar K (UnitSupercat K)) :
     rfl
 
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Right unitality of the tensorator. -/
 theorem μIso_right_unitality (P : SKar K (UnitSupercat K)) :
     (ρ_ ((toSVec K).obj P)).hom = (toSVec K).obj P ◁ εIso.hom ≫
@@ -505,8 +511,7 @@ theorem μIso_right_unitality (P : SKar K (UnitSupercat K)) :
   apply Underlying.hom_ext
   apply SVec.hom_ext
   intro t
-  induction t using TensorProduct.induction_on with
-  | zero => rw [map_zero, map_zero]
+  induction t using TensorProduct.inductionOn with
   | add t t' h h' => rw [map_add, map_add, h, h']
   | tmul v c =>
     simp only [Underlying.comp_val, Underlying.whiskerLeft_val, Underlying.rightUnitor_hom_val]
@@ -541,7 +546,7 @@ def toSVecCoreMonoidal : (toSVec K).CoreMonoidal where
     intro t
     change (μIso P' Q).hom.1 (TensorProduct.map (SVec.toLinearMap ((toSVec K).map φ).1)
       LinearMap.id t) = ((toSVec K).map (φ ▷ Q)).1 ((μIso P Q).hom.1 t)
-    rw [show φ ▷ Q = φ ⊗ 𝟙 Q from rfl, ← μIso_natural φ (𝟙 Q) t, toSVec_map_id_toLinearMap]
+    rw [show φ ▷ Q = φ ⊗ₘ 𝟙 Q from rfl, ← μIso_natural φ (𝟙 Q) t, toSVec_map_id_toLinearMap]
   μIso_hom_natural_right {Q Q'} P ψ := by
     apply Underlying.hom_ext
     apply SVec.hom_ext
@@ -549,7 +554,7 @@ def toSVecCoreMonoidal : (toSVec K).CoreMonoidal where
     change (μIso P Q').hom.1 ((SVec.whiskerLeft (imgObj P) ((toSVec K).map ψ).1) t) =
       ((toSVec K).map (P ◁ ψ)).1 ((μIso P Q).hom.1 t)
     rw [SVec.whiskerLeft_of_mem _ ((toSVec K).map ψ).2, SVec.sgn_zero,
-      show P ◁ ψ = 𝟙 P ⊗ ψ from rfl, ← μIso_natural (𝟙 P) ψ t, toSVec_map_id_toLinearMap]
+      show P ◁ ψ = 𝟙 P ⊗ₘ ψ from rfl, ← μIso_natural (𝟙 P) ψ t, toSVec_map_id_toLinearMap]
     rfl
   associativity := μIso_associativity
   left_unitality := μIso_left_unitality
