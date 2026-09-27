@@ -35,10 +35,12 @@ variable {R : Type*} [CommRing R] (q : Rˣ)
 def canonVec (n : ℕ) (w : List (Fin 2)) : Word (strands n).word.length → R :=
   ((rep R q).map (canon R (delta q) n w)).hom (fun _ => 1)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem canonVec_zero (w : List (Fin 2)) (t : Word (strands 0).word.length) :
     canonVec q 0 w t = 1 := by
   simp [canonVec, canon_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem canonVec_succ_succ {n : ℕ} (w : List (Fin 2)) (h : firstPair w ≤ n)
     (t : Word (strands (n + 2)).word.length) :
     canonVec q (n + 2) w t = psign R (firstPair w) t.1 *
@@ -77,8 +79,8 @@ theorem canonVec_triangular (n : ℕ) : ∀ (w : List (Fin 2)), IsDyck w →
   obtain ⟨n, rfl⟩ : ∃ n', n = n' + 2 := ⟨p + r.length, by omega⟩
   have hw0 : IsDyck (List.replicate p 0 ++ r) := by
     have := hw.del_pair (p := p) (by omega)
-      (by rw [hr]; simp [getD_rep_add p 0 0 (0 :: 1 :: r)])
-      (by rw [hr]; simp [getD_rep_add p 1 0 (0 :: 1 :: r)])
+      (by rw [hr]; simp)
+      (by rw [hr]; simp)
     rwa [hr, del_rep] at this
   have hd : del p w = List.replicate p 0 ++ r := by rw [hr, del_rep]
   have hl0 : (List.replicate p (0 : Fin 2) ++ r).length = (strands n).word.length := by
@@ -104,8 +106,8 @@ theorem canonVec_triangular (n : ℕ) : ∀ (w : List (Fin 2)), IsDyck w →
   · rw [canonVec_succ_succ q w (by omega)]
     dsimp only
     rw [hp, hd]
-    have g0 : w.getD p 0 = 0 := by rw [hr]; simp [getD_rep_add p 0 0 (0 :: 1 :: r)]
-    have g1 : w.getD (p + 1) 0 = 1 := by rw [hr]; simp [getD_rep_add p 1 0 (0 :: 1 :: r)]
+    have g0 : w.getD p 0 = 0 := by rw [hr]; simp
+    have g1 : w.getD (p + 1) 0 = 1 := by rw [hr]; simp
     rw [g0, g1, Rep.cupCoeff_01, ext_apply_of_length R _ hl0]
     exact (isUnit_psign p w).mul ((Units.isUnit q).neg.mul ih2)
 
@@ -117,7 +119,7 @@ theorem eq_of_dle_of_potential {t w : List (Fin 2)} (h : dle t w) (hl : t.length
   refine dle_antisymm h (fun k => ?_) hl
   have hk : ∀ k ∈ Finset.range (w.length + 1), bal (t.take k) = bal (w.take k) :=
     (Finset.sum_eq_sum_iff_of_le (fun k _ => h k)).mp hp
-  rcases le_or_lt k w.length with hkl | hkl
+  rcases le_or_gt k w.length with hkl | hkl
   · exact (hk k (Finset.mem_range.mpr (by omega))).ge
   · have := hk w.length (Finset.mem_range.mpr (by omega))
     rw [List.take_of_length_le (by omega : w.length ≤ k),
@@ -167,14 +169,16 @@ theorem linearIndependent_canon (N : ℕ) :
         (by rw [j.2.2]; simp only at h1 h2; omega)
       exact hjw (Subtype.ext heq).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem A.2 for `m = 0`.** The canonical cup diagrams of the crossingless matchings of `N`
 points form a basis of `Hom(0, N)` in `STL(δ)`, `δ = -(q - q⁻¹)`, for any unit `q` of a
 commutative ring. -/
-def basisCanon (N : ℕ) : Basis (DyckSeq N) R (X R (delta q) 0 ⟶ X R (delta q) N) :=
-  Basis.mk (linearIndependent_canon q N) (by rw [span_canon])
+def basisCanon (N : ℕ) : Module.Basis (DyckSeq N) R (X R (delta q) 0 ⟶ X R (delta q) N) :=
+  Module.Basis.mk (linearIndependent_canon q N) (by rw [span_canon])
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem basisCanon_apply (N : ℕ) (w : DyckSeq N) :
-    basisCanon q N w = canon R (delta q) N w.1 := Basis.mk_apply _ _ _
+    basisCanon q N w = canon R (delta q) N w.1 := Module.Basis.mk_apply _ _ _
 
 end StringDiagrams.OddTemperleyLieb
 
