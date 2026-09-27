@@ -31,13 +31,7 @@ given in the paper).
   `QPiTwoFunctor.toQPiTwoFunctor_mapQ_map₂`, `QPiTwoFunctor.toQPiTwoFunctor_mapQ_mapComp`,
   `QPiTwoFunctor.toQPiTwoFunctor_mapQ_mapId`, `QPiTwoFunctor.toQPiTwoFunctor_mapQ_j`,
   `QPiTwoFunctor.toQPiTwoFunctor_mapQ_k`).
-* **Naturality of `𝕋` in 1-morphisms**: for a graded 2-superfunctor `ℝ : 𝔅 → 𝔅'` between graded
-  `(Q, Π)`-2-supercategories, `𝕋_{𝔅'} ∘ 𝔻(𝔼 ℝ) = ℝ ∘ 𝕋_𝔅` on 2-morphisms
-  (`QAssociated2.T_map₂_mapQ`) and on the coherence maps (`QAssociated2.T_map₂_mapQ_mapComp`,
-  `QAssociated2.T_map₂_mapQ_mapId`); both composites are `ℝ` on objects and 1-morphisms. The
-  proof uses that `ℝ` is a morphism of trivialized shift data on the morphism supercategories
-  (`TwoSuperfunctor.homShiftFunctor`, `TwoSuperfunctor.homShiftFunctor_trivCompat`), so that it
-  commutes with the evaluation of orbit supercategories (`Orbit.eval_map_map`).
+* The naturality of `𝕋` in 1-morphisms is in `StringDiagrams.Super.QAssociatedTwoNat`.
 -/
 
 noncomputable section

@@ -64,6 +64,9 @@ import StringDiagrams.Super.QPiTwoCategory
 import StringDiagrams.Super.OrbitTwo
 import StringDiagrams.Super.QAssociatedTwo
 import StringDiagrams.Super.QAssociatedTwoT
+import StringDiagrams.Super.QPiTwoFunctor
+import StringDiagrams.Super.QAssociatedTwoMap
+import StringDiagrams.Super.QAssociatedTwoNat
 import StringDiagrams.Super.DrinfeldCenter
 import StringDiagrams.Super.TwoFunctorComp
 import StringDiagrams.Super.TwoHom

@@ -3,7 +3,43 @@ import StringDiagrams.Super.QAssociatedTwoMap
 /-!
 # `𝔻` on (Q, Π)-2-natural transformations, naturality of `𝕋`, and the §6 analogue of Theorem 5.5
 
-DOC
+Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v3, §6, the
+discussion after Definition 6.14 (the analogue of Theorem 5.5, which the paper leaves to the
+reader), for the `(Q, Π)`-2-functors and `(Q, Π)`-2-natural transformations of
+`StringDiagrams.Super.QPiTwoFunctor` (definitions not given in the paper).
+
+* **`𝔻` on 2-morphisms** (`QPiTwoFunctor.mapQNat`): a `(Q, Π)`-2-natural transformation
+  `(Y, y) : ℝ ⇒ 𝕊` gives the 2-natural transformation `(Ŷ, ŷ) : ℝ̂ ⇒ 𝕊̂` with `Ŷ_λ = Y_λ` and
+  `ŷ_F = (y_F, 0)` in degree zero (`QPiTwoFunctor.mapQNat_isGraded`). Its supernaturality with
+  respect to the 2-morphisms `σ` of degree `-1` is the `q`-condition of a
+  `(Q, Π)`-2-natural transformation (`QPiTwoFunctor.natHom_γ`,
+  `QPiTwoFunctor.natHomQ_compat`); with respect to 2-morphisms of degree zero it is the
+  supernaturality of `D₂(Y, y)` (`PiTwoFunctor.mapTwoNat`).
+* **`𝔼 ∘ 𝔻 = 𝕀` on 2-morphisms**: `QPiTwoFunctor.mapQNat_X_eq`, `QPiTwoFunctor.mapQNat_x_eq`,
+  and in terms of `𝔼`: `QPiTwoFunctor.toOplax_mapQNat_app`,
+  `QPiTwoFunctor.toOplax_mapQNat_naturality`.
+* **`𝔻` preserves identities and vertical composition** of 2-morphisms
+  (`QPiTwoFunctor.mapQNat_id`, `QPiTwoFunctor.mapQNat_vcomp`; the `(Q, Π)`-2-natural
+  transformations are closed under both: `QPiTwoFunctor.isQPiTwoNatural_id`,
+  `QPiTwoFunctor.IsQPiTwoNatural.vcomp`).
+* **Naturality of `𝕋_𝔅`** (`𝔻 ∘ 𝔼 ≅ 𝕀`, `StringDiagrams.Super.QAssociatedTwoT`): for a graded
+  2-superfunctor `ℝ : 𝔅 → 𝔅'` between graded `(Q, Π)`-2-supercategories,
+  `𝕋_{𝔅'} ∘ 𝔻(𝔼 ℝ) = ℝ ∘ 𝕋_𝔅` on 2-morphisms (`QAssociated2.T_map₂_mapQ`) and on the coherence
+  maps (`QAssociated2.T_map₂_mapQ_mapComp`, `QAssociated2.T_map₂_mapQ_mapId`); both composites
+  are `ℝ` on objects and 1-morphisms. The proof uses that `ℝ` is a morphism of trivialized shift
+  data on the morphism supercategories (`TwoSuperfunctor.homShiftFunctor`,
+  `TwoSuperfunctor.homShiftFunctor_trivCompat`), so that it commutes with the evaluation of orbit
+  supercategories (`Orbit.eval_map_map`). For a graded 2-natural transformation `(X, x)`,
+  `𝕋_{𝔅'}(𝔻 𝔼 (X, x)) = (X, x) 𝕋_𝔅` (`QAssociated2.T_map₂_mapQNat`).
+
+## Not formalized
+
+As for §5 (`StringDiagrams.Super.AssociatedTwoNat`), the strict 2-categories
+`(Q, Π)-2-ℭ𝔄𝔗` and `(Q, Π)-2-𝔊𝔖ℭ𝔄𝔗` (composition of `(Q, Π)`-2-functors, whiskering of
+2-morphisms by 1-morphisms) are not constructed, so the analogue of Theorem 5.5 is not stated as
+a 2-equivalence of Lean bicategories; the compatibility of `𝔼` with identities and vertical
+composition of graded 2-natural transformations is that of `TwoNatTrans.toOplaxTrans` on the
+2-morphisms of degree zero and is not restated.
 -/
 
 noncomputable section
@@ -368,6 +404,17 @@ theorem T_map₂_mapQ_mapComp {a b c : QAssociated2 R (GUnderlying2 R B)} (f : a
 theorem T_map₂_mapQ_mapId (a : QAssociated2 R (GUnderlying2 R B)) :
     (T R B').map₂ ((G.toQPiTwoFunctor hG).mapQ.mapId a).hom = (G.mapId a.obj.obj.obj.as).hom := by
   rw [T_map₂, QPiTwoFunctor.mapQ_mapId_hom', Thom_ι_map, TF_map]
+  simp [Associated2.T_map₂]
+
+/-- **Naturality of `𝕋` in 2-morphisms** (the §6 analogue of Theorem 5.5): for a graded 2-natural
+transformation `(X, x) : ℝ ⇒ ℝ'` between graded 2-superfunctors of graded
+`(Q, Π)`-2-supercategories, `𝕋_{𝔅'}(𝔻 𝔼 (X, x)) = (X, x) 𝕋_𝔅`: the components `X_λ` agree (by
+definition) and `𝕋_{𝔅'}` sends `(x_F, 0)` in degree zero to `x_F`. -/
+theorem T_map₂_mapQNat {G' : TwoSuperfunctor R B B'} (hG' : G'.IsGraded) (θ : TwoNatTrans G G')
+    (hθ : θ.IsGraded) {a b : QAssociated2 R (GUnderlying2 R B)} (f : a ⟶ b) :
+    (T R B').map₂ ((QPiTwoFunctor.mapQNat (θ.isQPiTwoNatural hG hG' hθ)).x f) =
+      θ.x f.obj.obj.obj.obj := by
+  rw [T_map₂, QPiTwoFunctor.mapQNat_x, Thom_ι_map, TF_map]
   simp [Associated2.T_map₂]
 
 end QAssociated2
