@@ -73,7 +73,7 @@ theorem ζ_ζ_eq_β_ξ {b c : C} (g : b ⟶ c) :
     TwoEnvelope.inv_hom_whiskerRight' R, whiskerLeft_id (R := R), Category.id_comp,
     reassoc_of% (TwoSupercategory.triangle (R := R) g (pi (R := R) c)),
     TwoEnvelope.inv_hom_whiskerRight'_assoc R, ← associator_inv_naturality_left_assoc R,
-    ← Category.assoc (associator _ _ _).inv, ← leftUnitor_comp R]
+    ← leftUnitor_comp_assoc R]
 
 end PiTwoSupercategory
 
@@ -116,7 +116,7 @@ theorem extendComp_one_one (F : TwoSuperfunctor R B C) {a b c : B} (f₀ : a ⟶
         (associator (F.map f₀) (F.map g₀) (pi (R := R) (F.obj c) ≫ pi (R := R) (F.obj c))).inv ≫
         (F.mapComp f₀ g₀).hom ▷ (pi (R := R) (F.obj c) ≫ pi (R := R) (F.obj c)) ≫
         F.map (f₀ ≫ g₀) ◁ (-(ξ (R := R) (F.obj c)).hom) ≫ (rightUnitor (F.map (f₀ ≫ g₀))).hom := by
-  letI : ∀ a b : C, PiSupercategory R (a ⟶ b) := fun a b => PiTwoSupercategory.homPiLeft a b
+  let : ∀ a b : C, PiSupercategory R (a ⟶ b) := fun a b => PiTwoSupercategory.homPiLeft a b
   show sign R (1 * 1) • ((F.map f₀ ◁ (PiTwoSupercategory.ζ (R := R) (F.obj b)).hom ≫ (rightUnitor (F.map f₀)).hom) ▷ (F.map g₀ ≫ pi (R := R) (F.obj c)) ≫
     F.map f₀ ◁ (F.map g₀ ◁ (PiTwoSupercategory.ζ (R := R) (F.obj c)).hom ≫ (rightUnitor (F.map g₀)).hom) ≫ (F.mapComp f₀ g₀).hom ≫ 𝟙 _) = _
   have key := ζ_ζ_eq_β_ξ (R := R) (F.map g₀)
@@ -132,7 +132,7 @@ theorem extendComp_one_one (F : TwoSuperfunctor R B C) {a b c : B} (f₀ : a ⟶
   rw [reassoc_of% key']
   rw [reassoc_of% (TwoEnvelope.interchange_even_left R (F.mapComp_hom_mem f₀ g₀) _),
     rightUnitor_naturality R, ← associator_inv_naturality_right_assoc R,
-    ← Category.assoc (associator _ _ _).inv, ← whiskerLeft_rightUnitor R]
+    ← whiskerLeft_rightUnitor_assoc R]
 
 omit [TwoSupercategory R B] in
 /-- **Lemma 4.7(i)**, the coherence map `c̃` in the case `a = 1`, `b = 0`: it is the paper's
@@ -146,7 +146,7 @@ theorem extendComp_one_zero (F : TwoSuperfunctor R B C) {a b c : B} (f₀ : a �
         F.map f₀ ◁ (β (R := R) (F.map g₀)).inv ≫
         (associator (F.map f₀) (F.map g₀) (pi (R := R) (F.obj c))).inv ≫
         (F.mapComp f₀ g₀).hom ▷ pi (R := R) (F.obj c) := by
-  letI : ∀ a b : C, PiSupercategory R (a ⟶ b) := fun a b => PiTwoSupercategory.homPiLeft a b
+  let : ∀ a b : C, PiSupercategory R (a ⟶ b) := fun a b => PiTwoSupercategory.homPiLeft a b
   show sign R (1 * 0) • ((F.map f₀ ◁ (PiTwoSupercategory.ζ (R := R) (F.obj b)).hom ≫ (rightUnitor (F.map f₀)).hom) ▷ F.map g₀ ≫
     F.map f₀ ◁ 𝟙 (F.map g₀) ≫ (F.mapComp f₀ g₀).hom ≫ ((rightUnitor (F.map (f₀ ≫ g₀))).inv ≫ F.map (f₀ ≫ g₀) ◁ (PiTwoSupercategory.ζ (R := R) (F.obj c)).inv)) = _
   rw [mul_zero, sign_zero, one_smul, whiskerLeft_id (R := R), Category.id_comp,  comp_whiskerRight (R := R), whisker_assoc (R := R),
@@ -167,7 +167,7 @@ theorem extendComp_zero_one (F : TwoSuperfunctor R B C) {a b c : B} (f₀ : a �
     (extendComp F (Jm (R := R) f₀) (Pm g₀)).hom =
       (associator (F.map f₀) (F.map g₀) (pi (R := R) (F.obj c))).inv ≫
         (F.mapComp f₀ g₀).hom ▷ pi (R := R) (F.obj c) := by
-  letI : ∀ a b : C, PiSupercategory R (a ⟶ b) := fun a b => PiTwoSupercategory.homPiLeft a b
+  let : ∀ a b : C, PiSupercategory R (a ⟶ b) := fun a b => PiTwoSupercategory.homPiLeft a b
   show sign R (0 * 1) • (𝟙 (F.map f₀) ▷ (F.map g₀ ≫ pi (R := R) (F.obj c)) ≫
     F.map f₀ ◁ (F.map g₀ ◁ (PiTwoSupercategory.ζ (R := R) (F.obj c)).hom ≫ (rightUnitor (F.map g₀)).hom) ≫ (F.mapComp f₀ g₀).hom ≫
       ((rightUnitor (F.map (f₀ ≫ g₀))).inv ≫ F.map (f₀ ≫ g₀) ◁ (PiTwoSupercategory.ζ (R := R) (F.obj c)).inv)) = _

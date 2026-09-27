@@ -68,6 +68,7 @@ variable {R : Type w} [CommRing R] {B : Type u₁} [Bicategory.{w₁, v₁} B]
   [∀ a b : B, Preadditive (a ⟶ b)] [∀ a b : B, Linear R (a ⟶ b)] [PreadditiveBicategory B]
   [LinearBicategory R B] [PiTwoCategory R B]
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R B) in
 /-- **Lemma 5.4, `E₂ ∘ D₂ = I`.** The identification of a Π-2-category `𝔄` with the underlying
 Π-2-category of `𝔄̂`: the identity on objects and 1-morphisms, `x ↦ (x, 0)` on 2-morphisms, with
@@ -95,6 +96,7 @@ theorem unit_map₂_bijective {a b : B} (f g : a ⟶ b) :
   · exact congrArg (fun t => t.1.1) h
   · exact (Associated.mem_parity_zero.1 x.2).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 5.4, `E₂ ∘ D₂ = I`.** The identification is a (strict) Π-2-functor with `j = 1`: the
 Π-2-category underlying `𝔄̂` has the same `π`, `β` and `ξ` as `𝔄` (`β_hom_eq`, `ξ_hom_eq`). -/
 def unitPiTwoFunctor : PiTwoFunctor R (unit R B) where
@@ -104,15 +106,13 @@ def unitPiTwoFunctor : PiTwoFunctor R (unit R B) where
   β_comm {a b} f := by
     apply Subtype.ext
     simp only [Iso.refl_hom, Iso.refl_inv, unit_mapComp, Bicategory.whiskerLeft_id,
-      Bicategory.id_whiskerRight, Underlying2.comp₂_val, Underlying2.id₂_val, Category.id_comp,
-      Category.comp_id]
+      Bicategory.id_whiskerRight, Underlying2.comp₂_val, Underlying2.id₂_val, Category.id_comp]
     erw [Category.id_comp, Category.comp_id]
     exact (β_hom_eq (R := R) (a := ⟨a⟩) (b := ⟨b⟩) ⟨f⟩).symm
   ξ_comm a := by
     apply Subtype.ext
     simp only [Iso.refl_hom, Iso.refl_inv, unit_mapComp, unit_mapId, Bicategory.whiskerLeft_id,
-      Bicategory.id_whiskerRight, Underlying2.comp₂_val, Underlying2.id₂_val, Category.id_comp,
-      Category.comp_id]
+      Bicategory.id_whiskerRight, Underlying2.comp₂_val, Underlying2.id₂_val, Category.id_comp]
     erw [Category.id_comp, Category.comp_id]
     exact (ξ_hom_eq (R := R) ⟨a⟩).symm
 
@@ -193,6 +193,7 @@ theorem βR_inv_ζG {a b c : Underlying2 R A} (f : a ⟶ b) (g : b ⟶ c) :
     whiskerLeft_comp' R]
   simp only [Category.assoc, Iso.inv_hom_id_assoc]
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R A) in
 /-- **Lemma 5.4.** The 2-superfunctor `𝕋_𝔄 : (E₂ 𝔄)^ → 𝔄`: the identity on objects and
 1-morphisms, and `x̂ ↦ x₀ + ζ_μ G ∘ x₁` on 2-morphisms (the paper's `𝕋_𝔄 x̂ := ζ_μ G ∘ x` for odd
@@ -210,7 +211,7 @@ def T : TwoSuperfunctor R (Associated2 R (Underlying2 R A)) A where
     simp only [comp₂_fst, comp₂_snd, Underlying2.comp₂_val, Underlying2.add₂_val,
       Underlying2.sub₂_val, PiTwoCategory.pi_map, Underlying2.whiskerRight_val, ξHom_val,
       Underlying2.pi_obj, Underlying2.pi_obj_obj,
-      Preadditive.add_comp, Preadditive.comp_add, Preadditive.sub_comp, Category.assoc,
+      Preadditive.add_comp, Preadditive.comp_add, Category.assoc,
       Preadditive.comp_neg, sub_neg_eq_add]
     rw [← h1, ← reassoc_of% h2]
     abel
@@ -244,6 +245,7 @@ def T : TwoSuperfunctor R (Associated2 R (Underlying2 R A)) A where
   map₂_leftUnitor f := by simp [id_whiskerRight (R := R)]
   map₂_rightUnitor f := by simp [whiskerLeft_id (R := R)]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 5.4.** `𝕋_𝔄` is bijective on 2-morphisms. -/
 theorem T_map₂_injective {a b : Associated2 R (Underlying2 R A)} {f g : a ⟶ b} {x y : f ⟶ g}
     (h : (T R A).map₂ x = (T R A).map₂ y) : x = y := by
@@ -269,8 +271,9 @@ variable (R A) in
 def Tinv₂ {a b : Associated2 R (Underlying2 R A)} {f g : a ⟶ b}
     (h : f.obj.obj ⟶ g.obj.obj) : f ⟶ g :=
   (⟨proj R 0 h, proj_mem 0 h⟩, ⟨proj R 1 h ≫ (ζG (R := R) g.obj.obj).inv,
-    by simpa using comp_mem (proj_mem 1 h) (inv_mem _ (ζG_hom_mem (R := R) g.obj.obj))⟩)
+    by simpa using! comp_mem (proj_mem 1 h) (inv_mem _ (ζG_hom_mem (R := R) g.obj.obj))⟩)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem T_map₂_Tinv₂ {a b : Associated2 R (Underlying2 R A)} {f g : a ⟶ b}
     (h : f.obj.obj ⟶ g.obj.obj) : (T R A).map₂ (Tinv₂ R A h) = h := by
   simp [Tinv₂, proj_add_proj]
