@@ -53,8 +53,8 @@ theorem wpar_append (u v : List (Fin 2)) : wpar (u ++ v) = wpar u + wpar v := by
 
 theorem neg_one_pow_eq_sign (n : ℕ) : (-1 : k) ^ n = sign k (n : ZMod 2) := by
   rcases Nat.even_or_odd n with h | h
-  · rw [h.neg_one_pow, (ZMod.eq_zero_iff_even).mpr h, sign_zero]
-  · rw [h.neg_one_pow, (ZMod.eq_one_iff_odd).mpr h, sign_one]
+  · rw [h.neg_one_pow, (ZMod.natCast_eq_zero_iff_even).mpr h, sign_zero]
+  · rw [h.neg_one_pow, (ZMod.natCast_eq_one_iff_odd).mpr h, sign_one]
 
 theorem psign_eq_sign (p : ℕ) (w : List (Fin 2)) : psign k p w = sign k (wpar (w.take p)) :=
   neg_one_pow_eq_sign _
@@ -91,7 +91,7 @@ theorem mem_sv_part {n : ℕ} {p : ZMod 2} {f : sv k n} :
   rw [SVec.mem_part_iff]
   constructor
   · intro h w hw
-    rw [← h, sv_proj_apply, if_neg hw]
+    rw [← h, sv_proj_apply, ite_eq_right hw]
   · intro h
     funext w
     rw [sv_proj_apply]
@@ -174,6 +174,7 @@ theorem Supp.opList {q : kˣ} {r : ZMod 2} {F : Fn k} (hF : Supp r F) (ls : List
     rw [LocalInterpretation.opList_cons, LinearMap.comp_apply]
     convert this using 1
     simp only [List.length_cons, Nat.cast_add, Nat.cast_one]; ring
+    rfl
 
 theorem supp_ext {n : ℕ} {r : ZMod 2} {f : sv k n} (hf : f ∈ (sv k n).part r) :
     Supp r (ext k n f) := by
@@ -181,7 +182,7 @@ theorem supp_ext {n : ℕ} {r : ZMod 2} {f : sv k n} (hf : f ∈ (sv k n).part r
   by_cases hl : w.length = n
   · rw [ext_apply_of_length k f hl]
     exact mem_sv_part.mp hf ⟨w, hl⟩ hw
-  · exact dif_neg hl
+  · exact dite_eq_right hl
 
 /-! ## The superfunctor -/
 
@@ -229,6 +230,7 @@ theorem repS_cap_vec (a b : Fin 2) :
     (repS k q).map (cap k δq 0 0) (vec ⟨[a, b], rfl⟩) ⟨[], rfl⟩ = capCoeff k q a b :=
   rep_cap_vec a b
 
+set_option backward.isDefEq.respectTransparency false in
 theorem repS_map_diag_mem {a b : Obj sig} (d : a ⟶ b) :
     (repS k q).map ((pres k δq).diag d) ∈
       SVec.parityHom ((repS k q).obj ((pres k δq).obj a)) ((repS k q).obj ((pres k δq).obj b))
@@ -237,6 +239,7 @@ theorem repS_map_diag_mem {a b : Obj sig} (d : a ⟶ b) :
   rw [repS_map_diag_apply]
   exact (supp_ext hx).opList (q := q) _ _ hw
 
+set_option backward.isDefEq.respectTransparency false in
 instance instIsSuperfunctor : IsSuperfunctor k (repS k q) where
   map_mem {X Y p f} hf := by
     change f ∈ (pres k δq).homDeg (Presentation.parityDeg sig) X.as Y.as p at hf
@@ -287,7 +290,7 @@ theorem catE_tmul {m n L : ℕ} (h : m + n = L) (x : Word m → k) (y : Word n �
       (fun _ _ _ => by funext; simp [mul_add]) (fun _ _ _ => by funext; simp [mul_left_comm])
   have e : (catE k h).toLinearMap = TensorProduct.lift B := by
     refine ((Pi.basisFun k (Word m)).tensorProduct (Pi.basisFun k (Word n))).ext fun i => ?_
-    rw [LinearEquiv.coe_coe, catE, Basis.equiv_apply, Basis.tensorProduct_apply',
+    rw [LinearEquiv.coe_coe, catE, Module.Basis.equiv_apply, Module.Basis.tensorProduct_apply',
       TensorProduct.lift.tmul]
     funext w
     simp only [B, LinearMap.mk₂_apply, Pi.basisFun_apply, Pi.single_apply]
@@ -307,7 +310,7 @@ theorem catE_tmul' {m n L : ℕ} (h : m + n = L) (x : Word m → k) (y : Word n 
 def catF (m : ℕ) (F G : Fn k) : Fn k := fun w => F (w.take m) * G (w.drop m)
 
 theorem ext_apply_of_ne {n : ℕ} (f : Word n → k) {w : List (Fin 2)} (h : w.length ≠ n) :
-    ext k n f w = 0 := dif_neg h
+    ext k n f w = 0 := dite_eq_right h
 
 theorem ext_catE {m n L : ℕ} (h : m + n = L) (x : Word m → k) (y : Word n → k) :
     ext k L (catE k h (x ⊗ₜ y)) = catF m (ext k m x) (ext k n y) := by
@@ -330,7 +333,7 @@ theorem del_eq_append (p : ℕ) (w : List (Fin 2)) : del p w = w.take p ++ w.dro
   | succ p ih =>
     rcases w with _ | ⟨a, w⟩
     · simp [del]
-    · simp [del, ih, Nat.add_right_comm]
+    · simp [del, ih]
 
 theorem take_del_add (m p : ℕ) (w : List (Fin 2)) : (del (m + p) w).take m = w.take m := by
   induction m generalizing w with
@@ -382,7 +385,7 @@ theorem getD_drop (m p : ℕ) (w : List (Fin 2)) : (w.drop m).getD p 0 = w.getD 
   simp [List.getD_eq_getElem?_getD]
 
 theorem getD_take {p j : ℕ} (h : p < j) (w : List (Fin 2)) : (w.take j).getD p 0 = w.getD p 0 := by
-  simp [List.getD_eq_getElem?_getD, List.getElem?_take, h]
+  simp [List.getD_eq_getElem?_getD, h]
 
 theorem psign_mul_of_supp {r : ZMod 2} {F : Fn k} (hF : Supp r F) (m : ℕ) (w : List (Fin 2)) :
     psign k m w * F (w.take m) = sign k r * F (w.take m) := by
@@ -390,6 +393,7 @@ theorem psign_mul_of_supp {r : ZMod 2} {F : Fn k} (hF : Supp r F) (m : ℕ) (w :
   · rw [psign_eq_sign, h]
   · rw [hF _ h, mul_zero, mul_zero]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A layer whiskered on the left by `m` strands acts on `F · G`, `F` of parity `r`, through the
 Koszul sign `(-1)^r`. -/
 theorem op_wl_catF (a : Obj sig) (L : Layer sig) {r : ZMod 2} {F : Fn k} (hF : Supp r F)
@@ -400,7 +404,7 @@ theorem op_wl_catF (a : Obj sig) (L : Layer sig) {r : ZMod 2} {F : Fn k} (hF : S
   cases g with
   | cup =>
     change cupOp k q (a.word ++ l).length _ w = _
-    simp only [List.length_append, cupOp_apply, catF, op_cup, LinearMap.smul_apply,
+    simp only [List.length_append, cupOp_apply, catF, op_cup,
       Pi.smul_apply, smul_eq_mul] at hw ⊢
     generalize a.word.length = m at *
     rw [psign_add, getD_drop, getD_drop, take_del_add, drop_del_add, ← Nat.add_assoc]
@@ -409,7 +413,7 @@ theorem op_wl_catF (a : Obj sig) (L : Layer sig) {r : ZMod 2} {F : Fn k} (hF : S
       (w.getD (m + l.length + 1) 0) * G (del l.length (w.drop m))) * this
   | cap =>
     change capOp k q (a.word ++ l).length _ w = _
-    simp only [List.length_append, capOp_apply, catF, op_cap, LinearMap.smul_apply,
+    simp only [List.length_append, capOp_apply, catF, op_cap,
       Pi.smul_apply, smul_eq_mul] at hw ⊢
     generalize a.word.length = m at *
     rw [psign_add]
@@ -421,6 +425,7 @@ theorem op_wl_catF (a : Obj sig) (L : Layer sig) {r : ZMod 2} {F : Fn k} (hF : S
     linear_combination (capCoeff k q b c * psign k l.length (w.drop m) *
       G (ins l.length b c (w.drop m))) * this
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A layer whiskered on the right acts on `F · G` through its action on `F`. -/
 theorem op_wr_catF (L : Layer sig) (v : List Unit) (F G : Fn k) {w : List (Fin 2)}
     (hw : L.cod.word.length ≤ w.length) :
@@ -482,7 +487,7 @@ theorem opList_wl_catF (a : Obj sig) {b b' : Obj sig} {ls : List (Layer sig)} (h
       simp only [Obj.tensor, List.length_append, Layer.cod_word] at hw'
       exact op_wl_catF a L hF G (by omega)
     rw [opList_agree (hc.wl a) h1 w (by simp [Obj.tensor]; omega), ih hc _ w hw]
-    simp only [catF, map_smul, LinearMap.smul_apply, Pi.smul_apply, smul_eq_mul, List.length_cons,
+    simp only [catF, map_smul, Pi.smul_apply, smul_eq_mul, List.length_cons,
       Nat.cast_add, Nat.cast_one, mul_add, mul_one, sign_add]
     ring
 
@@ -508,6 +513,7 @@ theorem opList_wr_catF {a a' : Obj sig} {ls : List (Layer sig)} (hc : Chain a ls
 
 /-! ## The monoidal structure -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem catE_mem_part {m n L : ℕ} (h : m + n = L) {a b : ZMod 2} {x : sv k m} {y : sv k n}
     (hx : x ∈ (sv k m).part a) (hy : y ∈ (sv k n).part b) :
     (catE k h (x ⊗ₜ y) : sv k L) ∈ (sv k L).part (a + b) := by
@@ -563,6 +569,7 @@ theorem μIso_hom_apply (X Y : STL k δq) (x : (repS k q).obj X) (y : (repS k q)
           by rw [List.length_drop, w.2, ← length_tensor]; omega⟩ :=
   catE_tmul' _ x y w
 
+set_option backward.isDefEq.respectTransparency false in
 theorem μIso_mem (X Y : STL k δq) :
     (μIso k q X Y).hom ∈ parity (R := k) ((repS k q).obj X ⊗ (repS k q).obj Y)
       ((repS k q).obj (X ⊗ Y)) 0 := by
@@ -575,6 +582,7 @@ theorem μIso_mem (X Y : STL k δq) :
   · rfl
   · exact map_zero _
 
+set_option backward.isDefEq.respectTransparency false in
 theorem εIso_mem : (εIso k q).hom ∈ parity (R := k) _ _ 0 := by
   intro r
   refine LinearMap.ext fun c => funext fun w => ?_
@@ -583,8 +591,9 @@ theorem εIso_mem : (εIso k q).hom ∈ parity (R := k) _ _ 0 := by
   rw [sv_proj_apply]
   obtain rfl : w = ⟨[], rfl⟩ := Subtype.ext (List.eq_nil_of_length_eq_zero w.2)
   rcases parity_eq_zero_or_one r with rfl | rfl
-  · exact (SVec.unit_proj_zero_apply (k := k) c).trans (if_pos rfl).symm
-  · exact (SVec.unit_proj_one_apply (k := k) c).trans (if_neg (show wpar [] ≠ 1 by decide)).symm
+  · exact (SVec.unit_proj_zero_apply (k := k) c).trans (ite_eq_left rfl).symm
+  · exact (SVec.unit_proj_one_apply (k := k) c).trans
+      (ite_eq_right (show wpar [] ≠ 1 by decide)).symm
 
 
 omit [CommRing k] in
@@ -599,6 +608,7 @@ theorem repS_map_eqToHom {X Y : STL k δq} (h : X = Y) (x : (repS k q).obj X)
   rw [eqToHom_refl, CategoryTheory.Functor.map_id]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem μ_natural_left {X Y : STL k δq} (f : X ⟶ Y) (X' : STL k δq) :
     (repS k q).map f ▷ (repS k q).obj X' ≫ (μIso k q Y X').hom =
       (μIso k q X X').hom ≫ (repS k q).map (f ▷ X') := by
@@ -633,6 +643,7 @@ theorem μ_natural_left {X Y : STL k δq} (f : X ⟶ Y) (X' : STL k δq) :
       Linear.comp_smul, hf]
 
 
+set_option backward.isDefEq.respectTransparency false in
 theorem μ_natural_right {X Y : STL k δq} (X' : STL k δq) (f : X ⟶ Y) :
     (repS k q).obj X' ◁ (repS k q).map f ≫ (μIso k q X' Y).hom =
       (μIso k q X' X).hom ≫ (repS k q).map (X' ◁ f) := by
@@ -652,10 +663,9 @@ theorem μ_natural_right {X Y : STL k δq} (X' : STL k δq) (f : X ⟶ Y) :
     erw [opList_wl_catF X'.as (Diagram.chain d) (supp_ext hx) _ w.1
       (by rw [w.2]; exact List.length_append)]
     rw [Pi.smul_apply, μIso_hom_apply]
-    simp only [catF, LinearMap.smul_apply, Pi.smul_apply, smul_eq_mul]
+    simp only [catF, Pi.smul_apply, smul_eq_mul]
     rw [repS_map_diag_apply, ext_apply_of_length k x
       (by rw [List.length_take, w.2]; change min _ (X'.as.word ++ Y.as.word).length = _; simp; rfl)]
-    change _ = _ * (_ * (loc k q).opList (Diagram.layers d) _ _)
     ring_nf
     rfl
   | zero =>
@@ -689,7 +699,7 @@ theorem μ_associativity (X Y Z : STL k δq) :
     change (X.as.word ++ (Y.as.word ++ Z.as.word)).length = _; simp
   refine congr_arg₂ (· * ·) (app_congr x _ _ ?_)
     (congr_arg₂ (· * ·) (app_congr y _ _ ?_) (app_congr z _ _ ?_)) <;>
-  simp [List.take_take, List.drop_take, List.drop_drop, Obj.tensor, Presentation.toObj, h1, h2]
+  simp [List.take_take, List.drop_take, List.drop_drop, Presentation.toObj, h1]
 
 
 theorem μ_left_unitality (X : STL k δq) :
