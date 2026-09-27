@@ -179,7 +179,7 @@ def toTwoSuperfunctor : TwoSuperfunctor R B C where
   map₂_associator f g h := by
     simp only [eqToIso.hom, whiskerLeft_eqToHom R, eqToHom_whiskerRight R,
       F.map₂_associator_inv_eq, eqToHom_trans_assoc, eqToHom_refl, Category.id_comp,
-      Category.comp_id, Category.assoc, eqToHom_trans]
+      eqToHom_trans]
   map₂_leftUnitor f := by
     simp only [eqToIso.hom, eqToHom_whiskerRight R, F.map₂_leftUnitor_eq, eqToHom_trans_assoc,
       eqToHom_refl, Category.id_comp, Category.comp_id]

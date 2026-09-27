@@ -26,6 +26,7 @@ noncomputable section
 namespace StringDiagrams
 
 open CategoryTheory Supercategory BicategoryStruct TwoSupercategory
+open scoped Oplax.OplaxTrans
 
 universe w₁ v₁ u₁ w₂ v₂ u₂ w₃ v₃ u₃ w
 
@@ -171,6 +172,7 @@ def toOplaxTrans (θ : TwoNatTrans F G) : F.toOplax ⟶ G.toOplax where
 @[simp] theorem toOplaxTrans_naturality (θ : TwoNatTrans F G) {a b : Underlying2 R B}
     (f : a ⟶ b) : ((toOplaxTrans θ).naturality f).1 = θ.x f.obj := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- An oplax transformation of the induced oplax functors which is natural with respect to all
 (not necessarily even) 2-morphisms, as a 2-natural transformation. -/
 def ofOplaxTrans (η : F.toOplax ⟶ G.toOplax)
