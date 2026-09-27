@@ -69,11 +69,12 @@ theorem precomp_comm {a b c : B} (f : a ⟶ b) (g : b ⟶ c) :
   rw [key, Iso.hom_inv_id]
   bicategory
 
+set_option backward.isDefEq.respectTransparency false in
 variable (R) in
 /-- `F ≫ -` is a Π-functor with `β := a`. -/
 def precompPi (c : B) {a b : B} (f : a ⟶ b) : PiFunctor R (precomp c f) where
   β := NatIso.ofComponents (fun g => α_ f g (𝛑 c)) fun η => by
-    simp [associator_naturality_middle]
+    simp
   comm g := precomp_comm f g
 
 @[simp] theorem precompPi_β_hom_app (c : B) {a b : B} (f : a ⟶ b) (g : b ⟶ c) :
@@ -284,10 +285,11 @@ def lNat (b c : B) : precomp c (𝟙 b) ⟶ 𝟭 (b ⟶ c) where
   app g := (λ_ g).hom
   naturality _ _ η := leftUnitor_naturality η
 
+set_option backward.isDefEq.respectTransparency false in
 theorem lNat_isPiNatural (b c : B) :
     IsPiNatural R (precompPi R c (𝟙 b)) (PiFunctor.id R (b ⟶ c)) (lNat b c) := fun g => by
   simp only [lNat, precompPi_β_hom_app, PiFunctor.id_β, Iso.refl_hom, NatTrans.id_app,
-    Functor.id_obj, Category.comp_id, pi_obj, pi_map]
+    Functor.id_obj, pi_obj, pi_map]
   bicategory
 
 /-- `ρ` as a Π-natural transformation `- ≫ 1 ⟶ -` (this uses `β_{1} = 1`). -/
@@ -295,10 +297,11 @@ def rNat (a b : B) : postcomp a (𝟙 b) ⟶ 𝟭 (a ⟶ b) where
   app f := (ρ_ f).hom
   naturality _ _ η := rightUnitor_naturality η
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rNat_isPiNatural (a b : B) :
     IsPiNatural R (postcompPi R a (𝟙 b)) (PiFunctor.id R (a ⟶ b)) (rNat a b) := fun f => by
   simp only [rNat, postcompPi_β_hom_app, PiFunctor.id_β, Iso.refl_hom, NatTrans.id_app,
-    Functor.id_obj, Category.comp_id, pi_obj, pi_map, βR_hom, β_id]
+    Functor.id_obj, pi_obj, pi_map, βR_hom, β_id]
   bicategory
 
 /-- `α_{F,G,-}` as a Π-natural transformation `(F ≫ G) ≫ - ⟶ F ≫ G ≫ -`. -/
@@ -307,11 +310,12 @@ def αNatRight (d : B) {a b c : B} (f : a ⟶ b) (g : b ⟶ c) :
   app h := (α_ f g h).hom
   naturality _ _ η := associator_naturality_right f g η
 
+set_option backward.isDefEq.respectTransparency false in
 theorem αNatRight_isPiNatural (d : B) {a b c : B} (f : a ⟶ b) (g : b ⟶ c) :
     IsPiNatural R (precompPi R d (f ≫ g)) ((precompPi R d g).comp (precompPi R d f))
       (αNatRight d f g) := fun h => by
   simp only [αNatRight, precompPi_β_hom_app, PiFunctor.comp_β, NatIso.ofComponents_hom_app,
-    Iso.trans_hom, Iso.app_hom, Functor.mapIso_hom, Functor.comp_obj, precomp_obj, precomp_map,
+    Iso.trans_hom, Iso.app_hom, Functor.mapIso_hom, Functor.comp_obj, precomp_map,
     pi_obj, pi_map]
   bicategory
 
@@ -322,11 +326,12 @@ def αNatLeft (a : B) {b c d : B} (g : b ⟶ c) (h : c ⟶ d) :
   app f := (α_ f g h).hom
   naturality _ _ η := associator_naturality_left η g h
 
+set_option backward.isDefEq.respectTransparency false in
 theorem αNatLeft_isPiNatural (a : B) {b c d : B} (g : b ⟶ c) (h : c ⟶ d) :
     IsPiNatural R ((postcompPi R a g).comp (postcompPi R a h)) (postcompPi R a (g ≫ h))
       (αNatLeft a g h) := fun f => by
   simp only [αNatLeft, postcompPi_β_hom_app, PiFunctor.comp_β, NatIso.ofComponents_hom_app,
-    Iso.trans_hom, Iso.app_hom, Functor.mapIso_hom, Functor.comp_obj, postcomp_obj,
+    Iso.trans_hom, Iso.app_hom, Functor.mapIso_hom, Functor.comp_obj,
     postcomp_map, pi_obj, pi_map, βR_hom, β_comp]
   bicategory
 
@@ -336,24 +341,28 @@ def αNatMiddle {a b c d : B} (f : a ⟶ b) (h : c ⟶ d) :
   app g := (α_ f g h).hom
   naturality _ _ η := associator_naturality_middle f η h
 
+set_option backward.isDefEq.respectTransparency false in
 theorem αNatMiddle_isPiNatural {a b c d : B} (f : a ⟶ b) (h : c ⟶ d) :
     IsPiNatural R ((precompPi R c f).comp (postcompPi R a h))
       ((postcompPi R b h).comp (precompPi R d f)) (αNatMiddle f h) := fun g => by
   simp only [αNatMiddle, postcompPi_β_hom_app, precompPi_β_hom_app, PiFunctor.comp_β,
     NatIso.ofComponents_hom_app, Iso.trans_hom, Iso.app_hom, Functor.mapIso_hom,
-    Functor.comp_obj, postcomp_obj, postcomp_map, precomp_obj, precomp_map, pi_obj, pi_map,
+    Functor.comp_obj, postcomp_map, precomp_map, pi_obj, pi_map,
     βR_hom]
   bicategory
 
 end Naturality
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_map_map {C D E : Type*} [Category C] [Preadditive C] [Linear R C] [PiCategory R C]
     [Category D] [Preadditive D] [Linear R D] [PiCategory R D] [Category E] [Preadditive E]
     [Linear R E] [PiCategory R E] {F : C ⥤ D} {G : D ⥤ E} [F.Additive] [G.Additive]
     (hF : PiFunctor R F) (hG : PiFunctor R G) {X Y : Associated R C} (f : X ⟶ Y) :
     (Associated.map hG).map ((Associated.map hF).map f) = (Associated.map (hF.comp hG)).map f := by
   ext <;> simp
+  rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem map_id_map {C : Type*} [Category C] [Preadditive C] [Linear R C] [PiCategory R C]
     {X Y : Associated R C} (f : X ⟶ Y) : (Associated.map (PiFunctor.id R C)).map f = f := by
   ext <;> simp
@@ -381,6 +390,7 @@ theorem mem_parity_zero' {f g : a ⟶ b} {η : f ⟶ g} :
 theorem mem_parity_one' {f g : a ⟶ b} {η : f ⟶ g} :
     η ∈ parity (R := R) f g 1 ↔ η.1 = 0 := Associated.mem_parity_one
 
+set_option backward.isDefEq.respectTransparency false in
 theorem super_interchange' {f g : a ⟶ b} {h i : b ⟶ c} {p q : ZMod 2} {η : f ⟶ g}
     {θ : h ⟶ i} (hη : η ∈ parity (R := R) f g p) (hθ : θ ∈ parity (R := R) h i q) :
     η ▷ h ≫ g ◁ θ = koszulSign p q • (f ◁ θ ≫ η ▷ i) := by
@@ -421,6 +431,7 @@ theorem super_interchange' {f g : a ⟶ b} {h i : b ⟶ c} {p q : ZMod 2} {η : 
       simp
     · simp [hη, hθ]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, (5.5), `D₂` on objects.** The associated `𝔄̂` of a Π-2-category is a
 2-supercategory. -/
 instance twoSupercategory : TwoSupercategory R (Associated2 R B) where
@@ -453,7 +464,7 @@ instance twoSupercategory : TwoSupercategory R (Associated2 R B) where
     rw [← map_map_map, ← map_map_map] at e
     change (f ◁ η) ▷ h ≫ (associator f g' h).hom = (associator f g h).hom ≫ f ◁ (η ▷ h) at e
     rw [← Category.assoc, ← e, Category.assoc, Iso.hom_inv_id, Category.comp_id]
-  pentagon f g h i := by ext <;> simp [Associated.homMk_comp_homMk_even]
+  pentagon f g h i := by ext <;> simp
   triangle f g := by ext <;> simp
   whiskerLeft_add f _ _ η θ := (Associated.map (precompPi R _ f.obj)).map_add
   add_whiskerRight η θ h := (Associated.map (postcompPi R _ h.obj)).map_add
@@ -466,6 +477,7 @@ instance twoSupercategory : TwoSupercategory R (Associated2 R B) where
   leftUnitor_hom_mem _ := Associated.mem_parity_zero.2 rfl
   rightUnitor_hom_mem _ := Associated.mem_parity_zero.2 rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The corrected odd–odd horizontal rule of (5.5).** For odd `x̂ : F ⇒ H` and `ŷ : G ⇒ K`
 coming from `x : F ⇒ π_μ H` and `y : G ⇒ π_ν K`, the horizontal composite `ŷx̂` in `𝔄̂` is the
 even 2-morphism `ξ_ν KH ∘ π_ν (β_{ν,μ})⁻¹_K H ∘ yx` (with associators), *without* the minus
@@ -482,7 +494,7 @@ theorem hcomp_odd_odd {f h : a ⟶ b} {g k : b ⟶ c} {x : f ⟶ h} {y : g ⟶ k
   · simp only [TwoSupercategory.hcomp, comp₂_fst, whiskerRight_fst, whiskerLeft_fst,
       whiskerRight_snd, whiskerLeft_snd, hx, hy, PreadditiveBicategory.zero_whiskerRight,
       PreadditiveBicategory.whiskerLeft_zero, Limits.zero_comp, zero_sub,
-      Associated.homMk_fst, pi_map, Bicategory.comp_whiskerRight, Category.assoc]
+      Associated.homMk_fst, Bicategory.comp_whiskerRight, Category.assoc]
     rw [← Category.assoc ((βR (R := R) h.obj g.obj).inv), ← βR_inv_naturality_right, βR_inv]
     erw [β_pi_comp_inv]
     simp only [PreadditiveBicategory.whiskerLeft_neg, Preadditive.neg_comp, Preadditive.comp_neg,
@@ -497,15 +509,19 @@ theorem hcomp_odd_odd {f h : a ⟶ b} {g k : b ⟶ c} {x : f ⟶ h} {y : g ⟶ k
 def ζ (a : Associated2 R B) : (⟨𝛑 a.obj⟩ : a ⟶ a) ≅ 𝟙 a :=
   Associated.evenIso (λ_ (𝛑 a.obj)).symm ≪≫ Associated.ζIso (X := (⟨𝟙 a.obj⟩ : Associated R _))
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem ζ_hom_fst (a : Associated2 R B) : (ζ (R := R) a).hom.1 = 0 := by
   simp [ζ, Associated.ζIso]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem ζ_hom_snd (a : Associated2 R B) : (ζ (R := R) a).hom.2 = (λ_ (𝛑 a.obj)).inv := by
   simp [ζ, Associated.ζIso]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem ζ_inv_fst (a : Associated2 R B) : (ζ (R := R) a).inv.1 = 0 := by
   simp [ζ, Associated.ζIso]
 
+set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem ζ_inv_snd (a : Associated2 R B) :
     (ζ (R := R) a).inv.2 = -((ξHom (R := R) (𝟙 a.obj)).inv ≫ (λ_ (𝛑 a.obj)).hom ▷ 𝛑 a.obj) := by
   simp [ζ, Associated.ζIso]
@@ -522,6 +538,7 @@ instance instPiTwoSupercategory : PiTwoSupercategory R (Associated2 R B) where
 
 theorem ζ_eq (a : Associated2 R B) : PiTwoSupercategory.ζ (R := R) a = ζ a := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 5.4, `E₂ ∘ D₂ = I` on `β`.** The `β` of Lemma 3.2 for `𝔄̂` is `β` of `𝔄`, viewed as an
 even 2-morphism. -/
 theorem β_hom_eq (f : a ⟶ b) :
@@ -537,6 +554,7 @@ theorem β_hom_eq (f : a ⟶ b) :
     simp only [Iso.inv_hom_id_assoc]
     rw [← leftUnitor_inv_naturality_assoc, Iso.hom_inv_id_assoc]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Lemma 5.4, `E₂ ∘ D₂ = I` on `ξ`.** The `ξ = ζζ` of Lemma 3.2(iv) for `𝔄̂` is `ξ` of `𝔄`,
 viewed as an even 2-morphism. This uses the corrected signs of (5.5). -/
 theorem ξ_hom_eq (a : Associated2 R B) :

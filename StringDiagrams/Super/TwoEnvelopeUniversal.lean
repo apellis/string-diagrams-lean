@@ -263,7 +263,7 @@ theorem extendComp_naturality_right (f : a ⟶ b) {g g' : b ⟶ c} (θ : g ⟶ g
     simp only [extendCompAux, Linear.comp_smul, Linear.smul_comp]
     rw [reassoc_of% hi'.symm]
     simp only [whiskerLeft_comp (R := R), Category.assoc, whiskerLeft_inv_hom'_assoc R,
-      Iso.inv_hom_id_assoc, Linear.smul_comp, Linear.comp_smul]
+      Iso.inv_hom_id_assoc, Linear.smul_comp]
     rw [reassoc_of% (F.mapComp_naturality_right _ _), koszulSign_smul (R := R), smul_smul,
       smul_smul, ← sign_add, ← sign_add]
     congr 2
@@ -429,6 +429,7 @@ theorem extendComp_J_id (f : a.as ⟶ b.as) :
   rw [id_whiskerRight (R := R), whiskerLeft_id (R := R), mul_zero, sign_zero, one_smul,
     Category.id_comp, Category.id_comp, Category.comp_id]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extend_leftUnitor (f : a ⟶ b) :
     (F.mapId a.as).hom ▷ (F̃ a b).obj f ≫ (extendComp F (𝟙 a) f).hom ≫
         (F̃ a b).map (leftUnitor f).hom = (leftUnitor ((F̃ a b).obj f)).hom := by
@@ -453,6 +454,7 @@ theorem extend_leftUnitor (f : a ⟶ b) :
   rw [e]
   exact F.map₂_leftUnitor f.obj
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extend_rightUnitor (f : a ⟶ b) :
     (F̃ a b).obj f ◁ (F.mapId b.as).hom ≫ (extendComp F f (𝟙 b)).hom ≫
         (F̃ a b).map (rightUnitor f).hom = (rightUnitor ((F̃ a b).obj f)).hom := by
@@ -716,6 +718,7 @@ theorem restrictTwoNatTrans_extendTwoNatTrans (θ : TwoNatTrans F G) :
   twoNatTrans_ext rfl fun {a b} f =>
     heq_of_eq (extendX_J (a := (⟨a⟩ : TwoEnvelope R B)) (b := ⟨b⟩) θ f)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A 2-natural transformation `ℝ̃ ⇒ 𝕊̃` is the extension of its restriction. -/
 theorem extendTwoNatTrans_restrictTwoNatTrans (ψ : TwoNatTrans (extend F) (extend G)) :
     extendTwoNatTrans (restrictTwoNatTrans ψ) = ψ := by
@@ -748,6 +751,7 @@ def extendTwoNatTransEquiv : TwoNatTrans F G ≃ TwoNatTrans (extend F) (extend 
 
 /-! ## Remark 4.10 and Theorem 4.9 on morphism supercategories -/
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extend_naturality_of_mem {θ θ' : TwoNatTrans F G} {p : ZMod 2}
     (α : ∀ a : B, θ.X a ⟶ θ'.X a) (hα : ∀ a, α a ∈ parity (R := R) _ _ p)
     (nat : ∀ {a b : B} (f : a ⟶ b), θ.x f ≫ α a ▷ G.map f = F.map f ◁ α b ≫ θ'.x f)
@@ -762,6 +766,7 @@ theorem extend_naturality_of_mem {θ θ' : TwoNatTrans F G} {p : ZMod 2}
     h₂, Linear.smul_comp, smul_smul, koszulSign_comm, koszulSign_mul_self, one_smul]
   simp only [Category.assoc]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extend_naturality {θ θ' : TwoNatTrans F G} (α : θ ⟶ θ') {a b : TwoEnvelope R B}
     (f : a ⟶ b) :
     (extendTwoNatTrans θ).x f ≫ α.app a.as ▷ (extend G).map f =
@@ -807,6 +812,7 @@ instance : (extendHom F G).Faithful where
     have := congrArg (fun γ : extendTwoNatTrans θ ⟶ extendTwoNatTrans θ' => γ.app ⟨a⟩) h
     exact this
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (extendHom F G).Full where
   map_surjective {θ θ'} γ := ⟨⟨fun a => γ.app ⟨a⟩, fun {a b} f => by
       have := γ.naturality ((J R (a ⟶ b)).obj f : (⟨a⟩ : TwoEnvelope R B) ⟶ ⟨b⟩)
@@ -816,8 +822,7 @@ instance : (extendHom F G).Full where
       have h₂ : (extendTwoNatTrans θ').x
           ((J R (a ⟶ b)).obj f : (⟨a⟩ : TwoEnvelope R B) ⟶ ⟨b⟩) = θ'.x f :=
         extendX_J (a := (⟨a⟩ : TwoEnvelope R B)) (b := ⟨b⟩) θ' f
-      simp only [extendHom_obj] at this
-      rw [h₁, h₂] at this
+      erw [h₁, h₂] at this
       exact this⟩,
     TwoNatTrans.hom_ext fun _ => rfl⟩
 
@@ -1099,8 +1104,9 @@ theorem extendRestrictX_mem {a b : TwoEnvelope R B} (f : a ⟶ b) :
     extendRestrictX T f ∈ parity (R := R) _ _ 0 := by
   have := comp_mem (rightUnitor_hom_mem (R := R) _)
     (comp_mem (extendRestrictApp_mem T f) (inv_mem _ (leftUnitor_hom_mem (R := R) _)))
-  simpa using this
+  simpa using! this
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extendRestrictX_naturality {a b : TwoEnvelope R B} {f g : a ⟶ b} (η : f ⟶ g) :
     (extend (restrict T)).map₂ η ▷ 𝟙 (T.obj b) ≫ extendRestrictX T g =
       extendRestrictX T f ≫ 𝟙 (T.obj a) ◁ T.map₂ η := by
@@ -1109,6 +1115,7 @@ theorem extendRestrictX_naturality {a b : TwoEnvelope R B} {f g : a ⟶ b} (η :
     leftUnitor_inv_naturality R]
   simp only [Category.assoc]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 4.9**, even density: every 2-superfunctor `𝕋 : 𝔄_π → 𝔅` is isomorphic to the
 extension `(𝕋𝕁)~` of its restriction, by the 2-natural transformation with identity
 1-morphisms and 2-morphisms the even isomorphisms of Theorem 4.3. -/
@@ -1142,6 +1149,7 @@ def extendRestrictNatTrans : TwoNatTrans (extend (restrict T)) T where
     erw [unitors_inv_equal R (T.obj a), Iso.hom_inv_id_assoc]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extendRestrictNatTrans_isStrong : (extendRestrictNatTrans T).IsStrong := fun f => by
   show IsIso ((rightUnitor _).hom ≫ extendRestrictApp T f ≫ (leftUnitor _).inv)
   have : IsIso (extendRestrictApp T f) :=
@@ -1167,8 +1175,9 @@ theorem extendRestrictInvX_mem {a b : TwoEnvelope R B} (f : a ⟶ b) :
   have := comp_mem (rightUnitor_hom_mem (R := R) _)
     (comp_mem (extendRestrictIso_inv_mem (H := homFunctor T a b) f)
       (inv_mem _ (leftUnitor_hom_mem (R := R) _)))
-  simpa using this
+  simpa using! this
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extendRestrictInvX_naturality {a b : TwoEnvelope R B} {f g : a ⟶ b} (η : f ⟶ g) :
     T.map₂ η ▷ 𝟙 (T.obj b) ≫ extendRestrictInvX T g =
       extendRestrictInvX T f ≫ 𝟙 (T.obj a) ◁ (extend (restrict T)).map₂ η := by
@@ -1179,6 +1188,7 @@ theorem extendRestrictInvX_naturality {a b : TwoEnvelope R B} {f g : a ⟶ b} (�
   simp only [Category.assoc]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **Theorem 4.9**, even density: the inverse 2-natural transformation `𝕋 ⇒ (𝕋𝕁)~`. -/
 def extendRestrictNatTransInv : TwoNatTrans T (extend (restrict T)) where
   X a := 𝟙 (T.obj a)
@@ -1211,19 +1221,21 @@ def extendRestrictNatTransInv : TwoNatTrans T (extend (restrict T)) where
     simp only [Iso.hom_inv_id_assoc]
     rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem extendRestrictNatTransInv_isStrong : (extendRestrictNatTransInv T).IsStrong := fun f => by
   show IsIso ((rightUnitor _).hom ≫ extendRestrictAppInv T f ≫ (leftUnitor _).inv)
   have : IsIso (extendRestrictAppInv T f) :=
     inferInstanceAs (IsIso ((extendRestrictIso (homFunctor T _ _)).app f).inv)
   infer_instance
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The components of `extendRestrictNatTrans` and `extendRestrictNatTransInv` are mutually
 inverse up to the unitors: `x_F ≫ λ ≫ ρ⁻¹ ≫ x'_F = ρ ≫ λ⁻¹`. -/
 theorem extendRestrictX_comp_inv {a b : TwoEnvelope R B} (f : a ⟶ b) :
     extendRestrictX T f ≫ (leftUnitor _).hom ≫ (rightUnitor _).inv ≫ extendRestrictInvX T f =
       (rightUnitor _).hom ≫ (leftUnitor _).inv := by
   simp only [extendRestrictX, extendRestrictInvX, extendRestrictApp, extendRestrictAppInv,
-    Category.assoc, Iso.inv_hom_id_assoc, Iso.hom_inv_id_assoc]
+    Category.assoc, Iso.inv_hom_id_assoc]
   rw [← NatTrans.comp_app_assoc, Iso.hom_inv_id, NatTrans.id_app, Category.id_comp]
 
 end TwoEnvelope
