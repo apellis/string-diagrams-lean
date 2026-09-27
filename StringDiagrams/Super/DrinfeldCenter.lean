@@ -48,7 +48,7 @@ noncomputable section
 namespace StringDiagrams
 
 open CategoryTheory Supercategory BicategoryStruct TwoSupercategory
-open scoped Oplax.OplaxTrans
+open scoped Oplax.OplaxTrans Oplax.OplaxTrans.OplaxFunctor
 
 universe w v u w₁
 
@@ -121,7 +121,7 @@ def ofOplax (η : idU R B ⟶ idU R B)
       Underlying2.comp_obj,
       Underlying2.hom1_obj] at h
     simp only [TwoSuperfunctor.id_map, Iso.refl_hom]
-    rw [whiskerLeft_id (R := R), id_whiskerRight (R := R), Category.id_comp,
+    erw [whiskerLeft_id (R := R), id_whiskerRight (R := R), Category.id_comp,
       Category.comp_id] at h
     rw [id_whiskerRight (R := R), whiskerLeft_id (R := R), Category.id_comp, Category.comp_id]
     exact h
@@ -153,7 +153,8 @@ def ofOplax (η : idU R B ⟶ idU R B)
 /-- A modification of the associated oplax transformations (whose components are even) as a
 supermodification. -/
 @[simps]
-def homOfModification {θ θ' : EndId R B} (Γ : Oplax.OplaxTrans.Modification θ.toOplax θ'.toOplax) :
+def homOfModification {θ θ' : EndId R B}
+    (Γ : Oplax.OplaxTrans.Modification θ.toOplax θ'.toOplax) :
     θ ⟶ θ' where
   app a := (Γ.app ⟨a⟩).1
   naturality f := (congrArg Subtype.val (Γ.naturality (Underlying2.hom1 f))).symm
@@ -165,9 +166,11 @@ def isoOfModificationIso {θ θ' : EndId R B} (e : θ.toOplax ≅ θ'.toOplax) :
   hom := homOfModification e.hom.as
   inv := homOfModification e.inv.as
   hom_inv_id := hom_ext fun a =>
-    congrArg (fun Γ => Subtype.val (Oplax.OplaxTrans.Modification.app (Oplax.OplaxTrans.Hom.as Γ) ⟨a⟩)) e.hom_inv_id
+    congrArg (fun Γ => Subtype.val
+      (Oplax.OplaxTrans.Modification.app (Oplax.OplaxTrans.Hom.as Γ) ⟨a⟩)) e.hom_inv_id
   inv_hom_id := hom_ext fun a =>
-    congrArg (fun Γ => Subtype.val (Oplax.OplaxTrans.Modification.app (Oplax.OplaxTrans.Hom.as Γ) ⟨a⟩)) e.inv_hom_id
+    congrArg (fun Γ => Subtype.val
+      (Oplax.OplaxTrans.Modification.app (Oplax.OplaxTrans.Hom.as Γ) ⟨a⟩)) e.inv_hom_id
 
 end TwoNatTrans
 
@@ -368,7 +371,6 @@ def isoMk {X Y : DrinfeldCenter R B} (e : X.toTwoNatTrans ≅ Y.toTwoNatTrans) :
   hom_inv_id := e.hom_inv_id
   inv_hom_id := e.inv_hom_id
 
-set_option backward.isDefEq.respectTransparency false in
 /-- The associator `(X ⊗ Y) ⊗ Z ≅ X ⊗ (Y ⊗ Z)`, with components
 `α⁻¹ : Z_λ ≫ Y_λ ≫ X_λ ≅ (Z_λ ≫ Y_λ) ≫ X_λ`. -/
 def associator (X Y Z : DrinfeldCenter R B) :
@@ -378,43 +380,35 @@ def associator (X Y Z : DrinfeldCenter R B) :
     (Bicategory.associator Z.toTwoNatTrans.toOplax Y.toTwoNatTrans.toOplax
       X.toTwoNatTrans.toOplax).symm
 
-set_option backward.isDefEq.respectTransparency false in
 /-- The left unitor `1 ⊗ X ≅ X`, with components `ρ : X_λ ≫ 1_λ ≅ X_λ`. -/
 def leftUnitor (X : DrinfeldCenter R B) : tensorObj (tensorUnit R B) X ≅ X :=
   isoMk <| isoOfModificationIso (θ := (tensorObj (tensorUnit R B) X).toTwoNatTrans)
     (θ' := X.toTwoNatTrans) (Bicategory.rightUnitor X.toTwoNatTrans.toOplax)
 
-set_option backward.isDefEq.respectTransparency false in
 /-- The right unitor `X ⊗ 1 ≅ X`, with components `λ : 1_λ ≫ X_λ ≅ X_λ`. -/
 def rightUnitor (X : DrinfeldCenter R B) : tensorObj X (tensorUnit R B) ≅ X :=
   isoMk <| isoOfModificationIso (θ := (tensorObj X (tensorUnit R B)).toTwoNatTrans)
     (θ' := X.toTwoNatTrans) (Bicategory.leftUnitor X.toTwoNatTrans.toOplax)
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem associator_hom_app (X Y Z : DrinfeldCenter R B) (a : B) :
     (associator X Y Z).hom.app a =
       (BicategoryStruct.associator (Z.toTwoNatTrans.X a) (Y.toTwoNatTrans.X a)
         (X.toTwoNatTrans.X a)).inv := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem associator_inv_app (X Y Z : DrinfeldCenter R B) (a : B) :
     (associator X Y Z).inv.app a =
       (BicategoryStruct.associator (Z.toTwoNatTrans.X a) (Y.toTwoNatTrans.X a)
         (X.toTwoNatTrans.X a)).hom := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem leftUnitor_hom_app (X : DrinfeldCenter R B) (a : B) :
     (leftUnitor X).hom.app a = (BicategoryStruct.rightUnitor (X.toTwoNatTrans.X a)).hom := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem leftUnitor_inv_app (X : DrinfeldCenter R B) (a : B) :
     (leftUnitor X).inv.app a = (BicategoryStruct.rightUnitor (X.toTwoNatTrans.X a)).inv := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem rightUnitor_hom_app (X : DrinfeldCenter R B) (a : B) :
     (rightUnitor X).hom.app a = (BicategoryStruct.leftUnitor (X.toTwoNatTrans.X a)).hom := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem rightUnitor_inv_app (X : DrinfeldCenter R B) (a : B) :
     (rightUnitor X).inv.app a = (BicategoryStruct.leftUnitor (X.toTwoNatTrans.X a)).inv := rfl
 
@@ -450,23 +444,19 @@ open MonoidalCategory
     (a : B) : (f ⊗ₘ g).app a =
       X₂.toTwoNatTrans.X a ◁ f.app a ≫ g.app a ▷ Y₁.toTwoNatTrans.X a := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem massociator_hom_app (X Y Z : DrinfeldCenter R B) (a : B) :
     (α_ X Y Z).hom.app a =
       (BicategoryStruct.associator (Z.toTwoNatTrans.X a) (Y.toTwoNatTrans.X a)
         (X.toTwoNatTrans.X a)).inv := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem massociator_inv_app (X Y Z : DrinfeldCenter R B) (a : B) :
     (α_ X Y Z).inv.app a =
       (BicategoryStruct.associator (Z.toTwoNatTrans.X a) (Y.toTwoNatTrans.X a)
         (X.toTwoNatTrans.X a)).hom := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem mleftUnitor_hom_app (X : DrinfeldCenter R B) (a : B) :
     (λ_ X).hom.app a = (BicategoryStruct.rightUnitor (X.toTwoNatTrans.X a)).hom := rfl
 
-set_option backward.isDefEq.respectTransparency false in
 @[simp] theorem mrightUnitor_hom_app (X : DrinfeldCenter R B) (a : B) :
     (ρ_ X).hom.app a = (BicategoryStruct.leftUnitor (X.toTwoNatTrans.X a)).hom := rfl
 
@@ -474,7 +464,6 @@ set_option backward.isDefEq.respectTransparency false in
 
 end Simp
 
-set_option backward.isDefEq.respectTransparency false in
 /-- **Brundan–Ellis, Definition 2.3.** The Drinfeld center of a 2-supercategory is a monoidal
 supercategory. -/
 instance : MonoidalSupercategory R (DrinfeldCenter R B) where
@@ -525,7 +514,6 @@ open DrinfeldCenter MonoidalCategory
 
 variable [PiTwoSupercategory R B]
 
-set_option backward.isDefEq.respectTransparency false in
 variable (R B) in
 /-- **Lemma 3.2 (i), (ii).** `(π, β)` is an object of the Drinfeld center: `X_λ := π_λ` and
 `x_F := β_F`. -/
@@ -545,7 +533,7 @@ def centerObj : DrinfeldCenter R B where
         erw [id_whiskerRight (R := R), whiskerLeft_id (R := R), Category.id_comp]
         rw [β_id]
         simp }
-  isStrong f := inferInstanceAs (IsIso (β (R := R) f).hom)
+  isStrong f := (inferInstance : IsIso (β (R := R) f).hom)
 
 @[simp] theorem centerObj_X (a : B) : (centerObj R B).toTwoNatTrans.X a = pi (R := R) a := rfl
 
@@ -611,7 +599,6 @@ theorem centerξ_hom_mem :
       parity (R := R) (centerObj R B ⊗ centerObj R B) (𝟙_ (DrinfeldCenter R B)) 0 :=
   fun a => ξ_hom_mem (R := R) a
 
-set_option backward.isDefEq.respectTransparency false in
 /-- `ξ = ζζ` in the Drinfeld center: the component of `centerξ` is the tensor product (in the
 sense of the paper, `MonoidalSupercategory.superTensorHom`) of `ζ` with itself, followed by
 the unitor. -/
