@@ -251,7 +251,7 @@ theorem super_interchange_assoc {f g : a ⟶ b} {h i : b ⟶ c} {p q : ZMod 2} {
 theorem whisker_exchange_of_even_left {f g : a ⟶ b} {h i : b ⟶ c} {η : f ⟶ g}
     (hη : η ∈ parity (R := R) f g 0) (θ : h ⟶ i) :
     η ▷ h ≫ g ◁ θ = f ◁ θ ≫ η ▷ i := by
-  refine induction_on (R := R) θ (by simp [zero_whiskerRight R, whiskerLeft_zero R])
+  refine induction_on (R := R) θ (by simp [whiskerLeft_zero R])
     (fun q θ hθ => ?_) (fun θ θ' h h' => ?_)
   · rw [super_interchange hη hθ, koszulSign_zero_left, one_smul]
   · rw [whiskerLeft_add (R := R), whiskerLeft_add (R := R), Preadditive.comp_add,
@@ -262,7 +262,7 @@ theorem whisker_exchange_of_even_left {f g : a ⟶ b} {h i : b ⟶ c} {η : f �
 theorem whisker_exchange_of_even_right {f g : a ⟶ b} {h i : b ⟶ c} (η : f ⟶ g) {θ : h ⟶ i}
     (hθ : θ ∈ parity (R := R) h i 0) :
     η ▷ h ≫ g ◁ θ = f ◁ θ ≫ η ▷ i := by
-  refine induction_on (R := R) η (by simp [zero_whiskerRight R, whiskerLeft_zero R])
+  refine induction_on (R := R) η (by simp [zero_whiskerRight R])
     (fun q η hη => ?_) (fun η η' h h' => ?_)
   · rw [super_interchange hη hθ, koszulSign_zero_right, one_smul]
   · rw [add_whiskerRight (R := R), add_whiskerRight (R := R), Preadditive.comp_add,
