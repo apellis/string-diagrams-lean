@@ -93,7 +93,7 @@ theorem permMat_congr {e e' : ι ≃ κ} (he : ∀ i, e i = e' i) (φ : ∀ i, X
   · subst h
     rw [permMat_apply_self]
     unfold permMat
-    rw [dif_pos (he i).symm, ← hφ i, Category.assoc, eqToHom_trans]
+    rw [dite_eq_left (he i).symm, ← hφ i, Category.assoc, eqToHom_trans]
     simp
   · rw [permMat_apply_of_ne e φ h, permMat_apply_of_ne e' φ' (by rwa [← he i])]
 
@@ -105,7 +105,7 @@ theorem permMat_eq_id (e : ι ≃ ι) (he : ∀ i, e i = i) (φ : ∀ i, X i ⟶
   · subst h
     rw [CategoryTheory.Mat_.id_apply_self]
     unfold permMat
-    rw [dif_pos (he i), hφ i]
+    rw [dite_eq_left (he i), hφ i]
   · rw [CategoryTheory.Mat_.id_apply_of_ne _ _ _ h, permMat_apply_of_ne e φ (by rwa [he i])]
 
 theorem id_eq_permMat (ι : Type) [Fintype ι] (X : ι → D) :
@@ -143,11 +143,11 @@ def tensorObj (M N : Mat_ D) : Mat_ D := ⟨M.ι × N.ι, fun x => M.X x.1 ⊗ N
 /-- The entrywise tensor product of matrices. -/
 def tensorHom {M M' N N' : Mat_ D} (f : M ⟶ M') (g : N ⟶ N') :
     tensorObj M N ⟶ tensorObj M' N' :=
-  fun x y => f x.1 y.1 ⊗ g x.2 y.2
+  fun x y => f x.1 y.1 ⊗ₘ g x.2 y.2
 
 omit [MonoidalPreadditive D] in
 @[simp] theorem tensorHom_apply {M M' N N' : Mat_ D} (f : M ⟶ M') (g : N ⟶ N')
-    (x : M.ι × N.ι) (y : M'.ι × N'.ι) : tensorHom f g x y = f x.1 y.1 ⊗ g x.2 y.2 := rfl
+    (x : M.ι × N.ι) (y : M'.ι × N'.ι) : tensorHom f g x y = f x.1 y.1 ⊗ₘ g x.2 y.2 := rfl
 
 /-- The unit object: `𝟙_ D` as a one-by-one matrix. -/
 def unit : Mat_ D := ⟨PUnit, fun _ => 𝟙_ D⟩
@@ -157,7 +157,8 @@ theorem tensorHom_permMat {ι κ ι' κ' : Type} [Fintype ι] [Fintype κ] [Fint
     (e' : ι' ≃ κ') (ψ : ∀ i, X' i ⟶ Y' (e' i)) :
     tensorHom (permMat e φ) (permMat e' ψ) =
       permMat (X := fun x => X x.1 ⊗ X' x.2) (Y := fun y => Y y.1 ⊗ Y' y.2)
-        (e.prodCongr e') (fun x => (φ x.1 ⊗ ψ x.2 : X x.1 ⊗ X' x.2 ⟶ Y (e x.1) ⊗ Y' (e' x.2))) := by
+        (e.prodCongr e')
+        (fun x => (φ x.1 ⊗ₘ ψ x.2 : X x.1 ⊗ X' x.2 ⟶ Y (e x.1) ⊗ Y' (e' x.2))) := by
   ext ⟨x₁, x₂⟩ ⟨y₁, y₂⟩
   rw [tensorHom_apply]
   by_cases h₁ : e x₁ = y₁
@@ -165,17 +166,18 @@ theorem tensorHom_permMat {ι κ ι' κ' : Type} [Fintype ι] [Fintype κ] [Fint
     · subst h₁ h₂
       rw [permMat_apply_self, permMat_apply_self]
       exact (permMat_apply_self (X := fun x => X x.1 ⊗ X' x.2) (Y := fun y => Y y.1 ⊗ Y' y.2)
-        (e.prodCongr e') (fun x => (φ x.1 ⊗ ψ x.2 : X x.1 ⊗ X' x.2 ⟶ Y (e x.1) ⊗ Y' (e' x.2)))
+        (e.prodCongr e') (fun x => (φ x.1 ⊗ₘ ψ x.2 : X x.1 ⊗ X' x.2 ⟶ Y (e x.1) ⊗ Y' (e' x.2)))
         (x₁, x₂)).symm
     · rw [permMat_apply_of_ne e' ψ h₂, MonoidalPreadditive.tensor_zero]
       exact (permMat_apply_of_ne (X := fun x => X x.1 ⊗ X' x.2) (Y := fun y => Y y.1 ⊗ Y' y.2)
-        (e.prodCongr e') (fun x => (φ x.1 ⊗ ψ x.2 : X x.1 ⊗ X' x.2 ⟶ Y (e x.1) ⊗ Y' (e' x.2)))
+        (e.prodCongr e') (fun x => (φ x.1 ⊗ₘ ψ x.2 : X x.1 ⊗ X' x.2 ⟶ Y (e x.1) ⊗ Y' (e' x.2)))
         (i := (x₁, x₂)) (j := (y₁, y₂)) (fun h => h₂ (congrArg Prod.snd h))).symm
   · rw [permMat_apply_of_ne e φ h₁, MonoidalPreadditive.zero_tensor]
     exact (permMat_apply_of_ne (X := fun x => X x.1 ⊗ X' x.2) (Y := fun y => Y y.1 ⊗ Y' y.2)
-      (e.prodCongr e') (fun x => (φ x.1 ⊗ ψ x.2 : X x.1 ⊗ X' x.2 ⟶ Y (e x.1) ⊗ Y' (e' x.2)))
+      (e.prodCongr e') (fun x => (φ x.1 ⊗ₘ ψ x.2 : X x.1 ⊗ X' x.2 ⟶ Y (e x.1) ⊗ Y' (e' x.2)))
       (i := (x₁, x₂)) (j := (y₁, y₂)) (fun h => h₁ (congrArg Prod.fst h))).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The associator, a permutation matrix. -/
 @[simps]
 def associator (M N P : Mat_ D) : tensorObj (tensorObj M N) P ≅ tensorObj M (tensorObj N P) where
@@ -191,6 +193,7 @@ def associator (M N P : Mat_ D) : tensorObj (tensorObj M N) P ≅ tensorObj M (t
     exact permMat_eq_id _ (fun _ => rfl) _ fun _ => by
       rw [eqToHom_refl, Category.comp_id]; exact Iso.inv_hom_id _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The left unitor, a permutation matrix. -/
 @[simps]
 def leftUnitor (M : Mat_ D) : tensorObj unit M ≅ M where
@@ -205,6 +208,7 @@ def leftUnitor (M : Mat_ D) : tensorObj unit M ≅ M where
     exact permMat_eq_id _ (fun _ => rfl) _ fun _ => by
       rw [eqToHom_refl, Category.comp_id]; exact Iso.inv_hom_id _
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The right unitor, a permutation matrix. -/
 @[simps]
 def rightUnitor (M : Mat_ D) : tensorObj M unit ≅ M where
@@ -229,10 +233,12 @@ instance instMonoidalCategoryStruct : MonoidalCategoryStruct (Mat_ D) where
   leftUnitor := leftUnitor
   rightUnitor := rightUnitor
 
+set_option backward.isDefEq.respectTransparency false in
 theorem tensorHom_id_id (M N : Mat_ D) : tensorHom (𝟙 M) (𝟙 N) = 𝟙 (tensorObj M N) := by
   rw [id_eq_permMat' M, id_eq_permMat' N, tensorHom_permMat]
   exact permMat_eq_id _ (fun _ => rfl) _ fun _ => by simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem tensorHom_comp {M₁ M₂ M₃ N₁ N₂ N₃ : Mat_ D} (f₁ : M₁ ⟶ M₂) (f₂ : N₁ ⟶ N₂)
     (g₁ : M₂ ⟶ M₃) (g₂ : N₂ ⟶ N₃) :
     tensorHom (f₁ ≫ g₁) (f₂ ≫ g₂) = tensorHom f₁ f₂ ≫ tensorHom g₁ g₂ := by
@@ -240,16 +246,17 @@ theorem tensorHom_comp {M₁ M₂ M₃ N₁ N₂ N₃ : Mat_ D} (f₁ : M₁ ⟶
   simp only [tensorHom_apply, CategoryTheory.Mat_.comp_apply, sum_tensor, tensor_sum]
   rw [Finset.sum_comm]
   refine Eq.trans ?_ (Fintype.sum_prod_type (f := fun y : M₂.ι × N₂.ι =>
-    (f₁ x.1 y.1 ⊗ f₂ x.2 y.2) ≫ (g₁ y.1 z.1 ⊗ g₂ y.2 z.2))).symm
-  simp only [tensor_comp]
+    (f₁ x.1 y.1 ⊗ₘ f₂ x.2 y.2) ≫ (g₁ y.1 z.1 ⊗ₘ g₂ y.2 z.2))).symm
+  simp only [tensorHom_comp_tensorHom]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The additive envelope of a monoidal preadditive category is monoidal.** -/
 instance instMonoidalCategory : MonoidalCategory (Mat_ D) :=
   MonoidalCategory.ofTensorHom
-    (tensor_id := tensorHom_id_id)
+    (id_tensorHom_id := tensorHom_id_id)
     (id_tensorHom := fun _ _ _ _ => rfl)
     (tensorHom_id := fun _ _ => rfl)
-    (tensor_comp := tensorHom_comp)
+    (tensorHom_comp_tensorHom := fun f₁ f₂ g₁ g₂ => (tensorHom_comp f₁ f₂ g₁ g₂).symm)
     (associator_naturality := fun {X₁ X₂ X₃ Y₁ Y₂ Y₃} f₁ f₂ f₃ => by
       refine hom_ext_equiv (Equiv.prodAssoc Y₁.ι Y₂.ι Y₃.ι) fun m i => ?_
       change (tensorHom (tensorHom f₁ f₂) f₃ ≫ (associator Y₁ Y₂ Y₃).hom) m _ =
@@ -317,7 +324,7 @@ omit [MonoidalPreadditive D] in
 theorem tensorObj_def (M N : Mat_ D) : M ⊗ N = tensorObj M N := rfl
 
 omit [MonoidalPreadditive D] in
-theorem tensorHom_def' {M M' N N' : Mat_ D} (f : M ⟶ M') (g : N ⟶ N') : f ⊗ g = tensorHom f g :=
+theorem tensorHom_def' {M M' N N' : Mat_ D} (f : M ⟶ M') (g : N ⟶ N') : f ⊗ₘ g = tensorHom f g :=
   rfl
 
 omit [MonoidalPreadditive D] in
@@ -329,9 +336,11 @@ instance instMonoidalPreadditive : MonoidalPreadditive (Mat_ D) where
   zero_whiskerRight := by
     intros; ext; exact MonoidalPreadditive.zero_tensor _
   whiskerLeft_add := by
-    intros; ext; simp [MonoidalCategoryStruct.whiskerLeft, MonoidalPreadditive.tensor_add]
+    intros; ext
+    exact (congrArg _ (CategoryTheory.Mat_.add_apply _ _ _ _)).trans (MonoidalPreadditive.tensor_add _ _ _)
   add_whiskerRight := by
-    intros; ext; simp [MonoidalCategoryStruct.whiskerRight, MonoidalPreadditive.add_tensor]
+    intros; ext
+    exact (congrArg (· ⊗ₘ _) (CategoryTheory.Mat_.add_apply _ _ _ _)).trans (MonoidalPreadditive.add_tensor _ _ _)
 
 end Monoidal
 
@@ -346,54 +355,61 @@ variable {C : Type u} [Category.{v} C] [MonoidalCategory C]
 /-- The tensor product `(X, p) ⊗ (Y, q) = (X ⊗ Y, p ⊗ q)`. -/
 @[simps]
 def tensorObj (P Q : Karoubi C) : Karoubi C :=
-  ⟨P.X ⊗ Q.X, P.p ⊗ Q.p, by rw [← tensor_comp, P.idem, Q.idem]⟩
+  ⟨P.X ⊗ Q.X, P.p ⊗ₘ Q.p, by rw [tensorHom_comp_tensorHom, P.idem, Q.idem]⟩
 
 /-- The tensor product of morphisms. -/
 @[simps]
 def tensorHom {P P' Q Q' : Karoubi C} (f : P ⟶ P') (g : Q ⟶ Q') :
     tensorObj P Q ⟶ tensorObj P' Q' :=
-  ⟨f.f ⊗ g.f, by
-    show _ = (P.p ⊗ Q.p) ≫ (f.f ⊗ g.f) ≫ (P'.p ⊗ Q'.p)
-    rw [← tensor_comp, ← tensor_comp, ← f.comm, ← g.comm]⟩
+  ⟨f.f ⊗ₘ g.f, by
+    symm
+    show _ = (P.p ⊗ₘ Q.p) ≫ (f.f ⊗ₘ g.f) ≫ (P'.p ⊗ₘ Q'.p)
+    rw [tensorHom_comp_tensorHom, tensorHom_comp_tensorHom, f.comm, g.comm]⟩
 
 /-- The unit object `(𝟙_, 𝟙)`. -/
 @[simps]
 def unit : Karoubi C := ⟨𝟙_ C, 𝟙 _, by simp⟩
 
 @[reassoc]
-theorem tensor_p_idem (P Q : Karoubi C) : (P.p ⊗ Q.p) ≫ (P.p ⊗ Q.p) = P.p ⊗ Q.p := by
-  rw [← tensor_comp, P.idem, Q.idem]
+theorem tensor_p_idem (P Q : Karoubi C) : (P.p ⊗ₘ Q.p) ≫ (P.p ⊗ₘ Q.p) = P.p ⊗ₘ Q.p := by
+  rw [tensorHom_comp_tensorHom, P.idem, Q.idem]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The associator `(α ≫ (p ⊗ (q ⊗ r)))`. -/
 @[simps]
 def associator (P Q R : Karoubi C) : tensorObj (tensorObj P Q) R ≅ tensorObj P (tensorObj Q R) where
-  hom := ⟨(α_ P.X Q.X R.X).hom ≫ (P.p ⊗ (Q.p ⊗ R.p)), by
-    show _ = ((P.p ⊗ Q.p) ⊗ R.p) ≫ ((α_ P.X Q.X R.X).hom ≫ (P.p ⊗ (Q.p ⊗ R.p))) ≫
-      (P.p ⊗ (Q.p ⊗ R.p))
+  hom := ⟨(α_ P.X Q.X R.X).hom ≫ (P.p ⊗ₘ (Q.p ⊗ₘ R.p)), by
+    symm
+    show _ = ((P.p ⊗ₘ Q.p) ⊗ₘ R.p) ≫ ((α_ P.X Q.X R.X).hom ≫ (P.p ⊗ₘ (Q.p ⊗ₘ R.p))) ≫
+      (P.p ⊗ₘ (Q.p ⊗ₘ R.p))
     rw [Category.assoc, associator_naturality_assoc]
-    simp only [← tensor_comp, P.idem, Q.idem, R.idem]⟩
-  inv := ⟨(α_ P.X Q.X R.X).inv ≫ ((P.p ⊗ Q.p) ⊗ R.p), by
-    show _ = (P.p ⊗ (Q.p ⊗ R.p)) ≫ ((α_ P.X Q.X R.X).inv ≫ ((P.p ⊗ Q.p) ⊗ R.p)) ≫
-      ((P.p ⊗ Q.p) ⊗ R.p)
+    simp only [tensorHom_comp_tensorHom, P.idem, Q.idem, R.idem]⟩
+  inv := ⟨(α_ P.X Q.X R.X).inv ≫ ((P.p ⊗ₘ Q.p) ⊗ₘ R.p), by
+    symm
+    show _ = (P.p ⊗ₘ (Q.p ⊗ₘ R.p)) ≫ ((α_ P.X Q.X R.X).inv ≫ ((P.p ⊗ₘ Q.p) ⊗ₘ R.p)) ≫
+      ((P.p ⊗ₘ Q.p) ⊗ₘ R.p)
     rw [Category.assoc, associator_inv_naturality_assoc]
-    simp only [← tensor_comp, P.idem, Q.idem, R.idem]⟩
+    simp only [tensorHom_comp_tensorHom, P.idem, Q.idem, R.idem]⟩
   hom_inv_id := Idempotents.Karoubi.hom_ext _ _ (by
     simp only [Idempotents.Karoubi.comp_f, Idempotents.Karoubi.id_f, tensorObj_p, Category.assoc]
     rw [associator_inv_naturality_assoc, Iso.hom_inv_id_assoc]
-    simp only [← tensor_comp, P.idem, Q.idem, R.idem])
+    simp only [tensorHom_comp_tensorHom, P.idem, Q.idem, R.idem])
   inv_hom_id := Idempotents.Karoubi.hom_ext _ _ (by
     simp only [Idempotents.Karoubi.comp_f, Idempotents.Karoubi.id_f, tensorObj_p, Category.assoc]
     rw [associator_naturality_assoc, Iso.inv_hom_id_assoc]
-    simp only [← tensor_comp, P.idem, Q.idem, R.idem])
+    simp only [tensorHom_comp_tensorHom, P.idem, Q.idem, R.idem])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The left unitor `λ ≫ p`. -/
 @[simps]
 def leftUnitor (P : Karoubi C) : tensorObj unit P ≅ P where
   hom := ⟨(λ_ P.X).hom ≫ P.p, by
-    show _ = (𝟙 (𝟙_ C) ⊗ P.p) ≫ ((λ_ P.X).hom ≫ P.p) ≫ P.p
+    symm
+    show _ = (𝟙 (𝟙_ C) ⊗ₘ P.p) ≫ ((λ_ P.X).hom ≫ P.p) ≫ P.p
     rw [id_tensorHom, Category.assoc, leftUnitor_naturality_assoc, P.idem, P.idem]⟩
   inv := ⟨P.p ≫ (λ_ P.X).inv, by
-    show _ = P.p ≫ (P.p ≫ (λ_ P.X).inv) ≫ (𝟙 (𝟙_ C) ⊗ P.p)
+    symm
+    show _ = P.p ≫ (P.p ≫ (λ_ P.X).inv) ≫ (𝟙 (𝟙_ C) ⊗ₘ P.p)
     rw [id_tensorHom, Category.assoc, ← leftUnitor_inv_naturality, P.idem_assoc, P.idem_assoc]⟩
   hom_inv_id := Idempotents.Karoubi.hom_ext _ _ (by
     simp only [Idempotents.Karoubi.comp_f, Idempotents.Karoubi.id_f, tensorObj_p, unit_p,
@@ -404,14 +420,17 @@ def leftUnitor (P : Karoubi C) : tensorObj unit P ≅ P where
     simp only [Idempotents.Karoubi.comp_f, Idempotents.Karoubi.id_f, Category.assoc,
       Iso.inv_hom_id_assoc, P.idem])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The right unitor `ρ ≫ p`. -/
 @[simps]
 def rightUnitor (P : Karoubi C) : tensorObj P unit ≅ P where
   hom := ⟨(ρ_ P.X).hom ≫ P.p, by
-    show _ = (P.p ⊗ 𝟙 (𝟙_ C)) ≫ ((ρ_ P.X).hom ≫ P.p) ≫ P.p
+    symm
+    show _ = (P.p ⊗ₘ 𝟙 (𝟙_ C)) ≫ ((ρ_ P.X).hom ≫ P.p) ≫ P.p
     rw [tensorHom_id, Category.assoc, rightUnitor_naturality_assoc, P.idem, P.idem]⟩
   inv := ⟨P.p ≫ (ρ_ P.X).inv, by
-    show _ = P.p ≫ (P.p ≫ (ρ_ P.X).inv) ≫ (P.p ⊗ 𝟙 (𝟙_ C))
+    symm
+    show _ = P.p ≫ (P.p ≫ (ρ_ P.X).inv) ≫ (P.p ⊗ₘ 𝟙 (𝟙_ C))
     rw [tensorHom_id, Category.assoc, ← rightUnitor_inv_naturality, P.idem_assoc, P.idem_assoc]⟩
   hom_inv_id := Idempotents.Karoubi.hom_ext _ _ (by
     simp only [Idempotents.Karoubi.comp_f, Idempotents.Karoubi.id_f, tensorObj_p, unit_p,
@@ -449,74 +468,75 @@ theorem sandwich' {X Y Z : C} (φ : X ⟶ Y) (E : Y ⟶ Y) (ψ : Y ⟶ Z) (E' : 
 /-- **The idempotent completion of a monoidal category is monoidal.** -/
 instance instMonoidalCategory : MonoidalCategory (Karoubi C) :=
   MonoidalCategory.ofTensorHom
-    (tensor_id := fun _ _ => rfl)
+    (id_tensorHom_id := fun _ _ => rfl)
     (id_tensorHom := fun _ _ _ _ => rfl)
     (tensorHom_id := fun _ _ => rfl)
-    (tensor_comp := fun _ _ _ _ => Idempotents.Karoubi.hom_ext _ _ (tensor_comp _ _ _ _))
+    (tensorHom_comp_tensorHom := fun _ _ _ _ =>
+      Idempotents.Karoubi.hom_ext _ _ (tensorHom_comp_tensorHom _ _ _ _))
     (associator_naturality := fun {X₁ X₂ X₃ Y₁ Y₂ Y₃} f₁ f₂ f₃ =>
       Idempotents.Karoubi.hom_ext _ _ (by
-      change ((f₁.f ⊗ f₂.f) ⊗ f₃.f) ≫ (α_ Y₁.X Y₂.X Y₃.X).hom ≫ (Y₁.p ⊗ (Y₂.p ⊗ Y₃.p)) =
-        ((α_ X₁.X X₂.X X₃.X).hom ≫ (X₁.p ⊗ (X₂.p ⊗ X₃.p))) ≫ (f₁.f ⊗ (f₂.f ⊗ f₃.f))
+      change ((f₁.f ⊗ₘ f₂.f) ⊗ₘ f₃.f) ≫ (α_ Y₁.X Y₂.X Y₃.X).hom ≫ (Y₁.p ⊗ₘ (Y₂.p ⊗ₘ Y₃.p)) =
+        ((α_ X₁.X X₂.X X₃.X).hom ≫ (X₁.p ⊗ₘ (X₂.p ⊗ₘ X₃.p))) ≫ (f₁.f ⊗ₘ (f₂.f ⊗ₘ f₃.f))
       rw [associator_naturality_assoc, Category.assoc]
-      simp only [← tensor_comp, Idempotents.Karoubi.comp_p, Idempotents.Karoubi.p_comp]))
+      simp only [tensorHom_comp_tensorHom, Idempotents.Karoubi.comp_p, Idempotents.Karoubi.p_comp]))
     (leftUnitor_naturality := fun {X Y} f => Idempotents.Karoubi.hom_ext _ _ (by
-      change (𝟙 (𝟙_ C) ⊗ f.f) ≫ (λ_ Y.X).hom ≫ Y.p = ((λ_ X.X).hom ≫ X.p) ≫ f.f
+      change (𝟙 (𝟙_ C) ⊗ₘ f.f) ≫ (λ_ Y.X).hom ≫ Y.p = ((λ_ X.X).hom ≫ X.p) ≫ f.f
       rw [id_tensorHom, leftUnitor_naturality_assoc, Category.assoc,
         Idempotents.Karoubi.comp_p, Idempotents.Karoubi.p_comp]))
     (rightUnitor_naturality := fun {X Y} f => Idempotents.Karoubi.hom_ext _ _ (by
-      change (f.f ⊗ 𝟙 (𝟙_ C)) ≫ (ρ_ Y.X).hom ≫ Y.p = ((ρ_ X.X).hom ≫ X.p) ≫ f.f
+      change (f.f ⊗ₘ 𝟙 (𝟙_ C)) ≫ (ρ_ Y.X).hom ≫ Y.p = ((ρ_ X.X).hom ≫ X.p) ≫ f.f
       rw [tensorHom_id, rightUnitor_naturality_assoc, Category.assoc,
         Idempotents.Karoubi.comp_p, Idempotents.Karoubi.p_comp]))
     (pentagon := fun W X Y Z => Idempotents.Karoubi.hom_ext _ _ (by
-      change (((α_ W.X X.X Y.X).hom ≫ (W.p ⊗ (X.p ⊗ Y.p))) ⊗ Z.p) ≫
-          ((α_ W.X (X.X ⊗ Y.X) Z.X).hom ≫ (W.p ⊗ ((X.p ⊗ Y.p) ⊗ Z.p))) ≫
-            (W.p ⊗ ((α_ X.X Y.X Z.X).hom ≫ (X.p ⊗ (Y.p ⊗ Z.p)))) =
-        ((α_ (W.X ⊗ X.X) Y.X Z.X).hom ≫ ((W.p ⊗ X.p) ⊗ (Y.p ⊗ Z.p))) ≫
-          ((α_ W.X X.X (Y.X ⊗ Z.X)).hom ≫ (W.p ⊗ (X.p ⊗ (Y.p ⊗ Z.p))))
-      have e1 : ((α_ W.X X.X Y.X).hom ≫ (W.p ⊗ (X.p ⊗ Y.p))) ⊗ Z.p =
-          ((α_ W.X X.X Y.X).hom ⊗ 𝟙 Z.X) ≫ ((W.p ⊗ (X.p ⊗ Y.p)) ⊗ Z.p) := by
-        rw [← tensor_comp, Category.id_comp]
-      have e3 : W.p ⊗ ((α_ X.X Y.X Z.X).hom ≫ (X.p ⊗ (Y.p ⊗ Z.p))) =
-          (𝟙 W.X ⊗ (α_ X.X Y.X Z.X).hom) ≫ (W.p ⊗ (X.p ⊗ (Y.p ⊗ Z.p))) := by
-        rw [← tensor_comp, Category.id_comp]
+      change (((α_ W.X X.X Y.X).hom ≫ (W.p ⊗ₘ (X.p ⊗ₘ Y.p))) ⊗ₘ Z.p) ≫
+          ((α_ W.X (X.X ⊗ Y.X) Z.X).hom ≫ (W.p ⊗ₘ ((X.p ⊗ₘ Y.p) ⊗ₘ Z.p))) ≫
+            (W.p ⊗ₘ ((α_ X.X Y.X Z.X).hom ≫ (X.p ⊗ₘ (Y.p ⊗ₘ Z.p)))) =
+        ((α_ (W.X ⊗ X.X) Y.X Z.X).hom ≫ ((W.p ⊗ₘ X.p) ⊗ₘ (Y.p ⊗ₘ Z.p))) ≫
+          ((α_ W.X X.X (Y.X ⊗ Z.X)).hom ≫ (W.p ⊗ₘ (X.p ⊗ₘ (Y.p ⊗ₘ Z.p))))
+      have e1 : ((α_ W.X X.X Y.X).hom ≫ (W.p ⊗ₘ (X.p ⊗ₘ Y.p))) ⊗ₘ Z.p =
+          ((α_ W.X X.X Y.X).hom ⊗ₘ 𝟙 Z.X) ≫ ((W.p ⊗ₘ (X.p ⊗ₘ Y.p)) ⊗ₘ Z.p) := by
+        rw [tensorHom_comp_tensorHom, Category.id_comp]
+      have e3 : W.p ⊗ₘ ((α_ X.X Y.X Z.X).hom ≫ (X.p ⊗ₘ (Y.p ⊗ₘ Z.p))) =
+          (𝟙 W.X ⊗ₘ (α_ X.X Y.X Z.X).hom) ≫ (W.p ⊗ₘ (X.p ⊗ₘ (Y.p ⊗ₘ Z.p))) := by
+        rw [tensorHom_comp_tensorHom, Category.id_comp]
       have i4 : ∀ {A B C' D' : C} (a : A ⟶ A) (b : B ⟶ B) (c : C' ⟶ C') (d : D' ⟶ D'),
           a ≫ a = a → b ≫ b = b → c ≫ c = c → d ≫ d = d →
-          (a ⊗ (b ⊗ (c ⊗ d))) ≫ (a ⊗ (b ⊗ (c ⊗ d))) = a ⊗ (b ⊗ (c ⊗ d)) := by
+          (a ⊗ₘ (b ⊗ₘ (c ⊗ₘ d))) ≫ (a ⊗ₘ (b ⊗ₘ (c ⊗ₘ d))) = a ⊗ₘ (b ⊗ₘ (c ⊗ₘ d)) := by
         intros A B C' D' a b c d ha hb hc hd
-        simp only [← tensor_comp, ha, hb, hc, hd]
+        simp only [tensorHom_comp_tensorHom, ha, hb, hc, hd]
       have idem := i4 W.p X.p Y.p Z.p W.idem X.idem Y.idem Z.idem
-      have c1 : ((W.p ⊗ (X.p ⊗ Y.p)) ⊗ Z.p) ≫ (α_ W.X (X.X ⊗ Y.X) Z.X).hom =
-          (α_ W.X (X.X ⊗ Y.X) Z.X).hom ≫ (W.p ⊗ ((X.p ⊗ Y.p) ⊗ Z.p)) :=
+      have c1 : ((W.p ⊗ₘ (X.p ⊗ₘ Y.p)) ⊗ₘ Z.p) ≫ (α_ W.X (X.X ⊗ Y.X) Z.X).hom =
+          (α_ W.X (X.X ⊗ Y.X) Z.X).hom ≫ (W.p ⊗ₘ ((X.p ⊗ₘ Y.p) ⊗ₘ Z.p)) :=
         associator_naturality _ _ _
-      have c2 : (W.p ⊗ ((X.p ⊗ Y.p) ⊗ Z.p)) ≫ (𝟙 W.X ⊗ (α_ X.X Y.X Z.X).hom) =
-          (𝟙 W.X ⊗ (α_ X.X Y.X Z.X).hom) ≫ (W.p ⊗ (X.p ⊗ (Y.p ⊗ Z.p))) := by
-        rw [← tensor_comp, ← tensor_comp, Category.id_comp, Category.comp_id,
+      have c2 : (W.p ⊗ₘ ((X.p ⊗ₘ Y.p) ⊗ₘ Z.p)) ≫ (𝟙 W.X ⊗ₘ (α_ X.X Y.X Z.X).hom) =
+          (𝟙 W.X ⊗ₘ (α_ X.X Y.X Z.X).hom) ≫ (W.p ⊗ₘ (X.p ⊗ₘ (Y.p ⊗ₘ Z.p))) := by
+        rw [tensorHom_comp_tensorHom, tensorHom_comp_tensorHom, Category.id_comp, Category.comp_id,
           associator_naturality]
-      have c12 : ((W.p ⊗ (X.p ⊗ Y.p)) ⊗ Z.p) ≫ ((α_ W.X (X.X ⊗ Y.X) Z.X).hom ≫
-          (𝟙 W.X ⊗ (α_ X.X Y.X Z.X).hom)) = ((α_ W.X (X.X ⊗ Y.X) Z.X).hom ≫
-          (𝟙 W.X ⊗ (α_ X.X Y.X Z.X).hom)) ≫ (W.p ⊗ (X.p ⊗ (Y.p ⊗ Z.p))) := by
+      have c12 : ((W.p ⊗ₘ (X.p ⊗ₘ Y.p)) ⊗ₘ Z.p) ≫ ((α_ W.X (X.X ⊗ Y.X) Z.X).hom ≫
+          (𝟙 W.X ⊗ₘ (α_ X.X Y.X Z.X).hom)) = ((α_ W.X (X.X ⊗ Y.X) Z.X).hom ≫
+          (𝟙 W.X ⊗ₘ (α_ X.X Y.X Z.X).hom)) ≫ (W.p ⊗ₘ (X.p ⊗ₘ (Y.p ⊗ₘ Z.p))) := by
         rw [reassoc_of% c1, c2, Category.assoc]
-      have c3 : ((W.p ⊗ X.p) ⊗ (Y.p ⊗ Z.p)) ≫ (α_ W.X X.X (Y.X ⊗ Z.X)).hom =
-          (α_ W.X X.X (Y.X ⊗ Z.X)).hom ≫ (W.p ⊗ (X.p ⊗ (Y.p ⊗ Z.p))) :=
+      have c3 : ((W.p ⊗ₘ X.p) ⊗ₘ (Y.p ⊗ₘ Z.p)) ≫ (α_ W.X X.X (Y.X ⊗ Z.X)).hom =
+          (α_ W.X X.X (Y.X ⊗ Z.X)).hom ≫ (W.p ⊗ₘ (X.p ⊗ₘ (Y.p ⊗ₘ Z.p))) :=
         associator_naturality _ _ _
       rw [e1, e3, sandwich' _ _ _ _ c2 idem, sandwich' _ _ _ _ c12 idem,
         sandwich' _ _ _ _ c3 idem]
       congr 1
-      simp only [Category.assoc, tensorHom_id, id_tensorHom]
+      simp only [tensorHom_id, id_tensorHom]
       exact MonoidalCategory.pentagon _ _ _ _))
     (triangle := fun X Y => Idempotents.Karoubi.hom_ext _ _ (by
-      change ((α_ X.X (𝟙_ C) Y.X).hom ≫ (X.p ⊗ (𝟙 (𝟙_ C) ⊗ Y.p))) ≫
-          (X.p ⊗ ((λ_ Y.X).hom ≫ Y.p)) = ((ρ_ X.X).hom ≫ X.p) ⊗ Y.p
-      have e1 : X.p ⊗ ((λ_ Y.X).hom ≫ Y.p) = (𝟙 X.X ⊗ (λ_ Y.X).hom) ≫ (X.p ⊗ Y.p) := by
-        rw [← tensor_comp, Category.id_comp]
-      have e2 : ((ρ_ X.X).hom ≫ X.p) ⊗ Y.p = ((ρ_ X.X).hom ⊗ 𝟙 Y.X) ≫ (X.p ⊗ Y.p) := by
-        rw [← tensor_comp, Category.id_comp]
-      have c : (X.p ⊗ (𝟙 (𝟙_ C) ⊗ Y.p)) ≫ (𝟙 X.X ⊗ (λ_ Y.X).hom) =
-          (𝟙 X.X ⊗ (λ_ Y.X).hom) ≫ (X.p ⊗ Y.p) := by
-        rw [← tensor_comp, ← tensor_comp, Category.id_comp, Category.comp_id, id_tensorHom,
-          leftUnitor_naturality]
-      have idem : (X.p ⊗ Y.p) ≫ (X.p ⊗ Y.p) = X.p ⊗ Y.p := by
-        rw [← tensor_comp, X.idem, Y.idem]
+      change ((α_ X.X (𝟙_ C) Y.X).hom ≫ (X.p ⊗ₘ (𝟙 (𝟙_ C) ⊗ₘ Y.p))) ≫
+          (X.p ⊗ₘ ((λ_ Y.X).hom ≫ Y.p)) = ((ρ_ X.X).hom ≫ X.p) ⊗ₘ Y.p
+      have e1 : X.p ⊗ₘ ((λ_ Y.X).hom ≫ Y.p) = (𝟙 X.X ⊗ₘ (λ_ Y.X).hom) ≫ (X.p ⊗ₘ Y.p) := by
+        rw [tensorHom_comp_tensorHom, Category.id_comp]
+      have e2 : ((ρ_ X.X).hom ≫ X.p) ⊗ₘ Y.p = ((ρ_ X.X).hom ⊗ₘ 𝟙 Y.X) ≫ (X.p ⊗ₘ Y.p) := by
+        rw [tensorHom_comp_tensorHom, Category.id_comp]
+      have c : (X.p ⊗ₘ (𝟙 (𝟙_ C) ⊗ₘ Y.p)) ≫ (𝟙 X.X ⊗ₘ (λ_ Y.X).hom) =
+          (𝟙 X.X ⊗ₘ (λ_ Y.X).hom) ≫ (X.p ⊗ₘ Y.p) := by
+        rw [tensorHom_comp_tensorHom, tensorHom_comp_tensorHom, Category.id_comp, Category.comp_id,
+          id_tensorHom, leftUnitor_naturality]
+      have idem : (X.p ⊗ₘ Y.p) ≫ (X.p ⊗ₘ Y.p) = X.p ⊗ₘ Y.p := by
+        rw [tensorHom_comp_tensorHom, X.idem, Y.idem]
       rw [e1, e2, sandwich' _ _ _ _ c idem]
       congr 1
       simp only [tensorHom_id, id_tensorHom]
@@ -526,16 +546,16 @@ theorem tensorObj_def (P Q : Karoubi C) : P ⊗ Q = tensorObj P Q := rfl
 
 @[simp] theorem tensorObj_X' (P Q : Karoubi C) : (P ⊗ Q).X = P.X ⊗ Q.X := rfl
 
-@[simp] theorem tensorObj_p' (P Q : Karoubi C) : (P ⊗ Q).p = P.p ⊗ Q.p := rfl
+@[simp] theorem tensorObj_p' (P Q : Karoubi C) : (P ⊗ Q).p = P.p ⊗ₘ Q.p := rfl
 
 @[simp] theorem tensorHom_f' {P P' Q Q' : Karoubi C} (f : P ⟶ P') (g : Q ⟶ Q') :
-    (f ⊗ g).f = f.f ⊗ g.f := rfl
+    (f ⊗ₘ g).f = f.f ⊗ₘ g.f := rfl
 
 @[simp] theorem whiskerLeft_f (P : Karoubi C) {Q Q' : Karoubi C} (g : Q ⟶ Q') :
-    (P ◁ g).f = P.p ⊗ g.f := rfl
+    (P ◁ g).f = P.p ⊗ₘ g.f := rfl
 
 @[simp] theorem whiskerRight_f {P P' : Karoubi C} (f : P ⟶ P') (Q : Karoubi C) :
-    (f ▷ Q).f = f.f ⊗ Q.p := rfl
+    (f ▷ Q).f = f.f ⊗ₘ Q.p := rfl
 
 @[simp] theorem tensorUnit_X : (𝟙_ (Karoubi C)).X = 𝟙_ C := rfl
 
