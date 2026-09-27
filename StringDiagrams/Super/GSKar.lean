@@ -40,6 +40,7 @@ namespace Mat_
 
 variable {C : Type u} [Category.{v} C] [Preadditive C] [Linear R C]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mapMat_diag {D : Type*} [Category D] [Preadditive D] (F : C ⥤ D) [F.Additive]
     {ι : Type} [Fintype ι] {X Y : ι → C} (φ : ∀ i, X i ⟶ Y i) :
     F.mapMat_.map (diag (X := X) (Y := Y) φ) = diag (X := fun i => F.obj (X i))
@@ -55,6 +56,7 @@ theorem diag_congr {ι : Type} [Fintype ι] {X Y : ι → C} {φ ψ : ∀ i, X i
     (h : ∀ i, φ i = ψ i) : diag φ = diag ψ := by
   rw [funext h]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A natural isomorphism of additive functors, entrywise on the additive envelope. -/
 def mapMatIso {D : Type*} [Category D] [Preadditive D] {F G : C ⥤ D} [F.Additive] [G.Additive]
     (α : F ≅ G) : F.mapMat_ ≅ G.mapMat_ :=
@@ -62,7 +64,7 @@ def mapMatIso {D : Type*} [Category D] [Preadditive D] {F G : C ⥤ D} [F.Additi
     fun i => α.app (M.X i))
     (fun {M N} f => by
       ext i k
-      simp only [Functor.mapMat__map, diagIso_hom]
+      simp only [diagIso_hom]
       rw [comp_diag_apply, diag_comp_apply]
       exact α.hom.naturality (f i k))
 
@@ -89,9 +91,11 @@ theorem ξ_inv_app_eq [PiCategory R C] (M : Mat_ C) :
 
 variable [QPiCategory R C]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (QPiCategory.Q (R := R) (C := C)).mapMat_.Linear R where
   map_smul f r := by ext i j; simp
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (QPiCategory.Qinv (R := R) (C := C)).mapMat_.Linear R where
   map_smul f r := by ext i j; simp
 
@@ -133,8 +137,8 @@ variable {C : Type u} [Category.{v} C] [Preadditive C] [Linear R C]
 def mapFunctor {D : Type*} [Category D] (F : C ⥤ D) : Karoubi C ⥤ Karoubi D where
   obj P := ⟨F.obj P.X, F.map P.p, by rw [← F.map_comp, P.idem]⟩
   map {P Q} f := ⟨F.map f.f, by
-    show _ = F.map P.p ≫ F.map f.f ≫ F.map Q.p
-    rw [← F.map_comp, ← F.map_comp, ← f.comm]⟩
+    show F.map P.p ≫ F.map f.f ≫ F.map Q.p = _
+    rw [← F.map_comp, ← F.map_comp, f.comm]⟩
   map_id P := rfl
   map_comp f g := Karoubi.hom_ext _ _ (F.map_comp _ _)
 
@@ -146,6 +150,7 @@ instance {D : Type*} [Category D] [Preadditive D] [Linear R D] (F : C ⥤ D) [F.
     [F.Linear R] : (mapFunctor F).Linear R where
   map_smul _ _ := Karoubi.hom_ext _ _ (F.map_smul _ _)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A natural isomorphism `F ≅ G` induces `mapFunctor F ≅ mapFunctor G`, with components
 `α_X ∘ F p = G p ∘ α_X`. -/
 @[simps!]
@@ -164,19 +169,22 @@ def mapIso {D : Type*} [Category D] {F G : C ⥤ D} (α : F ≅ G) : mapFunctor 
         simp only [Karoubi.comp_f, Category.assoc, Karoubi.id_f, mapFunctor_obj_p]
         rw [α.hom.naturality_assoc, ← G.map_comp, P.idem, α.inv_hom_id_app_assoc]) })
     (fun {P Q} f => Karoubi.hom_ext _ _ (by
-      simp only [Functor.comp_map, mapFunctor_map_f, Karoubi.comp_f]
+      simp only [mapFunctor_map_f, Karoubi.comp_f]
       rw [α.hom.naturality_assoc, ← G.map_comp, Karoubi.comp_p, Category.assoc, ← G.map_comp,
         Karoubi.p_comp]))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A natural isomorphism `F ≅ 𝟭` induces `mapFunctor F ≅ 𝟭`. -/
 def mapIsoId {F : C ⥤ C} (α : F ≅ 𝟭 C) : mapFunctor F ≅ 𝟭 (Karoubi C) :=
   mapIso α ≪≫ NatIso.ofComponents (fun P => Iso.refl _) (fun f => by simp)
 
+set_option backward.isDefEq.respectTransparency false in
 omit [Preadditive C] in
 theorem mapIsoId_hom_app_f {F : C ⥤ C} (α : F ≅ 𝟭 C) (P : Karoubi C) :
     ((mapIsoId α).hom.app P).f = α.hom.app P.X ≫ P.p := by
   simp [mapIsoId]
 
+set_option backward.isDefEq.respectTransparency false in
 omit [Preadditive C] in
 theorem mapIsoId_inv_app_f {F : C ⥤ C} (α : F ≅ 𝟭 C) (P : Karoubi C) :
     ((mapIsoId α).inv.app P).f = P.p ≫ α.inv.app P.X ≫ F.map P.p := by
@@ -184,6 +192,7 @@ theorem mapIsoId_inv_app_f {F : C ⥤ C} (α : F ≅ 𝟭 C) (P : Karoubi C) :
 
 variable [QPiCategory R C]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The `(Q, Π)`-category structure on the idempotent completion**:
 `Q(X, p) = (Q X, Q p)`, `Q⁻¹(X, p) = (Q⁻¹ X, Q⁻¹ p)`. -/
 instance instQPiCategory : QPiCategory R (Karoubi C) where
@@ -287,6 +296,7 @@ def laurentEnd : LaurentPolynomial Zπ →+* AddMonoid.End (K₀ A) :=
 
 /-- **Brundan–Ellis, §6.** `K₀` of a `(Q, Π)`-category with biproducts is a module over
 `Zπ[q, q⁻¹]`, with `π` acting as `[Π]` and `q` acting as `[Q]`. -/
+@[instance_reducible]
 def moduleLaurent : Module (LaurentPolynomial Zπ) (K₀ A) := Module.compHom (K₀ A) (laurentEnd R A)
 
 theorem laurentEnd_C (r : Zπ) : laurentEnd R A (C r) =
@@ -301,6 +311,7 @@ theorem laurentEnd_T (n : ℤ) : laurentEnd R A (T n) = ((qUnit R A ^ n : (AddMo
   erw [AddMonoidAlgebra.liftNC_single]
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem C_π_smul_mk (V : A) :
     letI := moduleLaurent R A
     (C Zπ.π : LaurentPolynomial Zπ) • mk V = mk ((PiCategory.pi (R := R)).obj V) := by
@@ -350,6 +361,7 @@ instance instQPiCategory : QPiCategory R (GSKar R C) := Karoubi.instQPiCategory
 variable (R) in
 /-- **Brundan–Ellis, §6.** `K₀(GSKar(A))` is a `Zπ[q, q⁻¹]`-module with `π` acting as `[Π]` and
 `q` acting as `[Q]`. -/
+@[instance_reducible]
 def moduleLaurent : Module (LaurentPolynomial Zπ) (K₀ (GSKar R C)) := K₀.moduleLaurent R (GSKar R C)
 
 end GSKar
