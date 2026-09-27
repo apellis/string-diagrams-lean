@@ -185,6 +185,9 @@ import StringDiagrams.Examples.OddTemperleyLieb.KZeroRing
 import StringDiagrams.Examples.OddTemperleyLieb.KZeroIso
 import StringDiagrams.Examples.OddTemperleyLieb.KZeroPoly
 import StringDiagrams.Examples.OddTemperleyLieb.Semisimple
+import StringDiagrams.Chord.Basic
+import StringDiagrams.Chord.NormalForm
+import StringDiagrams.Chord.Realisation
 
 /-!
 # StringDiagrams
