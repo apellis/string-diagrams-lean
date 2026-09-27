@@ -235,7 +235,10 @@ theorem mapQNat_id (hF : QPiTwoFunctor R F) :
     ← Functor.map_comp]
   refine congrArg (Orbit.ι (homShift R (hF.mapQ.obj a).obj (hF.mapQ.obj b).obj)).map ?_
   simp only [PiTwoFunctor.mapTwoNat_x, Oplax.OplaxTrans.id]
-  apply Associated2.hom₂_ext <;> (try simp) <;> rfl
+  apply Associated2.hom₂_ext
+  · simp
+    rfl
+  · simp
 
 omit hη in
 /-- **`𝔻` preserves vertical composition of 2-morphisms.** -/
