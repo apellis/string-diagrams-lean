@@ -44,6 +44,7 @@ theorem jwObj_zero_p (a : ZMod 2) :
   rw [← CategoryTheory.Functor.map_id]
   congr 1
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The unit object of `SKar(STL(δ))` is `P 0 0`. -/
 theorem unit_eq : 𝟙_ (SKar k (STL k δq)) = jwObj q hq 0 0 := by
   refine Karoubi.ext rfl ?_
@@ -55,6 +56,7 @@ theorem one_eq_classJw : (1 : K₀ (SKar k (STL k δq))) = classJw q hq (0, 0) :
 
 /-! ## The parity shift -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `Π (P n 0) = P n 1`. -/
 theorem pi_jwObj (n : ℕ) : (PiCategory.pi (R := k)).obj (jwObj q hq n 0) = jwObj q hq n 1 := by
   refine Karoubi.ext rfl ?_
@@ -77,6 +79,7 @@ omit hq in
 theorem X_tensor_one (m : ℕ) :
     X k δq m ⊗ X k δq 1 = X k δq (m + 1) := X_tensor k δq m 1
 
+set_option backward.isDefEq.respectTransparency false in
 omit hq in
 /-- Right whiskering in `STL(δ)` is `wR1` up to the identification `m ⊗ 1 = m + 1`. -/
 theorem whiskerRight_eq_wR1 {a b : ℕ} (x : X k δq a ⟶ X k δq b) :
@@ -112,7 +115,7 @@ def homOut {m n : ℕ} {b : ZMod 2} (φ : X k δq (m + 1) ⟶ X k δq n)
   ⟨Envelope.ofHom (eqToHom (X_tensor_one q m) ≫ φ), by
     have := Presentation.comp_mem_homDeg (eqToHom_tensor_mem q m) hφ
     show _ ∈ parity (R := k) (X k δq m ⊗ X k δq 1) (X k δq n) (0 + (0 + 0 + b))
-    simpa using this⟩
+    simpa using! this⟩
 
 omit hq in
 /-- A morphism into `(Π⁰ m) ⊗ (Π⁰ 1)`, given by `ψ : n → m + 1` of parity `b`. -/
@@ -122,13 +125,14 @@ def homIn {m n : ℕ} {b : ZMod 2} (ψ : X k δq n ⟶ X k δq (m + 1))
   ⟨Envelope.ofHom (ψ ≫ eqToHom (X_tensor_one q m).symm), by
     have := Presentation.comp_mem_homDeg hψ (eqToHom_tensor_mem' q m)
     show _ ∈ parity (R := k) (X k δq n) (X k δq m ⊗ X k δq 1) (0 + (b + (0 + 0)))
-    simpa using this⟩
+    simpa using! this⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The underlying morphism of the idempotent of `P m 0 ⊗ P 1 0`. -/
 theorem tensor_p_val (m : ℕ) (x y : PUnit × PUnit) :
     Envelope.toHom ((jwObj q hq m 0 ⊗ jwObj q hq 1 0).p x y).1 =
       eqToHom (X_tensor_one q m) ≫ wR1 k δq (jw q m) ≫ eqToHom (X_tensor_one q m).symm := by
-  show Envelope.toHom ((homD (jw q m) (jw_mem_parity q m 0)).1 ⊗
+  show Envelope.toHom ((homD (jw q m) (jw_mem_parity q m 0)).1 ⊗ₘ
     (homD (jw q 1) (jw_mem_parity q 1 0)).1) = _
   rw [Envelope.tensorHom_def', Envelope.toHom_comp, Envelope.toHom_whiskerRight_of_par_zero _ _ rfl,
     Envelope.toHom_whiskerLeft_of_par_zero _ rfl]
@@ -157,6 +161,7 @@ omit hq in
 @[simp] theorem jwObj_p_val (n : ℕ) (a : ZMod 2) (x y : PUnit) :
     Envelope.toHom ((jwObj q hq n a).p x y).1 = jw q n := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 variable {q hq} in
 /-- A morphism `P m 0 ⊗ P 1 0 ⟶ P n b` given by `φ : m + 1 → n` absorbing the projectors. -/
 def kOut {m n : ℕ} {b : ZMod 2} (φ : X k δq (m + 1) ⟶ X k δq n)
@@ -173,6 +178,7 @@ def kOut {m n : ℕ} {b : ZMod 2} (φ : X k δq (m + 1) ⟶ X k δq n)
       Category.assoc, eqToHom_trans_assoc, eqToHom_refl, Category.id_comp]
     rw [h2, h1]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 variable {q hq} in
 /-- A morphism `P n b ⟶ P m 0 ⊗ P 1 0` given by `ψ : n → m + 1` absorbing the projectors. -/
 def kIn {m n : ℕ} {b : ZMod 2} (ψ : X k δq n ⟶ X k δq (m + 1))
@@ -189,6 +195,7 @@ def kIn {m n : ℕ} {b : ZMod 2} (ψ : X k δq n ⟶ X k δq (m + 1))
       Category.assoc, eqToHom_trans_assoc, eqToHom_refl, Category.id_comp]
     rw [← Category.assoc ψ, h1, ← Category.assoc, h2]⟩
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mor_kIn_kOut {m n n' : ℕ} {b b' : ZMod 2} (ψ : X k δq n ⟶ X k δq (m + 1)) (hψ h1 h2)
     (φ : X k δq (m + 1) ⟶ X k δq n') (hφ h1' h2') :
     mor hq (kIn (q := q) (hq := hq) (b := b) ψ hψ h1 h2 ≫ kOut (b := b') φ hφ h1' h2') = ψ ≫ φ := by
@@ -196,6 +203,7 @@ theorem mor_kIn_kOut {m n n' : ℕ} {b b' : ZMod 2} (ψ : X k δq n ⟶ X k δq 
   rw [mat_comp_unique]
   simp [kIn, kOut]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **`P (N+1) 0 ⊗ P 1 0 ≅ P (N+2) 0 ⊞ P N 1`.** -/
 def tensorIso (N : ℕ) :
     jwObj q hq (N + 1) 0 ⊗ jwObj q hq 1 0 ≅ bsum [jwObj q hq (N + 2) 0, jwObj q hq N 1] := by
