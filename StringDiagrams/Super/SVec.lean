@@ -324,7 +324,8 @@ theorem mem_parityHom_of_apply_mem {V W : SVec k} {p : ZMod 2} {f : V ⟶ W}
     rcases parity_eq_zero_or_one p with rfl | rfl <;>
       rcases parity_eq_zero_or_one q with rfl | rfl <;> decide
   conv_rhs => rw [← proj_apply_add' V q v]
-  rw [map_add, map_add, (mem_part_iff _).1 hv, proj_apply_of_mem_part _ hv', ite_eq_right hne, add_zero]
+  rw [map_add, map_add, (mem_part_iff _).1 hv, proj_apply_of_mem_part _ hv', ite_eq_right hne,
+    add_zero]
 
 /-- The component of parity `p` of a linear map: `f_p = ∑_q proj_{q+p} ∘ f ∘ proj_q`. -/
 def homProj (p : ZMod 2) {V W : SVec k} : (V ⟶ W) →ₗ[k] (V ⟶ W) where

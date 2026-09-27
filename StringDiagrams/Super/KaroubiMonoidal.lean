@@ -337,10 +337,12 @@ instance instMonoidalPreadditive : MonoidalPreadditive (Mat_ D) where
     intros; ext; exact MonoidalPreadditive.zero_tensor _
   whiskerLeft_add := by
     intros; ext
-    exact (congrArg _ (CategoryTheory.Mat_.add_apply _ _ _ _)).trans (MonoidalPreadditive.tensor_add _ _ _)
+    exact (congrArg _ (CategoryTheory.Mat_.add_apply _ _ _ _)).trans
+      (MonoidalPreadditive.tensor_add _ _ _)
   add_whiskerRight := by
     intros; ext
-    exact (congrArg (· ⊗ₘ _) (CategoryTheory.Mat_.add_apply _ _ _ _)).trans (MonoidalPreadditive.add_tensor _ _ _)
+    exact (congrArg (· ⊗ₘ _) (CategoryTheory.Mat_.add_apply _ _ _ _)).trans
+      (MonoidalPreadditive.add_tensor _ _ _)
 
 end Monoidal
 

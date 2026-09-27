@@ -888,7 +888,8 @@ def assocHom : (tensor (tensor M N) P).toSVec ⟶ (tensor M (tensor N P)).toSVec
 
 /-- The trilinear map `(n, p, m) ↦ (m ⊗ n) ⊗ p`. -/
 def assocInvTri : N.toSVec →ₗ[k] P.toSVec →ₗ[k] M.toSVec →ₗ[k] (tensor (tensor M N) P).toSVec :=
-  (LinearMap.lflip (R₀ := k)).toLinearMap ∘ₗ (curry (curry (SVec.toLinearMap (tensorMkHom (tensor M N) P) ∘ₗ
+  (LinearMap.lflip (R₀ := k)).toLinearMap ∘ₗ
+    (curry (curry (SVec.toLinearMap (tensorMkHom (tensor M N) P) ∘ₗ
     map (SVec.toLinearMap (tensorMkHom M N)) LinearMap.id))).flip
 
 @[simp] theorem assocInvTri_apply (n : N.toSVec) (p : P.toSVec) (m : M.toSVec) :

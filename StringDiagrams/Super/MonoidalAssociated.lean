@@ -578,7 +578,8 @@ theorem αMiddle_isPiNatural (X Z : D) :
       ((tensorRightPi R Z).comp (tensorLeftPi R X)) (αMiddle X Z) := fun Y => by
   simp only [αMiddle, PiFunctor.comp_β, NatIso.ofComponents_hom_app, Iso.trans_hom, Iso.app_hom,
     Functor.mapIso_hom, tensorRightPi_β_hom_app, tensorLeftPi_β_hom_app, Functor.flip_obj_map,
-    curriedTensor_map_app, curriedTensor_obj_map, MonoidalPiCategory.pi_obj, MonoidalPiCategory.pi_map, Functor.comp_obj,
+    curriedTensor_map_app, curriedTensor_obj_map, MonoidalPiCategory.pi_obj,
+    MonoidalPiCategory.pi_map, Functor.comp_obj,
     curriedTensor_obj_obj, Functor.flip_obj_obj, βL_hom]
   monoidal
 
