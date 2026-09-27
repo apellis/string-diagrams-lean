@@ -136,6 +136,7 @@ def ofEnd (κ : Obj S → ι) (X : ι → D) (A : Layer S → ∀ i, End (X i))
 
 @[simp] theorem ofEnd_obj (a : Obj S) : (ofEnd κ X A hκ).obj a = X (κ a) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem ofEnd_layerTransport :
     (ofEnd κ X A hκ).LayerTransport (A := A) (fun _ => rfl) hκ := fun L hv => by
   simp [ofEnd]
@@ -147,6 +148,7 @@ theorem ofEnd_map_transport {a b : Obj S} (f : a ⟶ b) {i : ι} (ha : κ a = i)
   Interpretation.map_transport (I := ofEnd κ X A hκ) (X := X) (κ := κ) (A := A) (hκ := hκ)
     (hobj := fun _ => rfl) ofEnd_layerTransport f ha hb
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The image of an endomorphism diagram under `ofEnd`. -/
 theorem ofEnd_map_end {a : Obj S} (f : a ⟶ a) :
     (ofEnd κ X A hκ).functor.map f = endList A (κ a) (Diagram.layers f) := by
@@ -195,6 +197,7 @@ variable (u : Obj S) (v : List S.Colour)
       endList A i ((Diagram.layers d).map (·.whisker u v)) := by
   rw [LinDiagram.of, linEndW_single, one_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Evaluating a whiskered linear combination is whiskered evaluation. -/
 theorem linEnd_whisker (Y : LinDiagram R a b) (hw : a.WhiskerOK u v) :
     linEnd A i (LinDiagram.whisker Y u v hw) = linEndW A i u v Y := by
@@ -208,6 +211,7 @@ namespace Interpretation
 variable {I : Interpretation S D} {κ : Obj S → ι} {A}
   {hobj : ∀ a, I.obj a = X (κ a)} {hκ : ∀ L : Layer S, L.Valid → κ L.cod = κ L.dom}
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The linear extension of an interpretation satisfying the hypotheses of the transport
 lemma, transported to `X i`, is linear evaluation. -/
 theorem freeLift_map_transport (hA : I.LayerTransport (A := A) hobj hκ) {a b : Obj S}
@@ -224,6 +228,7 @@ theorem freeLift_map_transport (hA : I.LayerTransport (A := A) hobj hκ) {a b : 
     rw [freeLift_map_single, Linear.smul_comp, Linear.comp_smul, linEnd_single]
     exact congrArg (r • ·) (map_transport hA d ha hb)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A linear combination of diagrams out of `a` is sent to zero as soon as its linear
 evaluation at the index of `a` vanishes. -/
 theorem freeLift_map_eq_zero (hA : I.LayerTransport (A := A) hobj hκ) {a b : Obj S}
@@ -234,7 +239,7 @@ theorem freeLift_map_eq_zero (hA : I.LayerTransport (A := A) hobj hκ) {a b : Ob
     have e' := congrArg (fun g => eqToHom ((hobj a).trans (congrArg X rfl)) ≫ g ≫
       eqToHom ((hobj b).trans (congrArg X hab)).symm) e
     simpa using e'
-  · haveI : IsEmpty (a ⟶ b) := ⟨fun f => hab (Diagram.index_eq hκ f)⟩
+  · have : IsEmpty (a ⟶ b) := ⟨fun f => hab (Diagram.index_eq hκ f)⟩
     have hY : Y = 0 := Finsupp.ext (α := a ⟶ b) fun d => (IsEmpty.false d).elim
     rw [hY, CategoryTheory.Functor.map_zero]
 
@@ -259,6 +264,7 @@ theorem respects_of_linEndW (hA : I.LayerTransport (A := A) hobj hκ) (P : Prese
   rel r u v hw := freeLift_map_whisker_eq_zero hA hw (hrel r u v hw)
   interchange x hx u v hw := freeLift_map_whisker_eq_zero hA hw (hint x hx u v hw)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The descended functor on the class of a diagram, transported to `X i`. -/
 theorem lift_diag_transport (hA : I.LayerTransport (A := A) hobj hκ) {P : Presentation S R}
     (hF : P.Respects I.functor) {a b : Obj S} (f : a ⟶ b) {i : ι} (ha : κ a = i)

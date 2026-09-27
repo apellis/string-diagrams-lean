@@ -1,6 +1,6 @@
 import StringDiagrams.Horizontal
 import StringDiagrams.Monoidal
-import Mathlib.CategoryTheory.Bicategory.Strict
+import Mathlib.CategoryTheory.Bicategory.Strict.Basic
 
 /-!
 # Presented 2-categories as bicategories
@@ -163,12 +163,13 @@ theorem wL_diag_of_composable (a : Obj S) (g : b ⟶ b') (h : a.Composable b) :
   rw [wL, P.whisk_diag g a [] ⟨h.left_wf, h.endR_eq, trivial⟩]
   simp only [P.eqToHom_obj, ← P.diag_comp]
   apply P.diag_eq_of_layers_eq
-  simp only [Diagram.layers_comp, Diagram.layers_eqToHom, Diagram.layers_whisker,
-    Diagram.layers_lwhisker, List.nil_append, List.append_nil]
+  simp only [Diagram.layers_comp, Diagram.layers_eqToHom, Diagram.layers_lwhisker,
+    List.nil_append, List.append_nil]
   exact List.map_congr_left fun L _ => Layer.ext rfl rfl rfl (List.append_nil _)
 
 /-! ### Associativity and units -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Left whiskering by a composite. -/
 theorem wL_tensor (hab : a.Composable b) (hbc : b.Composable c) (g : P.obj c ⟶ P.obj c') :
     P.wL (a.tensor b) g =
@@ -185,6 +186,7 @@ theorem wL_tensor (hab : a.Composable b) (hbc : b.Composable c) (g : P.obj c ⟶
   | add f g hf hg => simp only [wL_add, Preadditive.add_comp, Preadditive.comp_add, hf, hg]
   | smul x f hf => simp only [wL_smul, Linear.smul_comp, Linear.comp_smul, hf]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Right whiskering by a composite. -/
 theorem wRAt_tensor (hab : a.Composable b) (hbc : b.Composable c) (f : P.obj a ⟶ P.obj a')
     (ha : a.start = r) (ha' : a'.start = r) :
@@ -203,6 +205,7 @@ theorem wRAt_tensor (hab : a.Composable b) (hbc : b.Composable c) (f : P.obj a �
   | add f g hf hg => simp only [wRAt_add, Preadditive.add_comp, Preadditive.comp_add, hf, hg]
   | smul x f hf => simp only [wRAt_smul, Linear.smul_comp, Linear.comp_smul, hf]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Right whiskering of a left whiskering. -/
 theorem wRAt_wL (hab : a.Composable b) (hbc : b.Composable c) (g : P.obj b ⟶ P.obj b')
     (ha : a.start = r) (hb : b.start = s) (hb' : b'.start = s) :
@@ -397,6 +400,7 @@ theorem isoOfEq_eq_eqToIso {a b : Hom l m} (e : a.obj = b.obj) (e' : a = b) :
   apply Iso.ext
   exact eqToHom_refl (P.obj a.obj) (congrArg P.obj e)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem pentagon_aux (a : Hom l m) (b : Hom m n) (c : Hom n k) (d : Hom k j) :
     P.wRAt l.region (eqToHom (congrArg P.obj (Obj.tensor_assoc a.obj b.obj c.obj))) d.obj
         a.start_eq a.start_eq ≫
@@ -408,6 +412,7 @@ theorem pentagon_aux (a : Hom l m) (b : Hom m n) (c : Hom n k) (d : Hom k j) :
     P.wL_eqToHom_of_composable _ (a.composable ((b.comp c).comp d))]
   simp
 
+set_option backward.isDefEq.respectTransparency false in
 theorem triangle_aux (a : Hom l m) (b : Hom m n) :
     eqToHom (congrArg P.obj (Obj.tensor_assoc a.obj (Obj.nil m.region) b.obj)) ≫
         P.wL a.obj (eqToHom (congrArg P.obj (Obj.nil_tensor b.start_eq))) =

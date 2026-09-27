@@ -241,7 +241,7 @@ theorem valid_ofLayers {L M : Layer S} (hL : L.Valid) (hM : M.Valid)
     simp only [ofLayers, gh₁, gh₂, hg₁, hg₂, Signature.ok_append, Signature.endR_append,
       Signature.ok_nil, Signature.endR_nil, hL.dom_end, hL.cod_end, hRM, hM.left_end, hM.dom_end,
       hM.cod_end, hL.dom_ok, hL.cod_ok, hL.right_ok, hM.left_ok, hM.dom_ok, hM.cod_ok,
-      hM.right_ok, true_and, and_true]
+      and_true]
 
 end InterchangeData
 
@@ -280,13 +280,14 @@ theorem diag_swap_layers_of_composable (L M : Layer S) (hL : L.Valid) (hM : M.Va
   have hs : ((x.sign : ℤ) : R) = (((-1 : ℤ) ^ (oddCountList [L] * oddCountList [M]) : ℤ) : R) := by
     congr 1
     by_cases hL' : S.odd L.gen <;> by_cases hM' : S.odd M.gen <;>
-      simp [x, InterchangeData.ofLayers, InterchangeData.sign, oddCountList, List.filter_cons,
-        hL', hM']
+      simp [x, InterchangeData.ofLayers, InterchangeData.sign, oddCountList, hL', hM']
   rw [hs, Int.cast_smul_eq_zsmul] at key
   refine Eq.trans (P.diag_eq_of_layers_eq ?_) (key.trans (congrArg _ (P.diag_eq_of_layers_eq ?_)))
+  all_goals simp only [Diagram.layers_comp, layers_rwhisker, layers_lwhisker, Diagram.layers_cast,
+    layers_whisker, layers_ofLayer]
   all_goals simp [x, u, InterchangeData.ofLayers, InterchangeData.ghDiagram,
       InterchangeData.hgDiagram, InterchangeData.gh₁, InterchangeData.gh₂, InterchangeData.hg₁,
-      InterchangeData.hg₂, Layer.whisker, Layer.wr, Layer.wl, Layer.dom, Layer.cod, Obj.tensor]
+      InterchangeData.hg₂, Layer.whisker, Layer.wr, Layer.wl, Layer.dom, Layer.cod]
 
 /-- Moving a single layer on the right past a diagram on the left, for general regions. -/
 theorem diag_swap_layer_right_of_composable (f : a ⟶ a') (M : Layer S) (hM : M.Valid)

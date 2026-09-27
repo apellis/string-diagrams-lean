@@ -122,6 +122,7 @@ theorem diag_interchange_of_layers {a b : Obj S} (r : S.Region) (l m v : List S.
     simp [x, u, L, M, InterchangeData.ofLayers, InterchangeData.cod, Obj.whisker, Layer.cod]
   have key := P.diag_interchange x hx u v hw ha' hb'
   refine Eq.trans (P.diag_eq_of_layers_eq ?_) (key.trans (congrArg _ (P.diag_eq_of_layers_eq ?_)))
+  all_goals simp only [Diagram.layers_cast, Diagram.layers_whisker]
   · simp [h₁, x, u, L, M, InterchangeData.ofLayers, InterchangeData.ghDiagram,
       InterchangeData.gh₁, InterchangeData.gh₂, Layer.whisker]
   · simp [h₂, x, u, L, M, InterchangeData.ofLayers, InterchangeData.hgDiagram,

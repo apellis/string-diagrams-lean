@@ -76,7 +76,7 @@ def fmtHundredths (n : Int) : String :=
   if r = 0 then sign ++ toString q
   else
     let frac := twoDigits r
-    let frac := if frac.endsWith "0" then frac.dropRight 1 else frac
+    let frac := if frac.endsWith "0" then (frac.dropEnd 1).copy else frac
     sign ++ toString q ++ "." ++ frac
 
 /-- Escape the characters that are special in LaTeX text. -/

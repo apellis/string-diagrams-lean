@@ -114,7 +114,7 @@ theorem Chain.target_eq {a b : Obj S} {ls : List (Layer S)} (h : Chain a ls b) :
 end Decidable
 
 /-- A diagram from `a` to `b` in the free 2-category: a well-typed list of layers. -/
-def Diagram (a b : Obj S) : Type (max u₀ u₁ u₂) := {ls : List (Layer S) // Chain a ls b}
+abbrev Diagram (a b : Obj S) : Type (max u₀ u₁ u₂) := {ls : List (Layer S) // Chain a ls b}
 
 instance : Category (Obj S) where
   Hom := Diagram

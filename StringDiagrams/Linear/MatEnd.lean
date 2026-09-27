@@ -293,7 +293,7 @@ theorem single_mul {i j : ι} (f : X i ⟶ X j) (g : MatEnd X) (i' l : ι) :
     (g * single i j f) i' l = if h : i' = i then eqToHom (congrArg X h) ≫ f ≫ g j l else 0 := by
   rw [mul_apply, Finset.sum_eq_single j]
   · by_cases h : i' = i
-    · subst h; simp [single_apply]
+    · subst h; simp
     · simp [single_apply, h]
   · intro b _ hb; rw [single_apply_of_ne _ (fun h => hb h.2), Limits.zero_comp]
   · simp
@@ -302,7 +302,7 @@ theorem mul_single {j l : ι} (f : X j ⟶ X l) (g : MatEnd X) (i l' : ι) :
     (single j l f * g) i l' = if h : l' = l then g i j ≫ f ≫ eqToHom (congrArg X h.symm) else 0 := by
   rw [mul_apply, Finset.sum_eq_single j]
   · by_cases h : l' = l
-    · subst h; simp [single_apply]
+    · subst h; simp
     · simp [single_apply, h]
   · intro b _ hb; rw [single_apply_of_ne _ (fun h => hb h.1), Limits.comp_zero]
   · simp
@@ -326,9 +326,13 @@ def map (F : C ⥤ D) [F.Additive] [F.Linear R] (X : ι → C) :
     · simp [one_apply_of_ne h]
   map_mul' f g := by
     ext i l
-    simp [mul_apply, Functor.map_sum]
+    change F.map (∑ j, g i j ≫ f j l) = ∑ j, F.map (g i j) ≫ F.map (f j l)
+    simp [Functor.map_sum]
   map_zero' := by ext; simp
-  map_add' f g := by ext; simp
+  map_add' f g := by
+    ext i j
+    change F.map (f i j + g i j) = F.map (f i j) + F.map (g i j)
+    simp
   commutes' r := by
     ext i j
     simp only [Algebra.algebraMap_eq_smul_one, smul_apply, Functor.map_smul]
@@ -410,8 +414,8 @@ theorem biproductAlgEquiv_π_ι (i : J) :
   rw [biproductAlgEquiv_apply, idem, single_apply]
   simp only [Category.assoc]
   by_cases h : i' = i ∧ j' = i
-  · obtain ⟨rfl, rfl⟩ := h; simp [biproduct.ι_π_self_assoc]
-  · rw [dif_neg h]
+  · obtain ⟨rfl, rfl⟩ := h; simp
+  · rw [dite_eq_right h]
     by_cases hi : i' = i
     · subst hi
       rw [biproduct.ι_π_self_assoc, biproduct.ι_π_ne _ (fun e => h ⟨rfl, e.symm⟩)]
@@ -463,7 +467,7 @@ theorem blockMapₗ_one (T : BlockTransport R e Y Z) (φ : ∀ t, A →ₐ[R] Ma
     split_ifs with h
     · subst h; rw [one_apply_self, T.map_id]
     · rw [one_apply_of_ne h, map_zero, single_zero]
-  simp only [h1, Finset.sum_ite_eq, Finset.mem_univ, if_true]
+  simp only [h1, Finset.sum_ite_eq, Finset.mem_univ, ite_true]
   rw [← Fintype.sum_prod_type', ← e.sum_comp]
 
 theorem blockMapₗ_mul (T : BlockTransport R e Y Z) (φ : ∀ t, A →ₐ[R] MatEnd (Y t))

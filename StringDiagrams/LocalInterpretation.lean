@@ -164,6 +164,7 @@ def functor : Obj S ⥤ ModuleCat.{w₂} R := Q.interp.functor
     Q.interp.layer L hv = ModuleCat.ofHom (Q.res (Q.κ L.cod) ∘ₗ Q.op L ∘ₗ Q.ext (Q.κ L.dom)) :=
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The image of a chain of layers. -/
 theorem interp_mapChain_hom {a b : Obj S} (ls : List (Layer S)) (h : Chain a ls b) :
     (Q.interp.mapChain a ls b h).hom = Q.res (Q.κ b) ∘ₗ Q.opList ls ∘ₗ Q.ext (Q.κ a) := by
@@ -191,6 +192,7 @@ theorem functor_map_apply {a b : Obj S} (f : a ⟶ b) (x : M (Q.κ a)) :
     (Q.functor.map f).hom x = Q.res (Q.κ b) (Q.opList (Diagram.layers f) (Q.ext (Q.κ a) x)) := by
   rw [functor_map_hom]; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The image of a diagram, transported along arbitrary equalities of the end indices. -/
 theorem functor_map_transport {a b : Obj S} {i j : ι} (f : a ⟶ b) (ha : Q.κ a = i)
     (hb : Q.κ b = j) :
@@ -292,6 +294,7 @@ theorem evalW_of_apply (d : a ⟶ b) (x : M i) :
       Q.res j (Q.opList ((Diagram.layers d).map (·.whisker u v)) (Q.ext i x)) := by
   rw [evalW_of]; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Evaluating a whiskered linear combination is whiskered evaluation. -/
 theorem eval_whisker (X : LinDiagram R a b) (hw : a.WhiskerOK u v) :
     Q.eval i j (LinDiagram.whisker X u v hw) = Q.evalW i j u v X := by
@@ -302,6 +305,7 @@ end EvalLemmas
 
 /-! ## The linear extension -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The linear extension of `Q.functor` is linear evaluation. -/
 theorem freeLift_map_hom {a b : Obj S} (X : LinDiagram R a b) :
     ((freeLift R Q.functor).map X).hom = Q.eval (Q.κ a) (Q.κ b) X := by
@@ -540,8 +544,9 @@ theorem pi_res_opList_ext (i : ι) (ls : List (Layer S)) :
   refine LinearMap.ext fun x => ?_
   simp only [LinearMap.comp_apply, pi_res_apply, pi_opList_apply]
   congr 1
-  exact Pi.single_eq_same (f := M) i x
+  exact Pi.single_eq_same (M := M) i x
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The image of a diagram between objects of index `i`, transported to `M i`, is the product
 of the component operators of its layers. -/
 theorem pi_functor_map_transport {a b : Obj S} {i : ι} (f : a ⟶ b) (ha : κ a = i)
@@ -568,6 +573,7 @@ section ModuleFunctor
 
 variable {S : Signature.{u₀, u₁, u₂}} {R : Type w} [CommRing R]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The linear extension of a functor to modules, evaluated at a vector: the sum over the
 diagrams of the combination. -/
 theorem freeLift_map_hom_apply (F : Obj S ⥤ ModuleCat.{w₂} R) {a b : Obj S}
@@ -575,9 +581,10 @@ theorem freeLift_map_hom_apply (F : Obj S ⥤ ModuleCat.{w₂} R) {a b : Obj S}
     ((freeLift R F).map X).hom x = X.sum fun d r => r • (F.map d).hom x := by
   rw [freeLift_map]
   change (ModuleCat.homLinearEquiv (S := R) (X.sum fun d r => r • F.map d)) x = _
-  rw [map_finsuppSum, Finsupp.sum, Finsupp.sum, LinearMap.coeFn_sum, Finset.sum_apply]
+  rw [map_finsuppSum, Finsupp.sum, Finsupp.sum, LinearMap.sum_apply]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The linear extension of a functor to modules on `of d₁ - c • of d₂`, at a vector. -/
 theorem freeLift_map_sub_smul_hom_apply (F : Obj S ⥤ ModuleCat.{w₂} R) {a b : Obj S}
     (d₁ d₂ : a ⟶ b) (c : R) (x : F.obj a) :
@@ -587,6 +594,7 @@ theorem freeLift_map_sub_smul_hom_apply (F : Obj S ⥤ ModuleCat.{w₂} R) {a b 
     ModuleCat.hom_smul, LinearMap.sub_apply, LinearMap.smul_apply]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The linear extension of a functor to modules on a whiskered `of d₁ - c • of d₂`, at a
 vector. -/
 theorem freeLift_map_whisker_sub_smul_hom_apply (F : Obj S ⥤ ModuleCat.{w₂} R) {a b : Obj S}

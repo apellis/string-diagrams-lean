@@ -1,5 +1,5 @@
 import StringDiagrams.Super.Monoidal
-import Mathlib.CategoryTheory.Bicategory.Strict
+import Mathlib.CategoryTheory.Bicategory.Strict.Basic
 
 /-!
 # 2-supercategories

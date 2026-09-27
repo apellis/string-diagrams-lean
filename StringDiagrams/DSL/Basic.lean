@@ -1,5 +1,5 @@
 import StringDiagrams.Syntax
-import Mathlib.Data.Nat.Digits
+import Mathlib.Data.Nat.Digits.Lemmas
 
 /-!
 # A one-line textual notation for layered diagrams
@@ -141,7 +141,7 @@ def Tok.chars : Tok → List Char
 def flush (acc : List Char) (ts : List Tok) : List Tok :=
   match acc with
   | [] => ts
-  | _ :: _ => .ident (String.mk acc) :: ts
+  | _ :: _ => .ident (String.ofList acc) :: ts
 
 /-- The lexer, with an accumulator for the name being read. -/
 def lexAux : List Char → List Char → List Tok
@@ -223,7 +223,7 @@ def regionToks (r : S.Region) : List Tok :=
 /-- Tokens of a word of colours. -/
 def wordToks (w : List S.Colour) : List Tok :=
   match soleColour? (S := S) with
-  | some _ => [.ident (String.mk (natChars w.length))]
+  | some _ => [.ident (String.ofList (natChars w.length))]
   | none => .lbrack :: (w.map fun c => .ident (colourName c)) ++ [.rbrack]
 
 /-- Tokens of an object. -/
@@ -231,7 +231,7 @@ def objToks (a : Obj S) : List Tok := regionToks a.start ++ wordToks a.word
 
 /-- Tokens of a layer `gen@k`. -/
 def layerToks (L : Layer S) : List Tok :=
-  [.ident (genName L.gen), .atSign, .ident (String.mk (natChars L.left.length))]
+  [.ident (genName L.gen), .atSign, .ident (String.ofList (natChars L.left.length))]
 
 /-- Tokens of a nonempty list of layers, separated by `;`. -/
 def layersToks : List (Layer S) → List Tok
@@ -248,10 +248,10 @@ def printToks (a : Obj S) (ls : List (Layer S)) : List Tok :=
 /-- Print a diagram given by its source object and its layers (bottom to top). Only the
 lengths of the `left` fields and the generators of the layers are printed; the remaining
 data is recovered by the parser from the running boundary. -/
-def print (a : Obj S) (ls : List (Layer S)) : String := String.mk (render (printToks a ls))
+def print (a : Obj S) (ls : List (Layer S)) : String := String.ofList (render (printToks a ls))
 
 /-- Print an object. -/
-def printObj (a : Obj S) : String := String.mk (render (objToks a))
+def printObj (a : Obj S) : String := String.ofList (render (objToks a))
 
 end Print
 
@@ -388,10 +388,10 @@ theorem isNameChar_iff {c : Char} :
 
 theorem validName_iff {s : String} :
     validName s = true ↔ s.toList ≠ [] ∧ s.toList.all isNameChar = true := by
-  simp [validName, List.isEmpty_iff]
+  simp [validName]
 
 theorem flush_of_ne_nil {l : List Char} (h : l ≠ []) (ts : List Tok) :
-    flush l ts = .ident (String.mk l) :: ts := by
+    flush l ts = .ident (String.ofList l) :: ts := by
   cases l with
   | nil => exact absurd rfl h
   | cons _ _ => rfl
@@ -469,15 +469,14 @@ theorem lexAux_render : ∀ ts : List Tok, ts.all Tok.wf = true → lexAux (rend
             have ht' : t'.isIdent = false := by
               cases t' <;> simp_all [space, Tok.isIdent]
             rw [List.nil_append, lexAux_render_of_not_ident ht', ih]
-      rw [this, flush_of_ne_nil hne]
-      rfl
+      rw [this, flush_of_ne_nil hne, String.ofList_toList]
     | _ =>
       rw [Tok.chars, List.singleton_append, lexAux_special rfl, flush_nil,
         lexAux_renderTail_nil _ _ ih]
 
 theorem lex_mk_render {ts : List Tok} (h : ts.all Tok.wf = true) :
-    lex (String.mk (render ts)) = ts :=
-  lexAux_render ts h
+    lex (String.ofList (render ts)) = ts := by
+  rw [lex, String.toList_ofList]; exact lexAux_render ts h
 
 end Lex
 
@@ -526,9 +525,9 @@ theorem parseNat_natChars (n : ℕ) : parseNat? (natChars n) = some n := by
       (List.mem_reverse.1 hd)), foldl_reverse_eq_ofDigits, Nat.ofDigits_digits]
     simp
 
-theorem validName_natChars (n : ℕ) : validName (String.mk (natChars n)) = true :=
-  validName_iff.2 ⟨natChars_ne_nil n, by
-    unfold natChars; split
+theorem validName_natChars (n : ℕ) : validName (String.ofList (natChars n)) = true :=
+  validName_iff.2 ⟨by rw [String.toList_ofList]; exact natChars_ne_nil n, by
+    rw [String.toList_ofList]; unfold natChars; split
     · decide
     · simp [List.all_map, Function.comp_def, isNameChar_digitChar]⟩
 
@@ -595,22 +594,22 @@ theorem parseWord_wordToks (w : List S.Colour) (rest : List Tok) :
   split
   · rename_i c₀ hc
     simp only [List.cons_append, List.nil_append, parseWord, hc]
-    rw [String.toList, parseNat_natChars]
+    rw [String.toList_ofList, parseNat_natChars]
     have : List.replicate w.length c₀ = w :=
       (List.eq_replicate_iff.2 ⟨rfl, fun c _ => soleColour_eq hc c⟩).symm
     dsimp only
     rw [this]
-  · simp only [List.cons_append, List.append_assoc, List.singleton_append, parseWord]
+  · simp only [List.cons_append, List.append_assoc, parseWord]
     exact parseColours_map w rest
 
 variable [DecidableEq S.Colour]
 
 theorem parseLayer_eq {r₀ : S.Region} {L : Layer S} (hv : L.Valid) (hs : L.start = r₀) :
-    parseLayer r₀ L.dom.word (genName L.gen) (String.mk (natChars L.left.length)) = .ok L := by
+    parseLayer r₀ L.dom.word (genName L.gen) (String.ofList (natChars L.left.length)) = .ok L := by
   have hw : L.dom.word = L.left ++ (S.dom L.gen ++ L.right) := by simp
   have hg := genOfName_genName L.gen L.right
   have hend : S.endR r₀ L.left = S.left L.gen := hs ▸ hv.left_end
-  simp only [parseLayer, String.toList, parseNat_natChars, hw, List.take_left, List.drop_left,
+  simp only [parseLayer, String.toList_ofList, parseNat_natChars, hw, List.take_left, List.drop_left,
     hend, hg, List.isPrefixOf_iff_prefix, List.prefix_append, ↓reduceIte, List.length_append]
   simp only [Nat.le_add_right, ↓reduceIte, Except.ok.injEq]
   cases L; subst hs; rfl
@@ -621,7 +620,7 @@ theorem parseLayers_layersToks :
   | [], _, _, _, h => absurd rfl h
   | L :: ls, a, b, ⟨hv, hdom, hc⟩, _ => by
     have hL : parseLayer a.start a.word (genName L.gen)
-        (String.mk (natChars L.left.length)) = .ok L := by
+        (String.ofList (natChars L.left.length)) = .ok L := by
       rw [← hdom]; exact parseLayer_eq hv rfl
     cases ls with
     | nil => simp [layersToks, layerToks, parseLayers, hL]
@@ -691,7 +690,7 @@ on diagrams `a ⟶ b`. -/
 theorem parseHom_printHom [LawfulDSLNames S] {a b : Obj S} (f : a ⟶ b) :
     parseHom a b (printHom f) = .ok f := by
   simp only [parseHom, printHom, parse_print (Diagram.chain f), ↓reduceIte,
-    dif_pos (Diagram.chain f)]
+    dite_eq_left (Diagram.chain f)]
   rfl
 
 /-- Whether `parse (print a ls)` returns exactly `(a, ls)` (a decidable check, for tests). -/

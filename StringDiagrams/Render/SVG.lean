@@ -30,7 +30,7 @@ def xmlEscapeChar : Char → List Char
   | c => [c]
 
 /-- Escape the characters `& < > " '` for XML text and attribute values. -/
-def xmlEscape (s : String) : String := String.mk (s.toList.flatMap xmlEscapeChar)
+def xmlEscape (s : String) : String := String.ofList (s.toList.flatMap xmlEscapeChar)
 
 /-- The character of one of the five predefined XML entities, and the remaining input. -/
 def xmlEntity? : List Char → Option (Char × List Char)
@@ -60,7 +60,7 @@ def xmlUnescapeAux : List Char → List Char
 termination_by l => l.length
 
 /-- Undo `xmlEscape`. -/
-def xmlUnescape (s : String) : String := String.mk (xmlUnescapeAux s.toList)
+def xmlUnescape (s : String) : String := String.ofList (xmlUnescapeAux s.toList)
 
 theorem xmlUnescapeAux_cons {c : Char} (h : c ≠ '&') (cs : List Char) :
     xmlUnescapeAux (c :: cs) = c :: xmlUnescapeAux cs := by
@@ -71,13 +71,13 @@ theorem xmlUnescapeAux_escapeChar_append (c : Char) (rest : List Char) :
   unfold xmlEscapeChar
   split
   all_goals first
-    | (rw [List.singleton_append, xmlUnescapeAux_cons]; assumption)
-    | (simp only [List.cons_append, List.nil_append]; rw [xmlUnescapeAux]; simp [xmlEntity?])
+    | (rwa [List.singleton_append, xmlUnescapeAux_cons])
+    | (simp only [List.cons_append, List.nil_append]; rw [xmlUnescapeAux]; rfl)
 
 /-- Unescaping inverts escaping. -/
 @[simp] theorem xmlUnescape_xmlEscape (s : String) : xmlUnescape (xmlEscape s) = s := by
-  suffices h : ∀ l : List Char, xmlUnescapeAux (l.flatMap xmlEscapeChar) = l from
-    congrArg String.mk (h s.toList)
+  suffices h : ∀ l : List Char, xmlUnescapeAux (l.flatMap xmlEscapeChar) = l by
+    rw [xmlUnescape, xmlEscape, String.toList_ofList, h, String.ofList_toList]
   intro l
   induction l with
   | nil => simp [xmlUnescapeAux]

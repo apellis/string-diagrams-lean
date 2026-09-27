@@ -83,6 +83,10 @@ def whisker (f : LinDiagram R a b) (u : Obj S) (v : List S.Colour)
     whisker (of f : LinDiagram R a b) u v hw = of (Diagram.whisker f u v hw) :=
   Finsupp.mapDomain_single
 
+@[simp] theorem whisker_zero (u : Obj S) (v : List S.Colour) (hw : a.WhiskerOK u v) :
+    whisker (0 : LinDiagram R a b) u v hw = 0 :=
+  Finsupp.mapDomain_zero
+
 theorem whisker_sub (f g : LinDiagram R a b) (u : Obj S) (v : List S.Colour)
     (hw : a.WhiskerOK u v) : whisker (f - g) u v hw = whisker f u v hw - whisker g u v hw :=
   (Finsupp.lmapDomain R R _).map_sub f g
@@ -129,7 +133,7 @@ def cast {a' b' : Obj S} (f : LinDiagram R a b) (ha : a = a') (hb : b = b') :
   Finsupp.mapDomain_smul _ _
 
 @[simp] theorem cast_rfl (f : LinDiagram R a b) : cast f rfl rfl = f := by
-  simp only [cast, Diagram.cast_rfl]; exact Finsupp.mapDomain_id
+  simp only [cast]; exact Finsupp.mapDomain_id
 
 end LinDiagram
 
@@ -288,14 +292,14 @@ def homRel : HomRel (Free R (Obj S)) := fun a b f g => f - g ∈ P.ideal a b
 
 instance : Congruence P.homRel where
   equivalence :=
-    { refl := fun f => by simp [homRel]
+    { refl := fun f => by rw [homRel, sub_self]; exact Submodule.zero_mem _
       symm := fun {f g} h => by
         rw [homRel, ← neg_sub]; exact Submodule.neg_mem _ h
       trans := fun {f g h} h₁ h₂ => by
         rw [homRel, ← sub_add_sub_cancel f g h]; exact Submodule.add_mem _ h₁ h₂ }
-  compLeft := fun f g g' h => by
+  comp_left := fun f g g' h => by
     rw [homRel, ← Preadditive.comp_sub]; exact P.comp_mem_ideal f h
-  compRight := fun g h => by
+  comp_right := fun g h => by
     rw [homRel, ← Preadditive.sub_comp]; exact P.mem_ideal_comp h g
 
 theorem homRel_add : ∀ ⦃X Y : Free R (Obj S)⦄ (f₁ f₂ g₁ g₂ : X ⟶ Y) (_ : P.homRel f₁ f₂)
@@ -412,7 +416,7 @@ def layer (L : Layer S) (hv : L.Valid) {a b : Obj S} (ha : L.dom = a)
 
 theorem lin_single {a b : Obj S} (f : a ⟶ b) (r : R) :
     P.lin (Finsupp.single f r : LinDiagram R a b) = r • P.diag f := by
-  rw [diag, ← lin_smul, Finsupp.smul_single, smul_eq_mul, mul_one]
+  rw [diag, ← lin_smul]; congr 1; exact (Finsupp.smul_single_one f r).symm
 
 @[simp] theorem diag_comp {a b c : Obj S} (f : a ⟶ b) (g : b ⟶ c) :
     P.diag (f ≫ g) = P.diag f ≫ P.diag g := by

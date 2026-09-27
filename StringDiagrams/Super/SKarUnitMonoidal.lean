@@ -1,5 +1,5 @@
 import StringDiagrams.Super.SKarUnit
-import Mathlib.Data.Matrix.Kronecker
+import Mathlib.LinearAlgebra.Matrix.Kronecker
 import Mathlib.LinearAlgebra.TensorProduct.Basis
 import Mathlib.RingTheory.Flat.Basic
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas

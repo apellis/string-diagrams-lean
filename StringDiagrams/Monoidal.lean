@@ -211,6 +211,7 @@ theorem wL_wL (a b : Obj S) (h : P.obj c ⟶ P.obj c') :
   | diag d =>
     simp only [wL_diag, P.eqToHom_obj, ← P.diag_comp]
     apply P.diag_eq_of_layers_eq
+    simp only [Diagram.layers_comp, Diagram.layers_eqToHom, Diagram.layers_whiskerL]
     simp [Layer.wl, Obj.tensor]
   | zero => simp [wL_zero]
   | add f g hf hg => simp only [wL_add, Preadditive.add_comp, Preadditive.comp_add, hf, hg]
@@ -244,6 +245,7 @@ theorem wR_wR (f : P.obj a ⟶ P.obj a') (b c : Obj S) :
   | diag d =>
     simp only [wR_diag, P.eqToHom_obj, ← P.diag_comp]
     apply P.diag_eq_of_layers_eq
+    simp only [Diagram.layers_comp, Diagram.layers_eqToHom, Diagram.layers_whiskerR]
     simp [Layer.wr, Obj.tensor]
   | zero => simp [wR_zero]
   | add f g hf hg => simp only [wR_add, Preadditive.add_comp, Preadditive.comp_add, hf, hg]
@@ -258,7 +260,9 @@ theorem wL_wR (a : Obj S) (g : P.obj b ⟶ P.obj b') (c : Obj S) :
   | diag d =>
     simp only [wL_diag, wR_diag, P.eqToHom_obj, ← P.diag_comp]
     apply P.diag_eq_of_layers_eq
-    simp [Layer.wr, Layer.wl, Obj.tensor]
+    simp only [Diagram.layers_comp, Diagram.layers_eqToHom, Diagram.layers_whiskerL,
+      Diagram.layers_whiskerR]
+    simp [Layer.wr, Layer.wl]
   | zero => simp [wR_zero, wL_zero]
   | add f g hf hg => simp only [wR_add, wL_add, Preadditive.add_comp, Preadditive.comp_add, hf, hg]
   | smul r f hf => simp only [wR_smul, wL_smul, Linear.smul_comp, Linear.comp_smul, hf]
@@ -412,12 +416,12 @@ variable [S.IsEven]
 
 instance instMonoidalCategory : MonoidalCategory P.Presented where
   tensorHom_def _ _ := rfl
-  tensor_id X Y := by
+  id_tensorHom_id X Y := by
     change P.wR (𝟙 (P.obj (P.toObj X))) _ ≫ P.wL _ (𝟙 (P.obj (P.toObj Y))) = _
     rw [wR_id, wL_id, Category.comp_id]; rfl
-  tensor_comp {X₁ Y₁ Z₁ X₂ Y₂ Z₂} f₁ f₂ g₁ g₂ :=
-    P.tensor_comp_aux (a := P.toObj X₁) (a' := P.toObj Y₁) (a'' := P.toObj Z₁)
-      (b := P.toObj X₂) (b' := P.toObj Y₂) (b'' := P.toObj Z₂) f₁ g₁ f₂ g₂
+  tensorHom_comp_tensorHom {X₁ Y₁ Z₁ X₂ Y₂ Z₂} f₁ f₂ g₁ g₂ :=
+    (P.tensor_comp_aux (a := P.toObj X₁) (a' := P.toObj Y₁) (a'' := P.toObj Z₁)
+      (b := P.toObj X₂) (b' := P.toObj Y₂) (b'' := P.toObj Z₂) f₁ g₁ f₂ g₂).symm
   whiskerLeft_id X Y := P.wL_id (P.toObj X) (P.toObj Y)
   id_whiskerRight X Y := P.wR_id (P.toObj X) (P.toObj Y)
   associator_naturality {X₁ X₂ X₃ Y₁ Y₂ Y₃} f₁ f₂ f₃ :=

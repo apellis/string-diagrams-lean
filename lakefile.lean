@@ -6,7 +6,7 @@ package StringDiagrams where
 
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git" @
-  "c44e0c8ee63ca166450922a373c7409c5d26b00b"
+  "d13f23b723b8a846827a245b89c10fc7d3f11612"
 
 @[default_target]
 lean_lib StringDiagrams where

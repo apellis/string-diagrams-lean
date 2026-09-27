@@ -105,7 +105,7 @@ theorem oddCountList_append (ls ms : List (Layer S)) :
   simp [oddCountList, List.filter_map, Function.comp_def, Layer.whisker]
 
 theorem oddCountList_singleton (L : Layer S) : oddCountList [L] = (S.odd L.gen).toNat := by
-  cases h : S.odd L.gen <;> simp [oddCountList, List.filter_cons, h]
+  cases h : S.odd L.gen <;> simp [oddCountList, h]
 
 theorem oddCount_comp (f : a ⟶ b) (g : b ⟶ c) : oddCount (f ≫ g) = oddCount f + oddCount g :=
   oddCountList_append _ _
@@ -158,6 +158,7 @@ theorem HasParity.add {F G : LinDiagram R a b} {p : ℕ} (hF : F.HasParity p) (h
 def parityInv : LinDiagram R a b →ₗ[R] LinDiagram R a b :=
   Finsupp.linearCombination R (fun d : a ⟶ b => ((-1 : R) ^ Diagram.oddCount d) • of d)
 
+set_option backward.isDefEq.respectTransparency false in
 theorem parityInv_single (d : a ⟶ b) (r : R) :
     parityInv (Finsupp.single d r : LinDiagram R a b) =
       ((-1 : R) ^ Diagram.oddCount d) • (Finsupp.single d r : LinDiagram R a b) := by
@@ -169,6 +170,7 @@ theorem parityInv_of (d : a ⟶ b) :
     parityInv (of d : LinDiagram R a b) = ((-1 : R) ^ Diagram.oddCount d) • of d :=
   parityInv_single d 1
 
+set_option backward.isDefEq.respectTransparency false in
 theorem parityInv_eq_of_hasParity {F : LinDiagram R a b} {p : ℕ} (hF : F.HasParity p) :
     parityInv F = ((-1 : R) ^ p) • F := by
   conv_lhs => rw [← Finsupp.sum_single F]
@@ -192,6 +194,7 @@ theorem single_comp_single (d : a ⟶ b) (e : b ⟶ c) (r s : R) :
       Finsupp.single (d ≫ e) (r * s) :=
   Free.single_comp_single R (Obj S) d e r s
 
+set_option backward.isDefEq.respectTransparency false in
 theorem parityInv_comp (F : LinDiagram R a b) (G : LinDiagram R b c) :
     parityInv (F ≫ G) = parityInv F ≫ parityInv G := by
   induction F using Finsupp.induction_linear with
@@ -207,6 +210,7 @@ theorem parityInv_comp (F : LinDiagram R a b) (G : LinDiagram R b c) :
         Linear.smul_comp, Linear.comp_smul, single_comp_single, smul_smul, Diagram.oddCount_comp,
         pow_add, mul_comm ((-1 : R) ^ _)]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem parityInv_parityInv (F : LinDiagram R a b) : parityInv (parityInv F) = F := by
   induction F using Finsupp.induction_linear with
   | zero => simp
@@ -215,6 +219,7 @@ theorem parityInv_parityInv (F : LinDiagram R a b) : parityInv (parityInv F) = F
     rw [parityInv_single, map_smul, parityInv_single, smul_smul, ← pow_add, ← two_mul, pow_mul,
       neg_one_sq, one_pow, one_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem parityInv_whisker (F : LinDiagram R a b) (u : Obj S) (v : List S.Colour)
     (hw : a.WhiskerOK u v) : parityInv (whisker F u v hw) = whisker (parityInv F) u v hw := by
   induction F using Finsupp.induction_linear with
@@ -252,6 +257,7 @@ theorem toList_of (d : a ⟶ b) :
 theorem toList_injective : Function.Injective (toList : LinDiagram R a b → _) :=
   Finsupp.mapDomain_injective fun _ _ h => Diagram.ext h
 
+set_option backward.isDefEq.respectTransparency false in
 theorem toList_mapDomain {a' b' : Obj S} (φ : (a ⟶ b) → (a' ⟶ b'))
     (ψ : List (Layer S) → List (Layer S)) (h : ∀ d, Diagram.layers (φ d) = ψ (Diagram.layers d))
     (F : LinDiagram R a b) :
@@ -259,6 +265,7 @@ theorem toList_mapDomain {a' b' : Obj S} (φ : (a ⟶ b) → (a' ⟶ b'))
   rw [toList_apply, toList_apply, ← Finsupp.mapDomain_comp, ← Finsupp.mapDomain_comp]
   congr 1; funext d; exact h d
 
+set_option backward.isDefEq.respectTransparency false in
 theorem toList_cast {a' b' : Obj S} (F : LinDiagram R a b) (ha : a = a') (hb : b = b') :
     toList (cast F ha hb) = toList F := by
   rw [cast, toList_mapDomain (fun d => Diagram.cast d ha hb) id (fun _ => rfl),
@@ -269,6 +276,7 @@ theorem toList_whisker (F : LinDiagram R a b) (u : Obj S) (v : List S.Colour)
     toList (whisker F u v hw) = Finsupp.mapDomain (List.map (·.whisker u v)) (toList F) :=
   toList_mapDomain _ _ (fun _ => rfl) F
 
+set_option backward.isDefEq.respectTransparency false in
 theorem toList_comp_of (F : LinDiagram R a b) (g : b ⟶ c) :
     toList (F ≫ of g) = Finsupp.mapDomain (· ++ Diagram.layers g) (toList F) := by
   induction F using Finsupp.induction_linear with
@@ -278,6 +286,7 @@ theorem toList_comp_of (F : LinDiagram R a b) (g : b ⟶ c) :
     rw [single_comp_single, mul_one, toList_single, toList_single, Finsupp.mapDomain_single,
       Diagram.layers_comp]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem toList_of_comp (f : a ⟶ b) (G : LinDiagram R b c) :
     toList (of f ≫ G) = Finsupp.mapDomain (Diagram.layers f ++ ·) (toList G) := by
   induction G using Finsupp.induction_linear with
@@ -298,6 +307,7 @@ theorem parityList_single (l : List (Layer S)) (r : R) :
     ((-1 : R) ^ Diagram.oddCountList l) • Finsupp.single l (1 : R)) r l).trans ?_
   rw [smul_comm, Finsupp.smul_single_one]
 
+set_option backward.isDefEq.respectTransparency false in
 theorem toList_parityInv (F : LinDiagram R a b) : toList (parityInv F) = parityList (toList F) := by
   induction F using Finsupp.induction_linear with
   | zero => simp
@@ -406,6 +416,7 @@ theorem derivDiag_layer (L : Layer S) (hv : L.Valid) (ha : L.dom = a) (hb : L.co
     Finsupp.mapDomain_zero, add_zero, oddCountList_nil, pow_zero, one_smul]
   simp only [List.append_nil]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The derivative of a single layer whose generator has a single diagram as value. -/
 theorem derivDiag_layer_of (L : Layer S) (hv : L.Valid) (ha : L.dom = a) (hb : L.cod = b)
     (d : S.genDom L.gen ⟶ S.genCod L.gen) (hd : D.δ L.gen = of d) :
@@ -443,6 +454,7 @@ theorem derivDiag_comp (f : a ⟶ b) (g : b ⟶ c) :
     toList_of_comp, toList_derivDiag, toList_derivDiag]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem derivFree_single_comp_single (d : a ⟶ b) (e : b ⟶ c) (r s : R) :
     D.derivFree ((Finsupp.single d r : LinDiagram R a b) ≫ (Finsupp.single e s : LinDiagram R b c)) =
       D.derivFree (Finsupp.single d r : LinDiagram R a b) ≫
@@ -488,13 +500,14 @@ theorem derivL_map_whisker (ls : List (Layer S)) (u : Obj S) (v : List S.Colour)
     congr 1
     apply List.map_congr_left
     intro X _
-    simp [Layer.whisker, Obj.tensor, List.append_assoc]
+    simp [Layer.whisker, List.append_assoc]
 
 theorem derivDiag_whisker (d : a ⟶ b) (u : Obj S) (v : List S.Colour) (hw : a.WhiskerOK u v) :
     D.derivDiag (Diagram.whisker d u v hw) = LinDiagram.whisker (D.derivDiag d) u v hw := by
   apply toList_injective
   rw [toList_derivDiag, toList_whisker, toList_derivDiag, layers_whisker, derivL_map_whisker]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The derivation commutes with whiskering: identity strands are even. -/
 theorem derivFree_whisker (F : LinDiagram R a b) (u : Obj S) (v : List S.Colour)
     (hw : a.WhiskerOK u v) :
@@ -531,7 +544,7 @@ theorem parityList_derivL (ls : List (Layer S)) :
       parityList_mapDomain _ (S.odd L.gen).toNat (fun l => by
         rw [oddCountList_cons, oddCountList_singleton, add_comm]),
       hδ, ih, oddCountList_cons, oddCountList_singleton]
-    simp only [Finsupp.mapDomain_smul, map_neg, (Finsupp.lmapDomain R R _).map_neg]
+    simp only [Finsupp.mapDomain_smul]
     have e : ∀ X : List (Layer S) →₀ R, ∀ f : List (Layer S) → List (Layer S),
         Finsupp.mapDomain f (-X) = -Finsupp.mapDomain f X :=
       fun X f => (Finsupp.lmapDomain R R f).map_neg X
@@ -545,6 +558,7 @@ theorem parityInv_derivDiag (d : a ⟶ b) :
   rw [toList_parityInv, toList_derivDiag, parityList_derivL, map_neg, map_smul, toList_derivDiag]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The derivation is odd: `σ ∘ d = - d ∘ σ`. -/
 theorem parityInv_derivFree (F : LinDiagram R a b) :
     parityInv (D.derivFree F) = -D.derivFree (parityInv F) := by
@@ -603,6 +617,7 @@ def ofGen (g : S.Gen) : S.genDom g ⟶ S.genCod g :=
     oddCount (whiskerR f b) = oddCount f :=
   oddCountList_map_wr _ _
 
+set_option backward.isDefEq.respectTransparency false in
 theorem ofLayer_eq_whisker_ofGen (L : Layer S) (hv : L.Valid) :
     ofLayer L hv = whisker (ofGen L.gen) ⟨L.start, L.left⟩ L.right hv.genWhiskerOK := by
   ext; simp [Signature.genLayer, Layer.whisker]
@@ -655,6 +670,7 @@ def rightBelow (e : S.genDom x.h ⟶ S.genCod x.h) : x.dom ⟶ x.cod :=
   cast (whiskerL (S.genDom x.g) (whiskerL x.midObj e) ≫ whiskerR (ofGen x.g) x.rightCod)
     x.tensor_dom x.tensor_cod
 
+set_option backward.isDefEq.respectTransparency false in
 theorem layers_leftBelow (f : S.genDom x.g ⟶ S.genCod x.g) :
     layers (x.leftBelow f) =
       (layers f).map (·.whisker ⟨x.start, []⟩ (x.mid ++ S.dom x.h)) ++ [x.gh₂] := by
@@ -666,6 +682,7 @@ theorem layers_leftBelow (f : S.genDom x.g ⟶ S.genCod x.g) :
     exact Layer.ext (Subsingleton.elim _ _)
       (by simp [Layer.wl, Signature.genLayer, Signature.genCod, midObj, gh₂]) rfl rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem layers_leftAbove (f : S.genDom x.g ⟶ S.genCod x.g) :
     layers (x.leftAbove f) =
       x.hg₁ :: (layers f).map (·.whisker ⟨x.start, []⟩ (x.mid ++ S.cod x.h)) := by
@@ -676,6 +693,7 @@ theorem layers_leftAbove (f : S.genDom x.g ⟶ S.genCod x.g) :
       (by simp [Layer.wl, Signature.genLayer, Signature.genDom, midObj, hg₁]) rfl rfl
   · exact List.map_congr_left fun L _ => Layer.ext (Subsingleton.elim _ _) rfl rfl rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem layers_rightAbove (e : S.genDom x.h ⟶ S.genCod x.h) :
     layers (x.rightAbove e) =
       x.gh₁ :: (layers e).map (·.whisker ⟨x.start, S.cod x.g ++ x.mid⟩ []) := by
@@ -688,6 +706,7 @@ theorem layers_rightAbove (e : S.genDom x.h ⟶ S.genCod x.h) :
   · exact List.map_congr_left fun L _ => Layer.ext (Subsingleton.elim _ _)
       (by simp [Layer.wl, Layer.whisker, Signature.genCod, midObj]) rfl (by simp [Layer.wl, Layer.whisker])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem layers_rightBelow (e : S.genDom x.h ⟶ S.genCod x.h) :
     layers (x.rightBelow e) =
       (layers e).map (·.whisker ⟨x.start, S.dom x.g ++ x.mid⟩ []) ++ [x.hg₂] := by
@@ -737,6 +756,7 @@ theorem derivDiag_ofGen (g : S.Gen) : D.derivDiag (ofGen g) = D.δ g := by
   rw [e, Finsupp.mapDomain_id]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem derivDiag_gh (x : InterchangeData S) (hx : x.Valid) :
     D.derivDiag (InterchangeData.ghDiagram hx) =
       ((-1 : R) ^ (S.odd x.h).toNat) • Finsupp.mapDomain x.leftBelow (D.δ x.g) +
@@ -752,6 +772,7 @@ theorem derivDiag_gh (x : InterchangeData S) (hx : x.Valid) :
   simp only [Function.comp_def, List.append_nil]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 theorem derivDiag_hg (x : InterchangeData S) (hx : x.Valid) :
     D.derivDiag (InterchangeData.hgDiagram hx) =
       ((-1 : R) ^ (S.odd x.g).toNat) • Finsupp.mapDomain x.rightBelow (D.δ x.h) +
@@ -779,6 +800,7 @@ theorem diag_cast_interchange {a a' b b' c c' : Obj S} (f : a ⟶ a') (g : b ⟶
   rw [cast_rfl, cast_rfl, P.diag_interchange_diagrams, ← Int.cast_smul_eq_zsmul R]
   push_cast; rfl
 
+set_option backward.isDefEq.respectTransparency false in
 omit [Subsingleton S.Region] in
 /-- If `φ d = k • ψ d` in the presented category for every diagram `d` in the support of `F`,
 then the same holds for `F`. -/
@@ -799,6 +821,7 @@ theorem lin_mapDomain_eq_smul {a b c d : Obj S} (φ ψ : (a ⟶ b) → (c ⟶ d)
 theorem neg_one_pow_of_mod {m n : ℕ} (h : m % 2 = n % 2) : (-1 : R) ^ m = (-1) ^ n := by
   rw [neg_one_pow_eq_pow_mod_two, h, ← neg_one_pow_eq_pow_mod_two]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The crux of descent: the derivation of an instance of the super interchange law vanishes
 in the presented category. This uses that `δ g` has parity `|g| + 1` and the Koszul sign of
 the Leibniz rule. -/
@@ -837,6 +860,7 @@ structure Compatible : Prop where
 
 variable {D P}
 
+set_option backward.isDefEq.respectTransparency false in
 omit [Subsingleton S.Region] in
 theorem Compatible.parityInv_allRel (hP : D.Compatible P) (k : P.AllRel) :
     ∃ p : ℕ, parityInv k.rel = ((-1 : R) ^ p) • k.rel := by
@@ -899,7 +923,7 @@ def deriv : (P.obj a ⟶ P.obj b) →ₗ[R] (P.obj a ⟶ P.obj b) where
   toFun f := Quot.lift (fun F : LinDiagram R a b => P.lin (D.derivFree F))
     (fun F₁ F₂ h => by
       have h' : P.homRel F₁ F₂ := by
-        rwa [CategoryTheory.Quotient.compClosure_eq_self] at h
+        rwa [HomRel.compClosure_eq_self] at h
       rw [lin_eq_iff, ← map_sub]
       exact D.derivFree_mem_ideal P hP h') f
   map_add' f g := by
@@ -986,6 +1010,7 @@ theorem deriv_deriv_comp (f : P.obj a ⟶ P.obj b) (g : P.obj b ⟶ P.obj c) :
   rw [← lin_comp, deriv_lin, deriv_lin, derivFree_derivFree_comp, lin_add, lin_comp, lin_comp]
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `d² = 0` can be checked on generators. -/
 theorem deriv_deriv_eq_zero
     (h : ∀ g : S.Gen, P.deriv hP (P.deriv hP (P.diag (ofGen g))) = 0) {a b : Obj S}

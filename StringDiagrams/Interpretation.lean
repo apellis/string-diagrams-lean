@@ -99,11 +99,12 @@ variable (R : Type w) [CommRing R] {D : Type w₁} [Category.{w₂} D] [Preaddit
 
 open Preadditive Linear
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The `R`-linear extension of a functor out of the free 2-category. -/
 def freeLift (F : Obj S ⥤ D) : Free R (Obj S) ⥤ D where
   obj a := F.obj a
   map {_ _} f := f.sum fun f' r => r • F.map f'
-  map_id := by dsimp [CategoryTheory.categoryFree]; simp
+  map_id := by dsimp +instances [CategoryTheory.categoryFree]; simp
   map_comp {X Y Z} f g := by
     induction f using Finsupp.induction_linear with
     | zero => simp
@@ -153,7 +154,7 @@ theorem freeLift_map_whisker_single (F : Obj S ⥤ D) {a b : Obj S} (f : a ⟶ b
     (u : Obj S) (v : List S.Colour) (hw : a.WhiskerOK u v) :
     (freeLift R F).map (LinDiagram.whisker (Finsupp.single f r : LinDiagram R a b) u v hw) =
       r • F.map (Diagram.whisker f u v hw) := by
-  rw [LinDiagram.whisker_single, freeLift_map_single]
+  rw [LinDiagram.whisker_single]; exact freeLift_map_single F _ r
 
 @[simp] theorem freeLift_map_whisker_of (F : Obj S ⥤ D) {a b : Obj S} (f : a ⟶ b) (u : Obj S)
     (v : List S.Colour) (hw : a.WhiskerOK u v) :
@@ -161,11 +162,13 @@ theorem freeLift_map_whisker_single (F : Obj S ⥤ D) {a b : Obj S} (f : a ⟶ b
       F.map (Diagram.whisker f u v hw) := by
   rw [LinDiagram.whisker_of, freeLift_map_of]
 
+set_option backward.isDefEq.respectTransparency false in
 instance freeLift_additive (F : Obj S ⥤ D) : (freeLift R F).Additive where
   map_add {X Y} f g := by
     simp only [freeLift_map]
     rw [Finsupp.sum_add_index'] <;> simp [add_smul]
 
+set_option backward.isDefEq.respectTransparency false in
 instance freeLift_linear (F : Obj S ⥤ D) : (freeLift R F).Linear R where
   map_smul {X Y} f r := by
     simp only [freeLift_map]
@@ -180,6 +183,7 @@ theorem freeLift_map_whisker_sub_smul (F : Obj S ⥤ D) {a b : Obj S} (d₁ d₂
       F.map (Diagram.whisker d₁ u v hw) - c • F.map (Diagram.whisker d₂ u v hw) := by
   rw [LinDiagram.whisker_sub, LinDiagram.whisker_smul, Functor.map_sub, Functor.map_smul,
     freeLift_map_whisker_of, freeLift_map_whisker_of]
+  rfl
 
 /-- The linear extension on a whiskered difference `of d₁ - of d₂`. -/
 theorem freeLift_map_whisker_sub (F : Obj S ⥤ D) {a b : Obj S} (d₁ d₂ : a ⟶ b)
@@ -188,6 +192,7 @@ theorem freeLift_map_whisker_sub (F : Obj S ⥤ D) {a b : Obj S} (d₁ d₂ : a 
         (LinDiagram.of d₁ - LinDiagram.of d₂ : LinDiagram R a b) u v hw) =
       F.map (Diagram.whisker d₁ u v hw) - F.map (Diagram.whisker d₂ u v hw) := by
   rw [LinDiagram.whisker_sub, Functor.map_sub, freeLift_map_whisker_of, freeLift_map_whisker_of]
+  rfl
 
 namespace Presentation
 
@@ -240,14 +245,14 @@ instance lift_additive (hF : P.Respects F) : (P.lift hF).Additive where
   map_add {X Y} f g := by
     obtain ⟨f, rfl⟩ := P.linFunctor.map_surjective f
     obtain ⟨g, rfl⟩ := P.linFunctor.map_surjective g
-    rw [← Functor.map_add]
-    exact (freeLift R F).map_add
+    exact (congrArg (P.lift hF).map (P.linFunctor.map_add (f := f) (g := g)).symm).trans
+      (freeLift R F).map_add
 
 instance lift_linear (hF : P.Respects F) : (P.lift hF).Linear R where
   map_smul {X Y} f r := by
     obtain ⟨f, rfl⟩ := P.linFunctor.map_surjective f
-    rw [← Functor.map_smul]
-    exact (freeLift R F).map_smul r f
+    exact (congrArg (P.lift hF).map (P.linFunctor.map_smul r f).symm).trans
+      ((freeLift R F).map_smul r f)
 
 end Presentation
 

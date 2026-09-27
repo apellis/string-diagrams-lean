@@ -100,10 +100,10 @@ def whisk (f : LinDiagram R a b) (u : Obj S) (v : List S.Colour) :
   if h : a.WhiskerOK u v then whisker f u v h else 0
 
 theorem whisk_of_ok (f : LinDiagram R a b) {u : Obj S} {v : List S.Colour}
-    (h : a.WhiskerOK u v) : whisk f u v = whisker f u v h := dif_pos h
+    (h : a.WhiskerOK u v) : whisk f u v = whisker f u v h := dite_eq_left h
 
 theorem whisk_of_not_ok (f : LinDiagram R a b) {u : Obj S} {v : List S.Colour}
-    (h : ¬ a.WhiskerOK u v) : whisk f u v = 0 := dif_neg h
+    (h : ¬ a.WhiskerOK u v) : whisk f u v = 0 := dite_eq_right h
 
 theorem whisk_add (f g : LinDiagram R a b) (u : Obj S) (v : List S.Colour) :
     whisk (f + g) u v = whisk f u v + whisk g u v := by
@@ -137,12 +137,12 @@ theorem whisker_comp (f : LinDiagram R a b) (g : LinDiagram R b c) (u : Obj S)
     (v : List S.Colour) (ha : a.WhiskerOK u v) (hb : b.WhiskerOK u v) :
     whisker (f ≫ g) u v ha = whisker f u v ha ≫ whisker g u v hb := by
   induction f using Finsupp.induction_linear with
-  | zero => simp [whisker, Finsupp.mapDomain_zero]
+  | zero => rw [Limits.zero_comp, whisker_zero, whisker_zero, Limits.zero_comp]
   | add f₁ f₂ h₁ h₂ => rw [Preadditive.add_comp, whisker_add, h₁, h₂, whisker_add,
       Preadditive.add_comp]
   | single d r =>
     induction g using Finsupp.induction_linear with
-    | zero => simp [whisker, Finsupp.mapDomain_zero]
+    | zero => rw [Limits.comp_zero, whisker_zero, whisker_zero, Limits.comp_zero]
     | add g₁ g₂ h₁ h₂ => rw [Preadditive.comp_add, whisker_add, h₁, h₂, whisker_add,
         Preadditive.comp_add]
     | single e s =>
@@ -150,6 +150,7 @@ theorem whisker_comp (f : LinDiagram R a b) (g : LinDiagram R b c) (u : Obj S)
       have h₂ := Free.single_comp_single R (Obj S) (Diagram.whisker d u v ha)
         (Diagram.whisker e u v hb) r s
       erw [h₁, whisker_single, whisker_single, whisker_single, h₂, Diagram.whisker_comp]
+      rfl
 
 theorem whisk_comp (f : LinDiagram R a b) (g : LinDiagram R b c) (u : Obj S)
     (v : List S.Colour) : whisk (f ≫ g) u v = whisk f u v ≫ whisk g u v := by
@@ -174,7 +175,8 @@ theorem whisker_whisker (f : LinDiagram R a b) (u' u : Obj S) (v' v : List S.Col
     whisker (whisker f u' v' h') u v h =
       cast (whisker f (u.tensor u') (v' ++ v) (h'.trans h)) (Obj.whisker_whisker _ _ _ _ _).symm
         (Obj.whisker_whisker _ _ _ _ _).symm := by
-  simp only [whisker, cast, ← Finsupp.mapDomain_comp]
+  simp only [whisker, cast]
+  refine Finsupp.mapDomain_comp.symm.trans (Eq.trans ?_ Finsupp.mapDomain_comp)
   congr 1
   funext d
   exact Diagram.whisker_whisker d u' u v' v h' h
@@ -200,7 +202,7 @@ theorem whisk_mem_ideal {a b : Obj S} {f : LinDiagram R a b} (hf : f ∈ P.ideal
       have := IdealGen.intro (P := P) k (u.tensor u') (v' ++ v) (hw'.trans hk)
         (LinDiagram.whisk pre u v ≫ eqToHom (by rw [Obj.whisker_whisker]))
         (eqToHom (by rw [Obj.whisker_whisker]) ≫ LinDiagram.whisk post u v)
-      simpa only [Category.assoc] using this
+      simpa only [Category.assoc, Set.mem_ofPred_eq] using this
     · rw [LinDiagram.whisk_of_not_ok _ hk, Limits.zero_comp, Limits.comp_zero]
       exact Submodule.zero_mem _
   | zero => rw [LinDiagram.whisk_zero]; exact Submodule.zero_mem _
@@ -213,7 +215,7 @@ def whisk {a b : Obj S} (f : P.obj a ⟶ P.obj b) (u : Obj S) (v : List S.Colour
   Quot.lift (fun g : LinDiagram R a b => P.lin (LinDiagram.whisk g u v))
     (fun g₁ g₂ h => by
       have h' : P.homRel g₁ g₂ := by
-        rwa [CategoryTheory.Quotient.compClosure_eq_self] at h
+        rwa [HomRel.compClosure_eq_self] at h
       rw [lin_eq_iff, ← LinDiagram.whisk_sub]
       exact P.whisk_mem_ideal h' u v) f
 

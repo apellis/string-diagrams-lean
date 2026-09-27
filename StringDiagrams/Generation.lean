@@ -39,7 +39,8 @@ theorem eq_layer_comp {L : Layer S} {ls : List (Layer S)} (h : Chain a (L :: ls)
 
 /-- The empty diagram is an identity, retyped. -/
 theorem mk_nil (h : Chain a [] b) : mk [] h = eqToHom h := by
-  ext; simp
+  obtain rfl : a = b := h
+  rfl
 
 end Diagram
 
@@ -57,7 +58,7 @@ theorem hom_induction {a b : Obj S} {p : (P.obj a ⟶ P.obj b) → Prop}
   induction f using Finsupp.induction_linear with
   | zero => rw [lin_zero]; exact zero
   | add f g hf hg => rw [lin_add]; exact add _ _ hf hg
-  | single d r => rw [lin_single]; exact smul r _ (diag d)
+  | single d r => exact (congrArg p (P.lin_single d r)).mpr (smul r _ (diag d))
 
 /-- Induction on diagrams: retyped identities, and a layer followed by a diagram. -/
 theorem diag_induction {p : ∀ {a b : Obj S}, (P.obj a ⟶ P.obj b) → Prop}

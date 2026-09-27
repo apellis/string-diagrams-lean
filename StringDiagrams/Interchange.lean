@@ -105,7 +105,7 @@ def oddCountList (ls : List (Layer S)) : ℕ := (ls.filter fun L => S.odd L.gen)
 
 theorem oddCountList_cons (L : Layer S) (ls : List (Layer S)) :
     oddCountList (L :: ls) = oddCountList [L] + oddCountList ls := by
-  by_cases h : S.odd L.gen <;> simp [oddCountList, List.filter_cons, h, add_comm]
+  by_cases h : S.odd L.gen <;> simp [oddCountList, h, add_comm]
 
 @[simp] theorem oddCountList_map_wr (ls : List (Layer S)) (v : List S.Colour) :
     oddCountList (ls.map (·.wr v)) = oddCountList ls := by
@@ -150,12 +150,14 @@ theorem diag_swap_layers (L M : Layer S) :
   have hs : ((x.sign : ℤ) : R) = (((-1 : ℤ) ^ (oddCountList [L] * oddCountList [M]) : ℤ) : R) := by
     congr 1
     by_cases hL : S.odd L.gen <;> by_cases hM : S.odd M.gen <;>
-      simp [x, InterchangeData.sign, oddCountList, List.filter_cons, hL, hM]
+      simp [x, InterchangeData.sign, oddCountList, hL, hM]
   rw [hs, Int.cast_smul_eq_zsmul] at key
   refine Eq.trans (P.diag_eq_of_layers_eq ?_) (key.trans (congrArg _ (P.diag_eq_of_layers_eq ?_)))
+  all_goals simp only [Diagram.layers_comp, layers_whiskerR, layers_whiskerL, Diagram.layers_cast,
+    layers_whisker, layers_ofLayer]
   all_goals simp [x, u, InterchangeData.ghDiagram, InterchangeData.hgDiagram, InterchangeData.gh₁,
       InterchangeData.gh₂, InterchangeData.hg₁, InterchangeData.hg₂, Layer.whisker, Layer.wr,
-      Layer.wl, Layer.dom, Layer.cod, Obj.tensor]
+      Layer.wl, Layer.dom, Layer.cod]
 
 /-- Moving a single layer on the right past a diagram on the left. -/
 theorem diag_swap_layer_right (f : a ⟶ a') (M : Layer S) :

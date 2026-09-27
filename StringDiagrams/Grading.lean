@@ -158,8 +158,7 @@ theorem comp_mem_homDeg {f : LinDiagram R a b} {g : LinDiagram R b c} {d e : A}
       obtain ⟨q, hq, rfl⟩ := hy
       have := of_comp (R := R) p q
       refine this ▸ of_mem_homDeg' ?_
-      rw [Diagram.degree_comp]
-      exact congrArg₂ _ hp hq
+      exact (Diagram.degree_comp deg p q).trans (congrArg₂ _ hp hq)
     | zero => rw [Limits.comp_zero]; exact Submodule.zero_mem _
     | add y z _ _ hy hz => rw [Preadditive.comp_add]; exact Submodule.add_mem _ hy hz
     | smul r y _ hy => rw [Linear.comp_smul]; exact Submodule.smul_mem _ r hy
@@ -237,14 +236,14 @@ theorem sum_homogeneousComponent [DecidableEq A] (f : LinDiagram R a b) :
       homogeneousComponent deg d f = f := by
   classical
   refine Finsupp.ext fun g => ?_
-  erw [Finsupp.finset_sum_apply]
+  erw [Finsupp.finsetSum_apply]
   simp only [homogeneousComponent_apply, Finsupp.filter_apply]
   by_cases hg : g ∈ Finsupp.support f.toFinsupp
   · rw [Finset.sum_eq_single (Diagram.degree deg g)]
     · simp
     · intro d _ hd; simp [Ne.symm hd]
     · intro h; exact absurd (Finset.mem_image_of_mem _ hg) h
-  · rw [Finsupp.not_mem_support_iff.mp hg]
+  · rw [Finsupp.notMem_support_iff.mp hg]
     simp
 
 end LinDiagram
@@ -398,7 +397,7 @@ def homogeneousComponent (hP : P.IsHomogeneous deg) (d : A) :
   toFun x := Quot.lift (fun g : LinDiagram R a b => P.lin (LinDiagram.homogeneousComponent deg d g))
     (fun g₁ g₂ h => by
       have h' : P.homRel g₁ g₂ := by
-        rwa [CategoryTheory.Quotient.compClosure_eq_self] at h
+        rwa [HomRel.compClosure_eq_self] at h
       rw [lin_eq_iff, ← map_sub]
       exact homogeneousComponent_mem_ideal hP h' d) x
   map_add' x y := by
@@ -456,6 +455,7 @@ theorem isInternal_homDeg [DecidableEq A] (hP : P.IsHomogeneous deg) (a b : Obj 
 
 /-- The decomposition of a Hom-space of the presented category of a homogeneous presentation
 into its homogeneous parts. -/
+@[instance_reducible]
 def decomposition [DecidableEq A] (hP : P.IsHomogeneous deg) (a b : Obj S) :
     DirectSum.Decomposition (P.homDeg deg a b) :=
   (isInternal_homDeg hP a b).chooseDecomposition
@@ -466,7 +466,7 @@ theorem decompose_apply [DecidableEq A] (hP : P.IsHomogeneous deg) (x : P.obj a 
     letI := decomposition hP a b
     (DirectSum.decompose (P.homDeg deg a b) x d : P.obj a ⟶ P.obj b) =
       homogeneousComponent hP d x := by
-  letI := decomposition hP a b
+  let := decomposition hP a b
   induction x using P.hom_induction with
   | diag g =>
     by_cases h : Diagram.degree deg g = d
@@ -494,6 +494,7 @@ instance (a : Obj S) : SetLike.GradedMonoid (P.endDeg deg a) where
 
 /-- For a homogeneous presentation, the endomorphism algebra of every object of the presented
 category is an `A`-graded `R`-algebra. -/
+@[instance_reducible]
 def gradedAlgebra [DecidableEq A] (hP : P.IsHomogeneous deg) (a : Obj S) :
     GradedAlgebra (P.endDeg deg a) :=
   { decomposition hP a a with }
