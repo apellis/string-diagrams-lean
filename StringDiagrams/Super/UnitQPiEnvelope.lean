@@ -40,9 +40,9 @@ variable (k : Type u) [CommRing k]
 /-- The grading of `k` concentrated in degree `0`. -/
 def trivialDegree : ℤ → Submodule k k := fun n => if n = 0 then ⊤ else ⊥
 
-@[simp] theorem trivialDegree_zero : trivialDegree k 0 = ⊤ := if_pos rfl
+@[simp] theorem trivialDegree_zero : trivialDegree k 0 = ⊤ := ite_eq_left rfl
 
-theorem trivialDegree_of_ne {n : ℤ} (h : n ≠ 0) : trivialDegree k n = ⊥ := if_neg h
+theorem trivialDegree_of_ne {n : ℤ} (h : n ≠ 0) : trivialDegree k n = ⊥ := ite_eq_right h
 
 theorem isInternal_trivialDegree : DirectSum.IsInternal (trivialDegree k) := by
   rw [DirectSum.isInternal_submodule_iff_iSupIndep_and_iSup_eq_top]

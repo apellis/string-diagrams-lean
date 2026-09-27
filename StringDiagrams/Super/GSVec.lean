@@ -71,6 +71,7 @@ theorem proj_mem (p : ZMod 2) {n : ℤ} {v : V.toSVec} (hv : v ∈ V.deg n) :
   · rw [SVec.proj_one]; exact V.odd_mem hv
 
 /-- The decomposition of `V` into its homogeneous components. -/
+@[instance_reducible]
 def degreeDecomposition : DirectSum.Decomposition V.deg := V.isInternal_deg.chooseDecomposition
 
 /-- The projection onto the component of degree `n`. -/
@@ -113,7 +114,8 @@ theorem isInternal_bideg : DirectSum.IsInternal V.bideg := by
       intro j hj y hy
       by_cases h1 : j.1 = i.1
       · have h2 : j.2 ≠ i.2 := fun h2 => hj (Prod.ext h1 h2)
-        rw [V.dproj_of_mem (h1 ▸ hy.1), SVec.proj_apply_of_mem_part _ hy.2, if_neg (Ne.symm h2)]
+        rw [V.dproj_of_mem (h1 ▸ hy.1), SVec.proj_apply_of_mem_part _ hy.2,
+          ite_eq_right (Ne.symm h2)]
       · rw [V.dproj_of_mem_ne hy.1 h1, map_zero]
     have h0 : V.toSVec.proj i.2 (V.dproj i.1 x) = 0 := by
       refine Submodule.iSup_induction (fun j : {j // j ≠ i} => V.bideg j)
@@ -206,10 +208,7 @@ def piObj : GradedSuperspace k where
   deg := V.deg
   isInternal_deg := V.isInternal_deg
   odd_mem {n v} hv := by
-    rw [show (SVec.piObj V.toSVec).odd v =
-        (LinearMap.id - V.toSVec.odd : V.toSVec →ₗ[k] V.toSVec) v from rfl,
-      LinearMap.sub_apply, LinearMap.id_apply]
-    exact Submodule.sub_mem _ hv (V.odd_mem hv)
+    exact Submodule.sub_mem (V.deg n) (x := (v : V.toSVec)) hv (V.odd_mem hv)
 
 /-- The shift `(shift V a)ₙ = V_{n+a}` of the grading. -/
 def shift (a : ℤ) : GradedSuperspace k where
