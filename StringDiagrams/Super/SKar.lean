@@ -116,6 +116,7 @@ def diagIso {ι : Type} [Fintype ι] {X Y : ι → C} (φ : ∀ i, X i ≅ Y i) 
 
 /-! ### Π-categories -/
 
+set_option backward.isDefEq.respectTransparency false in
 instance {D : Type*} [Category.{v} D] [Preadditive D] (F : C ⥤ D) [F.Additive] :
     F.mapMat_.Additive where
   map_add := by
@@ -125,11 +126,13 @@ instance {D : Type*} [Category.{v} D] [Preadditive D] (F : C ⥤ D) [F.Additive]
 
 variable [PiCategory R C]
 
+set_option backward.isDefEq.respectTransparency false in
 instance : (PiCategory.pi (R := R) (C := C)).mapMat_.Linear R where
   map_smul f r := by
     ext i j
     simp
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The Π-category structure on the additive envelope.** `Π` acts entrywise, and
 `ξ_M` is the diagonal matrix of the `ξ_{M_i}`. -/
 instance instPiCategory : PiCategory R (Mat_ C) where
@@ -139,7 +142,7 @@ instance instPiCategory : PiCategory R (Mat_ C) where
       fun i => PiCategory.ξApp (R := R) (M.X i))
     (fun {M N} f => by
       ext i k
-      simp only [Functor.comp_map, Functor.mapMat__map, diagIso_hom, Functor.id_map]
+      simp only [Functor.comp_map, diagIso_hom, Functor.id_map]
       rw [comp_diag_apply, diag_comp_apply]
       exact PiCategory.ξApp_naturality (R := R) (f i k))
   ξ_pi M := by
@@ -161,7 +164,7 @@ namespace Karoubi
 variable {C : Type u} [Category.{v} C] [Preadditive C] [Linear R C]
 
 instance {P Q : Karoubi C} : SMul R (P ⟶ Q) where
-  smul r f := ⟨r • f.f, by rw [Linear.smul_comp, Linear.comp_smul, ← f.comm]⟩
+  smul r f := ⟨r • f.f, by rw [Linear.smul_comp, Linear.comp_smul, f.comm]⟩
 
 @[simp] theorem smul_f {P Q : Karoubi C} (r : R) (f : P ⟶ Q) : (r • f).f = r • f.f := rfl
 
@@ -183,9 +186,9 @@ def piFunctor : Karoubi C ⥤ Karoubi C where
   obj P := ⟨(PiCategory.pi (R := R)).obj P.X, (PiCategory.pi (R := R)).map P.p,
     by rw [← Functor.map_comp, P.idem]⟩
   map {P Q} f := ⟨(PiCategory.pi (R := R)).map f.f, by
-    show _ = (PiCategory.pi (R := R)).map P.p ≫ (PiCategory.pi (R := R)).map f.f ≫
-      (PiCategory.pi (R := R)).map Q.p
-    rw [← Functor.map_comp, ← Functor.map_comp, ← f.comm]⟩
+    show (PiCategory.pi (R := R)).map P.p ≫ (PiCategory.pi (R := R)).map f.f ≫
+      (PiCategory.pi (R := R)).map Q.p = _
+    rw [← Functor.map_comp, ← Functor.map_comp, f.comm]⟩
   map_id P := rfl
   map_comp f g := Karoubi.hom_ext _ _ (Functor.map_comp _ _ _)
 
@@ -208,6 +211,7 @@ theorem ξ_inv_naturality {X Y : C} (f : X ⟶ Y) :
         ((PiCategory.pi (R := R)).map f) :=
   (PiCategory.ξ (R := R)).inv.naturality f
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The isomorphism `ξ_{(X, p)} : Π²(X, p) ≅ (X, p)`, with components `ξ_X ∘ p` and
 `p ∘ ξ_X⁻¹`. -/
 @[simps]
@@ -224,6 +228,7 @@ def ξIso (P : Karoubi C) : (piFunctor (R := R)).obj ((piFunctor (R := R)).obj P
     simp only [Idempotents.Karoubi.comp_f, Idempotents.Karoubi.id_f, Category.assoc,
       Iso.inv_hom_id_app_assoc, P.idem])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The Π-category structure on the idempotent completion.** -/
 instance instPiCategory : PiCategory R (Karoubi C) where
   pi := piFunctor (R := R)
@@ -233,9 +238,9 @@ instance instPiCategory : PiCategory R (Karoubi C) where
         Functor.id_map, ξ_hom_naturality_assoc, Idempotents.Karoubi.comp_p, Category.assoc,
         Idempotents.Karoubi.p_comp]))
   ξ_pi P := Idempotents.Karoubi.hom_ext _ _ (by
-    simp only [NatIso.ofComponents_hom_app, ξIso_hom_f, piFunctor_obj_X, piFunctor_obj_p,
+    simp only [NatIso.ofComponents_hom_app, ξIso_hom_f, piFunctor_obj_p,
       piFunctor_map_f, Functor.map_comp]
-    rw [PiCategory.ξ_pi])
+    exact congrArg (· ≫ _) (PiCategory.ξ_pi (R := R) P.X))
 
 theorem pi_obj (P : Karoubi C) : (PiCategory.pi (R := R)).obj P = (piFunctor (R := R)).obj P :=
   rfl
@@ -280,6 +285,7 @@ instance : (of R C).Faithful := Functor.Faithful.comp _ _
 variable (R) in
 /-- **Brundan–Ellis, §1.5.** `K₀(SKar(A))` is a module over `Zπ = ℤ[π]/(π² − 1)`, with `π`
 acting by `[V] ↦ [Π V]`. -/
+@[instance_reducible]
 def moduleZπ : Module Zπ (K₀ (SKar R C)) := K₀.moduleZπ R (SKar R C)
 
 theorem π_smul_mk (V : SKar R C) :
