@@ -1,4 +1,5 @@
 import StringDiagrams.Super.TwoFunctorComp
+import StringDiagrams.Super.TwoFunctorStrict
 import StringDiagrams.Super.Supernatural
 
 /-!
@@ -22,6 +23,11 @@ oplax functors, exactly as for the Drinfeld center (`StringDiagrams.Super.Drinfe
 is the endomorphism monoidal supercategory of `𝕀` in `𝔥𝔬𝔪(𝔄, 𝔄)` restricted to strong
 2-natural transformations).
 
+As the paper notes at the end of Definition 2.2, `𝔥𝔬𝔪(𝔄, 𝔅)` is strict if `𝔅` is strict
+(`TwoSuperfunctor.instStrict`, for arbitrary 2-superfunctors `𝔄 → 𝔅`): the components of
+`((X, x)(Y, y))(Z, z)` and `(X, x)((Y, y)(Z, z))` agree by the strictness of `𝔅`, and so do their
+2-morphisms `x`, which differ only by associators and unitors of `𝔅`.
+
 ## 2-superequivalences
 
 Two objects `λ, μ` of a 2-supercategory are *superequivalent* if there is a 1-morphism
@@ -42,8 +48,8 @@ second) sense.
 
 ## Not formalized
 
-The equivalence of the two formulations of a 2-superequivalence, the strictness of
-`𝔥𝔬𝔪(𝔄, 𝔅)` for strict `𝔅`, and the 3-supercategory of 2-supercategories.
+The equivalence of the two formulations of a 2-superequivalence, and the 3-supercategory of
+2-supercategories.
 -/
 
 noncomputable section
@@ -66,6 +72,12 @@ variable {R : Type w} [CommRing R]
 namespace TwoNatTrans
 
 variable {F G H I : TwoSuperfunctor R B C}
+
+omit [TwoSupercategory R B] in
+/-- The components of an `eqToHom` between 2-natural transformations are `eqToHom`s. -/
+theorem eqToHom_app {θ θ' : TwoNatTrans F G} (h : θ = θ') (a : B) :
+    (eqToHom h).app a = eqToHom (congrArg (fun ψ => TwoNatTrans.X ψ a) h) := by
+  subst h; rfl
 
 theorem toOplaxTrans_vcomp (θ : TwoNatTrans F G) (ψ : TwoNatTrans G H) :
     toOplaxTrans (vcomp θ ψ) = toOplaxTrans θ ≫ toOplaxTrans ψ := rfl
@@ -271,6 +283,72 @@ instance instTwoSupercategory : TwoSupercategory R (TwoSuperfunctor R B C) where
   associator_hom_mem _ _ _ _ := associator_hom_mem (R := R) _ _ _
   leftUnitor_hom_mem _ _ := leftUnitor_hom_mem (R := R) _
   rightUnitor_hom_mem _ _ := rightUnitor_hom_mem (R := R) _
+
+/-! ### Strictness -/
+
+section Strict
+
+variable [BicategoryStruct.Strict C]
+
+open BicategoryStruct.Strict in
+/-- For strict `𝔅`, the identity 2-natural transformation is a strict left unit. -/
+theorem id_comp_of_strict (θ : F ⟶ G) : 𝟙 F ≫ θ = θ := by
+  change TwoNatTrans.vcomp (TwoNatTrans.id F) θ = θ
+  refine TwoNatTrans.ext_of_eq (funext fun a => by
+    rw [TwoNatTrans.vcomp_X, TwoNatTrans.id_X]; exact id_comp (θ.X a)) fun f => ?_
+  simp only [TwoNatTrans.vcomp_x, TwoNatTrans.vcomp_X, TwoNatTrans.id_x, TwoNatTrans.id_X,
+    associator_eqToIso, leftUnitor_eqToIso, rightUnitor_eqToIso, eqToIso.hom, eqToIso.inv,
+    id_whiskerLeft (R := R), eqToHom_whiskerRight R, Category.assoc, eqToHom_trans,
+    eqToHom_trans_assoc]
+
+open BicategoryStruct.Strict in
+/-- For strict `𝔅`, the identity 2-natural transformation is a strict right unit. -/
+theorem comp_id_of_strict (θ : F ⟶ G) : θ ≫ 𝟙 G = θ := by
+  change TwoNatTrans.vcomp θ (TwoNatTrans.id G) = θ
+  refine TwoNatTrans.ext_of_eq (funext fun a => by
+    rw [TwoNatTrans.vcomp_X, TwoNatTrans.id_X]; exact comp_id (θ.X a)) fun f => ?_
+  simp only [TwoNatTrans.vcomp_x, TwoNatTrans.vcomp_X, TwoNatTrans.id_x, TwoNatTrans.id_X,
+    associator_eqToIso, leftUnitor_eqToIso, rightUnitor_eqToIso, eqToIso.hom, eqToIso.inv,
+    whiskerRight_id (R := R), whiskerLeft_eqToHom R, Category.assoc, eqToHom_trans,
+    eqToHom_trans_assoc]
+
+open BicategoryStruct.Strict in
+/-- For strict `𝔅`, the composition of 2-natural transformations is strictly associative. -/
+theorem assoc_of_strict (θ : F ⟶ G) (ψ : G ⟶ H) (φ : H ⟶ I) :
+    (θ ≫ ψ) ≫ φ = θ ≫ ψ ≫ φ := by
+  change TwoNatTrans.vcomp (TwoNatTrans.vcomp θ ψ) φ = TwoNatTrans.vcomp θ (TwoNatTrans.vcomp ψ φ)
+  refine TwoNatTrans.ext_of_eq (funext fun a => by
+    rw [TwoNatTrans.vcomp_X, TwoNatTrans.vcomp_X, TwoNatTrans.vcomp_X, TwoNatTrans.vcomp_X]
+    exact assoc (θ.X a) (ψ.X a) (φ.X a)) fun f => ?_
+  simp only [TwoNatTrans.vcomp_x, TwoNatTrans.vcomp_X, associator_eqToIso, eqToIso.hom,
+    eqToIso.inv, whiskerLeft_comp (R := R), comp_whiskerRight (R := R),
+    whiskerRight_comp (R := R), comp_whiskerLeft (R := R), whisker_assoc (R := R),
+    eqToHom_whiskerRight R, whiskerLeft_eqToHom R, Category.assoc, eqToHom_trans,
+    eqToHom_trans_assoc]
+  erw [eqToHom_trans_assoc, eqToHom_trans]
+
+/-- **Brundan–Ellis, Definition 2.2.** If `𝔅` is a strict 2-supercategory, so is
+`𝔥𝔬𝔪(𝔄, 𝔅)` (for arbitrary, not necessarily strict, 2-superfunctors `𝔄 → 𝔅`): composition of
+2-natural transformations is strictly associative and unital, and the associators and unitors,
+whose components are those of `𝔅`, are identities. -/
+instance instStrict : BicategoryStruct.Strict (TwoSuperfunctor R B C) where
+  id_comp := id_comp_of_strict
+  comp_id := comp_id_of_strict
+  assoc := assoc_of_strict
+  leftUnitor_eqToIso θ := Iso.ext (TwoNatTrans.hom_ext fun a => by
+    rw [leftUnitor_hom_app, eqToIso.hom, TwoNatTrans.eqToHom_app,
+      BicategoryStruct.Strict.leftUnitor_eqToIso, eqToIso.hom]
+    rfl)
+  rightUnitor_eqToIso θ := Iso.ext (TwoNatTrans.hom_ext fun a => by
+    rw [rightUnitor_hom_app, eqToIso.hom, TwoNatTrans.eqToHom_app,
+      BicategoryStruct.Strict.rightUnitor_eqToIso, eqToIso.hom]
+    rfl)
+  associator_eqToIso θ ψ φ := Iso.ext (TwoNatTrans.hom_ext fun a => by
+    rw [associator_hom_app, eqToIso.hom, TwoNatTrans.eqToHom_app,
+      BicategoryStruct.Strict.associator_eqToIso, eqToIso.hom]
+    rfl)
+
+end Strict
 
 end TwoSuperfunctor
 

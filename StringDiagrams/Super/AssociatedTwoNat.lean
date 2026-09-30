@@ -200,32 +200,6 @@ end Associated2
 
 /-! ## Compatibility with identities and vertical composition (Theorem 5.5) -/
 
-namespace TwoNatTrans
-
-variable {R : Type w} [CommRing R] {A : Type u₁} [BicategoryStruct.{w₁, v₁} A]
-  [∀ a b : A, Preadditive (a ⟶ b)] [∀ a b : A, Linear R (a ⟶ b)]
-  [∀ a b : A, Supercategory R (a ⟶ b)] [TwoSupercategory R A]
-  {A' : Type u₂} [BicategoryStruct.{w₂, v₂} A']
-  [∀ a b : A', Preadditive (a ⟶ b)] [∀ a b : A', Linear R (a ⟶ b)]
-  [∀ a b : A', Supercategory R (a ⟶ b)] [TwoSupercategory R A']
-  {F G H : TwoSuperfunctor R A A'}
-
-omit [TwoSupercategory R A] [TwoSupercategory R A'] in
-/-- Two 2-natural transformations with the same components are equal. -/
-theorem ext_of_eq {θ θ' : TwoNatTrans F G} (hX : θ.X = θ'.X)
-    (hx : ∀ {a b : A} (f : a ⟶ b), θ.x f = eqToHom (by rw [hX]) ≫ θ'.x f ≫ eqToHom (by rw [hX])) :
-    θ = θ' := by
-  obtain ⟨X, x, _, _, _, _⟩ := θ
-  obtain ⟨X', x', _, _, _, _⟩ := θ'
-  dsimp only at hX
-  subst hX
-  simp only [eqToHom_refl, Category.comp_id, Category.id_comp] at hx
-  congr
-  funext a b f
-  exact hx f
-
-end TwoNatTrans
-
 namespace PiTwoFunctor
 
 variable {R : Type w} [CommRing R] {B : Type u₁} [Bicategory.{w₁, v₁} B]

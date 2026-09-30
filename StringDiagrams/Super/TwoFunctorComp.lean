@@ -146,6 +146,20 @@ theorem x_id_eq (θ : TwoNatTrans F G) (a : B) :
   rw [← θ.x_id]
   simp only [Iso.inv_hom_id_assoc, inv_hom_whiskerRight_assoc R, Iso.hom_inv_id_assoc]
 
+omit [TwoSupercategory R B] [TwoSupercategory R C] in
+/-- Two 2-natural transformations with the same components are equal. -/
+theorem ext_of_eq {θ θ' : TwoNatTrans F G} (hX : θ.X = θ'.X)
+    (hx : ∀ {a b : B} (f : a ⟶ b), θ.x f = eqToHom (by rw [hX]) ≫ θ'.x f ≫ eqToHom (by rw [hX])) :
+    θ = θ' := by
+  obtain ⟨X, x, _, _, _, _⟩ := θ
+  obtain ⟨X', x', _, _, _, _⟩ := θ'
+  dsimp only at hX
+  subst hX
+  simp only [eqToHom_refl, Category.comp_id, Category.id_comp] at hx
+  congr
+  funext a b f
+  exact hx f
+
 /-- A 2-natural transformation as an oplax transformation of the induced oplax functors of the
 underlying bicategories. -/
 def toOplaxTrans (θ : TwoNatTrans F G) : F.toOplax ⟶ G.toOplax where
