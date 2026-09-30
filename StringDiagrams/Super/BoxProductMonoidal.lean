@@ -79,13 +79,6 @@ def ofLinearMaps
   toFunctor := functorOfLinearMaps obj hom map_id map_comp
   isSuperfunctor := ⟨map_mem⟩
 
-theorem map_add' (Φ : Superfunctor k A E) {X Y : A} (x y : X ⟶ Y) :
-    Φ.map (x + y) = Φ.map x + Φ.map y :=
-  Φ.toFunctor.map_add
-
-theorem map_zero' (Φ : Superfunctor k A E) (X Y : A) : Φ.map (0 : X ⟶ Y) = 0 :=
-  Φ.toFunctor.map_zero X Y
-
 /-- A linear map on morphism superspaces commuting with the parity projections preserves
 parities. -/
 theorem mem_parity_of_proj {X Y : A} {X' Y' : E} (φ : (X ⟶ Y) →ₗ[k] (X' ⟶ Y'))
