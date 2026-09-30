@@ -293,6 +293,136 @@ theorem hom_def : (A ⟶ B) = Hom A B := rfl
 
 end PiSMon
 
+/-! ## The functors `E` and `D` -/
+
+namespace PiSMon
+
+open Functor.LaxMonoidal
+
+/-- **Brundan–Ellis, (1.9), functor (2).** The functor `E : Π-SMon → Π-Mon`,
+`(A, π, ζ) ↦ (A̲, π, β, ξ)`, `F ↦ (F̲, c, i, j)` with `j := (F ζ_A)⁻¹ ∘ i ∘ ζ_B`. -/
+@[simps obj]
+def E : PiSMon.{w, v, u} R ⥤ PiMon.{w, v, u} R where
+  obj A := PiMon.of R (Underlying R A)
+  map F :=
+    { toFunctor := Underlying.map F.toFunctor
+      monoidal := (MonoidalSuperfunctor.underlyingCoreMonoidal F.monoidal).toMonoidal
+      piFunctor := F.monoidal.toMonoidalPiFunctor }
+  map_id A := PiMon.Hom.ext rfl (heq_of_eq (Underlying.hom_ext rfl))
+    (fun _ _ => heq_of_eq (Underlying.hom_ext rfl))
+    (heq_of_eq (Underlying.hom_ext (by
+      change (MonoidalSuperfunctor.jIso (MonoidalSuperfunctor.id (R := R) (C := A.carrier))).hom =
+        𝟙 _
+      simp [MonoidalSuperfunctor.jIso_hom, MonoidalSuperfunctor.id])))
+  map_comp {A B C} F G := PiMon.Hom.ext rfl (heq_of_eq (Underlying.hom_ext rfl))
+    (fun _ _ => heq_of_eq (Underlying.hom_ext rfl))
+    (heq_of_eq (Underlying.hom_ext (by
+      change (MonoidalSuperfunctor.jIso (F.monoidal.comp G.monoidal)).hom =
+        (MonoidalSuperfunctor.jIso G.monoidal).hom ≫
+          G.toFunctor.map (MonoidalSuperfunctor.jIso F.monoidal).hom
+      simp only [MonoidalSuperfunctor.jIso_hom, MonoidalSuperfunctor.comp_εIso, Iso.trans_hom,
+        Functor.mapIso_hom, Functor.comp_obj, Functor.comp_map, Functor.map_comp,
+        Category.assoc]
+      rw [← G.toFunctor.map_comp_assoc, Iso.inv_hom_id, CategoryTheory.Functor.map_id,
+        Category.id_comp])))
+
+end PiSMon
+
+namespace Associated
+
+section MapMonoidal
+
+variable {C : Type w₁} [Category.{w₂} C] [Preadditive C] [Linear R C] [MonoidalCategory C]
+  [MonoidalPreadditive C] [MonoidalLinear R C] [MonoidalPiCategory R C]
+  {D : Type w₃} [Category.{w₄} D] [Preadditive D] [Linear R D] [MonoidalCategory D]
+  [MonoidalPreadditive D] [MonoidalLinear R D] [MonoidalPiCategory R D]
+  {E : Type w₅} [Category.{w₆} E] [Preadditive E] [Linear R E] [MonoidalCategory E]
+  [MonoidalPreadditive E] [MonoidalLinear R E] [MonoidalPiCategory R E]
+
+attribute [local instance] MonoidalPiCategory.toPiCategory
+
+open Functor.LaxMonoidal
+
+set_option backward.isDefEq.respectTransparency false in
+variable (R C) in
+theorem mapMonoidal_id_μIso_hom (X Y : Associated R C) :
+    ((mapMonoidal (MonoidalPiFunctor.id R C)).μIso X Y).hom = 𝟙 _ := by
+  ext <;> simp [mapMonoidal]
+  rfl
+
+set_option backward.isDefEq.respectTransparency false in
+variable (R C) in
+theorem mapMonoidal_id_εIso_hom :
+    (mapMonoidal (MonoidalPiFunctor.id R C)).εIso.hom = 𝟙 _ := by
+  ext <;> simp [mapMonoidal]
+
+variable {F : C ⥤ D} [F.Additive] [F.Linear R] [F.Monoidal] {G : D ⥤ E} [G.Additive]
+  [G.Linear R] [G.Monoidal] (hF : MonoidalPiFunctor R F) (hG : MonoidalPiFunctor R G)
+
+set_option backward.isDefEq.respectTransparency false in
+theorem mapMonoidal_comp_μIso_hom (X Y : Associated R C) :
+    ((mapMonoidal (hF.comp hG)).μIso X Y).hom =
+      ((mapMonoidal hG).μIso ((map (hF.toPiFunctor R)).obj X)
+        ((map (hF.toPiFunctor R)).obj Y)).hom ≫
+        (map (hG.toPiFunctor R)).map ((mapMonoidal hF).μIso X Y).hom := by
+  ext <;> simp [mapMonoidal]
+  rfl
+
+set_option backward.isDefEq.respectTransparency false in
+theorem mapMonoidal_comp_εIso_hom :
+    (mapMonoidal (hF.comp hG)).εIso.hom =
+      (mapMonoidal hG).εIso.hom ≫ (map (hG.toPiFunctor R)).map (mapMonoidal hF).εIso.hom := by
+  ext <;> simp [mapMonoidal]
+
+end MapMonoidal
+
+end Associated
+
+namespace PiMon
+
+attribute [local instance] MonoidalPiCategory.toPiCategory
+
+open Functor.LaxMonoidal
+
+variable {A B : PiMon.{w, v, u} R}
+
+theorem toPiFunctor_id :
+    (MonoidalPiFunctor.id R A).toPiFunctor R = PiFunctor.id R A :=
+  PiFunctor.ext fun X => by
+    simp [MonoidalPiFunctor.βF_hom]
+
+theorem toPiFunctor_comp {E : PiMon.{w, v, u} R} (F : A ⟶ B) (G : B ⟶ E) :
+    (F ≫ G).piFunctor.toPiFunctor R =
+      (F.piFunctor.toPiFunctor R).comp (G.piFunctor.toPiFunctor R) :=
+  PiFunctor.ext fun X => by
+    simp only [comp_piFunctor, MonoidalPiFunctor.toPiFunctor_β_hom_app,
+      MonoidalPiFunctor.βF_hom, PiFunctor.comp_β, NatIso.ofComponents_hom_app, Iso.trans_hom,
+      Iso.app_hom, Functor.mapIso_hom, MonoidalPiFunctor.comp_j, comp_toFunctor,
+      Functor.comp_obj, comp_μ, comp_whiskerRight, Category.assoc, Functor.map_comp]
+    rw [μ_natural_left_assoc]
+
+/-- **Brundan–Ellis, Theorem 1.15, the inverse of (2).** The functor `D : Π-Mon → Π-SMon`,
+`(A, π, β, ξ) ↦ (Â, π, ζ)`, `(F, c, i, j) ↦ F̂` (the one-object case of `D₂` in (5.5), with the
+corrected signs of `StringDiagrams.Super.MonoidalAssociated`). -/
+@[simps obj]
+def D : PiMon.{w, v, u} R ⥤ PiSMon.{w, v, u} R where
+  obj A := PiSMon.of R (Associated R A)
+  map F := ⟨Associated.map (F.piFunctor.toPiFunctor R), Associated.mapMonoidal F.piFunctor⟩
+  map_id A := PiSMon.Hom.ext (by
+      change Associated.map ((MonoidalPiFunctor.id R A).toPiFunctor R) = _
+      rw [toPiFunctor_id]
+      exact Associated.map_id)
+    (fun X Y => heq_of_eq (Associated.mapMonoidal_id_μIso_hom R A X Y))
+    (heq_of_eq (Associated.mapMonoidal_id_εIso_hom R A))
+  map_comp F G := PiSMon.Hom.ext (by
+      change Associated.map ((F ≫ G).piFunctor.toPiFunctor R) = _
+      rw [toPiFunctor_comp]
+      exact Associated.map_comp _ _)
+    (fun X Y => heq_of_eq (Associated.mapMonoidal_comp_μIso_hom F.piFunctor G.piFunctor X Y))
+    (heq_of_eq (Associated.mapMonoidal_comp_εIso_hom F.piFunctor G.piFunctor))
+
+end PiMon
+
 end StringDiagrams
 
 end
