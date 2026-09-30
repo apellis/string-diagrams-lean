@@ -744,6 +744,22 @@ theorem map₂_lift_mapComp_inv {x y z : 𝒳} (f : x ⟶ y) (g : y ⟶ z) :
   map_pre _
 
 include map_pre in
+theorem map₂_lift_mapComp_hom {x y z : 𝒳} (f : x ⟶ y) (g : y ⟶ z) :
+    𝔉.map₂ ((lift 𝔉 pre map_pre pre_map gobj gmap map₂' mapId' mapComp' map₂_id' map₂_comp'
+      map₂_whisker_left' map₂_whisker_right' map₂_associator' map₂_left_unitor'
+      map₂_right_unitor').mapComp f g).hom =
+        (mapComp' f g).hom ≫ (𝔉.mapComp (gmap f) (gmap g)).inv :=
+  map_pre _
+
+include map_pre in
+theorem map₂_lift_mapId_hom (x : 𝒳) :
+    𝔉.map₂ ((lift 𝔉 pre map_pre pre_map gobj gmap map₂' mapId' mapComp' map₂_id' map₂_comp'
+      map₂_whisker_left' map₂_whisker_right' map₂_associator' map₂_left_unitor'
+      map₂_right_unitor').mapId x).hom =
+        (mapId' x).hom ≫ (𝔉.mapId (gobj x)).inv :=
+  map_pre _
+
+include map_pre in
 theorem map₂_lift_mapId_inv (x : 𝒳) :
     𝔉.map₂ ((lift 𝔉 pre map_pre pre_map gobj gmap map₂' mapId' mapComp' map₂_id' map₂_comp'
       map₂_whisker_left' map₂_whisker_right' map₂_associator' map₂_left_unitor'

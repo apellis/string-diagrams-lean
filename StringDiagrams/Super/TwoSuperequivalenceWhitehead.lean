@@ -208,6 +208,28 @@ theorem map₂_pseudoInv_mapComp_inv {c d f : Underlying2 R C} (k : c ⟶ d) (l 
       fun k l m => hF.Qc.map₂_associator k l m, fun k => hF.Qc.map₂_left_unitor k,
       fun k => hF.Qc.map₂_right_unitor k]
 
+theorem map₂_pseudoInv_mapComp_hom {c d f : Underlying2 R C} (k : c ⟶ d) (l : d ⟶ f) :
+    F.toPseudo.map₂ (hF.pseudoInv.mapComp k l).hom =
+      (hF.Qc.mapComp k l).hom ≫ (F.toPseudo.mapComp (hF.mapU k) (hF.mapU l)).inv :=
+  by
+    unfold pseudoInv
+    apply PseudofunctorLift.map₂_lift_mapComp_hom
+    exacts [fun k => hF.Qc.map₂_id k, fun η θ => hF.Qc.map₂_comp η θ,
+      fun k _ _ η => hF.Qc.map₂_whisker_left k η, fun η l => hF.Qc.map₂_whisker_right η l,
+      fun k l m => hF.Qc.map₂_associator k l m, fun k => hF.Qc.map₂_left_unitor k,
+      fun k => hF.Qc.map₂_right_unitor k]
+
+theorem map₂_pseudoInv_mapId_hom (c : Underlying2 R C) :
+    F.toPseudo.map₂ (hF.pseudoInv.mapId c).hom =
+      (hF.Qc.mapId c).hom ≫ (F.toPseudo.mapId ⟨hF.obj c.obj⟩).inv :=
+  by
+    unfold pseudoInv
+    apply PseudofunctorLift.map₂_lift_mapId_hom
+    exacts [fun k => hF.Qc.map₂_id k, fun η θ => hF.Qc.map₂_comp η θ,
+      fun k _ _ η => hF.Qc.map₂_whisker_left k η, fun η l => hF.Qc.map₂_whisker_right η l,
+      fun k l m => hF.Qc.map₂_associator k l m, fun k => hF.Qc.map₂_left_unitor k,
+      fun k => hF.Qc.map₂_right_unitor k]
+
 end Underlying
 
 /-! ## Naturality of the conjugation data for all 2-morphisms -/
@@ -444,6 +466,133 @@ def inverse : TwoSuperfunctor R C B where
     exact congrArg Subtype.val h
 
 end Inverse
+
+/-! ## The superequivalence `ℝ ∘ 𝕊 ≃ 𝕀` -/
+
+section Counit
+
+open Bicategory Oplax
+
+theorem compOplax_map₂ {c d : Underlying2 R C} {k k' : c ⟶ d} (η : k ⟶ k') :
+    (hF.inverse.comp F).toOplax.map₂ η = hF.Qc.map₂ η :=
+  Subtype.ext (hF.map₂_invMap₂ η.1)
+
+theorem compOplax_mapComp {c d f : Underlying2 R C} (k : c ⟶ d) (l : d ⟶ f) :
+    (hF.inverse.comp F).toOplax.mapComp k l = (hF.Qc.mapComp k l).hom := by
+  apply Subtype.ext
+  change F.map₂ (hF.invMapComp k.obj l.obj).inv ≫ (F.mapComp _ _).inv = _
+  rw [show F.map₂ (hF.invMapComp k.obj l.obj).inv =
+      (hF.Qc.mapComp k l).hom.1 ≫ (F.mapComp _ _).hom from
+    congrArg Subtype.val (hF.map₂_pseudoInv_mapComp_hom k l)]
+  exact (Category.assoc _ _ _).trans
+    ((congrArg (_ ≫ ·) (F.mapComp _ _).hom_inv_id).trans (Category.comp_id _))
+
+theorem compOplax_mapId (c : Underlying2 R C) :
+    (hF.inverse.comp F).toOplax.mapId c = (hF.Qc.mapId c).hom := by
+  apply Subtype.ext
+  change F.map₂ (hF.invMapId c.obj).inv ≫ (F.mapId _).inv = _
+  rw [show F.map₂ (hF.invMapId c.obj).inv = (hF.Qc.mapId c).hom.1 ≫ (F.mapId _).hom from
+    congrArg Subtype.val (hF.map₂_pseudoInv_mapId_hom c)]
+  exact (Category.assoc _ _ _).trans
+    ((congrArg (_ ≫ ·) (F.mapId _).hom_inv_id).trans (Category.comp_id _))
+
+/-- The counit transformation of conjugation, transported to `Qc`. -/
+abbrev counitQc : OplaxTrans hF.Qc.toOplax (Pseudofunctor.id (Underlying2 R C)).toOplax :=
+  PseudofunctorCopy.transLeft hF.Q (fun k => F.toPseudo.map (hF.mapU k)) hF.κ
+    (ConjPseudofunctor.counitTrans hF.E)
+
+/-- The unit transformation of conjugation, transported to `Qc`. -/
+abbrev unitQc : OplaxTrans (Pseudofunctor.id (Underlying2 R C)).toOplax hF.Qc.toOplax :=
+  PseudofunctorCopy.transRight hF.Q (fun k => F.toPseudo.map (hF.mapU k)) hF.κ
+    (ConjPseudofunctor.unitTrans hF.E)
+
+/-- The oplax transformation `ℝ ∘ 𝕊 ⇒ 𝕀` of underlying bicategories, with components `e_ν`. -/
+def counitOplax : OplaxTrans (hF.inverse.comp F).toOplax (TwoSuperfunctor.id R C).toOplax where
+  app := hF.counitQc.app
+  naturality k := hF.counitQc.naturality k
+  naturality_naturality η := by
+    rw [compOplax_map₂]; exact hF.counitQc.naturality_naturality η
+  naturality_id c := by
+    rw [compOplax_mapId]; exact hF.counitQc.naturality_id c
+  naturality_comp k l := by
+    rw [compOplax_mapComp]; exact hF.counitQc.naturality_comp k l
+
+/-- The oplax transformation `𝕀 ⇒ ℝ ∘ 𝕊` of underlying bicategories, with components `e'_ν`. -/
+def unitOplax : OplaxTrans (TwoSuperfunctor.id R C).toOplax (hF.inverse.comp F).toOplax where
+  app := hF.unitQc.app
+  naturality k := hF.unitQc.naturality k
+  naturality_naturality η := by
+    rw [compOplax_map₂]; exact hF.unitQc.naturality_naturality η
+  naturality_id c := by
+    rw [compOplax_mapId]; exact hF.unitQc.naturality_id c
+  naturality_comp k l := by
+    rw [compOplax_mapComp]; exact hF.unitQc.naturality_comp k l
+
+end Counit
+
+section CounitSuper
+
+open BicategoryStruct TwoSupercategory
+
+/-- The 2-natural transformation `ℝ ∘ 𝕊 ⇒ 𝕀`, with components `e_ν`. -/
+def counit : TwoNatTrans (hF.inverse.comp F) (TwoSuperfunctor.id R C) :=
+  TwoNatTrans.ofOplaxTrans hF.counitOplax (fun {c d f g} ε => by
+    change F.map₂ (hF.invMap₂ ε) ▷ hF.e d ≫ ((hF.liftIso _).hom ▷ hF.e d ≫ hF.nu g) =
+      ((hF.liftIso _).hom ▷ hF.e d ≫ hF.nu f) ≫ hF.e c ◁ ε
+    rw [map₂_invMap₂, comp_whiskerRight' R, comp_whiskerRight' R]
+    simp only [Category.assoc, inv_hom_whiskerRight_assoc R]
+    rw [nu_naturality])
+
+/-- The 2-natural transformation `𝕀 ⇒ ℝ ∘ 𝕊`, with components `e'_ν`. -/
+def unit : TwoNatTrans (TwoSuperfunctor.id R C) (hF.inverse.comp F) :=
+  TwoNatTrans.ofOplaxTrans hF.unitOplax (fun {c d f g} ε => by
+    change ε ▷ hF.e' d ≫ (hF.unu g ≫ hF.e' c ◁ (hF.liftIso _).inv) =
+      (hF.unu f ≫ hF.e' c ◁ (hF.liftIso _).inv) ≫ hF.e' c ◁ F.map₂ (hF.invMap₂ ε)
+    rw [map₂_invMap₂, unu_naturality_assoc, Category.assoc, ← whiskerLeft_comp' R,
+      ← whiskerLeft_comp' R, Iso.inv_hom_id_assoc])
+
+end CounitSuper
+
+section CounitEquiv
+
+open Bicategory Oplax OplaxTrans
+
+/-- `counit ≫ unit ≅ 𝟙` on the underlying oplax transformations, with components the inverse
+units `e_ν ≫ e'_ν ≅ 𝟙`. -/
+def counitUnitIso :
+    (TwoNatTrans.vcomp hF.counit hF.unit).toOplaxTrans ≅
+      (TwoNatTrans.id (hF.inverse.comp F)).toOplaxTrans :=
+  let M := PseudofunctorCopy.modLeftRight hF.Q (fun k => F.toPseudo.map (hF.mapU k)) hF.κ
+    (ConjPseudofunctor.counitTrans hF.E) (ConjPseudofunctor.unitTrans hF.E)
+    (ConjPseudofunctor.counitTransCompUnitTrans hF.E)
+  OplaxTrans.isoMk (fun a => PseudofunctorCopy.appIso M a) (fun f => M.hom.as.naturality f)
+
+/-- `unit ≫ counit ≅ 𝟙` on the underlying oplax transformations, with components the counits
+`e'_ν ≫ e_ν ≅ 𝟙`. -/
+def unitCounitIso :
+    (TwoNatTrans.vcomp hF.unit hF.counit).toOplaxTrans ≅
+      (TwoNatTrans.id (TwoSuperfunctor.id R C)).toOplaxTrans :=
+  let M := PseudofunctorCopy.modRightLeft hF.Q (fun k => F.toPseudo.map (hF.mapU k)) hF.κ
+    (ConjPseudofunctor.counitTrans hF.E) (ConjPseudofunctor.unitTrans hF.E)
+    (ConjPseudofunctor.unitTransCompCounitTrans hF.E)
+  OplaxTrans.isoMk (fun a => PseudofunctorCopy.appIso M a) (fun f => M.hom.as.naturality f)
+
+/-- The counit as a 1-morphism of `𝔥𝔬𝔪(𝔅, 𝔅)`. -/
+abbrev counitHom : hF.inverse.comp F ⟶ TwoSuperfunctor.id R C := hF.counit
+
+/-- The counit `ℝ ∘ 𝕊 ⇒ 𝕀` is a superequivalence in `𝔥𝔬𝔪(𝔅, 𝔅)`. -/
+theorem counit_isSuperequivalence : TwoSupercategory.IsSuperequivalence R hF.counitHom :=
+  ⟨hF.unit, TwoNatTrans.isoOfOplaxModificationIso hF.counitUnitIso,
+    TwoNatTrans.isoOfOplaxModificationIso hF.unitCounitIso,
+    fun a => (hF.counitUnitIso.hom.as.app ⟨a⟩).2,
+    fun a => (hF.unitCounitIso.hom.as.app ⟨a⟩).2⟩
+
+/-- `ℝ ∘ 𝕊` is superequivalent to the identity in `𝔥𝔬𝔪(𝔅, 𝔅)`. -/
+theorem superequivalent_inverse_comp :
+    TwoSupercategory.Superequivalent R (hF.inverse.comp F) (TwoSuperfunctor.id R C) :=
+  ⟨hF.counitHom, hF.counit_isSuperequivalence⟩
+
+end CounitEquiv
 
 end IsLocalTwoSuperequivalence
 
