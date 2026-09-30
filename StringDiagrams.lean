@@ -83,6 +83,7 @@ import StringDiagrams.Super.TwoEnvelopeTwoHom
 import StringDiagrams.Super.PiCat
 import StringDiagrams.Super.TwoSCat
 import StringDiagrams.Super.QPiTwoSCat
+import StringDiagrams.Super.QPiTwoSCatD
 import StringDiagrams.Super.DrinfeldCenterEnvelope
 import StringDiagrams.Super.Braided
 import StringDiagrams.Super.DrinfeldCenterBraiding
