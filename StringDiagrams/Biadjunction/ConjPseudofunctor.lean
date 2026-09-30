@@ -20,9 +20,18 @@ invertible modifications (`ConjPseudofunctor.counitTransCompUnitTrans`,
 `ConjPseudofunctor.unitTransCompCounitTrans`) whose components are the unit and counit of the
 `E x`.
 
-This is the object-level part of the bicategorical Whitehead theorem: it is used in
-`StringDiagrams.Super.TwoSuperequivalenceWhitehead` to construct a quasi-inverse of a local
-2-superequivalence.
+Further general constructions used for the bicategorical Whitehead theorem:
+
+* `PseudofunctorCopy.copy`: a pseudofunctor with its 1-morphisms replaced by isomorphic ones,
+  transporting oplax transformations (`transLeft`, `transRight`) and invertible modifications
+  (`modLeftRight`, `modRightLeft`);
+* `PseudofunctorLift.lift`: lifting pseudofunctor data along a pseudofunctor `𝔉` that is fully
+  faithful on 2-morphisms;
+* `OplaxTransLift.lift`, `OplaxTransLift.liftCompIso`: lifting oplax transformations and
+  invertible modifications along such an `𝔉`.
+
+These are used in `StringDiagrams.Super.TwoSuperequivalenceWhitehead` to construct a
+quasi-inverse of a local 2-superequivalence.
 -/
 
 namespace StringDiagrams
@@ -770,5 +779,238 @@ theorem map₂_lift_mapId_inv (x : 𝒳) :
 end
 
 end PseudofunctorLift
+
+/-! ## Lifting oplax transformations along a locally fully faithful pseudofunctor -/
+
+namespace OplaxTransLift
+
+universe w₁ v₁ u₁ w₂ v₂ u₂ w₃ v₃ u₃
+
+open Oplax
+
+variable {𝔅 : Type u₁} [Bicategory.{w₁, v₁} 𝔅] {𝒞 : Type u₂} [Bicategory.{w₂, v₂} 𝒞]
+  {𝒳 : Type u₃} [Bicategory.{w₃, v₃} 𝒳] (𝔉 : Pseudofunctor 𝔅 𝒞)
+  (pre : ∀ {a b : 𝔅} {f g : a ⟶ b}, (𝔉.map f ⟶ 𝔉.map g) → (f ⟶ g))
+  (map_pre : ∀ {a b : 𝔅} {f g : a ⟶ b} (x : 𝔉.map f ⟶ 𝔉.map g), 𝔉.map₂ (pre x) = x)
+  (pre_map : ∀ {a b : 𝔅} {f g : a ⟶ b} (x : f ⟶ g), pre (𝔉.map₂ x) = x)
+  {S S' : OplaxFunctor 𝒳 𝔅}
+  (σapp : ∀ a, 𝔉.obj (S.obj a) ⟶ 𝔉.obj (S'.obj a))
+  (σnat : ∀ {a b : 𝒳} (f : a ⟶ b),
+    𝔉.map (S.map f) ≫ σapp b ⟶ σapp a ≫ 𝔉.map (S'.map f))
+  (t : ∀ a, S.obj a ⟶ S'.obj a) (κ : ∀ a, 𝔉.map (t a) ≅ σapp a)
+
+omit [Bicategory 𝒳] in
+theorem map₂_associator_inv {a b c d : 𝔅} (f : a ⟶ b) (g : b ⟶ c) (h : c ⟶ d) :
+    𝔉.map₂ (α_ f g h).inv = (𝔉.mapComp f (g ≫ h)).hom ≫ 𝔉.map f ◁ (𝔉.mapComp g h).hom ≫
+      (α_ _ _ _).inv ≫ (𝔉.mapComp f g).inv ▷ 𝔉.map h ≫ (𝔉.mapComp (f ≫ g) h).inv := by
+  rw [𝔉.mapComp_assoc_right_hom_assoc]
+  simp
+
+/-- The naturality 2-morphisms of the lift, before taking preimages. -/
+def natU {a b : 𝒳} (f : a ⟶ b) : 𝔉.map (S.map f ≫ t b) ⟶ 𝔉.map (t a ≫ S'.map f) :=
+  (𝔉.mapComp (S.map f) (t b)).hom ≫ 𝔉.map (S.map f) ◁ (κ b).hom ≫ σnat f ≫
+    (κ a).inv ▷ 𝔉.map (S'.map f) ≫ (𝔉.mapComp (t a) (S'.map f)).inv
+
+include map_pre pre_map in
+/-- The oplax transformation `S ⟶ S'` with components `t a` whose image under `𝔉` is the
+oplax transformation `(σapp, σnat)` (up to the isomorphisms `κ`). -/
+@[simps]
+def lift
+    (nat_nat : ∀ {a b : 𝒳} {f g : a ⟶ b} (β : f ⟶ g),
+      𝔉.map₂ (S.map₂ β) ▷ σapp b ≫ σnat g = σnat f ≫ σapp a ◁ 𝔉.map₂ (S'.map₂ β))
+    (nat_id : ∀ a : 𝒳, σnat (𝟙 a) ≫ σapp a ◁ (𝔉.map₂ (S'.mapId a) ≫ (𝔉.mapId _).hom) =
+      (𝔉.map₂ (S.mapId a) ≫ (𝔉.mapId _).hom) ▷ σapp a ≫ (λ_ _).hom ≫ (ρ_ _).inv)
+    (nat_comp : ∀ {a b c : 𝒳} (f : a ⟶ b) (g : b ⟶ c),
+      σnat (f ≫ g) ≫ σapp a ◁ (𝔉.map₂ (S'.mapComp f g) ≫ (𝔉.mapComp _ _).hom) =
+        (𝔉.map₂ (S.mapComp f g) ≫ (𝔉.mapComp _ _).hom) ▷ σapp c ≫ (α_ _ _ _).hom ≫
+          𝔉.map (S.map f) ◁ σnat g ≫ (α_ _ _ _).inv ≫ σnat f ▷ 𝔉.map (S'.map g) ≫
+            (α_ _ _ _).hom) :
+    OplaxTrans S S' where
+  app := t
+  naturality f := pre (natU 𝔉 σapp σnat t κ f)
+  naturality_naturality {a b f g} β := PseudofunctorLift.map₂_injective 𝔉 pre pre_map (by
+    simp only [PrelaxFunctor.map₂_comp, map_pre, natU, Pseudofunctor.map₂_whisker_right,
+      Pseudofunctor.map₂_whisker_left, Category.assoc, Iso.inv_hom_id_assoc]
+    congr 1
+    rw [← whisker_exchange_assoc, reassoc_of% (nat_nat β), whisker_exchange_assoc])
+  naturality_id a := by
+    rw [← cancel_mono (ρ_ (t a)).hom]
+    simp only [Category.assoc, Iso.inv_hom_id, Category.comp_id]
+    apply PseudofunctorLift.map₂_injective 𝔉 pre pre_map
+    simp only [PrelaxFunctor.map₂_comp, map_pre, natU, Pseudofunctor.map₂_whisker_right,
+      Pseudofunctor.map₂_whisker_left, Pseudofunctor.map₂_left_unitor,
+      Pseudofunctor.map₂_right_unitor, Category.assoc, Iso.inv_hom_id_assoc]
+    congr 1
+    calc
+      _ = 𝟙 _ ⊗≫ 𝔉.map (S.map (𝟙 a)) ◁ (κ a).hom ⊗≫ σnat (𝟙 a) ⊗≫
+            ((κ a).inv ▷ 𝔉.map (S'.map (𝟙 a)) ≫
+              𝔉.map (t a) ◁ (𝔉.map₂ (S'.mapId a) ≫ (𝔉.mapId _).hom)) ⊗≫ 𝟙 _ := by
+        bicategory
+      _ = 𝟙 _ ⊗≫ 𝔉.map (S.map (𝟙 a)) ◁ (κ a).hom ⊗≫
+            (σnat (𝟙 a) ≫ σapp a ◁ (𝔉.map₂ (S'.mapId a) ≫ (𝔉.mapId _).hom)) ⊗≫
+            (κ a).inv ⊗≫ 𝟙 _ := by
+        rw [← whisker_exchange]; bicategory
+      _ = 𝟙 _ ⊗≫ (𝔉.map (S.map (𝟙 a)) ◁ (κ a).hom ≫
+            (𝔉.map₂ (S.mapId a) ≫ (𝔉.mapId _).hom) ▷ σapp a) ⊗≫ (κ a).inv ⊗≫ 𝟙 _ := by
+        rw [nat_id a]; bicategory
+      _ = 𝟙 _ ⊗≫ (𝔉.map₂ (S.mapId a) ≫ (𝔉.mapId _).hom) ▷ 𝔉.map (t a) ⊗≫
+            ((κ a).hom ≫ (κ a).inv) ⊗≫ 𝟙 _ := by
+        rw [whisker_exchange]; bicategory
+      _ = _ := by rw [Iso.hom_inv_id]; bicategory
+  naturality_comp {a b c} f g := by
+    apply PseudofunctorLift.map₂_injective 𝔉 pre pre_map
+    simp only [PrelaxFunctor.map₂_comp, map_pre, natU, Pseudofunctor.map₂_whisker_right,
+      Pseudofunctor.map₂_whisker_left, map₂_associator_inv, Pseudofunctor.map₂_associator,
+      Category.assoc, Iso.inv_hom_id_assoc, whiskerLeft_comp, comp_whiskerRight,
+      whiskerLeft_inv_hom_assoc, inv_hom_whiskerRight_assoc]
+    congr 1
+    symm
+    calc
+      _ = 𝟙 _ ⊗≫ (𝔉.map₂ (S.mapComp f g) ≫ (𝔉.mapComp (S.map f) (S.map g)).hom) ▷
+              𝔉.map (t c) ⊗≫
+            𝔉.map (S.map f) ◁ 𝔉.map (S.map g) ◁ (κ c).hom ⊗≫ 𝔉.map (S.map f) ◁ σnat g ⊗≫
+            𝔉.map (S.map f) ◁ ((κ b).inv ≫ (κ b).hom) ▷ 𝔉.map (S'.map g) ⊗≫
+            σnat f ▷ 𝔉.map (S'.map g) ⊗≫
+            (κ a).inv ▷ (𝔉.map (S'.map f) ≫ 𝔉.map (S'.map g)) ⊗≫
+            𝔉.map (t a) ◁ (𝔉.mapComp (S'.map f) (S'.map g)).inv ⊗≫
+            (𝔉.mapComp (t a) (S'.map f ≫ S'.map g)).inv := by
+        bicategory
+      _ = 𝟙 _ ⊗≫ ((𝔉.map₂ (S.mapComp f g) ≫ (𝔉.mapComp (S.map f) (S.map g)).hom) ▷
+              𝔉.map (t c) ≫ (𝔉.map (S.map f) ≫ 𝔉.map (S.map g)) ◁ (κ c).hom) ⊗≫
+            𝔉.map (S.map f) ◁ σnat g ⊗≫ σnat f ▷ 𝔉.map (S'.map g) ⊗≫
+            ((κ a).inv ▷ (𝔉.map (S'.map f) ≫ 𝔉.map (S'.map g)) ≫
+              𝔉.map (t a) ◁ (𝔉.mapComp (S'.map f) (S'.map g)).inv) ⊗≫
+            (𝔉.mapComp (t a) (S'.map f ≫ S'.map g)).inv := by
+        rw [Iso.inv_hom_id]; bicategory
+      _ = 𝟙 _ ⊗≫ (𝔉.map (S.map (f ≫ g)) ◁ (κ c).hom ≫
+              (𝔉.map₂ (S.mapComp f g) ≫ (𝔉.mapComp (S.map f) (S.map g)).hom) ▷ σapp c) ⊗≫
+            𝔉.map (S.map f) ◁ σnat g ⊗≫ σnat f ▷ 𝔉.map (S'.map g) ⊗≫
+            (σapp a ◁ (𝔉.mapComp (S'.map f) (S'.map g)).inv ≫
+              (κ a).inv ▷ 𝔉.map (S'.map f ≫ S'.map g)) ⊗≫
+            (𝔉.mapComp (t a) (S'.map f ≫ S'.map g)).inv := by
+        rw [← whisker_exchange, ← whisker_exchange]
+      _ = 𝟙 _ ⊗≫ 𝔉.map (S.map (f ≫ g)) ◁ (κ c).hom ⊗≫
+            ((𝔉.map₂ (S.mapComp f g) ≫ (𝔉.mapComp _ _).hom) ▷ σapp c ≫ (α_ _ _ _).hom ≫
+              𝔉.map (S.map f) ◁ σnat g ≫ (α_ _ _ _).inv ≫ σnat f ▷ 𝔉.map (S'.map g) ≫
+                (α_ _ _ _).hom) ⊗≫
+            σapp a ◁ (𝔉.mapComp (S'.map f) (S'.map g)).inv ⊗≫
+            (κ a).inv ▷ 𝔉.map (S'.map f ≫ S'.map g) ⊗≫
+            (𝔉.mapComp (t a) (S'.map f ≫ S'.map g)).inv := by
+        bicategory
+      _ = 𝟙 _ ⊗≫ 𝔉.map (S.map (f ≫ g)) ◁ (κ c).hom ⊗≫ σnat (f ≫ g) ⊗≫
+            σapp a ◁ 𝔉.map₂ (S'.mapComp f g) ⊗≫
+            σapp a ◁ ((𝔉.mapComp (S'.map f) (S'.map g)).hom ≫
+              (𝔉.mapComp (S'.map f) (S'.map g)).inv) ⊗≫
+            (κ a).inv ▷ 𝔉.map (S'.map f ≫ S'.map g) ⊗≫
+            (𝔉.mapComp (t a) (S'.map f ≫ S'.map g)).inv := by
+        rw [← nat_comp]; bicategory
+      _ = 𝟙 _ ⊗≫ 𝔉.map (S.map (f ≫ g)) ◁ (κ c).hom ⊗≫ σnat (f ≫ g) ⊗≫
+            (σapp a ◁ 𝔉.map₂ (S'.mapComp f g) ≫ (κ a).inv ▷ 𝔉.map (S'.map f ≫ S'.map g)) ⊗≫
+            (𝔉.mapComp (t a) (S'.map f ≫ S'.map g)).inv := by
+        rw [Iso.hom_inv_id]; bicategory
+      _ = _ := by rw [whisker_exchange]; bicategory
+
+section Mod
+
+variable (σ'app : ∀ a, 𝔉.obj (S'.obj a) ⟶ 𝔉.obj (S.obj a))
+  (σ'nat : ∀ {a b : 𝒳} (f : a ⟶ b),
+    𝔉.map (S'.map f) ≫ σ'app b ⟶ σ'app a ≫ 𝔉.map (S.map f))
+  (t' : ∀ a, S'.obj a ⟶ S.obj a) (κ' : ∀ a, 𝔉.map (t' a) ≅ σ'app a)
+  (Γ : ∀ a, σapp a ≫ σ'app a ≅ 𝟙 _)
+
+/-- The components of the lifted modification `t ≫ t' ≅ 𝟙`. -/
+def modApp (a : 𝒳) : 𝔉.map (t a ≫ t' a) ≅ 𝔉.map (𝟙 (S.obj a)) :=
+  𝔉.mapComp (t a) (t' a) ≪≫ whiskerRightIso (κ a) _ ≪≫ whiskerLeftIso _ (κ' a) ≪≫ Γ a ≪≫
+    (𝔉.mapId _).symm
+
+omit [Bicategory 𝒳] in
+theorem modApp_aux {A B M N : 𝒞} {sf : A ⟶ B} {sf' : M ⟶ N} {ta sa : A ⟶ M} {tb sb : B ⟶ N}
+    {ta' sa' : M ⟶ A} {tb' sb' : N ⟶ B} (ka : ta ≅ sa) (kb : tb ≅ sb) (ka' : ta' ≅ sa')
+    (kb' : tb' ≅ sb') (nσ : sf ≫ sb ⟶ sa ≫ sf') (nσ' : sf' ≫ sb' ⟶ sa' ≫ sf)
+    (Γa : sa ≫ sa' ⟶ 𝟙 A) (Γb : sb ≫ sb' ⟶ 𝟙 B)
+    (hΓ : sf ◁ Γb ≫ (ρ_ sf).hom ≫ (λ_ sf).inv =
+      ((α_ _ _ _).inv ≫ nσ ▷ sb' ≫ (α_ _ _ _).hom ≫ sa ◁ nσ' ≫ (α_ _ _ _).inv) ≫
+        Γa ▷ sf) :
+    sf ◁ (kb.hom ▷ tb' ≫ sb ◁ kb'.hom ≫ Γb) ≫ (ρ_ sf).hom =
+      (α_ _ _ _).inv ≫ (sf ◁ kb.hom ≫ nσ ≫ ka.inv ▷ sf') ▷ tb' ≫ (α_ _ _ _).hom ≫
+        ta ◁ (sf' ◁ kb'.hom ≫ nσ' ≫ ka'.inv ▷ sf) ≫ (α_ _ _ _).inv ≫
+          (ka.hom ▷ ta' ≫ sa ◁ ka'.hom ≫ Γa) ▷ sf ≫ (λ_ sf).hom := by
+  symm
+  calc
+    _ = 𝟙 _ ⊗≫ sf ◁ kb.hom ▷ tb' ⊗≫ nσ ▷ tb' ⊗≫
+          (ka.inv ▷ (sf' ≫ tb') ≫ ta ◁ (sf' ◁ kb'.hom ≫ nσ' ≫ ka'.inv ▷ sf)) ⊗≫
+          ka.hom ▷ (ta' ≫ sf) ⊗≫ sa ◁ ka'.hom ▷ sf ⊗≫ Γa ▷ sf ⊗≫ 𝟙 _ := by
+      bicategory
+    _ = 𝟙 _ ⊗≫ sf ◁ kb.hom ▷ tb' ⊗≫ nσ ▷ tb' ⊗≫ sa ◁ sf' ◁ kb'.hom ⊗≫ sa ◁ nσ' ⊗≫
+          sa ◁ ka'.inv ▷ sf ⊗≫ (ka.inv ≫ ka.hom) ▷ (ta' ≫ sf) ⊗≫ sa ◁ ka'.hom ▷ sf ⊗≫
+          Γa ▷ sf ⊗≫ 𝟙 _ := by
+      rw [← whisker_exchange]; bicategory
+    _ = 𝟙 _ ⊗≫ sf ◁ kb.hom ▷ tb' ⊗≫ nσ ▷ tb' ⊗≫ sa ◁ sf' ◁ kb'.hom ⊗≫ sa ◁ nσ' ⊗≫
+          sa ◁ (ka'.inv ≫ ka'.hom) ▷ sf ⊗≫ Γa ▷ sf ⊗≫ 𝟙 _ := by
+      rw [Iso.inv_hom_id]; bicategory
+    _ = 𝟙 _ ⊗≫ sf ◁ kb.hom ▷ tb' ⊗≫ (nσ ▷ tb' ≫ (sa ≫ sf') ◁ kb'.hom) ⊗≫ sa ◁ nσ' ⊗≫
+          Γa ▷ sf ⊗≫ 𝟙 _ := by
+      rw [Iso.inv_hom_id]; bicategory
+    _ = 𝟙 _ ⊗≫ sf ◁ kb.hom ▷ tb' ⊗≫ (sf ≫ sb) ◁ kb'.hom ⊗≫
+          (((α_ _ _ _).inv ≫ nσ ▷ sb' ≫ (α_ _ _ _).hom ≫ sa ◁ nσ' ≫ (α_ _ _ _).inv) ≫
+            Γa ▷ sf) ⊗≫ 𝟙 _ := by
+      rw [← whisker_exchange]; bicategory
+    _ = _ := by rw [← hΓ]; bicategory
+
+variable
+  (nat_nat : ∀ {a b : 𝒳} {f g : a ⟶ b} (β : f ⟶ g),
+    𝔉.map₂ (S.map₂ β) ▷ σapp b ≫ σnat g = σnat f ≫ σapp a ◁ 𝔉.map₂ (S'.map₂ β))
+  (nat_id : ∀ a : 𝒳, σnat (𝟙 a) ≫ σapp a ◁ (𝔉.map₂ (S'.mapId a) ≫ (𝔉.mapId _).hom) =
+    (𝔉.map₂ (S.mapId a) ≫ (𝔉.mapId _).hom) ▷ σapp a ≫ (λ_ _).hom ≫ (ρ_ _).inv)
+  (nat_comp : ∀ {a b c : 𝒳} (f : a ⟶ b) (g : b ⟶ c),
+    σnat (f ≫ g) ≫ σapp a ◁ (𝔉.map₂ (S'.mapComp f g) ≫ (𝔉.mapComp _ _).hom) =
+      (𝔉.map₂ (S.mapComp f g) ≫ (𝔉.mapComp _ _).hom) ▷ σapp c ≫ (α_ _ _ _).hom ≫
+        𝔉.map (S.map f) ◁ σnat g ≫ (α_ _ _ _).inv ≫ σnat f ▷ 𝔉.map (S'.map g) ≫
+          (α_ _ _ _).hom)
+  (nat_nat' : ∀ {a b : 𝒳} {f g : a ⟶ b} (β : f ⟶ g),
+    𝔉.map₂ (S'.map₂ β) ▷ σ'app b ≫ σ'nat g = σ'nat f ≫ σ'app a ◁ 𝔉.map₂ (S.map₂ β))
+  (nat_id' : ∀ a : 𝒳, σ'nat (𝟙 a) ≫ σ'app a ◁ (𝔉.map₂ (S.mapId a) ≫ (𝔉.mapId _).hom) =
+    (𝔉.map₂ (S'.mapId a) ≫ (𝔉.mapId _).hom) ▷ σ'app a ≫ (λ_ _).hom ≫ (ρ_ _).inv)
+  (nat_comp' : ∀ {a b c : 𝒳} (f : a ⟶ b) (g : b ⟶ c),
+    σ'nat (f ≫ g) ≫ σ'app a ◁ (𝔉.map₂ (S.mapComp f g) ≫ (𝔉.mapComp _ _).hom) =
+      (𝔉.map₂ (S'.mapComp f g) ≫ (𝔉.mapComp _ _).hom) ▷ σ'app c ≫ (α_ _ _ _).hom ≫
+        𝔉.map (S'.map f) ◁ σ'nat g ≫ (α_ _ _ _).inv ≫ σ'nat f ▷ 𝔉.map (S.map g) ≫
+          (α_ _ _ _).hom)
+
+open OplaxTrans in
+/-- The lift of an isomorphism `σ ≫ σ' ≅ 𝟙` (given by components `Γ` natural in the sense of
+modifications) to an isomorphism of the lifted oplax transformations. -/
+def liftCompIso
+    (hΓ : ∀ {a b : 𝒳} (f : a ⟶ b), 𝔉.map (S.map f) ◁ (Γ b).hom ≫ (ρ_ _).hom ≫ (λ_ _).inv =
+      ((α_ _ _ _).inv ≫ σnat f ▷ σ'app b ≫ (α_ _ _ _).hom ≫ σapp a ◁ σ'nat f ≫
+        (α_ _ _ _).inv) ≫ (Γ a).hom ▷ 𝔉.map (S.map f)) :
+    lift 𝔉 pre map_pre pre_map σapp σnat t κ nat_nat nat_id nat_comp ≫
+      lift 𝔉 pre map_pre pre_map σ'app σ'nat t' κ' nat_nat' nat_id' nat_comp' ≅ 𝟙 S :=
+  OplaxTrans.isoMk
+    (fun a => PseudofunctorLift.preIso 𝔉 pre map_pre pre_map
+      (modApp 𝔉 σapp t κ σ'app t' κ' Γ a))
+    (fun {a b} f => by
+      change S.map f ◁ pre (modApp 𝔉 σapp t κ σ'app t' κ' Γ b).hom ≫
+          (ρ_ (S.map f)).hom ≫ (λ_ (S.map f)).inv =
+        ((α_ _ _ _).inv ≫ pre (natU 𝔉 σapp σnat t κ f) ▷ t' b ≫ (α_ _ _ _).hom ≫
+          t a ◁ pre (natU (S := S') (S' := S) 𝔉 σ'app σ'nat t' κ' f) ≫ (α_ _ _ _).inv) ≫
+          pre (modApp 𝔉 σapp t κ σ'app t' κ' Γ a).hom ▷ S.map f
+      rw [← cancel_mono (λ_ (S.map f)).hom]
+      simp only [Category.assoc, Iso.inv_hom_id, Category.comp_id]
+      apply PseudofunctorLift.map₂_injective 𝔉 pre pre_map
+      simp only [PrelaxFunctor.map₂_comp, map_pre, natU, modApp, Iso.trans_hom, Iso.symm_hom, whiskerRightIso_hom,
+        whiskerLeftIso_hom, Pseudofunctor.map₂_whisker_right, Pseudofunctor.map₂_whisker_left,
+        map₂_associator_inv, Pseudofunctor.map₂_associator, Pseudofunctor.map₂_left_unitor,
+        Pseudofunctor.map₂_right_unitor, Category.assoc, Iso.inv_hom_id_assoc, whiskerLeft_comp,
+        comp_whiskerRight, whiskerLeft_inv_hom_assoc, inv_hom_whiskerRight_assoc]
+      congr 2
+      have h := modApp_aux (κ a) (κ b) (κ' a) (κ' b) (σnat f) (σ'nat f) (Γ a).hom (Γ b).hom
+        (hΓ f)
+      simp only [whiskerLeft_comp, comp_whiskerRight, Category.assoc] at h
+      exact h)
+
+end Mod
+
+end OplaxTransLift
 
 end StringDiagrams

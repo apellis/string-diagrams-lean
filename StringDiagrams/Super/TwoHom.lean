@@ -52,12 +52,15 @@ same for `ℝ𝕊` this gives fullness, and `K ≅ ℝ(X_μ (𝕊K) X'_λ)` give
 `TwoSuperequivalent R B C` (resp. `LocalTwoSuperequivalent R B C`) is the existence of a
 2-superequivalence in the first (resp. second) sense.
 
+The converse implication (a 2-superfunctor which is a local superequivalence and essentially
+surjective up to superequivalence has a quasi-inverse 2-superfunctor) is in
+`StringDiagrams.Super.TwoSuperequivalenceWhitehead`
+(`TwoSuperfunctor.IsLocalTwoSuperequivalence.isTwoSuperequivalence`,
+`TwoSuperfunctor.twoSuperequivalent_iff_localTwoSuperequivalent`).
+
 ## Not formalized
 
-The converse implication (a 2-superfunctor which is a local superequivalence and essentially
-surjective up to superequivalence has a quasi-inverse 2-superfunctor), which needs the choice of
-a quasi-inverse on objects and 1-morphisms together with its coherence data; and the
-3-supercategory of 2-supercategories.
+The 3-supercategory of 2-supercategories.
 -/
 
 noncomputable section
@@ -408,8 +411,10 @@ def IsTwoSuperequivalence (F : TwoSuperfunctor R B C) : Prop :=
 
 /-- **Brundan–Ellis, Definition 2.2**, second formulation: `ℝ` induces superequivalences
 `ℋom_𝔄(λ, μ) → ℋom_𝔅(ℝλ, ℝμ)`, and every object of `𝔅` is superequivalent to an object of the
-form `ℝλ`. The paper asserts that this is equivalent to `IsTwoSuperequivalence`; only the
-implication `IsTwoSuperequivalence.isLocalTwoSuperequivalence` is proved here. -/
+form `ℝλ`. The paper asserts that this is equivalent to `IsTwoSuperequivalence`: one implication
+is `IsTwoSuperequivalence.isLocalTwoSuperequivalence`, the other
+`IsLocalTwoSuperequivalence.isTwoSuperequivalence` (in
+`StringDiagrams.Super.TwoSuperequivalenceWhitehead`). -/
 structure IsLocalTwoSuperequivalence (F : TwoSuperfunctor R B C) : Prop where
   /-- `ℝ` is a superequivalence on each morphism supercategory. -/
   hom (a b : B) : Nonempty (Superequivalence R (F.mapFunctor a b))
