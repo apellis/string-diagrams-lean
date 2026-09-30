@@ -116,6 +116,7 @@ import StringDiagrams.Super.BoxProduct
 import StringDiagrams.Super.BoxProductMonoidal
 import StringDiagrams.Super.BoxProductGraded
 import StringDiagrams.Super.GSCatMonoidal
+import StringDiagrams.Super.QEnvelopeAdjunction
 import StringDiagrams.Super.BimoduleFunctor
 import StringDiagrams.Super.GSBim
 import StringDiagrams.Super.KaroubiMonoidal
