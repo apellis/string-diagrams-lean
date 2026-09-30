@@ -22,8 +22,9 @@ Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v
   and `ξ` on the nose) and `D₁ ∘ E₁ ≅ 𝟭` by the isomorphisms `T_A` (natural in `A`).
 
 The 2-categorical strengthening (Theorem 5.3) on 2-morphisms is in
-`StringDiagrams.Super.AssociatedFunctorial`; the 2-categories `Π-ℭ𝔞𝔱`, `Π-𝔖ℭ𝔞𝔱` are not bundled
-as Lean bicategories.
+`StringDiagrams.Super.AssociatedFunctorial`; `Π-ℭ𝔞𝔱` is bundled as a strict Π-2-category in
+`StringDiagrams.Super.PiCatBicategory`, and `E₁` as a Π-2-functor which is a local equivalence in
+`StringDiagrams.Super.PiCatE1`.
 -/
 
 noncomputable section

@@ -10,9 +10,11 @@ Theorem 5.3: the functors `E₁ : Π-SCat → Π-Cat` and `D₁ : Π-Cat → Π-
 Π-2-functors `𝔼₁ : Π-𝔖ℭ𝔞𝔱 → Π-ℭ𝔞𝔱` and `𝔻₁ : Π-ℭ𝔞𝔱 → Π-𝔖ℭ𝔞𝔱` (on underlying 2-categories),
 and `T : 𝔻₁ ∘ 𝔼₁ ≅ 𝕀` is a Π-2-natural isomorphism.
 
-The strict 2-categories `Π-ℭ𝔞𝔱` and `Π-𝔖ℭ𝔞𝔱` themselves are not packaged as Lean bicategories
-here (see `StringDiagrams.Super.SCat` for `Π-𝔖ℭ𝔞𝔱`); as for Lemma 5.1, we state the content of
-Theorem 5.3 directly:
+Here, as for Lemma 5.1, we state the content of Theorem 5.3 directly (the strict Π-2-category
+`Π-ℭ𝔞𝔱` is `StringDiagrams.Super.PiCatBicategory`, the 2-supercategory `Π-𝔖ℭ𝔞𝔱` is
+`StringDiagrams.Super.SCat`, and `𝔼₁` as a Π-2-functor and local equivalence is
+`StringDiagrams.Super.PiCatE1`; `𝔻₁` and `T` are not bundled as a Π-2-functor and a Π-2-natural
+transformation):
 
 * `𝔼₁` on 2-morphisms is `Underlying.natTrans` (Corollary 3.3(iii)); it preserves identities,
   vertical composition and whiskering (`Underlying.natTrans_id`, `Underlying.natTrans_comp`,

@@ -47,7 +47,7 @@ paper's `g f`), so the paper's `π_μ F` is `F ≫ π_μ` and `F π_λ` is `π_�
 Applied to `PiSCat R` (`StringDiagrams.Super.PiTwo`), `Underlying2.instPiTwoCategory` makes the
 underlying 2-category of `Π-𝔖ℭ𝔞𝔱` a Π-2-category, as stated after Definition 5.2. The basic
 example `Π-ℭ𝔞𝔱` (the strict 2-category of Π-categories, Π-functors and Π-natural transformations)
-is not constructed.
+is `PiCat.instPiTwoCategory` in `StringDiagrams.Super.PiCatBicategory`.
 -/
 
 noncomputable section
