@@ -25,8 +25,9 @@ diagram of its matching or that of a diagram with a double crossing or a curl
 (`MoveInterp.Filtration.near_canon_or_reducible`). With the trivial filtration
 (`LayerFiltration.bot`) these are equalities.
 
-Only presentations with a single region (monoidal categories) are treated here; with several
-regions the letters of the boundary words would have to determine the regions.
+Only presentations with a single region (monoidal categories) are treated here; see
+`StringDiagrams.Chord.PresentedRegions` for several regions, where the letters of the boundary
+words determine the regions and cups and crossings may be diagrams.
 -/
 
 noncomputable section

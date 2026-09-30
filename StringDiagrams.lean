@@ -8,6 +8,7 @@ import StringDiagrams.Interchange
 import StringDiagrams.Grading
 import StringDiagrams.Transport
 import StringDiagrams.Positional
+import StringDiagrams.InterchangeLayers
 import StringDiagrams.SingleColour
 import StringDiagrams.EckmannHilton
 import StringDiagrams.BicatHom
@@ -191,6 +192,7 @@ import StringDiagrams.Chord.Realisation
 import StringDiagrams.Chord.Matching
 import StringDiagrams.Chord.Interpretation
 import StringDiagrams.Chord.Presented
+import StringDiagrams.Chord.PresentedRegions
 
 /-!
 # StringDiagrams
