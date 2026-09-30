@@ -40,8 +40,8 @@ The paper's "left 2-adjoint" is a statement about 2-categories; at the level of 
 `H : A_{q,π} → B` is isomorphic to `(H J)~`, not equal to it, since the morphisms of
 `(Q, Π)-GSCat` need not commute with `Q` and `Π`). So there is no strict 1-adjunction with unit
 `J`, and the precise content formalized here is the printed Theorem 6.9: the graded
-superequivalence of Hom-categories `ℋom(A, νB) ≃ ℋom(A_{q,π}, B)`. The word "functorial" of
-Theorem 6.9 (naturality in `A` and `B`) is not formalized here.
+superequivalence of Hom-categories `ℋom(A, νB) ≃ ℋom(A_{q,π}, B)`. Its naturality in `A` and
+`B` (the "functorial" of Theorem 6.9) is in `StringDiagrams.Super.QEnvelopeNaturality`.
 -/
 
 noncomputable section
