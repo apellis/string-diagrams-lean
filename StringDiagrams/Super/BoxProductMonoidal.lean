@@ -24,9 +24,18 @@ paragraph after Example 1.2: the product `A ⊠ B` of supercategories (`BoxProd`
   `f ⊗ r ↦ r f`, with inverses `lunitInv`, `runitInv` (`f ↦ 1 ⊗ f`, `f ↦ f ⊗ 1`), natural
   (`map_comp_lunit`, `map_comp_runit`).
 
-These are isomorphisms of supercategories (superfunctors with inverse superfunctors), as in
-the paper, where the coherence maps of the monoidal category `SCat` are "obvious". The
-morphism modules of all supercategories involved live in the universe of `k`, as for `BoxProd`.
+* `BoxProd.pentagon`, `BoxProd.triangle`: the pentagon and triangle identities, as equalities
+  of superfunctors.
+* `SCat.instMonoidalCategory`: **the monoidal category `(SCat, ⊠, I)`** of supercategories and
+  superfunctors (Brundan–Ellis, after Example 1.2 and before Definition 2.1), with
+  `A ⊗ B := A ⊠ B`, `F ⊗ G := F ⊠ G`, unit `I` and the coherence isomorphisms above
+  (`SCat.associator_hom_eq_assoc`, `SCat.leftUnitor_hom_eq_lunit`, …).
+
+The coherence maps are isomorphisms of supercategories (superfunctors with inverse
+superfunctors); the paper calls them "obvious". The morphism modules of all supercategories
+involved live in the universe of `k`, as for `BoxProd`; accordingly the monoidal structure is on
+`SCat.{u, u, w} k` for `k : Type u` (supercategories with objects in `Type w` and morphism modules
+in `Type u`), and its unit is `BoxUnit.{w} k`.
 -/
 
 noncomputable section
@@ -69,6 +78,13 @@ def ofLinearMaps
       hom X Y x ∈ parity (R := k) (obj X) (obj Y) p) : Superfunctor k A E where
   toFunctor := functorOfLinearMaps obj hom map_id map_comp
   isSuperfunctor := ⟨map_mem⟩
+
+theorem map_add' (Φ : Superfunctor k A E) {X Y : A} (x y : X ⟶ Y) :
+    Φ.map (x + y) = Φ.map x + Φ.map y :=
+  Φ.toFunctor.map_add
+
+theorem map_zero' (Φ : Superfunctor k A E) (X Y : A) : Φ.map (0 : X ⟶ Y) = 0 :=
+  Φ.toFunctor.map_zero X Y
 
 /-- A linear map on morphism superspaces commuting with the parity projections preserves
 parities. -/
@@ -151,6 +167,16 @@ variable {C : Type w₁} [Category.{u} C] [Preadditive C] [Linear k C] [Supercat
 
 /-! ## Superfunctors out of `C ⊠ D` -/
 
+/-- Induction on the morphisms `(X₁, X₂) ⟶ (Y₁, Y₂)` of `C ⊠ D`, with homogeneous generators
+`f ⊗ g`. -/
+theorem induction_on_tmulHom {X Y : BoxProd k C D} {P : (X ⟶ Y) → Prop} (x : X ⟶ Y)
+    (zero : P 0)
+    (tmul : ∀ (p q : ZMod 2) (f : X.fst ⟶ Y.fst) (g : X.snd ⟶ Y.snd),
+      f ∈ parity (R := k) X.fst Y.fst p → g ∈ parity (R := k) X.snd Y.snd q → P (tmulHom f g))
+    (add : ∀ x y, P x → P y → P (x + y)) : P x :=
+  induction_on_homogeneous (P := P) x zero tmul add
+
+
 /-- Superfunctors out of `C ⊠ D` agreeing on objects and on the morphisms `f ⊗ g` are equal. -/
 theorem superfunctor_ext {E : Type w₃} [Category.{u} E] [Preadditive E] [Linear k E]
     [Supercategory k E] {Φ Ψ : Superfunctor k (BoxProd k C D) E}
@@ -159,12 +185,33 @@ theorem superfunctor_ext {E : Type w₃} [Category.{u} E] [Preadditive E] [Linea
       Φ.map (tmulHom f g) ≍ Ψ.map (tmulHom f g)) :
     Φ = Ψ := by
   refine Superfunctor.ext (CategoryTheory.Functor.ext hobj fun X Y x => ?_)
-  induction x using TensorProduct.inductionOn with
-  | tmul f g => exact (conj_eqToHom_iff_heq _ _ (hobj X) (hobj Y)).2 (hmap X Y f g)
+  induction x using induction_on_tmulHom with
+  | zero => simp only [Functor.map_zero, Limits.zero_comp, Limits.comp_zero]
+  | tmul _ _ f g _ _ => exact (conj_eqToHom_iff_heq _ _ (hobj X) (hobj Y)).2 (hmap X Y f g)
   | add x y hx hy =>
-    change Φ.toFunctor.map (x + y : X ⟶ Y) = eqToHom (hobj X) ≫ Ψ.toFunctor.map (x + y : X ⟶ Y) ≫
-      eqToHom (hobj Y).symm
     rw [Functor.map_add, Functor.map_add, hx, hy, Preadditive.add_comp, Preadditive.comp_add]
+
+/-- `f ⊗ g` has parity `|f| + |g|`. -/
+theorem tmulHom_mem_parity {X Y : BoxProd k C D} {p q : ZMod 2} {f : X.fst ⟶ Y.fst}
+    {g : X.snd ⟶ Y.snd} (hf : f ∈ parity (R := k) X.fst Y.fst p)
+    (hg : g ∈ parity (R := k) X.snd Y.snd q) : tmulHom f g ∈ parity (R := k) X Y (p + q) :=
+  tmul_mem_parity hf hg
+
+theorem tmulHom_zero_left {X Y : BoxProd k C D} (g : X.snd ⟶ Y.snd) :
+    tmulHom (0 : X.fst ⟶ Y.fst) g = 0 :=
+  zero_tmul _ _
+
+theorem tmulHom_zero_right {X Y : BoxProd k C D} (f : X.fst ⟶ Y.fst) :
+    tmulHom f (0 : X.snd ⟶ Y.snd) = 0 :=
+  tmul_zero _ _
+
+theorem tmulHom_zsmul_left {X Y : BoxProd k C D} (n : ℤ) (f : X.fst ⟶ Y.fst)
+    (g : X.snd ⟶ Y.snd) : tmulHom (n • f) g = n • tmulHom f g := by
+  rw [← Int.cast_smul_eq_zsmul k, ← Int.cast_smul_eq_zsmul k, tmulHom_smul_left]
+
+theorem tmulHom_zsmul_right {X Y : BoxProd k C D} (n : ℤ) (f : X.fst ⟶ Y.fst)
+    (g : X.snd ⟶ Y.snd) : tmulHom f (n • g) = n • tmulHom f g := by
+  rw [← Int.cast_smul_eq_zsmul k, ← Int.cast_smul_eq_zsmul k, tmulHom_smul_right]
 
 /-! ## `F ⊠ G` -/
 
@@ -184,35 +231,27 @@ theorem mapHom_tmul {X Y : BoxProd k C D} (f : X.fst ⟶ Y.fst) (g : X.snd ⟶ Y
 
 theorem mapHom_comp {X Y Z : BoxProd k C D} (x : X ⟶ Y) (y : Y ⟶ Z) :
     mapHom F G X Z (x ≫ y) = mapHom F G X Y x ≫ mapHom F G Y Z y := by
-  induction x using induction_on_homogeneous with
+  induction x using induction_on_tmulHom with
   | zero => rw [Limits.zero_comp, map_zero, map_zero, Limits.zero_comp]
   | add x x' hx hx' => rw [Preadditive.add_comp, map_add, map_add, Preadditive.add_comp, hx, hx']
   | tmul a b f g hf hg =>
-    induction y using induction_on_homogeneous with
+    induction y using induction_on_tmulHom with
     | zero => rw [Limits.comp_zero, map_zero, map_zero, Limits.comp_zero]
     | add y y' hy hy' => rw [Preadditive.comp_add, map_add, map_add, Preadditive.comp_add, hy, hy']
     | tmul c d h l hh hl =>
-      change mapHom F G X Z (tmulHom f g ≫ tmulHom h l) =
-        mapHom F G X Y (tmulHom f g) ≫ mapHom F G Y Z (tmulHom h l)
       rw [mapHom_tmul, mapHom_tmul, tmulHom_comp_tmulHom hf g h hl,
         tmulHom_comp_tmulHom (F.map_mem hf) _ _ (G.map_mem hl), map_zsmul, mapHom_tmul]
       simp only [Superfunctor.map, Functor.map_comp]
 
 theorem mapHom_proj {X Y : BoxProd k C D} (p : ZMod 2) (x : X ⟶ Y) :
-    mapHom F G X Y ((homObj k X Y).proj p x) =
-      (homObj k (mapObj F G X) (mapObj F G Y)).proj p (mapHom F G X Y x) := by
-  induction x using induction_on_homogeneous with
+    mapHom F G X Y (proj k p x) = proj k p (mapHom F G X Y x) := by
+  induction x using induction_on_tmulHom with
   | zero => simp only [map_zero]
   | add x x' hx hx' => simp only [map_add, hx, hx']
   | tmul a b f g hf hg =>
-    have h := SVec.proj_apply_of_mem_part (homObj k (mapObj F G X) (mapObj F G Y)) (p := p)
-      (tmul_mem_part (X := mapObj F G X) (Y := mapObj F G Y) (F.map_mem hf) (G.map_mem hg))
-    rw [SVec.proj_apply_of_mem_part _ (tmul_mem_part hf hg)]
-    change _ = (homObj k (mapObj F G X) (mapObj F G Y)).proj p (F.map f ⊗ₜ[k] G.map g)
-    rw [h]
-    split_ifs
-    · rfl
-    · exact map_zero _
+    refine Superfunctor.map_proj_of_mem _ (tmulHom_mem_parity hf hg) ?_ p
+    rw [mapHom_tmul]
+    exact tmulHom_mem_parity (X := mapObj F G X) (Y := mapObj F G Y) (F.map_mem hf) (G.map_mem hg)
 
 /-- **Brundan–Ellis, after Example 1.2.** The superfunctor `F ⊠ G : C ⊠ D → C' ⊠ D'`,
 `(λ, μ) ↦ (F λ, G μ)`, `f ⊗ g ↦ F f ⊗ G g`. -/
@@ -223,9 +262,7 @@ def map : Superfunctor k (BoxProd k C D) (BoxProd k C' D') :=
       rw [mapHom_tmul, Superfunctor.map, Superfunctor.map, F.toFunctor.map_id,
         G.toFunctor.map_id])
     (fun x y => mapHom_comp F G x y)
-    (fun {X Y p x} hx => by
-      change mapHom F G X Y x ∈ (homObj k (mapObj F G X) (mapObj F G Y)).part p
-      rw [SVec.mem_part_iff, ← mapHom_proj, (SVec.mem_part_iff _).1 hx])
+    (Superfunctor.mem_parity_of_proj _ fun p x => mapHom_proj F G p x)
 
 @[simp] theorem map_obj (X : BoxProd k C D) : (map F G).obj X = ⟨F.obj X.fst, G.obj X.snd⟩ :=
   rfl
@@ -248,20 +285,6 @@ theorem map_comp (F : Superfunctor k C C') (F' : Superfunctor k C' C'')
     map (F.comp F') (G.comp G') = (map F G).comp (map F' G') :=
   superfunctor_ext (fun _ => rfl) fun _ _ _ _ => HEq.rfl
 
-/-- `f ⊗ g` has parity `|f| + |g|`. -/
-theorem tmulHom_mem_parity {X Y : BoxProd k C D} {p q : ZMod 2} {f : X.fst ⟶ Y.fst}
-    {g : X.snd ⟶ Y.snd} (hf : f ∈ parity (R := k) X.fst Y.fst p)
-    (hg : g ∈ parity (R := k) X.snd Y.snd q) : tmulHom f g ∈ parity (R := k) X Y (p + q) :=
-  tmul_mem_parity hf hg
-
-theorem tmulHom_zsmul_left {X Y : BoxProd k C D} (n : ℤ) (f : X.fst ⟶ Y.fst)
-    (g : X.snd ⟶ Y.snd) : tmulHom (n • f) g = n • tmulHom f g := by
-  rw [← Int.cast_smul_eq_zsmul k, ← Int.cast_smul_eq_zsmul k, tmulHom_smul_left]
-
-theorem tmulHom_zsmul_right {X Y : BoxProd k C D} (n : ℤ) (f : X.fst ⟶ Y.fst)
-    (g : X.snd ⟶ Y.snd) : tmulHom f (n • g) = n • tmulHom f g := by
-  rw [← Int.cast_smul_eq_zsmul k, ← Int.cast_smul_eq_zsmul k, tmulHom_smul_right]
-
 /-! ## The associator `(C ⊠ D) ⊠ E ≅ C ⊠ (D ⊠ E)` -/
 
 section Assoc
@@ -277,12 +300,12 @@ theorem induction_on_homogeneous₃ {X Y : BoxProd k (BoxProd k C D) E} {P : (X 
       (h : X.snd ⟶ Y.snd), f ∈ parity (R := k) _ _ a → g ∈ parity (R := k) _ _ b →
       h ∈ parity (R := k) _ _ c → P (tmulHom (tmulHom (X := X.fst) (Y := Y.fst) f g) h))
     (add : ∀ x y, P x → P y → P (x + y)) : P x := by
-  induction x using induction_on_homogeneous with
+  induction x using induction_on_tmulHom with
   | zero => exact zero
   | add x y hx hy => exact add x y hx hy
   | tmul p c y h hy hh =>
     clear hy
-    induction y using induction_on_homogeneous with
+    induction y using induction_on_tmulHom with
     | zero => convert zero using 1; exact zero_tmul _ _
     | add y y' h₁ h₂ => convert add _ _ h₁ h₂ using 1; exact add_tmul _ _ _
     | tmul a b f g hf hg => exact tmul a b c f g h hf hg hh
@@ -295,12 +318,12 @@ theorem induction_on_homogeneous₃' {X Y : BoxProd k C (BoxProd k D E)} {P : (X
       (h : X.snd.snd ⟶ Y.snd.snd), f ∈ parity (R := k) _ _ a → g ∈ parity (R := k) _ _ b →
       h ∈ parity (R := k) _ _ c → P (tmulHom (X := X) (Y := Y) f (tmulHom (X := X.snd) (Y := Y.snd) g h)))
     (add : ∀ x y, P x → P y → P (x + y)) : P x := by
-  induction x using induction_on_homogeneous with
+  induction x using induction_on_tmulHom with
   | zero => exact zero
   | add x y hx hy => exact add x y hx hy
   | tmul a p f y hf hy =>
     clear hy
-    induction y using induction_on_homogeneous with
+    induction y using induction_on_tmulHom with
     | zero => convert zero using 1; exact tmul_zero _ _
     | add y y' h₁ h₂ => convert add _ _ h₁ h₂ using 1; exact tmul_add _ _ _
     | tmul b c g h hg hh => exact tmul a b c f g h hf hg hh
@@ -534,35 +557,35 @@ theorem runitInvHom_runitHom {X Y : BoxProd k C (BoxUnit.{w, u} k)} (x : X ⟶ Y
 
 theorem lunitHom_comp {X Y Z : BoxProd k (BoxUnit.{w, u} k) C} (x : X ⟶ Y) (y : Y ⟶ Z) :
     lunitHom X Z (x ≫ y) = lunitHom X Y x ≫ lunitHom Y Z y := by
-  induction x using induction_on_homogeneous with
+  induction x using induction_on_tmulHom with
   | zero => rw [Limits.zero_comp, map_zero, map_zero, Limits.zero_comp]
   | add x x' hx hx' => rw [Preadditive.add_comp, map_add, map_add, Preadditive.add_comp, hx, hx']
   | tmul a b r f _ _ =>
-    induction y using induction_on_homogeneous with
+    induction y using induction_on_tmulHom with
     | zero => rw [Limits.comp_zero, map_zero, map_zero, Limits.comp_zero]
     | add y y' hy hy' => rw [Preadditive.comp_add, map_add, map_add, Preadditive.comp_add, hy, hy']
     | tmul c d s g _ hg =>
-      rw [← tmulHom_def, ← tmulHom_def, tmulHom_comp_tmulHom (BoxUnit.mem_parity_zero r) f s hg,
+      rw [tmulHom_comp_tmulHom (BoxUnit.mem_parity_zero r) f s hg,
         koszulSign_zero_left, one_smul, lunitHom_tmul, lunitHom_tmul, lunitHom_tmul,
         Linear.smul_comp, Linear.comp_smul, smul_smul, BoxUnit.comp_eq, mul_comm]
 
 theorem runitHom_comp {X Y Z : BoxProd k C (BoxUnit.{w, u} k)} (x : X ⟶ Y) (y : Y ⟶ Z) :
     runitHom X Z (x ≫ y) = runitHom X Y x ≫ runitHom Y Z y := by
-  induction x using induction_on_homogeneous with
+  induction x using induction_on_tmulHom with
   | zero => rw [Limits.zero_comp, map_zero, map_zero, Limits.zero_comp]
   | add x x' hx hx' => rw [Preadditive.add_comp, map_add, map_add, Preadditive.add_comp, hx, hx']
   | tmul a b f r hf _ =>
-    induction y using induction_on_homogeneous with
+    induction y using induction_on_tmulHom with
     | zero => rw [Limits.comp_zero, map_zero, map_zero, Limits.comp_zero]
     | add y y' hy hy' => rw [Preadditive.comp_add, map_add, map_add, Preadditive.comp_add, hy, hy']
     | tmul c d g s _ _ =>
-      rw [← tmulHom_def, ← tmulHom_def, tmulHom_comp_tmulHom hf r g (BoxUnit.mem_parity_zero s),
+      rw [tmulHom_comp_tmulHom hf r g (BoxUnit.mem_parity_zero s),
         koszulSign_zero_right, one_smul, runitHom_tmul, runitHom_tmul, runitHom_tmul,
         Linear.smul_comp, Linear.comp_smul, smul_smul, BoxUnit.comp_eq, mul_comm]
 
 theorem lunitHom_proj {X Y : BoxProd k (BoxUnit.{w, u} k) C} (p : ZMod 2) (x : X ⟶ Y) :
     lunitHom X Y (proj k p x) = proj k p (lunitHom X Y x) := by
-  induction x using induction_on_homogeneous with
+  induction x using induction_on_tmulHom with
   | zero => simp only [map_zero]
   | add x x' hx hx' => simp only [map_add, hx, hx']
   | tmul a b r f _ hf =>
@@ -574,7 +597,7 @@ theorem lunitHom_proj {X Y : BoxProd k (BoxUnit.{w, u} k) C} (p : ZMod 2) (x : X
 
 theorem runitHom_proj {X Y : BoxProd k C (BoxUnit.{w, u} k)} (p : ZMod 2) (x : X ⟶ Y) :
     runitHom X Y (proj k p x) = proj k p (runitHom X Y x) := by
-  induction x using induction_on_homogeneous with
+  induction x using induction_on_tmulHom with
   | zero => simp only [map_zero]
   | add x x' hx hx' => simp only [map_add, hx, hx']
   | tmul a b f r hf _ =>
@@ -671,12 +694,12 @@ theorem map_comp_lunit (F : Superfunctor k C C') :
     (map (Superfunctor.id k (BoxUnit.{w, u} k)) F).comp (lunit C') = (lunit C).comp F := by
   refine Superfunctor.ext (CategoryTheory.Functor.hext (fun _ => rfl) fun X Y x => heq_of_eq ?_)
   change lunitHom _ _ (mapHom _ F X Y x) = F.map (lunitHom X Y x)
-  induction x using induction_on_homogeneous with
+  induction x using induction_on_tmulHom with
   | zero => rw [map_zero, map_zero, map_zero]; exact (F.toFunctor.map_zero _ _).symm
   | add x y hx hy =>
     rw [map_add, map_add, map_add, hx, hy]; exact (F.toFunctor.map_add).symm
   | tmul a b r f _ _ =>
-    rw [← tmulHom_def, mapHom_tmul, lunitHom_tmul, lunitHom_tmul]
+    rw [mapHom_tmul, lunitHom_tmul, lunitHom_tmul]
     exact (F.toFunctor.map_smul _ _).symm
 
 /-- **Naturality of the right unitor**: `(F ⊠ id_I) ≫ ρ = ρ ≫ F`. -/
@@ -684,17 +707,165 @@ theorem map_comp_runit (F : Superfunctor k C C') :
     (map F (Superfunctor.id k (BoxUnit.{w, u} k))).comp (runit C') = (runit C).comp F := by
   refine Superfunctor.ext (CategoryTheory.Functor.hext (fun _ => rfl) fun X Y x => heq_of_eq ?_)
   change runitHom _ _ (mapHom F _ X Y x) = F.map (runitHom X Y x)
-  induction x using induction_on_homogeneous with
+  induction x using induction_on_tmulHom with
   | zero => rw [map_zero, map_zero, map_zero]; exact (F.toFunctor.map_zero _ _).symm
   | add x y hx hy =>
     rw [map_add, map_add, map_add, hx, hy]; exact (F.toFunctor.map_add).symm
   | tmul a b f r _ _ =>
-    rw [← tmulHom_def, mapHom_tmul, runitHom_tmul, runitHom_tmul]
+    rw [mapHom_tmul, runitHom_tmul, runitHom_tmul]
     exact (F.toFunctor.map_smul _ _).symm
 
 end Unitors
 
+/-! ## Coherence -/
+
+section Coherence
+
+variable {E : Type w₅} [Category.{u} E] [Preadditive E] [Linear k E] [Supercategory k E]
+  {E' : Type w₆} [Category.{u} E'] [Preadditive E'] [Linear k E'] [Supercategory k E']
+
+/-- **The pentagon identity** for the associators of `⊠`:
+`(α ⊠ id) ≫ α ≫ (id ⊠ α) = α ≫ α` as superfunctors `((C ⊠ D) ⊠ E) ⊠ E' → C ⊠ (D ⊠ (E ⊠ E'))`. -/
+theorem pentagon :
+    (map (assoc C D E) (Superfunctor.id k E')).comp
+        ((assoc C (BoxProd k D E) E').comp (map (Superfunctor.id k C) (assoc D E E'))) =
+      (assoc (BoxProd k C D) E E').comp (assoc C D (BoxProd k E E')) := by
+  refine Superfunctor.ext (CategoryTheory.Functor.hext (fun _ => rfl) fun X Y x => heq_of_eq ?_)
+  induction x using induction_on_homogeneous₃ with
+  | zero => rw [Functor.map_zero, Functor.map_zero]; rfl
+  | add x y hx hy => rw [Functor.map_add, Functor.map_add, hx, hy]; rfl
+  | tmul a b c f g h hf _ _ =>
+    clear hf
+    induction f using induction_on_tmulHom with
+    | zero =>
+      have h0 : tmulHom (tmulHom (X := X.fst) (Y := Y.fst) (0 : X.fst.fst ⟶ Y.fst.fst) g) h = 0 := by
+        rw [tmulHom_zero_left, tmulHom_zero_left]
+      rw [h0, Functor.map_zero, Functor.map_zero]; rfl
+    | add f f' h₁ h₂ =>
+      rw [tmulHom_add_left, tmulHom_add_left, Functor.map_add, Functor.map_add, h₁, h₂]; rfl
+    | tmul _ _ _ _ _ _ => rfl
+
+/-- **The triangle identity** for the associator and unitors of `⊠`:
+`α ≫ (id ⊠ λ) = ρ ⊠ id` as superfunctors `(C ⊠ I) ⊠ D → C ⊠ D`. -/
+theorem triangle :
+    (assoc C (BoxUnit.{w, u} k) D).comp (map (Superfunctor.id k C) (lunit D)) =
+      map (runit C) (Superfunctor.id k D) := by
+  refine Superfunctor.ext (CategoryTheory.Functor.hext (fun _ => rfl) fun X Y x => heq_of_eq ?_)
+  induction x using induction_on_homogeneous₃ with
+  | zero => rw [Functor.map_zero, Functor.map_zero]; rfl
+  | add x y hx hy => rw [Functor.map_add, Functor.map_add, hx, hy]; rfl
+  | tmul a b c f r g _ _ _ =>
+    change tmulHom (X := ⟨X.fst.fst, X.snd⟩) (Y := ⟨Y.fst.fst, Y.snd⟩) f
+        (lunitHom (⟨X.fst.snd, X.snd⟩ : BoxProd k (BoxUnit.{w, u} k) D) ⟨Y.fst.snd, Y.snd⟩
+          (tmulHom (X := ⟨X.fst.snd, X.snd⟩) (Y := ⟨Y.fst.snd, Y.snd⟩) r g)) =
+      tmulHom (X := ⟨X.fst.fst, X.snd⟩) (Y := ⟨Y.fst.fst, Y.snd⟩)
+        (runitHom X.fst Y.fst (tmulHom (X := X.fst) (Y := Y.fst) f r)) g
+    rw [lunitHom_tmul, runitHom_tmul, tmulHom_smul_left, tmulHom_smul_right]
+
+end Coherence
+
 end BoxProd
+
+/-! ## The monoidal category `SCat` -/
+
+namespace SCat
+
+open MonoidalCategory
+
+/-- The data of the monoidal structure `⊠` on the category `SCat` of supercategories (with
+morphism modules in the universe of `k`) and superfunctors: `A ⊗ B := A ⊠ B`,
+`F ⊗ G := F ⊠ G`, unit `I`, and the associator and unitors of `BoxProd`, which are
+isomorphisms of supercategories. -/
+instance instMonoidalCategoryStruct : MonoidalCategoryStruct (SCat.{u, u, w} k) where
+  tensorObj A B := SCat.of k (BoxProd k A B)
+  whiskerLeft A _ _ G := BoxProd.map (Superfunctor.id k A) G
+  whiskerRight F B := BoxProd.map F (Superfunctor.id k B)
+  tensorHom F G := BoxProd.map F G
+  tensorUnit := SCat.of k (BoxUnit.{w, u} k)
+  associator A B C :=
+    ⟨BoxProd.assoc A B C, BoxProd.assocInv A B C, BoxProd.assoc_comp_assocInv,
+      BoxProd.assocInv_comp_assoc⟩
+  leftUnitor A := ⟨BoxProd.lunit A, BoxProd.lunitInv A, BoxProd.lunit_comp_lunitInv,
+    BoxProd.lunitInv_comp_lunit⟩
+  rightUnitor A := ⟨BoxProd.runit A, BoxProd.runitInv A, BoxProd.runit_comp_runitInv,
+    BoxProd.runitInv_comp_runit⟩
+
+theorem tensorObj_def (A B : SCat.{u, u, w} k) : A ⊗ B = SCat.of k (BoxProd k A B) := rfl
+
+theorem tensorHom_def' {A B A' B' : SCat.{u, u, w} k} (F : A ⟶ A') (G : B ⟶ B') :
+    F ⊗ₘ G = BoxProd.map F G := rfl
+
+theorem tensorUnit_def : 𝟙_ (SCat.{u, u, w} k) = SCat.of k (BoxUnit.{w, u} k) := rfl
+
+@[simp] theorem associator_hom_eq_assoc (A B C : SCat.{u, u, w} k) :
+    (α_ A B C).hom = BoxProd.assoc A B C := rfl
+
+@[simp] theorem associator_inv_eq_assocInv (A B C : SCat.{u, u, w} k) :
+    (α_ A B C).inv = BoxProd.assocInv A B C := rfl
+
+@[simp] theorem leftUnitor_hom_eq_lunit (A : SCat.{u, u, w} k) : (λ_ A).hom = BoxProd.lunit A := rfl
+
+@[simp] theorem leftUnitor_inv_eq_lunitInv (A : SCat.{u, u, w} k) : (λ_ A).inv = BoxProd.lunitInv A := rfl
+
+@[simp] theorem rightUnitor_hom_eq_runit (A : SCat.{u, u, w} k) : (ρ_ A).hom = BoxProd.runit A := rfl
+
+@[simp] theorem rightUnitor_inv_eq_runitInv (A : SCat.{u, u, w} k) :
+    (ρ_ A).inv = BoxProd.runitInv A := rfl
+
+/-- The pentagon identity in `SCat` (`BoxProd.pentagon`, restated for the monoidal structure;
+the proof is repeated since unifying the two statements is slow). -/
+theorem pentagon' (W X Y Z : SCat.{u, u, w} k) :
+    (α_ W X Y).hom ▷ Z ≫ (α_ W (X ⊗ Y) Z).hom ≫ W ◁ (α_ X Y Z).hom =
+      (α_ (W ⊗ X) Y Z).hom ≫ (α_ W X (Y ⊗ Z)).hom := by
+  refine Superfunctor.ext (CategoryTheory.Functor.hext (fun _ => rfl) fun A B x => heq_of_eq ?_)
+  induction x using BoxProd.induction_on_homogeneous₃ with
+  | zero => rw [Functor.map_zero, Functor.map_zero]; rfl
+  | add x y hx hy => rw [Functor.map_add, Functor.map_add, hx, hy]; rfl
+  | tmul a b c f g h hf _ _ =>
+    clear hf
+    induction f using BoxProd.induction_on_tmulHom with
+    | zero =>
+      have h0 : BoxProd.tmulHom (BoxProd.tmulHom (X := A.fst) (Y := B.fst)
+          (0 : A.fst.fst ⟶ B.fst.fst) g) h = 0 := by
+        rw [BoxProd.tmulHom_zero_left, BoxProd.tmulHom_zero_left]
+      rw [h0, Functor.map_zero, Functor.map_zero]; rfl
+    | add f f' h₁ h₂ =>
+      rw [BoxProd.tmulHom_add_left, BoxProd.tmulHom_add_left, Functor.map_add, Functor.map_add,
+        h₁, h₂]; rfl
+    | tmul _ _ _ _ _ _ => rfl
+
+/-- The triangle identity in `SCat` (`BoxProd.triangle`, restated for the monoidal structure). -/
+theorem triangle' (X Y : SCat.{u, u, w} k) :
+    (α_ X (𝟙_ _) Y).hom ≫ X ◁ (λ_ Y).hom = (ρ_ X).hom ▷ Y := by
+  refine Superfunctor.ext (CategoryTheory.Functor.hext (fun _ => rfl) fun A B x => heq_of_eq ?_)
+  induction x using BoxProd.induction_on_homogeneous₃ with
+  | zero => rw [Functor.map_zero, Functor.map_zero]; rfl
+  | add x y hx hy => rw [Functor.map_add, Functor.map_add, hx, hy]; rfl
+  | tmul a b c f r g _ _ _ =>
+    change BoxProd.tmulHom (X := ⟨A.fst.fst, A.snd⟩) (Y := ⟨B.fst.fst, B.snd⟩) f
+        (BoxProd.lunitHom (⟨A.fst.snd, A.snd⟩ : BoxProd k (BoxUnit.{w, u} k) Y)
+          ⟨B.fst.snd, B.snd⟩
+          (BoxProd.tmulHom (X := ⟨A.fst.snd, A.snd⟩) (Y := ⟨B.fst.snd, B.snd⟩) r g)) =
+      BoxProd.tmulHom (X := ⟨A.fst.fst, A.snd⟩) (Y := ⟨B.fst.fst, B.snd⟩)
+        (BoxProd.runitHom A.fst B.fst (BoxProd.tmulHom (X := A.fst) (Y := B.fst) f r)) g
+    rw [BoxProd.lunitHom_tmul, BoxProd.runitHom_tmul, BoxProd.tmulHom_smul_left,
+      BoxProd.tmulHom_smul_right]
+
+/-- **Brundan–Ellis, after Example 1.2.** `⊠` makes the category `SCat` of supercategories
+(with morphism modules in the universe of `k`) and superfunctors into a monoidal category. -/
+instance instMonoidalCategory : MonoidalCategory (SCat.{u, u, w} k) where
+  tensorHom_def F G := BoxProd.map_comp F (Superfunctor.id k _) (Superfunctor.id k _) G
+  id_tensorHom_id _ _ := BoxProd.map_id
+  tensorHom_comp_tensorHom f₁ f₂ g₁ g₂ := (BoxProd.map_comp f₁ g₁ f₂ g₂).symm
+  whiskerLeft_id _ _ := BoxProd.map_id
+  id_whiskerRight _ _ := BoxProd.map_id
+  associator_naturality f₁ f₂ f₃ := BoxProd.map_map_comp_assoc f₁ f₂ f₃
+  leftUnitor_naturality f := BoxProd.map_comp_lunit f
+  rightUnitor_naturality f := BoxProd.map_comp_runit f
+  pentagon := pentagon'
+  triangle := triangle'
+
+end SCat
 
 end StringDiagrams
 

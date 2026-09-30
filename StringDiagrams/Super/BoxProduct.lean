@@ -20,7 +20,8 @@ of `StringDiagrams.SVec` and `Hom_A(λ, σ) ⊗ Hom_B(μ, τ)` is their tensor p
 ## Main definitions
 
 * `Supercategory.homSVec C X Y`: the morphism superspace `Hom(X, Y)` of a supercategory.
-* `BoxProd k C D`, with its instances `Category`, `Preadditive`, `Linear k` and `Supercategory k`
+* `BoxProd k C D`, with its instances `Category` (morphisms `BoxProd.Hom X Y`, the carrier of
+  `homObj k X Y`), `Preadditive`, `Linear k` and `Supercategory k`
   (the morphisms of parity `p` are the elements of parity `p` of the tensor product of
   superspaces).
 -/
@@ -185,8 +186,44 @@ theorem induction_on_homogeneous {X Y : BoxProd k C D} {P : homObj k X Y → Pro
         (tmul 1 1 _ _ (proj_mem 1 f) (proj_mem 1 g)))
   | add x y hx hy => exact add x y hx hy
 
+/-- Composition in `C ⊠ D` is associative. -/
+theorem compMap_assoc {W X Y Z : BoxProd k C D} (x : homObj k W X) (y : homObj k X Y)
+    (z : homObj k Y Z) :
+    compMap W Y Z (compMap W X Y x y) z = compMap W X Z x (compMap X Y Z y z) := by
+  induction x using induction_on_homogeneous with
+  | zero => simp only [map_zero, LinearMap.zero_apply]
+  | add x x' hx hx' => simp only [map_add, LinearMap.add_apply, hx, hx']
+  | tmul a b f g hf hg =>
+    induction y using induction_on_homogeneous with
+    | zero => simp only [map_zero, LinearMap.zero_apply]
+    | add y y' hy hy' => simp only [map_add, LinearMap.add_apply, hy, hy']
+    | tmul c d h l hh hl =>
+      induction z using induction_on_homogeneous with
+      | zero => simp only [map_zero]
+      | add z z' hz hz' => simp only [map_add, hz, hz']
+      | tmul e e' m n hm hn =>
+        rw [compMap_tmul_of_mem _ _ _ hf _ _ hl, compMap_tmul_of_mem _ _ _ hh _ _ hn,
+          koszulSign_smul (R := k), koszulSign_smul (R := k), map_smul, LinearMap.smul_apply,
+          map_smul, compMap_tmul_of_mem _ _ _ (comp_mem hf hh) _ _ hn,
+          compMap_tmul_of_mem _ _ _ hf _ _ (comp_mem hl hn), koszulSign_smul (R := k),
+          koszulSign_smul (R := k), smul_smul, smul_smul, ← sign_add, ← sign_add,
+          Category.assoc, Category.assoc]
+        congr 2
+        ring
+
+/-- The type of morphisms `(X₁, X₂) ⟶ (Y₁, Y₂)` of `C ⊠ D`: the carrier of the superspace
+`homObj k X Y`. It is a definition (rather than an abbreviation), so that unification compares
+objects of `C ⊠ D` instead of unfolding tensor products of morphism modules. -/
+def Hom (X Y : BoxProd k C D) : Type u := homObj k X Y
+
+instance (X Y : BoxProd k C D) : AddCommGroup (Hom X Y) :=
+  inferInstanceAs (AddCommGroup (homObj k X Y))
+
+instance (X Y : BoxProd k C D) : Module k (Hom X Y) :=
+  inferInstanceAs (Module k (homObj k X Y))
+
 instance instCategory : Category.{u} (BoxProd k C D) where
-  Hom X Y := homObj k X Y
+  Hom X Y := Hom X Y
   id X := 𝟙 X.fst ⊗ₜ 𝟙 X.snd
   comp {X Y Z} x y := compMap X Y Z x y
   id_comp {X Y} x := by
@@ -199,27 +236,7 @@ instance instCategory : Category.{u} (BoxProd k C D) where
       (ψ := LinearMap.id) fun p q f g hf hg => ?_) x
     rw [LinearMap.flip_apply, compMap_tmul_of_mem _ _ _ hf _ _ (id_mem Y.snd), koszulSign_zero_right,
       one_smul, Category.comp_id, Category.comp_id, LinearMap.id_apply]
-  assoc {W X Y Z} x y z := by
-    induction x using induction_on_homogeneous with
-    | zero => simp only [map_zero, LinearMap.zero_apply]
-    | add x x' hx hx' => simp only [map_add, LinearMap.add_apply, hx, hx']
-    | tmul a b f g hf hg =>
-      induction y using induction_on_homogeneous with
-      | zero => simp only [map_zero, LinearMap.zero_apply]
-      | add y y' hy hy' => simp only [map_add, LinearMap.add_apply, hy, hy']
-      | tmul c d h l hh hl =>
-        induction z using induction_on_homogeneous with
-        | zero => simp only [map_zero]
-        | add z z' hz hz' => simp only [map_add, hz, hz']
-        | tmul e e' m n hm hn =>
-          rw [compMap_tmul_of_mem _ _ _ hf _ _ hl, compMap_tmul_of_mem _ _ _ hh _ _ hn,
-            koszulSign_smul (R := k), koszulSign_smul (R := k), map_smul, LinearMap.smul_apply,
-            map_smul, compMap_tmul_of_mem _ _ _ (comp_mem hf hh) _ _ hn,
-            compMap_tmul_of_mem _ _ _ hf _ _ (comp_mem hl hn), koszulSign_smul (R := k),
-            koszulSign_smul (R := k), smul_smul, smul_smul, ← sign_add, ← sign_add,
-            Category.assoc, Category.assoc]
-          congr 2
-          ring
+  assoc {W X Y Z} x y z := compMap_assoc x y z
 
 theorem hom_def (X Y : BoxProd k C D) : (X ⟶ Y) = homObj k X Y := rfl
 

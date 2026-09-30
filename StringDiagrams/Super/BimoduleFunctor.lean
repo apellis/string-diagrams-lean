@@ -255,22 +255,23 @@ instance : (toFunctor M).Linear k where
 
 theorem toFunctor_map_mem {X Y : BimodCat 𝒜 ℬ} {p : ZMod 2} {x : X ⟶ Y} (hx : x ∈ parity (R := k) X Y p) :
     (toFunctor M).map x ∈ parity (R := k) M.toSVec M.toSVec p := by
-  have key : ∀ x : X ⟶ Y, (toFunctor M).map ((BoxProd.homObj k X Y).proj p x) ∈
+  have key : ∀ x : X ⟶ Y, (toFunctor M).map (Supercategory.proj k p x) ∈
       SVec.parityHom M.toSVec M.toSVec p := by
     intro x
     induction x using BimodCat.induction_on with
     | zero => rw [map_zero, Functor.map_zero]; exact Submodule.zero_mem _
     | add x x' hx hx' => rw [map_add, Functor.map_add]; exact Submodule.add_mem _ hx hx'
     | tmul a' b' a b ha hb =>
-      rw [SVec.proj_apply_of_mem_part _ (tmul_mem ha hb)]
-      split_ifs with h
+      by_cases h : a' + b' = p
       · subst h
-        rw [toFunctor_map_tmul, sract_of_mem M hb, Category.assoc]
+        rw [Supercategory.proj_of_mem (tmul_mem ha hb), toFunctor_map_tmul, sract_of_mem M hb,
+          Category.assoc]
         simpa [add_comm] using! comp_mem (sgnHom_mem M.toSVec b') (comp_mem (M.ract_mem b' b hb)
           (M.lact_mem a' a ha))
-      · rw [Functor.map_zero]; exact Submodule.zero_mem _
+      · rw [Supercategory.proj_of_mem_ne (tmul_mem ha hb) h, Functor.map_zero]
+        exact Submodule.zero_mem _
   have := key x
-  rwa [(SVec.mem_part_iff _).1 hx] at this
+  rwa [Supercategory.proj_of_mem hx] at this
 
 instance : IsSuperfunctor k (toFunctor M) where
   map_mem hx := toFunctor_map_mem M hx

@@ -36,7 +36,7 @@ transformations (the example after Definition 6.5).
   degree `1`, odd of degree `0`).
 
 The monoidal structure `⊠` on the category `GSCat` of graded supercategories and graded
-superfunctors is not formalized (nor is `⊠` on `SCat`).
+superfunctors is not formalized (`⊠` on `SCat` is in `StringDiagrams.Super.BoxProductMonoidal`).
 -/
 
 noncomputable section
