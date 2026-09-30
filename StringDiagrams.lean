@@ -109,6 +109,7 @@ import StringDiagrams.Super.SBim
 import StringDiagrams.Super.SuperOpposite
 import StringDiagrams.Super.BoxProduct
 import StringDiagrams.Super.BoxProductMonoidal
+import StringDiagrams.Super.BoxProductGraded
 import StringDiagrams.Super.BimoduleFunctor
 import StringDiagrams.Super.GSBim
 import StringDiagrams.Super.KaroubiMonoidal
