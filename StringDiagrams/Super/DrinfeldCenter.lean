@@ -1,4 +1,4 @@
-import StringDiagrams.Super.TwoFunctor
+import StringDiagrams.Super.TwoFunctorStrict
 import StringDiagrams.Super.Monoidal
 import Mathlib.CategoryTheory.Bicategory.FunctorBicategory.Oplax
 
@@ -30,17 +30,20 @@ odd, is defined directly, and the axioms of a monoidal supercategory
 
 * `StringDiagrams.DrinfeldCenter R B`, with instances `Category`, `Preadditive`, `Linear R`,
   `Supercategory R`, `MonoidalCategoryStruct` and `MonoidalSupercategory R`.
+* `DrinfeldCenter.instIsStrict`: the Drinfeld center of a strict 2-supercategory
+  (`BicategoryStruct.Strict`) is strict (`MonoidalSupercategory.IsStrict`), with
+  `DrinfeldCenter.tensor_assoc`, `DrinfeldCenter.unit_tensor`, `DrinfeldCenter.tensor_unit`
+  (Definition 2.3, last sentence).
 * `PiTwoSupercategory.centerObj`: **Lemma 3.2** — `(π, β)` is an object of the Drinfeld center.
 * `PiTwoSupercategory.centerζ`: `ζ` is an odd isomorphism `(π, β) ≅ 1` in the Drinfeld center,
   and `PiTwoSupercategory.centerξ`: `ξ` is an even isomorphism `(π, β) ⊗ (π, β) ≅ 1`
   (Lemma 3.2(iv)).
 
-## Elsewhere and not formalized
+## Elsewhere
 
 The braiding of the Drinfeld center (the paper omits the definition of a braided monoidal
 supercategory) is in `StringDiagrams.Super.DrinfeldCenterBraiding`, and the monoidal
 superfunctor `Z(𝔄) → Z(𝔄_π)` of Remark 4.10 in `StringDiagrams.Super.DrinfeldCenterEnvelope`.
-The remark that the Drinfeld center of a strict 2-supercategory is strict is not formalized.
 -/
 
 noncomputable section
@@ -611,6 +614,82 @@ theorem centerξ_hom_eq :
     rw [ξ_hom_eq_hcomp, hcomp, unitors_equal R, Category.assoc]
 
 end PiTwoSupercategory
+
+/-! ## Strictness -/
+
+namespace DrinfeldCenter
+
+/-- Two objects of the Drinfeld center with the same 1-morphisms `X_λ` and the same
+2-morphisms `x_F` (up to the resulting identifications) are equal. -/
+theorem ext_of_eq {P Q : DrinfeldCenter R B} (hX : P.toTwoNatTrans.X = Q.toTwoNatTrans.X)
+    (hx : ∀ {a b : B} (f : a ⟶ b), P.toTwoNatTrans.x f =
+      eqToHom (by rw [hX]) ≫ Q.toTwoNatTrans.x f ≫ eqToHom (by rw [hX])) :
+    P = Q := by
+  obtain ⟨⟨X, x, _, _, _, _⟩, _⟩ := P
+  obtain ⟨⟨X', x', _, _, _, _⟩, _⟩ := Q
+  dsimp only at hX
+  subst hX
+  simp only [eqToHom_refl, Category.comp_id, Category.id_comp] at hx
+  congr
+  funext a b f
+  exact hx f
+
+/-- The components of an `eqToHom` in the Drinfeld center are `eqToHom`s. -/
+theorem eqToHom_app {P Q : DrinfeldCenter R B} (h : P = Q) (a : B) :
+    (eqToHom h : P ⟶ Q).app a = eqToHom (by rw [h]) := by
+  subst h
+  rfl
+
+variable [BicategoryStruct.Strict B]
+
+/-- In the Drinfeld center of a strict 2-supercategory, `(X ⊗ Y) ⊗ Z = X ⊗ (Y ⊗ Z)`: both
+have components `Z_λ ≫ Y_λ ≫ X_λ` and `(x ⊗ y ⊗ z)_F = x_F y_F z_F`. -/
+theorem tensor_assoc (X Y Z : DrinfeldCenter R B) :
+    tensorObj (tensorObj X Y) Z = tensorObj X (tensorObj Y Z) := by
+  refine ext_of_eq (funext fun a => (Strict.assoc _ _ _).symm) fun {a b} f => ?_
+  simp only [tensorObj_x, tensorObj_X, whiskerLeft_comp' R, comp_whiskerRight' R,
+    whiskerRight_comp (R := R), TwoSuperfunctor.id_map, TwoSuperfunctor.id_obj,
+    whisker_assoc (R := R), comp_whiskerLeft (R := R), Strict.associator_eqToIso, eqToIso.hom,
+    eqToIso.inv, whiskerLeft_eqToHom R, eqToHom_whiskerRight R, Category.assoc, eqToHom_trans,
+    eqToHom_trans_assoc]
+  erw [eqToHom_trans_assoc, eqToHom_trans]
+
+/-- In the Drinfeld center of a strict 2-supercategory, `1 ⊗ X = X`. -/
+theorem unit_tensor (X : DrinfeldCenter R B) : tensorObj (tensorUnit R B) X = X := by
+  refine ext_of_eq (funext fun a => Strict.comp_id _) fun {a b} f => ?_
+  simp only [tensorObj_x, tensorUnit_x, tensorUnit_X, whiskerRight_id (R := R),
+    Strict.associator_eqToIso, Strict.leftUnitor_eqToIso, Strict.rightUnitor_eqToIso,
+    eqToIso.hom, eqToIso.inv, whiskerLeft_eqToHom R, Category.assoc, eqToHom_trans,
+    eqToHom_trans_assoc]
+  rfl
+
+/-- In the Drinfeld center of a strict 2-supercategory, `X ⊗ 1 = X`. -/
+theorem tensor_unit (X : DrinfeldCenter R B) : tensorObj X (tensorUnit R B) = X := by
+  refine ext_of_eq (funext fun a => Strict.id_comp _) fun {a b} f => ?_
+  simp only [tensorObj_x, tensorUnit_x, tensorUnit_X, id_whiskerLeft (R := R),
+    Strict.associator_eqToIso, Strict.leftUnitor_eqToIso, Strict.rightUnitor_eqToIso,
+    eqToIso.hom, eqToIso.inv, eqToHom_whiskerRight R, Category.assoc, eqToHom_trans,
+    eqToHom_trans_assoc]
+  rfl
+
+/-- **Brundan–Ellis, Definition 2.3, last sentence.** The Drinfeld center of a strict
+2-supercategory is strict: the associator and unitors are the `eqToIso`s of `tensor_assoc`,
+`unit_tensor` and `tensor_unit`. -/
+instance instIsStrict : MonoidalSupercategory.IsStrict (DrinfeldCenter R B) where
+  tensor_assoc := tensor_assoc
+  unit_tensor := unit_tensor
+  tensor_unit := tensor_unit
+  associator_eq X Y Z := Iso.ext <| hom_ext fun a => by
+    rw [eqToIso.hom, eqToHom_app, massociator_hom_app, Strict.associator_eqToIso, eqToIso.inv]
+    rfl
+  leftUnitor_eq X := Iso.ext <| hom_ext fun a => by
+    rw [eqToIso.hom, eqToHom_app, mleftUnitor_hom_app, Strict.rightUnitor_eqToIso, eqToIso.hom]
+    rfl
+  rightUnitor_eq X := Iso.ext <| hom_ext fun a => by
+    rw [eqToIso.hom, eqToHom_app, mrightUnitor_hom_app, Strict.leftUnitor_eqToIso, eqToIso.hom]
+    rfl
+
+end DrinfeldCenter
 
 end StringDiagrams
 
