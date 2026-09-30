@@ -43,12 +43,12 @@ of (1.9). A monoidal superfunctor `F` between monoidal Π-supercategories gives 
 Π-functor between the underlying monoidal Π-categories, with `j := (F ζ_A)⁻¹ ∘ i ∘ ζ_B`
 (`MonoidalSuperfunctor.toMonoidalPiFunctor`): the functor (2) on morphisms.
 
-## Not formalized
+## Theorem 1.15
 
-Theorem 1.15 (the monoidal analogue of Theorem 1.9): neither the universal property of the
-monoidal Π-envelope (extension of monoidal superfunctors along `J`) nor the inverse functor
-`Π-Mon → Π-SMon` (a monoidal structure on the associated Π-supercategory of a monoidal
-Π-category) is formalized here.
+Theorem 1.15 (the monoidal analogue of Theorem 1.9) is not proved in this file: the universal
+property of the monoidal Π-envelope is in `StringDiagrams.Super.MonoidalUniversal`, the inverse
+functor `Π-Mon → Π-SMon` in `StringDiagrams.Super.MonoidalAssociated`, and the equivalence of
+categories `Π-Mon ≌ Π-SMon` in `StringDiagrams.Super.MonoidalPiCat`.
 
 The Π-envelope of a monoidal supercategory is a monoidal Π-supercategory
 (`Envelope.instMonoidalPiSupercategory`, Definition 1.16).

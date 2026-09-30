@@ -345,6 +345,7 @@ open Functor.LaxMonoidal
 
 set_option backward.isDefEq.respectTransparency false in
 variable (R C) in
+/-- `D` preserves identities on the coherence map `c`. -/
 theorem mapMonoidal_id_μIso_hom (X Y : Associated R C) :
     ((mapMonoidal (MonoidalPiFunctor.id R C)).μIso X Y).hom = 𝟙 _ := by
   ext <;> simp [mapMonoidal]
@@ -352,6 +353,7 @@ theorem mapMonoidal_id_μIso_hom (X Y : Associated R C) :
 
 set_option backward.isDefEq.respectTransparency false in
 variable (R C) in
+/-- `D` preserves identities on the coherence map `i`. -/
 theorem mapMonoidal_id_εIso_hom :
     (mapMonoidal (MonoidalPiFunctor.id R C)).εIso.hom = 𝟙 _ := by
   ext <;> simp [mapMonoidal]
@@ -360,6 +362,7 @@ variable {F : C ⥤ D} [F.Additive] [F.Linear R] [F.Monoidal] {G : D ⥤ E} [G.A
   [G.Linear R] [G.Monoidal] (hF : MonoidalPiFunctor R F) (hG : MonoidalPiFunctor R G)
 
 set_option backward.isDefEq.respectTransparency false in
+/-- `D` preserves composites on the coherence map `c`. -/
 theorem mapMonoidal_comp_μIso_hom (X Y : Associated R C) :
     ((mapMonoidal (hF.comp hG)).μIso X Y).hom =
       ((mapMonoidal hG).μIso ((map (hF.toPiFunctor R)).obj X)
@@ -369,6 +372,7 @@ theorem mapMonoidal_comp_μIso_hom (X Y : Associated R C) :
   rfl
 
 set_option backward.isDefEq.respectTransparency false in
+/-- `D` preserves composites on the coherence map `i`. -/
 theorem mapMonoidal_comp_εIso_hom :
     (mapMonoidal (hF.comp hG)).εIso.hom =
       (mapMonoidal hG).εIso.hom ≫ (map (hG.toPiFunctor R)).map (mapMonoidal hF).εIso.hom := by
@@ -386,11 +390,13 @@ open Functor.LaxMonoidal
 
 variable {A B : PiMon.{w, v, u} R}
 
+/-- The Π-functor underlying the identity monoidal Π-functor is the identity. -/
 theorem toPiFunctor_id :
     (MonoidalPiFunctor.id R A).toPiFunctor R = PiFunctor.id R A :=
   PiFunctor.ext fun X => by
     simp [MonoidalPiFunctor.βF_hom]
 
+/-- The Π-functor underlying a composite of monoidal Π-functors is the composite. -/
 theorem toPiFunctor_comp {E : PiMon.{w, v, u} R} (F : A ⟶ B) (G : B ⟶ E) :
     (F ≫ G).piFunctor.toPiFunctor R =
       (F.piFunctor.toPiFunctor R).comp (G.piFunctor.toPiFunctor R) :=
@@ -420,6 +426,318 @@ def D : PiMon.{w, v, u} R ⥤ PiSMon.{w, v, u} R where
       exact Associated.map_comp _ _)
     (fun X Y => heq_of_eq (Associated.mapMonoidal_comp_μIso_hom F.piFunctor G.piFunctor X Y))
     (heq_of_eq (Associated.mapMonoidal_comp_εIso_hom F.piFunctor G.piFunctor))
+
+end PiMon
+
+/-! ## Theorem 1.15(2): `E` is an equivalence -/
+
+namespace Associated
+
+section Counit
+
+variable {C : Type w₁} [Category.{w₂} C] [Preadditive C] [Linear R C] [MonoidalCategory C]
+  [MonoidalPreadditive C] [MonoidalLinear R C] [MonoidalPiCategory R C]
+  {D : Type w₃} [Category.{w₄} D] [Preadditive D] [Linear R D] [MonoidalCategory D]
+  [MonoidalPreadditive D] [MonoidalLinear R D] [MonoidalPiCategory R D]
+
+attribute [local instance] MonoidalPiCategory.toPiCategory
+
+open Functor.LaxMonoidal
+
+set_option backward.isDefEq.respectTransparency false in
+variable (R C) in
+/-- The identification `counit : E(D(A)) ⥤ A`, `(f, 0) ↦ f`, is strictly monoidal. -/
+def counitCoreMonoidal : (counit R C).CoreMonoidal where
+  εIso := Iso.refl _
+  μIso _ _ := Iso.refl _
+  μIso_hom_natural_left f X' := by
+    change f.1.1 ▷ X'.obj.obj ≫ 𝟙 _ = 𝟙 _ ≫ (f.1 ▷ X'.obj).1
+    simp
+  μIso_hom_natural_right X' f := by
+    change X'.obj.obj ◁ f.1.1 ≫ 𝟙 _ = 𝟙 _ ≫ (X'.obj ◁ f.1).1
+    simp
+  associativity X Y Z := by
+    change 𝟙 _ ▷ _ ≫ 𝟙 _ ≫ (α_ X.obj Y.obj Z.obj).hom.1 = _ ≫ _ ◁ 𝟙 _ ≫ 𝟙 _
+    simp
+    rfl
+  left_unitality X := by
+    change _ = 𝟙 _ ▷ _ ≫ 𝟙 _ ≫ (λ_ X.obj).hom.1
+    simp
+    rfl
+  right_unitality X := by
+    change _ = _ ◁ 𝟙 _ ≫ 𝟙 _ ≫ (ρ_ X.obj).hom.1
+    simp
+    rfl
+
+instance counitMonoidal : (counit R C).Monoidal := (counitCoreMonoidal R C).toMonoidal
+
+@[simp] theorem counit_ε : ε (counit R C) = 𝟙 _ := rfl
+
+@[simp] theorem counit_μ (X Y : Underlying R (Associated R C)) : μ (counit R C) X Y = 𝟙 _ := rfl
+
+set_option backward.isDefEq.respectTransparency false in
+variable (R C) in
+/-- **`E ∘ D = I`.** The identification `counit : E(D(A)) ⥤ A` is a (strict) monoidal
+Π-functor with `j = 1`. -/
+def counitMonoidalPiFunctor : MonoidalPiFunctor R (counit R C) where
+  j := Iso.refl _
+  β_comm X := by
+    change 𝟙 _ ▷ _ ≫ 𝟙 _ ≫ (MonoidalPiSupercategory.β (R := R) X.obj).hom.1 =
+      _ ≫ _ ◁ 𝟙 _ ≫ 𝟙 _
+    rw [β_hom_eq]
+    simp
+    rfl
+  ξ_comm := by
+    change _ ≫ 𝟙 _ = (𝟙 _ ⊗ₘ 𝟙 _) ≫ 𝟙 _ ≫
+      (MonoidalPiSupercategory.ξ (R := R) (C := Associated R C)).hom.1
+    rw [ξ_hom_eq]
+    simp
+
+set_option backward.isDefEq.respectTransparency false in
+variable (R C) in
+theorem unit_comp_counit_ε : ε (unit R C ⋙ counit R C) = 𝟙 _ := by
+  simp
+
+set_option backward.isDefEq.respectTransparency false in
+variable (R C) in
+theorem unit_comp_counit_μ (X Y : C) : μ (unit R C ⋙ counit R C) X Y = 𝟙 _ := by
+  simp
+
+set_option backward.isDefEq.respectTransparency false in
+variable (R C) in
+theorem counit_comp_unit_ε : ε (counit R C ⋙ unit R C) = 𝟙 _ := by
+  simp
+
+set_option backward.isDefEq.respectTransparency false in
+variable (R C) in
+theorem counit_comp_unit_μ (X Y : Underlying R (Associated R C)) :
+    μ (counit R C ⋙ unit R C) X Y = 𝟙 _ := by
+  simp
+
+variable {F : C ⥤ D} [F.Additive] [F.Linear R] [F.Monoidal] (hF : MonoidalPiFunctor R F)
+
+set_option backward.isDefEq.respectTransparency false in
+/-- **`E ∘ D = I` on morphisms**, coherence map `i`. -/
+theorem unit_comp_map_ε :
+    letI := (MonoidalSuperfunctor.underlyingCoreMonoidal (mapMonoidal hF)).toMonoidal
+    ε (F ⋙ unit R D) = ε (unit R C ⋙ Underlying.map (map (hF.toPiFunctor R))) := by
+  ext
+  · simp
+    rfl
+  · simp
+    rfl
+
+set_option backward.isDefEq.respectTransparency false in
+/-- **`E ∘ D = I` on morphisms**, coherence map `c`. -/
+theorem unit_comp_map_μ (X Y : C) :
+    letI := (MonoidalSuperfunctor.underlyingCoreMonoidal (mapMonoidal hF)).toMonoidal
+    μ (F ⋙ unit R D) X Y = μ (unit R C ⋙ Underlying.map (map (hF.toPiFunctor R))) X Y := by
+  ext
+  · simp
+    rfl
+  · simp
+    rfl
+
+set_option backward.isDefEq.respectTransparency false in
+/-- **`E ∘ D = I` on morphisms**, coherence map `j` (from `jIso_mapMonoidal_hom`). -/
+theorem unit_comp_map_j :
+    letI := (MonoidalSuperfunctor.underlyingCoreMonoidal (mapMonoidal hF)).toMonoidal
+    (hF.comp (unitMonoidalPiFunctor (R := R) (D := D))).j.hom =
+      ((unitMonoidalPiFunctor (R := R) (D := C)).comp
+        (mapMonoidal hF).toMonoidalPiFunctor).j.hom := by
+  ext
+  · simp [MonoidalSuperfunctor.toMonoidalPiFunctor, jIso_mapMonoidal_hom, unitMonoidalPiFunctor]
+  · simp [MonoidalSuperfunctor.toMonoidalPiFunctor, jIso_mapMonoidal_hom, unitMonoidalPiFunctor]
+
+end Counit
+
+section TmonInv
+
+variable {A : Type w₁} [Category.{w₂} A] [Preadditive A] [Linear R A] [Supercategory R A]
+  [MonoidalCategoryStruct A] [MonoidalSupercategory R A] [MonoidalPiSupercategory R A]
+  {B : Type w₃} [Category.{w₄} B] [Preadditive B] [Linear R B] [Supercategory R B]
+  [MonoidalCategoryStruct B] [MonoidalSupercategory R B] [MonoidalPiSupercategory R B]
+
+attribute [local instance] MonoidalPiCategory.toPiCategory
+
+set_option backward.isDefEq.respectTransparency false in
+instance : (TmonInv R A).Additive where
+  map_add {X Y f g} := Tmon_map_injective (by
+    rw [Tmon_map_TmonInv_map, Functor.map_add, Tmon_map_TmonInv_map, Tmon_map_TmonInv_map])
+
+set_option backward.isDefEq.respectTransparency false in
+instance : (TmonInv R A).Linear R where
+  map_smul {X Y} f r := Tmon_map_injective (by
+    rw [Tmon_map_TmonInv_map, Functor.map_smul, Tmon_map_TmonInv_map])
+
+set_option backward.isDefEq.respectTransparency false in
+instance : IsSuperfunctor R (TmonInv R A) where
+  map_mem {X Y p f} hf := by
+    rcases parity_eq_zero_or_one p with rfl | rfl
+    · rw [mem_parity_zero]
+      exact Subtype.ext (by
+        change proj R 1 f ≫ _ = 0
+        rw [proj_of_mem_ne hf (by decide), Limits.zero_comp])
+    · rw [mem_parity_one]
+      exact Subtype.ext (by
+        change proj R 0 f = 0
+        exact proj_of_mem_ne hf (by decide))
+
+set_option backward.isDefEq.respectTransparency false in
+theorem TmonInv_map_associator (X Y Z : A) :
+    (TmonInv R A).map (α_ X Y Z).hom =
+      (α_ ((TmonInv R A).obj X) ((TmonInv R A).obj Y) ((TmonInv R A).obj Z)).hom :=
+  Tmon_map_injective (by rw [Tmon_map_TmonInv_map]; simp [Tmon_map]; rfl)
+
+set_option backward.isDefEq.respectTransparency false in
+theorem TmonInv_map_leftUnitor (X : A) :
+    (TmonInv R A).map (λ_ X).hom = (λ_ ((TmonInv R A).obj X)).hom :=
+  Tmon_map_injective (by rw [Tmon_map_TmonInv_map]; simp [Tmon_map]; rfl)
+
+set_option backward.isDefEq.respectTransparency false in
+theorem TmonInv_map_rightUnitor (X : A) :
+    (TmonInv R A).map (ρ_ X).hom = (ρ_ ((TmonInv R A).obj X)).hom :=
+  Tmon_map_injective (by rw [Tmon_map_TmonInv_map]; simp [Tmon_map]; rfl)
+
+set_option backward.isDefEq.respectTransparency false in
+variable (R A) in
+/-- **Theorem 1.15, `D ∘ E ≅ I`:** the inverse `T_A⁻¹` of `T_A` is a strict monoidal
+superfunctor. -/
+def TmonInvMonoidal : MonoidalSuperfunctor R (TmonInv R A) where
+  μIso _ _ := Iso.refl _
+  εIso := Iso.refl _
+  μ_mem _ _ := id_mem _
+  ε_mem := id_mem _
+  μ_natural_left f X' := Tmon_map_injective (by
+    simp only [Iso.refl_hom, Category.comp_id, Category.id_comp, Tmon_map_whiskerRight,
+      Tmon_map_TmonInv_map]
+    rfl)
+  μ_natural_right X' f := Tmon_map_injective (by
+    simp only [Iso.refl_hom, Category.comp_id, Category.id_comp, Tmon_map_whiskerLeft,
+      Tmon_map_TmonInv_map]
+    rfl)
+  associativity X Y Z := by
+    simp [MonoidalSupercategory.id_whiskerRight (R := R),
+      MonoidalSupercategory.whiskerLeft_id (R := R), TmonInv_map_associator]
+  left_unitality X := by
+    simp [MonoidalSupercategory.id_whiskerRight (R := R), TmonInv_map_leftUnitor]
+  right_unitality X := by
+    simp [MonoidalSupercategory.whiskerLeft_id (R := R), TmonInv_map_rightUnitor]
+
+set_option backward.isDefEq.respectTransparency false in
+theorem Tmon_comp_TmonInv_μIso_hom (X Y : Associated R (Underlying R A)) :
+    (((TmonMonoidal (R := R) (A := A)).comp (TmonInvMonoidal R A)).μIso X Y).hom = 𝟙 _ := by
+  simp [TmonMonoidal, TmonInvMonoidal]
+
+set_option backward.isDefEq.respectTransparency false in
+theorem Tmon_comp_TmonInv_εIso_hom :
+    ((TmonMonoidal (R := R) (A := A)).comp (TmonInvMonoidal R A)).εIso.hom = 𝟙 _ := by
+  simp [TmonMonoidal, TmonInvMonoidal]
+
+set_option backward.isDefEq.respectTransparency false in
+theorem TmonInv_comp_Tmon_μIso_hom (X Y : A) :
+    (((TmonInvMonoidal R A).comp (TmonMonoidal (R := R) (A := A))).μIso X Y).hom = 𝟙 _ := by
+  simp [TmonMonoidal, TmonInvMonoidal]
+
+set_option backward.isDefEq.respectTransparency false in
+theorem TmonInv_comp_Tmon_εIso_hom :
+    ((TmonInvMonoidal R A).comp (TmonMonoidal (R := R) (A := A))).εIso.hom = 𝟙 _ := by
+  simp [TmonMonoidal, TmonInvMonoidal]
+
+variable {G : A ⥤ B} [G.Additive] [G.Linear R] [IsSuperfunctor R G]
+  (hG : MonoidalSuperfunctor R G)
+
+set_option backward.isDefEq.respectTransparency false in
+/-- **Naturality of `T` on coherence maps:** `T_B ∘ (G̲)^ = G ∘ T_A` as monoidal
+superfunctors. -/
+theorem Tmon_naturality_μIso_hom (X Y : Associated R (Underlying R A)) :
+    letI := (MonoidalSuperfunctor.underlyingCoreMonoidal hG).toMonoidal
+    (((mapMonoidal hG.toMonoidalPiFunctor).comp (TmonMonoidal (R := R) (A := B))).μIso X Y).hom =
+      (((TmonMonoidal (R := R) (A := A)).comp hG).μIso X Y).hom := by
+  simp [TmonMonoidal, mapMonoidal]
+  rfl
+
+set_option backward.isDefEq.respectTransparency false in
+theorem Tmon_naturality_εIso_hom :
+    letI := (MonoidalSuperfunctor.underlyingCoreMonoidal hG).toMonoidal
+    ((mapMonoidal hG.toMonoidalPiFunctor).comp (TmonMonoidal (R := R) (A := B))).εIso.hom =
+      ((TmonMonoidal (R := R) (A := A)).comp hG).εIso.hom := by
+  simp [TmonMonoidal, mapMonoidal]
+  rfl
+
+end TmonInv
+
+end Associated
+
+namespace PiMon
+
+attribute [local instance] MonoidalPiCategory.toPiCategory
+
+set_option backward.isDefEq.respectTransparency false in
+/-- **Lemma 5.4 (one object), `E ∘ D = I`.** The identification `A ≅ E(D(A))` in `Π-Mon` given
+by the strict monoidal Π-functors `unit` and `counit` (with `j = 1`). -/
+def unitIsoApp (A : PiMon.{w, v, u} R) : A ≅ PiMon.of R (Underlying R (Associated R A)) where
+  hom := { toFunctor := Associated.unit R A, piFunctor := Associated.unitMonoidalPiFunctor }
+  inv := { toFunctor := Associated.counit R A, piFunctor := Associated.counitMonoidalPiFunctor R A }
+  hom_inv_id := Hom.ext Associated.unit_comp_counit
+    (heq_of_eq (Associated.unit_comp_counit_ε R A))
+    (fun X Y => heq_of_eq (Associated.unit_comp_counit_μ R A X Y))
+    (heq_of_eq (by simp [Associated.unitMonoidalPiFunctor, Associated.counitMonoidalPiFunctor]))
+  inv_hom_id := Hom.ext Associated.counit_comp_unit
+    (heq_of_eq (Associated.counit_comp_unit_ε R A))
+    (fun X Y => heq_of_eq (Associated.counit_comp_unit_μ R A X Y))
+    (heq_of_eq (by simp [Associated.unitMonoidalPiFunctor, Associated.counitMonoidalPiFunctor]))
+
+variable (R) in
+/-- **Lemma 5.4 (one object), `E ∘ D = I`.** The natural isomorphism `𝟭 ≅ D ⋙ E`. -/
+def unitIso : 𝟭 (PiMon.{w, v, u} R) ≅ D ⋙ PiSMon.E :=
+  NatIso.ofComponents unitIsoApp fun F =>
+    Hom.ext (Associated.unit_comp_map F.piFunctor).symm
+      (heq_of_eq (Associated.unit_comp_map_ε F.piFunctor))
+      (fun X Y => heq_of_eq (Associated.unit_comp_map_μ F.piFunctor X Y))
+      (heq_of_eq (Associated.unit_comp_map_j F.piFunctor))
+
+/-- **Lemma 5.4 (one object), `D ∘ E ≅ I`.** The isomorphism `T_A : D(E(A)) ≅ A` in `Π-SMon`,
+with inverse `T_A⁻¹`, both strict monoidal superfunctors. -/
+def counitIsoApp (A : PiSMon.{w, v, u} R) :
+    PiSMon.of R (Associated R (Underlying R A)) ≅ A where
+  hom := ⟨Associated.Tmon R A, Associated.TmonMonoidal⟩
+  inv := ⟨Associated.TmonInv R A, Associated.TmonInvMonoidal R A⟩
+  hom_inv_id := PiSMon.Hom.ext Associated.Tmon_comp_TmonInv
+    (fun X Y => heq_of_eq (Associated.Tmon_comp_TmonInv_μIso_hom X Y))
+    (heq_of_eq Associated.Tmon_comp_TmonInv_εIso_hom)
+  inv_hom_id := PiSMon.Hom.ext Associated.TmonInv_comp_Tmon
+    (fun X Y => heq_of_eq (Associated.TmonInv_comp_Tmon_μIso_hom X Y))
+    (heq_of_eq Associated.TmonInv_comp_Tmon_εIso_hom)
+
+variable (R) in
+/-- **Lemma 5.4 (one object), `D ∘ E ≅ I`.** The natural isomorphism `E ⋙ D ≅ 𝟭`, with
+components `T_A`. -/
+def counitIso : PiSMon.E ⋙ D ≅ 𝟭 (PiSMon.{w, v, u} R) :=
+  NatIso.ofComponents counitIsoApp fun G =>
+    PiSMon.Hom.ext (Associated.Tmon_naturality G.monoidal)
+      (fun X Y => heq_of_eq (Associated.Tmon_naturality_μIso_hom G.monoidal X Y))
+      (heq_of_eq (Associated.Tmon_naturality_εIso_hom G.monoidal))
+
+variable (R) in
+/-- **Brundan–Ellis, Theorem 1.15 (second part) / Lemma 5.4 (one object).** The functors
+`D : Π-Mon → Π-SMon` and `E : Π-SMon → Π-Mon` are mutually inverse equivalences of
+categories. -/
+def equivalence : PiMon.{w, v, u} R ≌ PiSMon.{w, v, u} R :=
+  CategoryTheory.Equivalence.mk D PiSMon.E (unitIso R) (counitIso R)
+
+@[simp] theorem equivalence_functor : (equivalence R).functor = D.{w, v, u} := rfl
+
+@[simp] theorem equivalence_inverse : (equivalence R).inverse = PiSMon.E.{w, v, u} := rfl
+
+/-- **Brundan–Ellis, Theorem 1.15 (second part).** The functor (2) of (1.9),
+`E : Π-SMon → Π-Mon`, is an equivalence of categories. -/
+instance : PiSMon.E.{w, v, u} (R := R).IsEquivalence :=
+  (equivalence R).isEquivalence_inverse
+
+/-- The functor `D : Π-Mon → Π-SMon` is an equivalence of categories. -/
+instance : D.{w, v, u} (R := R).IsEquivalence :=
+  (equivalence R).isEquivalence_functor
 
 end PiMon
 
