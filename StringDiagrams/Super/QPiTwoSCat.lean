@@ -26,6 +26,25 @@ Definition 6.3 and the discussion after Definition 6.14.
 * Bundled with their pseudofunctors (`BundledPiTwoFunctor`, `BundledQPiTwoFunctor`),
   composition is associative and unital (`BundledPiTwoFunctor.comp_assoc`,
   `BundledQPiTwoFunctor.comp_assoc`, ...).
+
+## The categories
+
+As for `2-SCat` and `Π-2-SCat` (`StringDiagrams.Super.TwoSCat`), the 2-categories of §6 are
+bundled at the level of objects and 1-morphisms, as Mathlib categories:
+
+* `GTwoSCat R`: graded 2-supercategories (Definition 6.2) and graded 2-superfunctors
+  (Definition 6.3), with the functor `GTwoSCat.forget` to `TwoSCat R` forgetting the gradings;
+* `QPiTwoGSCat R` (the 1-truncation of `(Q, Π)-2-𝔊𝔖ℭ𝔄𝔗`): graded `(Q, Π)`-2-supercategories
+  (Definition 6.5) and graded 2-superfunctors, with the forgetful functor
+  `ν : (Q, Π)-2-GSCat → 2-GSCat` (`QPiTwoGSCat.forget`);
+* `PiTwoCat R` (the 1-truncation of `Π-2-ℭ𝔄𝔗`): Π-2-categories (Definition 5.2(i)) and
+  Π-2-functors;
+* `QPiTwoCat R` (the 1-truncation of `(Q, Π)-2-ℭ𝔄𝔗`): `(Q, Π)`-2-categories (Definition 6.14)
+  and `(Q, Π)`-2-functors, with the forgetful functor `QPiTwoCat.forget` to `PiTwoCat R`.
+
+The 2-morphisms (2-natural transformations) are not included, for the reason explained in
+`StringDiagrams.Super.TwoSCat`: their vertical composition is associative and unital only up to
+the associators and unitors of the target.
 -/
 
 noncomputable section
@@ -490,6 +509,211 @@ theorem toBundledPiTwoFunctor_comp (P : BundledQPiTwoFunctor R B C)
 end BundledQPiTwoFunctor
 
 end BundledLaws
+
+/-! ## The category `2-GSCat` -/
+
+section Categories
+
+variable (R : Type w) [CommRing R]
+
+/-- A graded 2-supercategory over `R` (Brundan–Ellis, Definition 6.2), bundled. -/
+structure GTwoSCat extends TwoSCat.{w, w₁, v₁, u₁} R where
+  [graded : ∀ a b : carrier, GradedSupercategory R (a ⟶ b)]
+  [gradedTwo : GradedTwoSupercategory R carrier]
+
+namespace GTwoSCat
+
+attribute [instance] graded gradedTwo
+
+variable {R}
+
+instance : CoeSort (GTwoSCat.{w, w₁, v₁, u₁} R) (Type u₁) := ⟨fun B => B.carrier⟩
+
+variable (R) in
+/-- The bundled graded 2-supercategory of a graded 2-supercategory. -/
+abbrev of (B : Type u₁) [BicategoryStruct.{w₁, v₁} B] [∀ a b : B, Preadditive (a ⟶ b)]
+    [∀ a b : B, Linear R (a ⟶ b)] [∀ a b : B, Supercategory R (a ⟶ b)] [TwoSupercategory R B]
+    [∀ a b : B, GradedSupercategory R (a ⟶ b)] [GradedTwoSupercategory R B] :
+    GTwoSCat.{w, w₁, v₁, u₁} R :=
+  ⟨TwoSCat.of R B⟩
+
+/-- **Brundan–Ellis, §6.** The category `2-GSCat` of graded 2-supercategories and graded
+2-superfunctors (Definition 6.3). -/
+instance : Category (GTwoSCat.{w, w₁, v₁, u₁} R) where
+  Hom B C := { F : TwoSuperfunctor R B C // F.IsGraded }
+  id B := ⟨TwoSuperfunctor.id R B, TwoSuperfunctor.id_isGraded⟩
+  comp F G := ⟨F.1.comp G.1, F.2.comp G.2⟩
+  id_comp F := Subtype.ext (TwoSuperfunctor.id_comp F.1)
+  comp_id F := Subtype.ext (TwoSuperfunctor.comp_id F.1)
+  assoc F G H := Subtype.ext (TwoSuperfunctor.comp_assoc F.1 G.1 H.1)
+
+theorem hom_def (B C : GTwoSCat.{w, w₁, v₁, u₁} R) :
+    (B ⟶ C) = { F : TwoSuperfunctor R B C // F.IsGraded } := rfl
+
+@[simp] theorem id_val (B : GTwoSCat.{w, w₁, v₁, u₁} R) :
+    (𝟙 B : B ⟶ B).1 = TwoSuperfunctor.id R B := rfl
+
+@[simp] theorem comp_val {B C D : GTwoSCat.{w, w₁, v₁, u₁} R} (F : B ⟶ C) (G : C ⟶ D) :
+    (F ≫ G).1 = F.1.comp G.1 := rfl
+
+/-- The functor `2-GSCat → 2-SCat` forgetting the gradings. -/
+@[simps]
+def forget : GTwoSCat.{w, w₁, v₁, u₁} R ⥤ TwoSCat.{w, w₁, v₁, u₁} R where
+  obj B := B.toTwoSCat
+  map F := F.1
+
+end GTwoSCat
+
+/-! ## The category `(Q, Π)-2-GSCat` -/
+
+/-- A graded `(Q, Π)`-2-supercategory over `R` (Brundan–Ellis, Definition 6.5), bundled. -/
+structure QPiTwoGSCat extends GTwoSCat.{w, w₁, v₁, u₁} R where
+  [qpiTwo : QPiTwoSupercategory R carrier]
+
+namespace QPiTwoGSCat
+
+attribute [instance] qpiTwo
+
+variable {R}
+
+instance : CoeSort (QPiTwoGSCat.{w, w₁, v₁, u₁} R) (Type u₁) := ⟨fun B => B.carrier⟩
+
+variable (R) in
+/-- The bundled graded `(Q, Π)`-2-supercategory of a graded `(Q, Π)`-2-supercategory. -/
+abbrev of (B : Type u₁) [BicategoryStruct.{w₁, v₁} B] [∀ a b : B, Preadditive (a ⟶ b)]
+    [∀ a b : B, Linear R (a ⟶ b)] [∀ a b : B, Supercategory R (a ⟶ b)] [TwoSupercategory R B]
+    [∀ a b : B, GradedSupercategory R (a ⟶ b)] [GradedTwoSupercategory R B]
+    [QPiTwoSupercategory R B] : QPiTwoGSCat.{w, w₁, v₁, u₁} R :=
+  ⟨GTwoSCat.of R B⟩
+
+/-- **Brundan–Ellis, §6.** The category `(Q, Π)-2-GSCat` of graded `(Q, Π)`-2-supercategories
+and graded 2-superfunctors (the 1-truncation of the 2-category `(Q, Π)-2-𝔊𝔖ℭ𝔄𝔗`). -/
+instance : Category (QPiTwoGSCat.{w, w₁, v₁, u₁} R) where
+  Hom B C := { F : TwoSuperfunctor R B C // F.IsGraded }
+  id B := ⟨TwoSuperfunctor.id R B, TwoSuperfunctor.id_isGraded⟩
+  comp F G := ⟨F.1.comp G.1, F.2.comp G.2⟩
+  id_comp F := Subtype.ext (TwoSuperfunctor.id_comp F.1)
+  comp_id F := Subtype.ext (TwoSuperfunctor.comp_id F.1)
+  assoc F G H := Subtype.ext (TwoSuperfunctor.comp_assoc F.1 G.1 H.1)
+
+theorem hom_def (B C : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
+    (B ⟶ C) = { F : TwoSuperfunctor R B C // F.IsGraded } := rfl
+
+@[simp] theorem id_val (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
+    (𝟙 B : B ⟶ B).1 = TwoSuperfunctor.id R B := rfl
+
+@[simp] theorem comp_val {B C D : QPiTwoGSCat.{w, w₁, v₁, u₁} R} (F : B ⟶ C) (G : C ⟶ D) :
+    (F ≫ G).1 = F.1.comp G.1 := rfl
+
+/-- The forgetful functor `ν : (Q, Π)-2-GSCat → 2-GSCat` (Theorem 6.9 and after Lemma 6.11). -/
+@[simps]
+def forget : QPiTwoGSCat.{w, w₁, v₁, u₁} R ⥤ GTwoSCat.{w, w₁, v₁, u₁} R where
+  obj B := B.toGTwoSCat
+  map F := F
+
+end QPiTwoGSCat
+
+/-! ## The categories `Π-2-Cat` and `(Q, Π)-2-Cat` -/
+
+/-- A Π-2-category over `R` (Brundan–Ellis, Definition 5.2(i)), bundled. -/
+structure PiTwoCat where
+  /-- The objects. -/
+  carrier : Type u₁
+  [str : Bicategory.{w₁, v₁} carrier]
+  [preadditive : ∀ a b : carrier, Preadditive (a ⟶ b)]
+  [linear : ∀ a b : carrier, Linear R (a ⟶ b)]
+  [preadditiveBicategory : PreadditiveBicategory carrier]
+  [linearBicategory : LinearBicategory R carrier]
+  [piTwo : PiTwoCategory R carrier]
+
+namespace PiTwoCat
+
+attribute [instance] str preadditive linear preadditiveBicategory linearBicategory piTwo
+
+variable {R}
+
+instance : CoeSort (PiTwoCat.{w, w₁, v₁, u₁} R) (Type u₁) := ⟨PiTwoCat.carrier⟩
+
+variable (R) in
+/-- The bundled Π-2-category of a Π-2-category. -/
+abbrev of (B : Type u₁) [Bicategory.{w₁, v₁} B] [∀ a b : B, Preadditive (a ⟶ b)]
+    [∀ a b : B, Linear R (a ⟶ b)] [PreadditiveBicategory B] [LinearBicategory R B]
+    [PiTwoCategory R B] : PiTwoCat.{w, w₁, v₁, u₁} R :=
+  ⟨B⟩
+
+/-- **Brundan–Ellis, Section 5.** The category `Π-2-Cat` of Π-2-categories and Π-2-functors
+(Definition 5.2(ii); the 1-truncation of the 2-category `Π-2-ℭ𝔄𝔗`). -/
+instance : Category (PiTwoCat.{w, w₁, v₁, u₁} R) where
+  Hom B C := BundledPiTwoFunctor R B C
+  id B := BundledPiTwoFunctor.id R B
+  comp P Q := P.comp Q
+  id_comp := BundledPiTwoFunctor.id_comp
+  comp_id := BundledPiTwoFunctor.comp_id
+  assoc := BundledPiTwoFunctor.comp_assoc
+
+theorem hom_def (B C : PiTwoCat.{w, w₁, v₁, u₁} R) : (B ⟶ C) = BundledPiTwoFunctor R B C := rfl
+
+theorem id_def (B : PiTwoCat.{w, w₁, v₁, u₁} R) : 𝟙 B = BundledPiTwoFunctor.id R B := rfl
+
+theorem comp_def {B C D : PiTwoCat.{w, w₁, v₁, u₁} R} (P : B ⟶ C) (Q : C ⟶ D) :
+    P ≫ Q = BundledPiTwoFunctor.comp P Q := rfl
+
+end PiTwoCat
+
+/-- A `(Q, Π)`-2-category over `R` (Brundan–Ellis, Definition 6.14), bundled. -/
+structure QPiTwoCat where
+  /-- The objects. -/
+  carrier : Type u₁
+  [str : Bicategory.{w₁, v₁} carrier]
+  [preadditive : ∀ a b : carrier, Preadditive (a ⟶ b)]
+  [linear : ∀ a b : carrier, Linear R (a ⟶ b)]
+  [preadditiveBicategory : PreadditiveBicategory carrier]
+  [linearBicategory : LinearBicategory R carrier]
+  [qpiTwo : QPiTwoCategory R carrier]
+
+namespace QPiTwoCat
+
+attribute [instance] str preadditive linear preadditiveBicategory linearBicategory qpiTwo
+
+variable {R}
+
+instance : CoeSort (QPiTwoCat.{w, w₁, v₁, u₁} R) (Type u₁) := ⟨QPiTwoCat.carrier⟩
+
+variable (R) in
+/-- The bundled `(Q, Π)`-2-category of a `(Q, Π)`-2-category. -/
+abbrev of (B : Type u₁) [Bicategory.{w₁, v₁} B] [∀ a b : B, Preadditive (a ⟶ b)]
+    [∀ a b : B, Linear R (a ⟶ b)] [PreadditiveBicategory B] [LinearBicategory R B]
+    [QPiTwoCategory R B] : QPiTwoCat.{w, w₁, v₁, u₁} R :=
+  ⟨B⟩
+
+/-- **Brundan–Ellis, §6.** The category `(Q, Π)-2-Cat` of `(Q, Π)`-2-categories and
+`(Q, Π)`-2-functors (in the sense of `StringDiagrams.Super.QPiTwoFunctor`; the 1-truncation of
+the 2-category `(Q, Π)-2-ℭ𝔄𝔗`). -/
+instance : Category (QPiTwoCat.{w, w₁, v₁, u₁} R) where
+  Hom B C := BundledQPiTwoFunctor R B C
+  id B := BundledQPiTwoFunctor.id R B
+  comp P Q := P.comp Q
+  id_comp := BundledQPiTwoFunctor.id_comp
+  comp_id := BundledQPiTwoFunctor.comp_id
+  assoc := BundledQPiTwoFunctor.comp_assoc
+
+theorem hom_def (B C : QPiTwoCat.{w, w₁, v₁, u₁} R) :
+    (B ⟶ C) = BundledQPiTwoFunctor R B C := rfl
+
+theorem id_def (B : QPiTwoCat.{w, w₁, v₁, u₁} R) : 𝟙 B = BundledQPiTwoFunctor.id R B := rfl
+
+theorem comp_def {B C D : QPiTwoCat.{w, w₁, v₁, u₁} R} (P : B ⟶ C) (Q : C ⟶ D) :
+    P ≫ Q = BundledQPiTwoFunctor.comp P Q := rfl
+
+/-- The functor `(Q, Π)-2-Cat → Π-2-Cat` forgetting `q`, `q⁻¹`, `γ`, `ii`, `jj` and `k`. -/
+@[simps]
+def forget : QPiTwoCat.{w, w₁, v₁, u₁} R ⥤ PiTwoCat.{w, w₁, v₁, u₁} R where
+  obj B := PiTwoCat.of R B
+  map P := P.toBundledPiTwoFunctor
+
+end QPiTwoCat
+
+end Categories
 
 end StringDiagrams
 
