@@ -1,0 +1,454 @@
+import StringDiagrams.Super.TwoHom
+import StringDiagrams.Super.MonoidalSuperequivalenceInverse
+import StringDiagrams.Biadjunction.ConjPseudofunctor
+
+/-!
+# Local 2-superequivalences are 2-superequivalences
+
+Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v3,
+Definition 2.2.
+-/
+
+noncomputable section
+
+namespace StringDiagrams
+
+open CategoryTheory Supercategory
+
+universe w₁ v₁ u₁ w₂ v₂ u₂ w
+
+variable {R : Type w} [CommRing R]
+  {B : Type u₁} [BicategoryStruct.{w₁, v₁} B]
+  [∀ a b : B, Preadditive (a ⟶ b)] [∀ a b : B, Linear R (a ⟶ b)]
+  [∀ a b : B, Supercategory R (a ⟶ b)] [TwoSupercategory R B]
+  {C : Type u₂} [BicategoryStruct.{w₂, v₂} C]
+  [∀ a b : C, Preadditive (a ⟶ b)] [∀ a b : C, Linear R (a ⟶ b)]
+  [∀ a b : C, Supercategory R (a ⟶ b)] [TwoSupercategory R C]
+
+/-! ## Superequivalences as adjoint equivalences of the underlying bicategory -/
+
+namespace TwoSupercategory
+
+open Bicategory in
+/-- Superequivalent objects of a 2-supercategory are equivalent in the underlying bicategory
+(of even 2-morphisms), by an adjoint equivalence. -/
+theorem Superequivalent.nonempty_equivalence {a b : C} (h : Superequivalent R a b) :
+    Nonempty ((⟨a⟩ : Underlying2 R C) ≌ ⟨b⟩) := by
+  obtain ⟨f, g, e₁, e₂, h₁, h₂⟩ := h
+  exact ⟨Equivalence.mkOfAdjointifyCounit (f := Underlying2.hom1 f) (g := Underlying2.hom1 g)
+    (Underlying.isoMk e₁ h₁).symm (Underlying.isoMk e₂ h₂)⟩
+
+end TwoSupercategory
+
+namespace TwoSuperfunctor
+
+/-- A 2-superfunctor as a pseudofunctor of the underlying bicategories, with
+`mapComp f g := c⁻¹` and `mapId a := i⁻¹`. -/
+def toPseudo (F : TwoSuperfunctor R B C) :
+    Pseudofunctor (Underlying2 R B) (Underlying2 R C) :=
+  Pseudofunctor.mkOfOplax F.toOplax
+    { mapIdIso a :=
+        { hom := F.toOplax.mapId a
+          inv := ⟨(F.mapId a.obj).hom, F.mapId_hom_mem a.obj⟩
+          hom_inv_id := Subtype.ext (F.mapId a.obj).inv_hom_id
+          inv_hom_id := Subtype.ext (F.mapId a.obj).hom_inv_id }
+      mapCompIso f g :=
+        { hom := F.toOplax.mapComp f g
+          inv := ⟨(F.mapComp f.obj g.obj).hom, F.mapComp_hom_mem f.obj g.obj⟩
+          hom_inv_id := Subtype.ext (F.mapComp f.obj g.obj).inv_hom_id
+          inv_hom_id := Subtype.ext (F.mapComp f.obj g.obj).hom_inv_id }
+      mapIdIso_hom := rfl
+      mapCompIso_hom _ _ := rfl }
+
+variable (F : TwoSuperfunctor R B C)
+
+@[simp] theorem toPseudo_obj (a : Underlying2 R B) : F.toPseudo.obj a = ⟨F.obj a.obj⟩ := rfl
+
+@[simp] theorem toPseudo_map_obj {a b : Underlying2 R B} (f : a ⟶ b) :
+    (F.toPseudo.map f).obj = F.map f.obj := rfl
+
+@[simp] theorem toPseudo_map₂_val {a b : Underlying2 R B} {f g : a ⟶ b} (η : f ⟶ g) :
+    (F.toPseudo.map₂ η).1 = F.map₂ η.1 := rfl
+
+@[simp] theorem toPseudo_mapComp_hom_val {a b c : Underlying2 R B} (f : a ⟶ b) (g : b ⟶ c) :
+    (F.toPseudo.mapComp f g).hom.1 = (F.mapComp f.obj g.obj).inv := rfl
+
+@[simp] theorem toPseudo_mapComp_inv_val {a b c : Underlying2 R B} (f : a ⟶ b) (g : b ⟶ c) :
+    (F.toPseudo.mapComp f g).inv.1 = (F.mapComp f.obj g.obj).hom := rfl
+
+@[simp] theorem toPseudo_mapId_hom_val (a : Underlying2 R B) :
+    (F.toPseudo.mapId a).hom.1 = (F.mapId a.obj).inv := rfl
+
+@[simp] theorem toPseudo_mapId_inv_val (a : Underlying2 R B) :
+    (F.toPseudo.mapId a).inv.1 = (F.mapId a.obj).hom := rfl
+
+namespace IsLocalTwoSuperequivalence
+
+variable {F} (hF : F.IsLocalTwoSuperequivalence)
+include hF
+
+/-! ## Local data: preimages of 2-morphisms and lifts of 1-morphisms -/
+
+/-- The chosen superequivalence `ℋom(λ, μ) → ℋom(ℝλ, ℝμ)`. -/
+def se (a b : B) : Superequivalence R (F.mapFunctor a b) := (hF.hom a b).some
+
+/-- The preimage of a 2-morphism `ℝF ⇒ ℝG`. -/
+def pre {a b : B} {f g : a ⟶ b} (x : F.map f ⟶ F.map g) : f ⟶ g :=
+  (hF.se a b).fullyFaithful.preimage x
+
+omit [TwoSupercategory R B] [TwoSupercategory R C] in
+@[simp] theorem map₂_pre {a b : B} {f g : a ⟶ b} (x : F.map f ⟶ F.map g) :
+    F.map₂ (hF.pre x) = x :=
+  (hF.se a b).fullyFaithful.map_preimage x
+
+omit [TwoSupercategory R B] [TwoSupercategory R C] in
+theorem map₂_injective {a b : B} {f g : a ⟶ b} :
+    Function.Injective (F.map₂ : (f ⟶ g) → (F.map f ⟶ F.map g)) :=
+  fun _ _ h => (hF.se a b).fullyFaithful.map_injective h
+
+omit [TwoSupercategory R B] [TwoSupercategory R C] in
+theorem pre_mem {a b : B} {f g : a ⟶ b} {p : ZMod 2} {x : F.map f ⟶ F.map g}
+    (hx : x ∈ parity (R := R) (F.map f) (F.map g) p) : hF.pre x ∈ parity (R := R) f g p := by
+  have := (hF.se a b).fullyFaithful.faithful
+  refine mem_of_map_mem (F.mapFunctor a b) ?_
+  change F.map₂ (hF.pre x) ∈ _
+  rw [map₂_pre]
+  exact hx
+
+/-- A lift of a 1-morphism `ℝλ → ℝμ` to a 1-morphism `λ → μ`. -/
+def lift {a b : B} (k : F.obj a ⟶ F.obj b) : a ⟶ b := (hF.se a b).inverse.obj k
+
+/-- The even isomorphism `ℝ(lift k) ≅ k`. -/
+def liftIso {a b : B} (k : F.obj a ⟶ F.obj b) : F.map (hF.lift k) ≅ k :=
+  (hF.se a b).counitIso.app k
+
+omit [TwoSupercategory R B] [TwoSupercategory R C] in
+theorem liftIso_hom_mem {a b : B} (k : F.obj a ⟶ F.obj b) :
+    (hF.liftIso k).hom ∈ parity (R := R) _ _ 0 :=
+  (hF.se a b).counitIso_mem k
+
+/-- The object `𝕊ν` chosen by essential surjectivity. -/
+def obj (c : C) : B := (hF.essSurj c).choose
+
+open Bicategory in
+/-- The chosen adjoint equivalence `ℝ(𝕊ν) ≌ ν` of the underlying bicategory. -/
+def equiv (c : C) : (⟨F.obj (hF.obj c)⟩ : Underlying2 R C) ≌ ⟨c⟩ :=
+  (hF.essSurj c).choose_spec.nonempty_equivalence.some
+
+/-! ## The quasi-inverse on the underlying bicategories -/
+
+section Underlying
+
+open Bicategory
+
+/-- The objects `ℝ(𝕊ν)`. -/
+abbrev X (c : Underlying2 R C) : Underlying2 R C := ⟨F.obj (hF.obj c.obj)⟩
+
+/-- The adjoint equivalences `ℝ(𝕊ν) ≌ ν`. -/
+abbrev E (c : Underlying2 R C) : hF.X c ≌ c := hF.equiv c.obj
+
+/-- Conjugation by the `E`: `k ↦ e_ν ≫ k ≫ e'_ν'`. -/
+abbrev Q : Pseudofunctor (Underlying2 R C) (Underlying2 R C) := ConjPseudofunctor.pseudofunctor hF.E
+
+/-- The lifts `𝕊k := lift (e_ν ≫ k ≫ e'_ν')`. -/
+abbrev mapU {c d : Underlying2 R C} (k : c ⟶ d) :
+    (⟨hF.obj c.obj⟩ : Underlying2 R B) ⟶ ⟨hF.obj d.obj⟩ :=
+  ⟨hF.lift (hF.Q.map k).obj⟩
+
+/-- `κ_k : ℝ(𝕊k) ≅ e_ν ≫ k ≫ e'_ν'`. -/
+def κ {c d : Underlying2 R C} (k : c ⟶ d) : F.toPseudo.map (hF.mapU k) ≅ hF.Q.map k :=
+  { hom := ⟨(hF.liftIso _).hom, hF.liftIso_hom_mem _⟩
+    inv := ⟨(hF.liftIso _).inv, inv_mem _ (hF.liftIso_hom_mem _)⟩
+    hom_inv_id := Subtype.ext (hF.liftIso _).hom_inv_id
+    inv_hom_id := Subtype.ext (hF.liftIso _).inv_hom_id }
+
+/-- The conjugation pseudofunctor with 1-morphisms replaced by `ℝ(𝕊k)`. -/
+abbrev Qc : Pseudofunctor (Underlying2 R C) (Underlying2 R C) :=
+  PseudofunctorCopy.copy hF.Q (fun k => F.toPseudo.map (hF.mapU k)) hF.κ
+
+/-- Preimages of even 2-morphisms under `ℝ`. -/
+def preU {a b : Underlying2 R B} {f g : a ⟶ b} (x : F.toPseudo.map f ⟶ F.toPseudo.map g) :
+    f ⟶ g :=
+  ⟨hF.pre x.1, hF.pre_mem x.2⟩
+
+@[simp] theorem map₂_preU {a b : Underlying2 R B} {f g : a ⟶ b}
+    (x : F.toPseudo.map f ⟶ F.toPseudo.map g) : F.toPseudo.map₂ (hF.preU x) = x :=
+  Subtype.ext (hF.map₂_pre x.1)
+
+omit [TwoSupercategory R B] [TwoSupercategory R C] in
+@[simp] theorem pre_map₂ {a b : B} {f g : a ⟶ b} (x : f ⟶ g) : hF.pre (F.map₂ x) = x :=
+  (hF.se a b).fullyFaithful.preimage_map x
+
+@[simp] theorem preU_map₂ {a b : Underlying2 R B} {f g : a ⟶ b} (x : f ⟶ g) :
+    hF.preU (F.toPseudo.map₂ x) = x :=
+  Subtype.ext (hF.pre_map₂ x.1)
+
+theorem map₂U_injective {a b : Underlying2 R B} {f g : a ⟶ b} :
+    Function.Injective (F.toPseudo.map₂ : (f ⟶ g) → _) := fun _ _ h =>
+  Subtype.ext (hF.map₂_injective (congrArg Subtype.val h))
+
+/-- The quasi-inverse as a pseudofunctor of the underlying bicategories: the lift of `Qc`
+along `ℝ`. -/
+def pseudoInv : Pseudofunctor (Underlying2 R C) (Underlying2 R B) :=
+  PseudofunctorLift.lift F.toPseudo hF.preU hF.map₂_preU hF.preU_map₂
+    (fun c => ⟨hF.obj c.obj⟩) hF.mapU (fun η => hF.Qc.map₂ η) (fun c => hF.Qc.mapId c)
+    (fun k l => hF.Qc.mapComp k l) (fun k => hF.Qc.map₂_id k)
+    (fun η θ => hF.Qc.map₂_comp η θ) (fun k _ _ η => hF.Qc.map₂_whisker_left k η)
+    (fun η l => hF.Qc.map₂_whisker_right η l) (fun k l m => hF.Qc.map₂_associator k l m)
+    (fun k => hF.Qc.map₂_left_unitor k) (fun k => hF.Qc.map₂_right_unitor k)
+
+theorem map₂_pseudoInv_mapComp_inv {c d f : Underlying2 R C} (k : c ⟶ d) (l : d ⟶ f) :
+    F.toPseudo.map₂ (hF.pseudoInv.mapComp k l).inv =
+      (F.toPseudo.mapComp (hF.mapU k) (hF.mapU l)).hom ≫ (hF.Qc.mapComp k l).inv :=
+  by
+    unfold pseudoInv
+    apply PseudofunctorLift.map₂_lift_mapComp_inv
+    exacts [fun k => hF.Qc.map₂_id k, fun η θ => hF.Qc.map₂_comp η θ,
+      fun k _ _ η => hF.Qc.map₂_whisker_left k η, fun η l => hF.Qc.map₂_whisker_right η l,
+      fun k l m => hF.Qc.map₂_associator k l m, fun k => hF.Qc.map₂_left_unitor k,
+      fun k => hF.Qc.map₂_right_unitor k]
+
+end Underlying
+
+/-! ## Naturality of the conjugation data for all 2-morphisms -/
+
+section Super
+
+open BicategoryStruct TwoSupercategory
+
+/-- `e_ν : ℝ(𝕊ν) → ν`. -/
+abbrev e (c : C) : F.obj (hF.obj c) ⟶ c := (hF.E ⟨c⟩).hom.obj
+
+/-- `e'_ν : ν → ℝ(𝕊ν)`. -/
+abbrev e' (c : C) : c ⟶ F.obj (hF.obj c) := (hF.E ⟨c⟩).inv.obj
+
+/-- The (even) counit `e'_ν e_ν ⇒ 1`. -/
+abbrev ε (c : C) : hF.e' c ≫ hF.e c ⟶ 𝟙 c := (hF.E ⟨c⟩).counit.hom.1
+
+omit [TwoSupercategory R B] in
+theorem ε_mem (c : C) : hF.ε c ∈ parity (R := R) _ _ 0 := (hF.E ⟨c⟩).counit.hom.2
+
+/-- `(e_ν ≫ k ≫ e'_ν') ≫ e_ν' ⇒ e_ν ≫ k`, contracting by the counit. -/
+def nu {c d : C} (k : c ⟶ d) : (hF.e c ≫ k ≫ hF.e' d) ≫ hF.e d ⟶ hF.e c ≫ k :=
+  (BicategoryStruct.associator _ _ _).hom ≫ hF.e c ◁
+    ((BicategoryStruct.associator _ _ _).hom ≫ k ◁ hF.ε d ≫
+      (BicategoryStruct.rightUnitor k).hom)
+
+omit [TwoSupercategory R B] in
+theorem nu_eq {c d : C} (k : c ⟶ d) :
+    hF.nu k = (ConjPseudofunctor.counitNat hF.E (Underlying2.hom1 (R := R) k)).hom.1 := rfl
+
+omit [TwoSupercategory R B] in
+@[reassoc]
+theorem nu_naturality {c d : C} {k k' : c ⟶ d} (η : k ⟶ k') :
+    (hF.e c ◁ (η ▷ hF.e' d)) ▷ hF.e d ≫ hF.nu k' = hF.nu k ≫ hF.e c ◁ η := by
+  rw [nu, nu, associator_naturality_middle_assoc R, ← whiskerLeft_comp' R, Category.assoc,
+    ← whiskerLeft_comp' R]
+  congr 2
+  rw [associator_naturality_left_assoc R,
+    whisker_exchange_of_even_right_assoc η (hF.ε_mem d), rightUnitor_naturality R]
+  simp only [Category.assoc]
+
+omit [TwoSupercategory R B] in
+theorem nu_mem {c d : C} (k : c ⟶ d) : hF.nu k ∈ parity (R := R) _ _ 0 :=
+  (ConjPseudofunctor.counitNat hF.E (Underlying2.hom1 (R := R) k)).hom.2
+
+/-- The composition constraint of conjugation,
+`(e_ν ≫ k ≫ e'_ν') ≫ (e_ν' ≫ l ≫ e'_ν'') ⇒ e_ν ≫ (k ≫ l) ≫ e'_ν''`. -/
+def mu {c d f : C} (k : c ⟶ d) (l : d ⟶ f) :
+    (hF.e c ≫ k ≫ hF.e' d) ≫ (hF.e d ≫ l ≫ hF.e' f) ⟶ hF.e c ≫ (k ≫ l) ≫ hF.e' f :=
+  (BicategoryStruct.associator _ _ _).inv ≫ hF.nu k ▷ (l ≫ hF.e' f) ≫
+    (BicategoryStruct.associator _ _ _).hom ≫ hF.e c ◁ (BicategoryStruct.associator k l _).inv
+
+omit [TwoSupercategory R B] in
+theorem mu_eq {c d f : C} (k : c ⟶ d) (l : d ⟶ f) :
+    hF.mu k l = (ConjPseudofunctor.comp hF.E (Underlying2.hom1 (R := R) k)
+      (Underlying2.hom1 (R := R) l)).hom.1 := rfl
+
+omit [TwoSupercategory R B] in
+@[reassoc]
+theorem mu_naturality_left {c d f : C} {k k' : c ⟶ d} (η : k ⟶ k') (l : d ⟶ f) :
+    (hF.e c ◁ (η ▷ hF.e' d)) ▷ (hF.e d ≫ l ≫ hF.e' f) ≫ hF.mu k' l =
+      hF.mu k l ≫ hF.e c ◁ ((η ▷ l) ▷ hF.e' f) := by
+  rw [mu, mu, associator_inv_naturality_left_assoc R, ← comp_whiskerRight'_assoc R,
+    nu_naturality, comp_whiskerRight'_assoc R, associator_naturality_middle_assoc R,
+    ← whiskerLeft_comp' R, associator_inv_naturality_left R, whiskerLeft_comp' R]
+  simp only [Category.assoc]
+
+omit [TwoSupercategory R B] in
+@[reassoc]
+theorem mu_naturality_right {c d f : C} (k : c ⟶ d) {l l' : d ⟶ f} (η : l ⟶ l') :
+    (hF.e c ≫ k ≫ hF.e' d) ◁ (hF.e d ◁ (η ▷ hF.e' f)) ≫ hF.mu k l' =
+      hF.mu k l ≫ hF.e c ◁ ((k ◁ η) ▷ hF.e' f) := by
+  rw [mu, mu, associator_inv_naturality_right_assoc R,
+    ← whisker_exchange_of_even_left_assoc (hF.nu_mem k), associator_naturality_right_assoc R,
+    ← whiskerLeft_comp' R, associator_inv_naturality_middle R, whiskerLeft_comp' R]
+  simp only [Category.assoc]
+
+/-- The inverse counit `1 ⇒ e'_ν e_ν`. -/
+abbrev εinv (c : C) : 𝟙 c ⟶ hF.e' c ≫ hF.e c := (hF.E ⟨c⟩).counit.inv.1
+
+omit [TwoSupercategory R B] in
+theorem εinv_mem (c : C) : hF.εinv c ∈ parity (R := R) _ _ 0 := (hF.E ⟨c⟩).counit.inv.2
+
+/-- `k ≫ e'_ν' ⇒ e'_ν ≫ (e_ν ≫ k ≫ e'_ν')`, inserting `e'_ν ≫ e_ν` by the inverse counit. -/
+def unu {c d : C} (k : c ⟶ d) : k ≫ hF.e' d ⟶ hF.e' c ≫ (hF.e c ≫ k ≫ hF.e' d) :=
+  (BicategoryStruct.leftUnitor _).inv ≫ hF.εinv c ▷ (k ≫ hF.e' d) ≫
+    (BicategoryStruct.associator _ _ _).hom
+
+omit [TwoSupercategory R B] in
+theorem unu_eq {c d : C} (k : c ⟶ d) :
+    hF.unu k = (ConjPseudofunctor.unitNat hF.E (Underlying2.hom1 (R := R) k)).hom.1 := rfl
+
+omit [TwoSupercategory R B] in
+@[reassoc]
+theorem unu_naturality {c d : C} {k k' : c ⟶ d} (η : k ⟶ k') :
+    η ▷ hF.e' d ≫ hF.unu k' = hF.unu k ≫ hF.e' c ◁ (hF.e c ◁ (η ▷ hF.e' d)) := by
+  rw [unu, unu, leftUnitor_inv_naturality_assoc R,
+    ← whisker_exchange_of_even_left_assoc (hF.εinv_mem c), associator_naturality_right R]
+  simp only [Category.assoc]
+
+end Super
+
+/-! ## The quasi-inverse 2-superfunctor -/
+
+section Inverse
+
+open BicategoryStruct TwoSupercategory
+
+omit [TwoSupercategory R B] [TwoSupercategory R C] hF in
+theorem map₂_whiskerRight_eq {a b c : B} {f g : a ⟶ b} (η : f ⟶ g) (h : b ⟶ c) :
+    F.map₂ (η ▷ h) = (F.mapComp f h).inv ≫ F.map₂ η ▷ F.map h ≫ (F.mapComp g h).hom := by
+  rw [F.mapComp_naturality_left, Iso.inv_hom_id_assoc]
+
+omit [TwoSupercategory R B] [TwoSupercategory R C] hF in
+theorem map₂_whiskerLeft_eq {a b c : B} (f : a ⟶ b) {g h : b ⟶ c} (η : g ⟶ h) :
+    F.map₂ (f ◁ η) = (F.mapComp f g).inv ≫ F.map f ◁ F.map₂ η ≫ (F.mapComp f h).hom := by
+  rw [F.mapComp_naturality_right, Iso.inv_hom_id_assoc]
+
+/-- The 1-morphism `𝕊k := lift (e_ν ≫ k ≫ e'_ν')`. -/
+abbrev invMap {c d : C} (k : c ⟶ d) : hF.obj c ⟶ hF.obj d :=
+  hF.lift (hF.e c ≫ k ≫ hF.e' d)
+
+/-- `𝕊` on 2-morphisms: the preimage of `ℓ ∘ (e_ν ◁ η ▷ e'_ν') ∘ ℓ⁻¹`. -/
+def invMap₂ {c d : C} {k k' : c ⟶ d} (η : k ⟶ k') : hF.invMap k ⟶ hF.invMap k' :=
+  hF.pre ((hF.liftIso _).hom ≫ hF.e c ◁ (η ▷ hF.e' d) ≫ (hF.liftIso _).inv)
+
+omit [TwoSupercategory R B] in
+theorem map₂_invMap₂ {c d : C} {k k' : c ⟶ d} (η : k ⟶ k') :
+    F.map₂ (hF.invMap₂ η) =
+      (hF.liftIso _).hom ≫ hF.e c ◁ (η ▷ hF.e' d) ≫ (hF.liftIso _).inv :=
+  hF.map₂_pre _
+
+/-- The composition constraint of `𝕊`. -/
+def invMapComp {c d f : C} (k : c ⟶ d) (l : d ⟶ f) :
+    hF.invMap k ≫ hF.invMap l ≅ hF.invMap (k ≫ l) where
+  hom := (hF.pseudoInv.mapComp (Underlying2.hom1 k) (Underlying2.hom1 l)).inv.1
+  inv := (hF.pseudoInv.mapComp (Underlying2.hom1 k) (Underlying2.hom1 l)).hom.1
+  hom_inv_id := congrArg Subtype.val
+    (hF.pseudoInv.mapComp (Underlying2.hom1 k) (Underlying2.hom1 l)).inv_hom_id
+  inv_hom_id := congrArg Subtype.val
+    (hF.pseudoInv.mapComp (Underlying2.hom1 k) (Underlying2.hom1 l)).hom_inv_id
+
+theorem invMapComp_hom_mem {c d f : C} (k : c ⟶ d) (l : d ⟶ f) :
+    (hF.invMapComp k l).hom ∈ parity (R := R) _ _ 0 :=
+  (hF.pseudoInv.mapComp (Underlying2.hom1 k) (Underlying2.hom1 l)).inv.2
+
+theorem map₂_invMapComp_hom {c d f : C} (k : c ⟶ d) (l : d ⟶ f) :
+    F.map₂ (hF.invMapComp k l).hom =
+      (F.mapComp _ _).inv ≫ (hF.liftIso _).hom ▷ F.map (hF.invMap l) ≫
+        (hF.e c ≫ k ≫ hF.e' d) ◁ (hF.liftIso _).hom ≫ hF.mu k l ≫ (hF.liftIso _).inv := by
+  refine (congrArg Subtype.val (hF.map₂_pseudoInv_mapComp_inv (Underlying2.hom1 k)
+    (Underlying2.hom1 l))).trans ?_
+  exact congrArg ((F.mapComp _ _).inv ≫ ·) (congrArg Subtype.val
+    (PseudofunctorCopy.copy_mapComp_inv hF.Q (fun k => F.toPseudo.map (hF.mapU k)) hF.κ
+      (Underlying2.hom1 k) (Underlying2.hom1 l)))
+
+/-- The unit constraint of `𝕊`. -/
+def invMapId (c : C) : 𝟙 (hF.obj c) ≅ hF.invMap (𝟙 c) where
+  hom := (hF.pseudoInv.mapId ⟨c⟩).inv.1
+  inv := (hF.pseudoInv.mapId ⟨c⟩).hom.1
+  hom_inv_id := congrArg Subtype.val (hF.pseudoInv.mapId ⟨c⟩).inv_hom_id
+  inv_hom_id := congrArg Subtype.val (hF.pseudoInv.mapId ⟨c⟩).hom_inv_id
+
+theorem invMapId_hom_mem (c : C) : (hF.invMapId c).hom ∈ parity (R := R) _ _ 0 :=
+  (hF.pseudoInv.mapId ⟨c⟩).inv.2
+
+/-- **The quasi-inverse of a local 2-superequivalence** `ℝ : 𝔄 → 𝔅`: on objects `ν ↦ 𝕊ν`
+with a chosen superequivalence `e_ν : ℝ(𝕊ν) → ν`, on 1-morphisms `k ↦ 𝕊k` with
+`ℝ(𝕊k) ≅ e_ν ≫ k ≫ e'_ν'`, on 2-morphisms the preimage of `e_ν ◁ η ▷ e'_ν'`, with
+coherence maps those of `pseudoInv`. -/
+def inverse : TwoSuperfunctor R C B where
+  obj := hF.obj
+  map k := hF.invMap k
+  map₂ η := hF.invMap₂ η
+  map₂_id k := hF.map₂_injective (by
+    simp [map₂_invMap₂, id_whiskerRight (R := R), whiskerLeft_id (R := R)])
+  map₂_comp η θ := hF.map₂_injective (by
+    simp [map₂_invMap₂, F.map₂_comp, comp_whiskerRight (R := R), whiskerLeft_comp (R := R)])
+  map₂_add η θ := hF.map₂_injective (by
+    simp [map₂_invMap₂, add_whiskerRight (R := R), whiskerLeft_add (R := R),
+      Preadditive.add_comp, Preadditive.comp_add])
+  map₂_smul r η := hF.map₂_injective (by
+    simp [map₂_invMap₂, smul_whiskerRight (R := R), whiskerLeft_smul (R := R)])
+  map₂_mem {c d k k' p η} hη := hF.pre_mem (by
+    simpa using comp_mem (hF.liftIso_hom_mem _)
+      (comp_mem (whiskerLeft_mem (hF.e c) (whiskerRight_mem (hF.e' d) hη))
+        (inv_mem _ (hF.liftIso_hom_mem _))))
+  mapComp k l := hF.invMapComp k l
+  mapId c := hF.invMapId c
+  mapComp_hom_mem k l := hF.invMapComp_hom_mem k l
+  mapId_hom_mem c := hF.invMapId_hom_mem c
+  mapComp_naturality_left {c d f k k'} η l := hF.map₂_injective (by
+    rw [F.map₂_comp, F.map₂_comp, map₂_whiskerRight_eq, map₂_invMapComp_hom,
+      map₂_invMapComp_hom, map₂_invMap₂, map₂_invMap₂]
+    simp only [Category.assoc, Iso.hom_inv_id_assoc, Iso.inv_hom_id_assoc,
+      comp_whiskerRight' R, inv_hom_whiskerRight_assoc R]
+    rw [whisker_exchange_of_even_right_assoc _ (hF.liftIso_hom_mem _),
+      mu_naturality_left_assoc])
+  mapComp_naturality_right {c d f} k l l' η := hF.map₂_injective (by
+    rw [F.map₂_comp, F.map₂_comp, map₂_whiskerLeft_eq, map₂_invMapComp_hom,
+      map₂_invMapComp_hom, map₂_invMap₂, map₂_invMap₂]
+    simp only [Category.assoc, Iso.hom_inv_id_assoc, Iso.inv_hom_id_assoc]
+    rw [← whisker_exchange_of_even_left_assoc (hF.liftIso_hom_mem _),
+      ← whiskerLeft_comp'_assoc R]
+    simp only [Category.assoc, Iso.inv_hom_id, Category.comp_id]
+    rw [whiskerLeft_comp'_assoc R, mu_naturality_right_assoc])
+  map₂_associator k l m := by
+    have h := congrArg (· ≫ hF.pseudoInv.map₂ (Bicategory.associator (Underlying2.hom1 k)
+      (Underlying2.hom1 l) (Underlying2.hom1 m)).inv)
+      (hF.pseudoInv.mapComp_assoc_right_inv (Underlying2.hom1 k) (Underlying2.hom1 l)
+        (Underlying2.hom1 m))
+    simp only [Category.assoc, ← PrelaxFunctor.map₂_comp, Iso.hom_inv_id,
+      PrelaxFunctor.map₂_id, Category.comp_id] at h
+    exact congrArg Subtype.val h
+  map₂_leftUnitor {c d} k := by
+    have h : Bicategory.whiskerRight (hF.pseudoInv.mapId ⟨c⟩).inv
+          (hF.pseudoInv.map (Underlying2.hom1 k)) ≫
+        (hF.pseudoInv.mapComp (𝟙 _) (Underlying2.hom1 k)).inv ≫
+          hF.pseudoInv.map₂ (Bicategory.leftUnitor (Underlying2.hom1 k)).hom =
+        (Bicategory.leftUnitor (hF.pseudoInv.map (Underlying2.hom1 k))).hom := by
+      rw [hF.pseudoInv.mapComp_id_left_inv]
+      simp only [Category.assoc, ← PrelaxFunctor.map₂_comp, Iso.inv_hom_id,
+        PrelaxFunctor.map₂_id, Category.comp_id, Bicategory.inv_hom_whiskerRight_assoc]
+    exact congrArg Subtype.val h
+  map₂_rightUnitor {c d} k := by
+    have h : Bicategory.whiskerLeft (hF.pseudoInv.map (Underlying2.hom1 k))
+          (hF.pseudoInv.mapId ⟨d⟩).inv ≫
+        (hF.pseudoInv.mapComp (Underlying2.hom1 k) (𝟙 _)).inv ≫
+          hF.pseudoInv.map₂ (Bicategory.rightUnitor (Underlying2.hom1 k)).hom =
+        (Bicategory.rightUnitor (hF.pseudoInv.map (Underlying2.hom1 k))).hom := by
+      rw [hF.pseudoInv.mapComp_id_right_inv]
+      simp only [Category.assoc, ← PrelaxFunctor.map₂_comp, Iso.inv_hom_id,
+        PrelaxFunctor.map₂_id, Category.comp_id, Bicategory.whiskerLeft_inv_hom_assoc]
+    exact congrArg Subtype.val h
+
+end Inverse
+
+end IsLocalTwoSuperequivalence
+
+end TwoSuperfunctor
+
+end StringDiagrams
+
+end

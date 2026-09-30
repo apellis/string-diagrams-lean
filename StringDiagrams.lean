@@ -78,6 +78,7 @@ import StringDiagrams.Super.QAssociatedTwoNat
 import StringDiagrams.Super.DrinfeldCenter
 import StringDiagrams.Super.TwoFunctorComp
 import StringDiagrams.Super.TwoHom
+import StringDiagrams.Super.TwoSuperequivalenceWhitehead
 import StringDiagrams.Super.TwoFunctorStrict
 import StringDiagrams.Super.TwoEnvelopeTwoHom
 import StringDiagrams.Super.PiCat
@@ -156,6 +157,7 @@ import StringDiagrams.Examples.WeightedBubbles
 import StringDiagrams.Examples.QPiCompat
 import StringDiagrams.Biadjunction.Basic
 import StringDiagrams.Biadjunction.Conjugate
+import StringDiagrams.Biadjunction.ConjPseudofunctor
 import StringDiagrams.Biadjunction.Cyclic
 import StringDiagrams.Biadjunction.Linear
 import StringDiagrams.Biadjunction.Trace
