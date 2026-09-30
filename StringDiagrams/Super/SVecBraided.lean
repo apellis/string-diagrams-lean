@@ -237,8 +237,8 @@ theorem braiding_hom_comp_braiding_hom (V W : SVec k) :
       (BraidedMonoidalSupercategory.braiding (R := k) W V).hom = 𝟙 (V ⊗ W) :=
   braidingMap_comp_braidingMap V W
 
-/-- **Brundan–Ellis, §1.2 and §2.** The underlying category `SVec̲` of superspaces and even linear maps
-is a symmetric monoidal category. -/
+/-- **Brundan–Ellis, §1.2 and §2.** The underlying category `SVec̲` of superspaces and even
+linear maps is a symmetric monoidal category. -/
 instance instSymmetricCategoryUnderlying : SymmetricCategory (Underlying k (SVec k)) where
   symmetry X Y := Subtype.ext (braiding_hom_comp_braiding_hom X.obj Y.obj)
 

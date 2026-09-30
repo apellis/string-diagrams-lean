@@ -21,8 +21,9 @@ Definition 6.1): the tensor product of graded superspaces, `(V ⊗ W)ₙ = ⨁_{
   `GSVec k` is a monoidal supercategory (`GSVec.instMonoidalSupercategory`) and a graded
   monoidal supercategory (`GSVec.instGradedMonoidalSupercategory`); its underlying category
   `GradedSupercategory.GUnderlying k (GSVec k)` is the paper's monoidal category `GSVec̲` of
-  graded superspaces and even linear maps of degree zero. The braiding is not formalized (that
-  of `SVec k` is in `StringDiagrams.Super.SVecBraided`).
+  graded superspaces and even linear maps of degree zero. The symmetric braiding (that of
+  `SVec k`, of degree zero), and the symmetric monoidal structure of `GSVec̲`, are in
+  `StringDiagrams.Super.GSVecBraided`.
 * `GSVec k` is a monoidal Π-supercategory with `π := Π k` and `ζ : Π k → k` the identity
   function (`GSVec.instMonoidalPiSupercategory`, the graded analogue of Example 1.13(i) for
   `A = k`).
