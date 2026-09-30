@@ -112,6 +112,7 @@ import StringDiagrams.Super.KaroubiMonoidal
 import StringDiagrams.Super.SKarMonoidal
 import StringDiagrams.Super.EndMonoidal
 import StringDiagrams.Super.MonoidalEquivalence
+import StringDiagrams.Super.MonoidalSuperequivalenceInverse
 import StringDiagrams.Super.Strictification
 import StringDiagrams.Super.TwoStrictification
 import StringDiagrams.Super.SKarUnit
