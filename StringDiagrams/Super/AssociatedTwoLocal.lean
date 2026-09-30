@@ -12,11 +12,10 @@ The 2-superfunctor `𝕋_𝔄 : (E₂ 𝔄)^ → 𝔄` of Lemma 5.4 (`Associated
 2-superequivalence in the second formulation of Definition 2.2
 (`Associated2.T_isLocalTwoSuperequivalence`): it is a superequivalence (indeed an isomorphism)
 on each morphism supercategory and surjective on objects. This is the first step of the proof
-of Corollary 5.6 in the paper (`Π-2-SCat ≅ D₂(E₂(Π-2-SCat))`, then `D₂` of the
-Π-2-equivalence `E₁ : E₂(Π-SCat) → Π-Cat` of Theorem 5.3). Corollary 5.6 itself
-(`Π-2-SCat` and `Π-2-𝔠𝔞𝔱̂ = D₂(Π-Cat)` are 2-superequivalent) is not formalized: the
-Π-2-category `Π-Cat` of Π-categories, Π-functors and Π-natural transformations is not bundled
-as a Lean bicategory, so `D₂(Π-Cat)` and the composite `D₂(E₁) ∘ 𝕋⁻¹` are not available.
+of Corollary 5.6 in the paper (`Π-𝔖ℭ𝔞𝔱 ≅ D₂(E₂(Π-𝔖ℭ𝔞𝔱))`, then `D₂` of the
+Π-2-equivalence `E₁ : E₂(Π-𝔖ℭ𝔞𝔱) → Π-ℭ𝔞𝔱` of Theorem 5.3). The first formulation of
+Definition 2.2 is `StringDiagrams.Super.AssociatedTwoWhitehead`, and Corollary 5.6 is
+`StringDiagrams.Super.PiCatAssociated`.
 -/
 
 noncomputable section

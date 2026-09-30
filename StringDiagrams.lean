@@ -90,6 +90,10 @@ import StringDiagrams.Super.DrinfeldCenterBraiding
 import StringDiagrams.Super.EnvelopeNaturality
 import StringDiagrams.Super.AssociatedTwoLocal
 import StringDiagrams.Super.AssociatedTwoWhitehead
+import StringDiagrams.Super.PiCatBicategory
+import StringDiagrams.Super.PiCatE1
+import StringDiagrams.Super.TwoSuperequivalenceComp
+import StringDiagrams.Super.PiCatAssociated
 import StringDiagrams.Super.SVec
 import StringDiagrams.Super.SVecBraided
 import StringDiagrams.Super.K0
