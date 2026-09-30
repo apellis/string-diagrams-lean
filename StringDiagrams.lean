@@ -50,6 +50,7 @@ import StringDiagrams.Super.UnitEnvelope
 import StringDiagrams.Super.TwoEnvelopeFunctor
 import StringDiagrams.Super.TwoEnvelopeEquivalence
 import StringDiagrams.Super.MonoidalAssociated
+import StringDiagrams.Super.MonoidalPiCat
 import StringDiagrams.Super.AssociatedFunctorial
 import StringDiagrams.Super.PiTwoCategory
 import StringDiagrams.Super.AssociatedTwo
