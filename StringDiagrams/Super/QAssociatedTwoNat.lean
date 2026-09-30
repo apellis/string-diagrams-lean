@@ -35,9 +35,11 @@ reader), for the `(Q, Π)`-2-functors and `(Q, Π)`-2-natural transformations of
 ## Not formalized
 
 As for §5 (`StringDiagrams.Super.AssociatedTwoNat`), the strict 2-categories
-`(Q, Π)-2-ℭ𝔄𝔗` and `(Q, Π)-2-𝔊𝔖ℭ𝔄𝔗` (composition of `(Q, Π)`-2-functors, whiskering of
-2-morphisms by 1-morphisms) are not constructed, so the analogue of Theorem 5.5 is not stated as
-a 2-equivalence of Lean bicategories; the compatibility of `𝔼` with identities and vertical
+`(Q, Π)-2-ℭ𝔄𝔗` and `(Q, Π)-2-𝔊𝔖ℭ𝔄𝔗` (whiskering of 2-morphisms by 1-morphisms) are not
+constructed as Lean bicategories, so the analogue of Theorem 5.5 is not stated as a 2-equivalence
+of Lean bicategories (their 1-truncations `QPiTwoCat R`, `QPiTwoGSCat R`, with the composition
+of `(Q, Π)`-2-functors and the functor `𝔼`, are in `StringDiagrams.Super.QPiTwoSCat`; the
+compatibility of `𝔻` with composition is not formalized); the compatibility of `𝔼` with identities and vertical
 composition of graded 2-natural transformations is that of `TwoNatTrans.toOplaxTrans` on the
 2-morphisms of degree zero and is not restated.
 -/

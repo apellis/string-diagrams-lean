@@ -26,9 +26,10 @@ Theorem 5.5.
 
 ## Not formalized
 
-The strict 2-category `Π-2-ℭ𝔄𝔗` itself (composition of Π-2-functors and whiskering of
-Π-2-natural transformations by Π-2-functors) is not constructed, so Theorem 5.5 is not stated as
-a 2-equivalence of Lean bicategories.
+The strict 2-category `Π-2-ℭ𝔄𝔗` itself (whiskering of Π-2-natural transformations by
+Π-2-functors) is not constructed as a Lean bicategory, so Theorem 5.5 is not stated as a
+2-equivalence of Lean bicategories. Its 1-truncation (composition of Π-2-functors) is
+`PiTwoCat R`, and `E₂` is a functor `PiTwoSCat.toPiTwoCat` (`StringDiagrams.Super.QPiTwoSCat`).
 Corollary 5.6 (a 2-superequivalence between the 2-supercategories `Π-2-𝔖ℭ𝔄𝔗` and
 `D₂(Π-2-ℭ𝔄𝔗)`) and Remark 5.7 (a 3-equivalence, stated without proof in the paper) are not
 formalized.

@@ -45,6 +45,19 @@ bundled at the level of objects and 1-morphisms, as Mathlib categories:
 The 2-morphisms (2-natural transformations) are not included, for the reason explained in
 `StringDiagrams.Super.TwoSCat`: their vertical composition is associative and unital only up to
 the associators and unitors of the target.
+
+## The functors `E₂` and `𝔼`
+
+On objects and 1-morphisms, `E₂` of (5.4) and its §6 analogue `𝔼` (the underlying
+`(Q, Π)`-2-category of a graded `(Q, Π)`-2-supercategory, and the restriction of a graded
+2-superfunctor to degree zero, `StringDiagrams.Super.QPiTwoFunctor`) are functors
+`PiTwoSCat.toPiTwoCat : Π-2-SCat ⥤ Π-2-Cat` and
+`QPiTwoGSCat.toQPiTwoCat : (Q, Π)-2-GSCat ⥤ (Q, Π)-2-Cat`: the underlying pseudofunctor, the
+restriction to degree zero and the coherence maps `j`, `k` are compatible with identities and
+composition (`TwoSuperfunctor.toPseudofunctor_comp`, `TwoSuperfunctor.toDegreeZero2_comp`,
+`TwoSuperfunctor.jIso_comp_hom`, `TwoSuperfunctor.kIso_comp_hom`, ...). The compatibility of
+`𝔻` (`QPiTwoFunctor.mapQ`, `StringDiagrams.Super.QAssociatedTwoMap`) with composition is not
+formalized.
 -/
 
 noncomputable section
@@ -714,6 +727,187 @@ def forget : QPiTwoCat.{w, w₁, v₁, u₁} R ⥤ PiTwoCat.{w, w₁, v₁, u₁
 end QPiTwoCat
 
 end Categories
+
+/-! ## `E₂` and `𝔼` preserve identities and composition -/
+
+namespace TwoSuperfunctor
+
+open Supercategory GradedSupercategory BicategoryStruct TwoSupercategory
+
+section Underlying
+
+variable {R : Type w} [CommRing R]
+  {A : Type u₁} [BicategoryStruct.{w₁, v₁} A]
+  [∀ a b : A, Preadditive (a ⟶ b)] [∀ a b : A, Linear R (a ⟶ b)]
+  [∀ a b : A, Supercategory R (a ⟶ b)] [TwoSupercategory R A]
+  {A' : Type u₂} [BicategoryStruct.{w₂, v₂} A']
+  [∀ a b : A', Preadditive (a ⟶ b)] [∀ a b : A', Linear R (a ⟶ b)]
+  [∀ a b : A', Supercategory R (a ⟶ b)] [TwoSupercategory R A']
+  {A'' : Type u₃} [BicategoryStruct.{w₃, v₃} A'']
+  [∀ a b : A'', Preadditive (a ⟶ b)] [∀ a b : A'', Linear R (a ⟶ b)]
+  [∀ a b : A'', Supercategory R (a ⟶ b)] [TwoSupercategory R A'']
+
+variable (R A) in
+set_option backward.isDefEq.respectTransparency false in
+/-- `E₂` of (5.4) preserves identities: the restriction of `𝕀` is the identity pseudofunctor. -/
+theorem toPseudofunctor_id :
+    (TwoSuperfunctor.id R A).toPseudofunctor = Pseudofunctor.id (Underlying2 R A) := by
+  refine pseudofunctor_ext rfl HEq.rfl HEq.rfl (heq_of_eq ?_) (heq_of_eq ?_)
+  · funext a b c f g
+    exact Iso.ext (Subtype.ext rfl)
+  · funext a
+    exact Iso.ext (Subtype.ext rfl)
+
+set_option backward.isDefEq.respectTransparency false in
+/-- `E₂` of (5.4) preserves composition. -/
+theorem toPseudofunctor_comp (F : TwoSuperfunctor R A A') (G : TwoSuperfunctor R A' A'') :
+    (F.comp G).toPseudofunctor = F.toPseudofunctor.comp G.toPseudofunctor := by
+  refine pseudofunctor_ext rfl HEq.rfl HEq.rfl (heq_of_eq ?_) (heq_of_eq ?_)
+  · funext a b c f g
+    exact Iso.ext (Subtype.ext rfl)
+  · funext a
+    exact Iso.ext (Subtype.ext rfl)
+
+variable [PiTwoSupercategory R A] [PiTwoSupercategory R A'] [PiTwoSupercategory R A'']
+
+/-- The `j` of (5.4) for `𝕀` is the identity. -/
+theorem jIso_id_hom (a : A) : ((TwoSuperfunctor.id R A).jIso a).hom = 𝟙 _ := by
+  rw [jIso_hom]
+  simp
+
+omit [TwoSupercategory R A] [TwoSupercategory R A'] in
+/-- The `j` of (5.4) for a composite: `j_{𝕊ℝ} = 𝕊(j_ℝ) ∘ j_𝕊`. -/
+theorem jIso_comp_hom (F : TwoSuperfunctor R A A') (G : TwoSuperfunctor R A' A'') (a : A) :
+    ((F.comp G).jIso a).hom = (G.jIso (F.obj a)).hom ≫ G.map₂ (F.jIso a).hom := by
+  change (PiTwoSupercategory.ζ (R := R) (G.obj (F.obj a))).hom ≫
+      ((G.mapId (F.obj a)).hom ≫ G.map₂ (F.mapId a).hom) ≫
+        G.map₂ (F.map₂ (PiTwoSupercategory.ζ (R := R) a).inv) = _
+  rw [jIso_hom, jIso_hom, G.map₂_comp, G.map₂_comp]
+  simp only [Category.assoc]
+  rw [← G.map₂_comp_assoc, Iso.inv_hom_id, G.map₂_id, Category.id_comp]
+
+end Underlying
+
+section DegreeZero
+
+variable {R : Type w} [CommRing R]
+  {A : Type u₁} [BicategoryStruct.{w₁, v₁} A]
+  [∀ a b : A, Preadditive (a ⟶ b)] [∀ a b : A, Linear R (a ⟶ b)]
+  [∀ a b : A, Supercategory R (a ⟶ b)] [∀ a b : A, GradedSupercategory R (a ⟶ b)]
+  [TwoSupercategory R A] [GradedTwoSupercategory R A]
+  {A' : Type u₂} [BicategoryStruct.{w₂, v₂} A']
+  [∀ a b : A', Preadditive (a ⟶ b)] [∀ a b : A', Linear R (a ⟶ b)]
+  [∀ a b : A', Supercategory R (a ⟶ b)] [∀ a b : A', GradedSupercategory R (a ⟶ b)]
+  [TwoSupercategory R A'] [GradedTwoSupercategory R A']
+  {A'' : Type u₃} [BicategoryStruct.{w₃, v₃} A'']
+  [∀ a b : A'', Preadditive (a ⟶ b)] [∀ a b : A'', Linear R (a ⟶ b)]
+  [∀ a b : A'', Supercategory R (a ⟶ b)] [∀ a b : A'', GradedSupercategory R (a ⟶ b)]
+  [TwoSupercategory R A''] [GradedTwoSupercategory R A'']
+
+variable (R A) in
+set_option backward.isDefEq.respectTransparency false in
+/-- The restriction of `𝕀` to degree zero is the identity. -/
+theorem toDegreeZero2_id :
+    (TwoSuperfunctor.id R A).toDegreeZero2 TwoSuperfunctor.id_isGraded =
+      TwoSuperfunctor.id R (DegreeZero2 R A) := by
+  refine TwoEnvelope.twoSuperfunctor_ext rfl HEq.rfl HEq.rfl (heq_of_eq ?_) (heq_of_eq ?_)
+  · funext a b c f g
+    exact Iso.ext (GradedSupercategory.DegreeZero.hom_ext rfl)
+  · funext a
+    exact Iso.ext (GradedSupercategory.DegreeZero.hom_ext rfl)
+
+set_option backward.isDefEq.respectTransparency false in
+/-- Restriction to degree zero preserves composition. -/
+theorem toDegreeZero2_comp {F : TwoSuperfunctor R A A'} {G : TwoSuperfunctor R A' A''}
+    (hF : F.IsGraded) (hG : G.IsGraded) :
+    (F.comp G).toDegreeZero2 (hF.comp hG) = (F.toDegreeZero2 hF).comp (G.toDegreeZero2 hG) := by
+  refine TwoEnvelope.twoSuperfunctor_ext rfl HEq.rfl HEq.rfl (heq_of_eq ?_) (heq_of_eq ?_)
+  · funext a b c f g
+    exact Iso.ext (GradedSupercategory.DegreeZero.hom_ext rfl)
+  · funext a
+    exact Iso.ext (GradedSupercategory.DegreeZero.hom_ext rfl)
+
+variable [QPiTwoSupercategory R A] [QPiTwoSupercategory R A'] [QPiTwoSupercategory R A'']
+
+/-- The `k` of `𝔼 𝕀` is the identity. -/
+theorem kIso_id_hom (a : A) : ((TwoSuperfunctor.id R A).kIso a).hom = 𝟙 _ := by
+  rw [kIso_hom]
+  simp
+
+/-- The `k` of `𝔼` of a composite: `k_{𝕊ℝ} = 𝕊(k_ℝ) ∘ k_𝕊`. -/
+theorem kIso_comp_hom (F : TwoSuperfunctor R A A') (G : TwoSuperfunctor R A' A'') (a : A) :
+    ((F.comp G).kIso a).hom = (G.kIso (F.obj a)).hom ≫ G.map₂ (F.kIso a).hom := by
+  change (QPiTwoSupercategory.σ (R := R) (G.obj (F.obj a))).hom ≫
+      ((G.mapId (F.obj a)).hom ≫ G.map₂ (F.mapId a).hom) ≫
+        G.map₂ (F.map₂ (QPiTwoSupercategory.σ (R := R) a).inv) = _
+  rw [kIso_hom, kIso_hom, G.map₂_comp, G.map₂_comp]
+  simp only [Category.assoc]
+  rw [← G.map₂_comp_assoc, Iso.inv_hom_id, G.map₂_id, Category.id_comp]
+
+end DegreeZero
+
+end TwoSuperfunctor
+
+namespace PiTwoSCat
+
+variable {R : Type w} [CommRing R]
+
+set_option backward.isDefEq.respectTransparency false in
+/-- **Brundan–Ellis, (5.4).** The functor `E₂ : Π-2-SCat → Π-2-Cat`, sending a
+Π-2-supercategory to its underlying Π-2-category (`Underlying2.instPiTwoCategory`) and a
+2-superfunctor to its restriction (`TwoSuperfunctor.toPiTwoFunctor`). -/
+def toPiTwoCat : PiTwoSCat.{w, w₁, v₁, u₁} R ⥤ PiTwoCat.{w, w₁, v₁, u₁} R where
+  obj B := PiTwoCat.of R (Underlying2 R B)
+  map F := ⟨TwoSuperfunctor.toPseudofunctor F, TwoSuperfunctor.toPiTwoFunctor F⟩
+  map_id B := BundledPiTwoFunctor.ext' (TwoSuperfunctor.toPseudofunctor_id R B) fun a =>
+    heq_of_eq (Subtype.ext (TwoSuperfunctor.jIso_id_hom a.obj))
+  map_comp F G := BundledPiTwoFunctor.ext' (TwoSuperfunctor.toPseudofunctor_comp F G) fun a =>
+    heq_of_eq (Subtype.ext (TwoSuperfunctor.jIso_comp_hom F G a.obj))
+
+@[simp] theorem toPiTwoCat_obj (B : PiTwoSCat.{w, w₁, v₁, u₁} R) :
+    toPiTwoCat.obj B = PiTwoCat.of R (Underlying2 R B) := rfl
+
+@[simp] theorem toPiTwoCat_map {B C : PiTwoSCat.{w, w₁, v₁, u₁} R} (F : B ⟶ C) :
+    toPiTwoCat.map F =
+      (⟨TwoSuperfunctor.toPseudofunctor F, TwoSuperfunctor.toPiTwoFunctor F⟩ :
+        BundledPiTwoFunctor R (Underlying2 R B) (Underlying2 R C)) := rfl
+
+end PiTwoSCat
+
+namespace QPiTwoGSCat
+
+variable {R : Type w} [CommRing R]
+
+set_option backward.isDefEq.respectTransparency false in
+/-- **Brundan–Ellis, §6 (the analogue of (5.4) and (6.3)).** The functor
+`𝔼 : (Q, Π)-2-GSCat → (Q, Π)-2-Cat`, sending a graded `(Q, Π)`-2-supercategory to its
+underlying `(Q, Π)`-2-category (`GUnderlying2.instQPiTwoCategory`) and a graded 2-superfunctor
+to its restriction to degree zero (`TwoSuperfunctor.toQPiTwoFunctor`). -/
+def toQPiTwoCat : QPiTwoGSCat.{w, w₁, v₁, u₁} R ⥤ QPiTwoCat.{w, w₁, v₁, u₁} R where
+  obj B := QPiTwoCat.of R (GUnderlying2 R B)
+  map F := ⟨(F.1.toDegreeZero2 F.2).toPseudofunctor, F.1.toQPiTwoFunctor F.2⟩
+  map_id B := BundledQPiTwoFunctor.ext'
+    ((congrArg TwoSuperfunctor.toPseudofunctor (TwoSuperfunctor.toDegreeZero2_id R B)).trans
+      (TwoSuperfunctor.toPseudofunctor_id R (DegreeZero2 R B)))
+    (fun a => heq_of_eq (Subtype.ext (GradedSupercategory.DegreeZero.hom_ext (TwoSuperfunctor.jIso_id_hom a.obj.as))))
+    (fun a => heq_of_eq (Subtype.ext (GradedSupercategory.DegreeZero.hom_ext (TwoSuperfunctor.kIso_id_hom a.obj.as))))
+  map_comp F G := BundledQPiTwoFunctor.ext'
+    ((congrArg TwoSuperfunctor.toPseudofunctor (TwoSuperfunctor.toDegreeZero2_comp F.2 G.2)).trans
+      (TwoSuperfunctor.toPseudofunctor_comp _ _))
+    (fun a => heq_of_eq (Subtype.ext (GradedSupercategory.DegreeZero.hom_ext
+      (TwoSuperfunctor.jIso_comp_hom F.1 G.1 a.obj.as))))
+    (fun a => heq_of_eq (Subtype.ext (GradedSupercategory.DegreeZero.hom_ext
+      (TwoSuperfunctor.kIso_comp_hom F.1 G.1 a.obj.as))))
+
+@[simp] theorem toQPiTwoCat_obj (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
+    toQPiTwoCat.obj B = QPiTwoCat.of R (GUnderlying2 R B) := rfl
+
+@[simp] theorem toQPiTwoCat_map {B C : QPiTwoGSCat.{w, w₁, v₁, u₁} R} (F : B ⟶ C) :
+    toQPiTwoCat.map F =
+      (⟨(F.1.toDegreeZero2 F.2).toPseudofunctor, F.1.toQPiTwoFunctor F.2⟩ :
+        BundledQPiTwoFunctor R (GUnderlying2 R B) (GUnderlying2 R C)) := rfl
+
+end QPiTwoGSCat
 
 end StringDiagrams
 
