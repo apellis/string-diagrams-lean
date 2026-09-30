@@ -19,8 +19,8 @@ and degree `n - m` (`UnitQPiEnvelope.one_mem`, `UnitQPiEnvelope.one_mem_degree`)
 (`UnitQPiEnvelope.σ_hom`, `UnitQPiEnvelope.σbar_hom`, `UnitQPiEnvelope.ζ_hom`).
 
 The paper assumes that `k` is a field; the statements here hold over any commutative ring.
-The horizontal (monoidal) composition of `I_{q,π}` is not formalized: the `(Q, Π)`-envelope
-of Definition 6.8 is a graded `(Q, Π)`-supercategory, not a monoidal one.
+The horizontal (monoidal) composition of `I_{q,π}` (Definition 6.10, one-object case) is in
+`StringDiagrams.Super.UnitQPiEnvelopeMonoidal`.
 -/
 
 noncomputable section
