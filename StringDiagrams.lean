@@ -133,6 +133,7 @@ import StringDiagrams.LayerMap.Local
 import StringDiagrams.DSL.Basic
 import StringDiagrams.Render.SVG
 import StringDiagrams.Render.TikZ
+import StringDiagrams.Examples.ChordDiagrams
 import StringDiagrams.Examples.Exterior
 import StringDiagrams.Examples.FreeDots
 import StringDiagrams.Examples.FreeDots.Representation
