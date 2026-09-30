@@ -23,6 +23,8 @@ was explained after Example 1.2". For graded supercategories `C` and `D`, the mo
 * `F ⊠ G` of graded superfunctors, the associator, the unitors and their inverses are graded
   superfunctors (`IsGradedSuperfunctor` instances; bundled: `BoxProd.gradedMap`,
   `BoxProd.gradedAssoc`, `BoxProd.gradedAssocInv`, `BoxProd.gradedLunit`, …).
+
+The category `GSCat` and its monoidal structure `⊠` are in `StringDiagrams.Super.GSCatMonoidal`.
 -/
 
 noncomputable section
@@ -274,7 +276,8 @@ instance isGradedSuperfunctor_assoc : IsGradedSuperfunctor k (assoc (k := k) C D
       hx
 
 /-- The inverse of the associator preserves degrees. -/
-instance isGradedSuperfunctor_assocInv : IsGradedSuperfunctor k (assocInv (k := k) C D E).toFunctor where
+instance isGradedSuperfunctor_assocInv :
+    IsGradedSuperfunctor k (assocInv (k := k) C D E).toFunctor where
   map_mem_degree {X Y n x} hx :=
     map_mem_of_degree₃' (assocInvHom X Y) _ (fun a b c habc f hf g hg l hl => by
       rw [assocInvHom_tmul, ← habc]
@@ -284,7 +287,8 @@ instance isGradedSuperfunctor_assocInv : IsGradedSuperfunctor k (assocInv (k := 
       hx
 
 /-- The associator of graded supercategories, as a graded superfunctor. -/
-def gradedAssoc : GradedSuperfunctor k (BoxProd k (BoxProd k C D) E) (BoxProd k C (BoxProd k D E)) :=
+def gradedAssoc :
+    GradedSuperfunctor k (BoxProd k (BoxProd k C D) E) (BoxProd k C (BoxProd k D E)) :=
   ⟨assoc (k := k) C D E⟩
 
 /-- The inverse of the associator of graded supercategories, as a graded superfunctor. -/
@@ -292,7 +296,8 @@ def gradedAssocInv :
     GradedSuperfunctor k (BoxProd k C (BoxProd k D E)) (BoxProd k (BoxProd k C D) E) :=
   ⟨assocInv (k := k) C D E⟩
 
-@[simp] theorem gradedAssoc_toSuperfunctor : (gradedAssoc (k := k) C D E).toSuperfunctor = assoc (k := k) C D E :=
+@[simp] theorem gradedAssoc_toSuperfunctor :
+    (gradedAssoc (k := k) C D E).toSuperfunctor = assoc (k := k) C D E :=
   rfl
 
 @[simp] theorem gradedAssocInv_toSuperfunctor :
@@ -314,7 +319,8 @@ instance isGradedSuperfunctor_lunit : IsGradedSuperfunctor k (lunit.{w} (k := k)
       · rw [hr, zero_smul]; exact Submodule.zero_mem _) hx
 
 /-- The inverse of the left unitor preserves degrees. -/
-instance isGradedSuperfunctor_lunitInv : IsGradedSuperfunctor k (lunitInv.{w} (k := k) C).toFunctor where
+instance isGradedSuperfunctor_lunitInv :
+    IsGradedSuperfunctor k (lunitInv.{w} (k := k) C).toFunctor where
   map_mem_degree {X Y n f} hf := by
     change lunitInvHom X Y f ∈ _
     rw [lunitInvHom_apply, ← zero_add n]
@@ -330,7 +336,8 @@ instance isGradedSuperfunctor_runit : IsGradedSuperfunctor k (runit.{w} (k := k)
       · rw [hr, zero_smul]; exact Submodule.zero_mem _) hx
 
 /-- The inverse of the right unitor preserves degrees. -/
-instance isGradedSuperfunctor_runitInv : IsGradedSuperfunctor k (runitInv.{w} (k := k) C).toFunctor where
+instance isGradedSuperfunctor_runitInv :
+    IsGradedSuperfunctor k (runitInv.{w} (k := k) C).toFunctor where
   map_mem_degree {X Y n f} hf := by
     change runitInvHom X Y f ∈ _
     rw [runitInvHom_apply, ← add_zero n]
@@ -340,20 +347,24 @@ instance isGradedSuperfunctor_runitInv : IsGradedSuperfunctor k (runitInv.{w} (k
 def gradedLunit : GradedSuperfunctor k (BoxProd k (BoxUnit.{w, u} k) C) C := ⟨lunit.{w} (k := k) C⟩
 
 /-- The inverse of the left unitor, as a graded superfunctor. -/
-def gradedLunitInv : GradedSuperfunctor k C (BoxProd k (BoxUnit.{w, u} k) C) := ⟨lunitInv.{w} (k := k) C⟩
+def gradedLunitInv : GradedSuperfunctor k C (BoxProd k (BoxUnit.{w, u} k) C) :=
+  ⟨lunitInv.{w} (k := k) C⟩
 
 /-- The right unitor of graded supercategories, as a graded superfunctor. -/
 def gradedRunit : GradedSuperfunctor k (BoxProd k C (BoxUnit.{w, u} k)) C := ⟨runit.{w} (k := k) C⟩
 
 /-- The inverse of the right unitor, as a graded superfunctor. -/
-def gradedRunitInv : GradedSuperfunctor k C (BoxProd k C (BoxUnit.{w, u} k)) := ⟨runitInv.{w} (k := k) C⟩
+def gradedRunitInv : GradedSuperfunctor k C (BoxProd k C (BoxUnit.{w, u} k)) :=
+  ⟨runitInv.{w} (k := k) C⟩
 
-@[simp] theorem gradedLunit_toSuperfunctor : (gradedLunit.{w} (k := k) C).toSuperfunctor = lunit (k := k) C := rfl
+@[simp] theorem gradedLunit_toSuperfunctor :
+    (gradedLunit.{w} (k := k) C).toSuperfunctor = lunit (k := k) C := rfl
 
 @[simp] theorem gradedLunitInv_toSuperfunctor :
     (gradedLunitInv.{w} (k := k) C).toSuperfunctor = lunitInv (k := k) C := rfl
 
-@[simp] theorem gradedRunit_toSuperfunctor : (gradedRunit.{w} (k := k) C).toSuperfunctor = runit (k := k) C := rfl
+@[simp] theorem gradedRunit_toSuperfunctor :
+    (gradedRunit.{w} (k := k) C).toSuperfunctor = runit (k := k) C := rfl
 
 @[simp] theorem gradedRunitInv_toSuperfunctor :
     (gradedRunitInv.{w} (k := k) C).toSuperfunctor = runitInv (k := k) C := rfl

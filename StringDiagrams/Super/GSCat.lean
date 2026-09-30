@@ -35,8 +35,9 @@ transformations (the example after Definition 6.5).
   `σ_A`, `σ̄_A`, `ζ_A` the given supernatural isomorphisms (even of degree `-1`, even of
   degree `1`, odd of degree `0`).
 
-The monoidal structure `⊠` on the category `GSCat` of graded supercategories and graded
-superfunctors is not formalized (`⊠` on `SCat` is in `StringDiagrams.Super.BoxProductMonoidal`).
+The category `GSCat` of graded supercategories and graded superfunctors and its monoidal
+structure `⊠` are in `StringDiagrams.Super.GSCatMonoidal` (`⊠` on `SCat` is in
+`StringDiagrams.Super.BoxProductMonoidal`).
 -/
 
 noncomputable section
