@@ -55,9 +55,9 @@ On objects and 1-morphisms, `E₂` of (5.4) and its §6 analogue `𝔼` (the und
 `QPiTwoGSCat.toQPiTwoCat : (Q, Π)-2-GSCat ⥤ (Q, Π)-2-Cat`: the underlying pseudofunctor, the
 restriction to degree zero and the coherence maps `j`, `k` are compatible with identities and
 composition (`TwoSuperfunctor.toPseudofunctor_comp`, `TwoSuperfunctor.toDegreeZero2_comp`,
-`TwoSuperfunctor.jIso_comp_hom`, `TwoSuperfunctor.kIso_comp_hom`, ...). The compatibility of
-`𝔻` (`QPiTwoFunctor.mapQ`, `StringDiagrams.Super.QAssociatedTwoMap`) with composition is not
-formalized.
+`TwoSuperfunctor.jIso_comp_hom`, `TwoSuperfunctor.kIso_comp_hom`, ...). The functors `D₂` of
+(5.5) and `𝔻` in the other direction (`PiTwoCat.toPiTwoSCat`, `QPiTwoCat.toQPiTwoGSCat`) are in
+`StringDiagrams.Super.QPiTwoSCatD`.
 -/
 
 noncomputable section
