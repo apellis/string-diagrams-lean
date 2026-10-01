@@ -49,10 +49,11 @@ identity morphisms of `A` (instance `QPiEnvelope.instQPi`).
 
 ## Scope
 
-As for Theorem 4.3 (`StringDiagrams.Super.Envelope`), Theorem 6.9 is stated through its
+As for Theorem 4.3 (`StringDiagrams.Super.Envelope`), Theorem 6.9 is stated here through its
 content on objects, on homogeneous supernatural transformations of each parity and degree,
-and on composition; the graded Hom-supercategories and the 2-adjunction `-_{q,π} ⊣ ν` are not
-packaged.
+and on composition; the graded superequivalence of graded Hom-supercategories
+`ℋom(A, νB) → ℋom(A_{q,π}, B)` is `QPiEnvelope.extendHomGradedSuperequivalence` in
+`StringDiagrams.Super.QEnvelopeAdjunction`.
 -/
 
 noncomputable section

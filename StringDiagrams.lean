@@ -50,6 +50,7 @@ import StringDiagrams.Super.UnitEnvelope
 import StringDiagrams.Super.TwoEnvelopeFunctor
 import StringDiagrams.Super.TwoEnvelopeEquivalence
 import StringDiagrams.Super.MonoidalAssociated
+import StringDiagrams.Super.MonoidalPiCat
 import StringDiagrams.Super.AssociatedFunctorial
 import StringDiagrams.Super.PiTwoCategory
 import StringDiagrams.Super.AssociatedTwo
@@ -84,6 +85,7 @@ import StringDiagrams.Super.TwoEnvelopeTwoHom
 import StringDiagrams.Super.PiCat
 import StringDiagrams.Super.TwoSCat
 import StringDiagrams.Super.QPiTwoSCat
+import StringDiagrams.Super.QPiTwoSCatD
 import StringDiagrams.Super.DrinfeldCenterEnvelope
 import StringDiagrams.Super.Braided
 import StringDiagrams.Super.DrinfeldCenterBraiding
@@ -116,6 +118,8 @@ import StringDiagrams.Super.BoxProduct
 import StringDiagrams.Super.BoxProductMonoidal
 import StringDiagrams.Super.BoxProductGraded
 import StringDiagrams.Super.GSCatMonoidal
+import StringDiagrams.Super.QEnvelopeAdjunction
+import StringDiagrams.Super.QEnvelopeNaturality
 import StringDiagrams.Super.BimoduleFunctor
 import StringDiagrams.Super.GSBim
 import StringDiagrams.Super.KaroubiMonoidal

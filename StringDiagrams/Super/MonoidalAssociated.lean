@@ -43,9 +43,9 @@ unit axiom (1.6) for `β` is derived from (1.7) (`MonoidalPiCategory.β_unit`).
   `ζ` to `ζ` (`Tmon_map_ζ`), and is natural: `T_B ∘ (G̲)^ = G ∘ T_A` for every monoidal
   superfunctor `G` (`Associated.Tmon_naturality`).
 
-The categories `Π-SMon` and `Π-Mon` themselves are not constructed; as for Lemma 5.1 in
-`StringDiagrams.Super.Associated`, the content of the equivalence is stated directly on
-objects and morphisms.
+The content of the equivalence is stated here directly on objects and morphisms; the categories
+`Π-SMon` and `Π-Mon`, the functors `E`, `D` and the equivalence `Π-Mon ≌ Π-SMon` are in
+`StringDiagrams.Super.MonoidalPiCat`.
 
 ## Sign corrections
 
