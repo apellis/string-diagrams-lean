@@ -66,6 +66,7 @@ import StringDiagrams.Super.GradedTwo
 import StringDiagrams.Super.GradedTwoEnvelope
 import StringDiagrams.Super.QTwoEnvelopeUniversal
 import StringDiagrams.Super.GradedTwoEnvelopeUniversal
+import StringDiagrams.Super.GradedTwoEnvelopeFunctor
 import StringDiagrams.Super.UnitQPiEnvelope
 import StringDiagrams.Super.QPiMonoidalEnvelope
 import StringDiagrams.Super.UnitQPiEnvelopeMonoidal

@@ -229,7 +229,21 @@ Following Brundan–Ellis, *Monoidal supercategories* ([arXiv:1603.05928v3](http
 
 Convention for Lemma 6.11: the extension `ℝ̃` sends `Q^mΠ^aF` to `Π^a Q^m (ℝF)` (`π^a_{ℝμ} q^m_{ℝμ} (ℝF)` in a graded `(Q, Π)`-2-supercategory), as `QPiEnvelope.extend` does for Theorem 6.9, whereas the proof of Lemma 6.11 writes `q^m π^a (ℝF)`; the two choices differ by the 2-isomorphisms `γ_π = β_q⁻¹` of Lemma 6.6(ii) and give isomorphic 2-superfunctors.
 
-Not formalized from §6: the 2-adjunction `-_{q,π} ⊣ ν` after Definition 6.10 as an adjunction between the 2-categories `2-𝔊𝔖ℭ𝔄𝔗` and `(Q, Π)-2-𝔊𝔖ℭ𝔄𝔗`, which are not constructed as bicategories (the strict 2-functor `-_{q,π}` on 2-superfunctors is not defined); the 2-categories `(Q, Π)-2-ℭ𝔄𝔗` and `(Q, Π)-2-𝔊𝔖ℭ𝔄𝔗` as bicategories with 2-natural transformations as 2-morphisms (their 1-truncations `QPiTwoCat R` and `QPiTwoGSCat R`, with the composition of `(Q, Π)`-2-functors and `𝔼` as a functor, are in `StringDiagrams.Super.QPiTwoSCat`, and `𝔻` as a functor in `StringDiagrams.Super.QPiTwoSCatD`), so the §6 analogue of Theorem 5.5 is formalized on objects, 1-morphisms and 2-morphisms (`StringDiagrams.Super.QAssociatedTwo`, `StringDiagrams.Super.QAssociatedTwoT`, `StringDiagrams.Super.QAssociatedTwoMap`, `StringDiagrams.Super.QAssociatedTwoNat`) but not stated as a 2-equivalence of bundled 2-categories (as for Theorem 5.5).
+The graded envelope acts on graded 2-superfunctors and preserves identities and composition
+as equalities of complete 2-superfunctors (`QPiTwoEnvelope.mapQPi`, `mapQPi_isGraded`,
+`mapQPi_id`, `mapQPi_comp`, in `StringDiagrams.Super.GradedTwoEnvelopeFunctor`). Its bundled
+consumer is the functor of 1-truncations `GTwoSCat.envelope : GTwoSCat R ⥤ QPiTwoGSCat R`.
+Integer shifts, parity labels and the existing horizontal signs are preserved.
+
+Not formalized from §6: the full action of `-_{q,π}` on graded 2-natural transformations and
+supermodifications, and the 2-adjunction `-_{q,π} ⊣ ν` after Definition 6.10 between bundled
+2-categories. The categories `2-𝔊𝔖ℭ𝔄𝔗`, `(Q, Π)-2-ℭ𝔄𝔗` and `(Q, Π)-2-𝔊𝔖ℭ𝔄𝔗` are not
+constructed as bicategories with 2-natural transformations as 2-morphisms. Their 1-truncations
+`QPiTwoCat R` and `QPiTwoGSCat R`, composition of `(Q, Π)`-2-functors and `𝔼` are in
+`StringDiagrams.Super.QPiTwoSCat`, with `𝔻` in `StringDiagrams.Super.QPiTwoSCatD`.
+The §6 analogue of Theorem 5.5 is formalized on objects, 1-morphisms and 2-morphisms
+(`QAssociatedTwo`, `QAssociatedTwoT`, `QAssociatedTwoMap`, `QAssociatedTwoNat`), but not as a
+2-equivalence of bundled 2-categories.
 
 **Errata (§6).**
 
