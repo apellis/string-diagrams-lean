@@ -295,9 +295,15 @@ followed by the chosen density of the composite functor. Its unit normalization
 uses `G.mapId.inv`, retains both compositor factors, and works for arbitrary graded
 functors, including naturality on odd 2-morphisms. It also names the exact right-leg
 comparison endpoints, but does not yet identify the actual right leg with that
-comparison. Identifying the bridges, inverse-density/compositor compatibility, and
-assembly of the full paste-to-direct modification remain open; no strict
-counit-functor naturality is asserted.
+comparison. `TwoFunctorPostcompositionComposition` supplies the actual invertible
+postcomposition/vertical-composition modification, with components exactly
+`G.mapComp.hom` and `G.mapComp.inv`, even of degree zero for graded `G`.
+`GradedTwoEnvelopeCounitPostcomposeComposition` applies its inverse to the actual
+density pair defining `counitNaturality F`, retaining the restriction-equality
+transport and arbitrary shifted and odd-morphism naturality. Identifying the
+bridges, inverse-density factorization, and assembly with both endpoint transports
+remain open, as does the full paste-to-direct modification. No strict counit-functor
+naturality or global 2-adjunction is asserted.
 
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
