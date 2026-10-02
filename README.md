@@ -320,8 +320,14 @@ normalizes both external boundaries. Its `counitPasteRightIso F G` identifies th
 original `counitPasteRight F G` with `counitPasteRightComparison F G` by an invertible
 supermodification whose hom and inverse are even of degree zero. This holds for
 arbitrary graded bundled functors, with unrestricted input 2-cells, including odd
-cells of arbitrary degree. The full paste-to-direct modification remains open;
-no strict counit-functor naturality or global 2-adjunction is asserted.
+cells of arbitrary degree. `GradedTwoEnvelopeCounitFullPaste` now combines both
+original leg identifications with `comparisonCompIso` to prove
+`counitNaturalityPasteIso F G : counitNaturalityPaste F G ≅ counitNaturality (F ≫ G)`.
+Both maps are even of degree zero; all original boundary transports and functor
+compositors are retained. The final normalization identifies only proofs of the
+same restriction equality, not the endpoint functors. Higher associativity
+coherence for these modifications, triangle coherence, and the global graded
+2-adjunction remain open; no strict counit-functor naturality is asserted.
 
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
