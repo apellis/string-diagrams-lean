@@ -247,9 +247,19 @@ as a natural transformation of the existing 1-truncations. The concrete `GSCat �
 `GradedTwoEnvelopeCoherenceExamples` checks a nonzero invertible odd probe of degree `-3`, its
 negative horizontal sign, transformation naturality and the transported inclusion square.
 
+`GradedTwoEnvelopeCounit` evaluates formal shifts using the chosen `(Q, Π)` structure,
+proves the full-record strict right triangle, and constructs actual comparison transformations
+for the naturality square and the left triangle, in both directions. The forward naturality
+comparison is graded and strong. `GradedTwoEnvelopeCounitExamples` retains the nonzero odd
+degree `-3` probe and proves `counit_naturality_not_strict`: at the inclusion into another
+envelope, the square's two legs have different outer parity labels. Thus these evaluation
+components do **not** give an ordinary natural counit on the existing 1-truncations.
+The higher-categorical comparisons, not strict equality, are the route forward; inverse
+supermodification and global triangle laws are not supplied by these records alone.
+
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
-The inclusion naturality just proved does not supply those global structures.
+The inclusion naturality and counit comparison records do not supply those global structures.
 The categories `2-𝔊𝔖ℭ𝔄𝔗`, `(Q, Π)-2-ℭ𝔄𝔗` and `(Q, Π)-2-𝔊𝔖ℭ𝔄𝔗` are not
 constructed as bicategories with 2-natural transformations as 2-morphisms. Their 1-truncations
 `QPiTwoCat R` and `QPiTwoGSCat R`, composition of `(Q, Π)`-2-functors and `𝔼` are in
