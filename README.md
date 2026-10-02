@@ -261,6 +261,11 @@ The reverse naturality comparison is graded and strong. The coherence examples c
 these cancellation laws for the non-strict inclusion square, retaining the odd degree `-3`
 fixture. They do not assert the expanded component naturality equation on that probe.
 These inverse laws do not yet supply globally bundled adjunction triangle coherence.
+`GradedTwoEnvelopeCounitComposition` proves a genuine density-comparison composition
+modification by cancelling the middle density pair, and identity-functor counit coherence
+with explicit boundary normalization. Both directions are even and degree zero. This is
+not yet the arbitrary `F ⋙ G` counit composition law: the identification with the
+functor-whiskered paste still needs the general transformation-whiskering API.
 
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
