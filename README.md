@@ -300,8 +300,15 @@ postcomposition/vertical-composition modification, with components exactly
 `G.mapComp.hom` and `G.mapComp.inv`, even of degree zero for graded `G`.
 `GradedTwoEnvelopeCounitPostcomposeComposition` applies its inverse to the actual
 density pair defining `counitNaturality F`, retaining the restriction-equality
-transport and arbitrary shifted and odd-morphism naturality. Identifying the
-bridges, inverse-density factorization, and assembly with both endpoint transports
+transport and arbitrary shifted and odd-morphism naturality.
+`GradedTwoEnvelopeCounitPostcomposeInverseDensity` factors the original postcomposed
+inverse density through the inverse density of the composite and a reverse bridge.
+The normalization components are exactly `G.mapId.inv`; both bridge cancellation
+orders and the even degree-zero invertible modifications are proved. Its counit
+consumer starts at the actual postcomposed `counitNaturality F` and retains the
+forward leg's source transport along `counit_naturality_restrict F`.
+Identifying the two bridges after aligning endpoints, commuting that transport
+through postcomposition/factorization, and assembling the right-leg comparison
 remain open, as does the full paste-to-direct modification. No strict counit-functor
 naturality or global 2-adjunction is asserted.
 
