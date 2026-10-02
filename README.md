@@ -269,8 +269,12 @@ not yet the arbitrary `F ⋙ G` counit composition law.
 transformations and supermodifications, functorial on the whole transformation category.
 It retains nontrivial functor coherence and naturality for odd 2-morphisms, preserves
 strongness and grading, and preserves modification parity and degree. This gives the
-left-whiskered leg of the counit paste. General postcomposition and the identification
-of the full functor-whiskered paste with the direct comparison remain open.
+left-whiskered leg of the counit paste. `TwoFunctorPostcomposition` supplies the actual
+right-whiskered leg, retaining both compositor factors and naturality for arbitrary,
+including odd, 2-morphisms. Its transformation-category functor is additive, linear,
+and parity-preserving; postcomposition by a graded functor preserves grading and
+homogeneous modification degree. Strong transformations remain strong. Identifying the
+full functor-whiskered paste with the direct counit comparison remains open.
 
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
