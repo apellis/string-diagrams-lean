@@ -288,9 +288,16 @@ on the parity label or integer shift. `GradedTwoEnvelopeCounitPasteLeft` identif
 the actual boundary-transported left leg with its chosen density comparison as a
 complete transformation record (`counitPasteLeft_eq_comparison`). Its
 `counitPasteLeftIso` is a genuine invertible even degree-zero supermodification,
-with naturality and both inverse identities. The postcomposition/right-leg comparison
-with its compositor factors and assembly of the full paste-to-direct modification
-remain open; no strict counit-functor naturality is asserted.
+with naturality and both inverse identities. `GradedTwoEnvelopeCounitPasteRight`
+supplies a bounded postcomposition-density factorization: actual postcomposition
+is related by an invertible even degree-zero supermodification to a coherent bridge
+followed by the chosen density of the composite functor. Its unit normalization
+uses `G.mapId.inv`, retains both compositor factors, and works for arbitrary graded
+functors, including naturality on odd 2-morphisms. It also names the exact right-leg
+comparison endpoints, but does not yet identify the actual right leg with that
+comparison. Identifying the bridges, inverse-density/compositor compatibility, and
+assembly of the full paste-to-direct modification remain open; no strict
+counit-functor naturality is asserted.
 
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.

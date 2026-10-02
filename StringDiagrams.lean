@@ -80,6 +80,7 @@ import StringDiagrams.Super.TwoFunctorPostcomposition
 import StringDiagrams.Super.GradedTwoEnvelopeCounitPaste
 import StringDiagrams.Super.GradedTwoEnvelopeCounitPasteCoherence
 import StringDiagrams.Super.GradedTwoEnvelopeCounitPasteLeft
+import StringDiagrams.Super.GradedTwoEnvelopeCounitPasteRight
 import StringDiagrams.Super.UnitQPiEnvelope
 import StringDiagrams.Super.QPiMonoidalEnvelope
 import StringDiagrams.Super.UnitQPiEnvelopeMonoidal
