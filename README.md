@@ -273,8 +273,14 @@ left-whiskered leg of the counit paste. `TwoFunctorPostcomposition` supplies the
 right-whiskered leg, retaining both compositor factors and naturality for arbitrary,
 including odd, 2-morphisms. Its transformation-category functor is additive, linear,
 and parity-preserving; postcomposition by a graded functor preserves grading and
-homogeneous modification degree. Strong transformations remain strong. Identifying the
-full functor-whiskered paste with the direct counit comparison remains open.
+homogeneous modification degree. Strong transformations remain strong.
+`GradedTwoEnvelopeCounitPaste` now constructs the actual paste of these two whiskered
+legs for arbitrary composable graded functors, transporting its boundaries by equalities
+of complete functor records. The resulting transformation has exactly the direct
+composite square's endpoints and retains strongness, grading, and naturality for all
+2-morphisms, including odd ones. An invertible supermodification identifying this paste
+with the direct counit comparison remains open: the missing step is compatibility of
+the actual whiskered legs with the chosen density comparisons, not endpoint associativity.
 
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
