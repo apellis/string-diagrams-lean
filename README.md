@@ -294,8 +294,8 @@ is related by an invertible even degree-zero supermodification to a coherent bri
 followed by the chosen density of the composite functor. Its unit normalization
 uses `G.mapId.inv`, retains both compositor factors, and works for arbitrary graded
 functors, including naturality on odd 2-morphisms. It also names the exact right-leg
-comparison endpoints, but does not yet identify the actual right leg with that
-comparison. `TwoFunctorPostcompositionComposition` supplies the actual invertible
+comparison endpoints; the assembly below now identifies the actual right leg with
+that comparison. `TwoFunctorPostcompositionComposition` supplies the actual invertible
 postcomposition/vertical-composition modification, with components exactly
 `G.mapComp.hom` and `G.mapComp.inv`, even of degree zero for graded `G`.
 `GradedTwoEnvelopeCounitPostcomposeComposition` applies its inverse to the actual
@@ -314,10 +314,14 @@ the shift isomorphisms, without equating the original endpoint functors. It also
 moves the retained forward source transport through actual postcomposition and
 forward factorization onto the first bridge factor. Both counit specializations
 retain the actual restriction equality and are invertible, even of degree zero.
-Assembling the inverse/forward factorizations, cancelling through the remaining
-target transport, and normalizing the external right-leg boundaries remain open,
-as does the full paste-to-direct modification. No strict counit-functor naturality
-or global 2-adjunction is asserted.
+`GradedTwoEnvelopeCounitRightLegAssembly` combines the inverse/forward factorizations,
+cancels the actual aligned bridges while retaining the target transport, and
+normalizes both external boundaries. Its `counitPasteRightIso F G` identifies the
+original `counitPasteRight F G` with `counitPasteRightComparison F G` by an invertible
+supermodification whose hom and inverse are even of degree zero. This holds for
+arbitrary graded bundled functors, with unrestricted input 2-cells, including odd
+cells of arbitrary degree. The full paste-to-direct modification remains open;
+no strict counit-functor naturality or global 2-adjunction is asserted.
 
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
