@@ -284,9 +284,13 @@ the actual whiskered legs with the chosen density comparisons, not endpoint asso
 `GradedTwoEnvelopeCounitPasteCoherence` proves the precomposition-density component
 and inverse identities for arbitrary graded functors, and the corresponding actual
 prewhiskered naturality-cell identities with unitors retained. No restriction is placed
-on the parity label or integer shift. Promoting these identities to the boundary-transported
-left-leg modification, proving the postcomposition comparison with its compositor factors,
-and assembling the full paste-to-direct invertible supermodification remain open.
+on the parity label or integer shift. `GradedTwoEnvelopeCounitPasteLeft` identifies
+the actual boundary-transported left leg with its chosen density comparison as a
+complete transformation record (`counitPasteLeft_eq_comparison`). Its
+`counitPasteLeftIso` is a genuine invertible even degree-zero supermodification,
+with naturality and both inverse identities. The postcomposition/right-leg comparison
+with its compositor factors and assembly of the full paste-to-direct modification
+remain open; no strict counit-functor naturality is asserted.
 
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
