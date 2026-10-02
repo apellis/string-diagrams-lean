@@ -254,8 +254,13 @@ comparison is graded and strong. `GradedTwoEnvelopeCounitExamples` retains the n
 degree `-3` probe and proves `counit_naturality_not_strict`: at the inclusion into another
 envelope, the square's two legs have different outer parity labels. Thus these evaluation
 components do **not** give an ordinary natural counit on the existing 1-truncations.
-The higher-categorical comparisons, not strict equality, are the route forward; inverse
-supermodification and global triangle laws are not supplied by these records alone.
+`GradedTwoEnvelopeCounitCoherence` now gives actual invertible supermodifications cancelling
+each comparison with its reverse, for both the counit naturality square and the left triangle.
+The constructions retain associators and unitors; both directions are even of degree zero.
+The reverse naturality comparison is graded and strong. The coherence examples consume
+these cancellation laws for the non-strict inclusion square, retaining the odd degree `-3`
+fixture. They do not assert the expanded component naturality equation on that probe.
+These inverse laws do not yet supply globally bundled adjunction triangle coherence.
 
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.

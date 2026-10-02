@@ -72,6 +72,8 @@ import StringDiagrams.Super.GradedTwoEnvelopeCoherence
 import StringDiagrams.Super.GradedTwoEnvelopeCoherenceExamples
 import StringDiagrams.Super.GradedTwoEnvelopeCounit
 import StringDiagrams.Super.GradedTwoEnvelopeCounitExamples
+import StringDiagrams.Super.GradedTwoEnvelopeCounitCoherence
+import StringDiagrams.Super.GradedTwoEnvelopeCounitCoherenceExamples
 import StringDiagrams.Super.UnitQPiEnvelope
 import StringDiagrams.Super.QPiMonoidalEnvelope
 import StringDiagrams.Super.UnitQPiEnvelopeMonoidal
