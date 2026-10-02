@@ -281,6 +281,12 @@ composite square's endpoints and retains strongness, grading, and naturality for
 2-morphisms, including odd ones. An invertible supermodification identifying this paste
 with the direct counit comparison remains open: the missing step is compatibility of
 the actual whiskered legs with the chosen density comparisons, not endpoint associativity.
+`GradedTwoEnvelopeCounitPasteCoherence` proves the precomposition-density component
+and inverse identities for arbitrary graded functors, and the corresponding actual
+prewhiskered naturality-cell identities with unitors retained. No restriction is placed
+on the parity label or integer shift. Promoting these identities to the boundary-transported
+left-leg modification, proving the postcomposition comparison with its compositor factors,
+and assembling the full paste-to-direct invertible supermodification remain open.
 
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
