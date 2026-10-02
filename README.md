@@ -307,10 +307,17 @@ The normalization components are exactly `G.mapId.inv`; both bridge cancellation
 orders and the even degree-zero invertible modifications are proved. Its counit
 consumer starts at the actual postcomposed `counitNaturality F` and retains the
 forward leg's source transport along `counit_naturality_restrict F`.
-Identifying the two bridges after aligning endpoints, commuting that transport
-through postcomposition/factorization, and assembling the right-leg comparison
-remain open, as does the full paste-to-direct modification. No strict counit-functor
-naturality or global 2-adjunction is asserted.
+`GradedTwoEnvelopeCounitPostcomposeBridgeCoherence` identifies the existing bridges
+after explicitly transporting both endpoints along equality of restrictions. The
+proof computes their actual cells on `J` and extends equality by naturality along
+the shift isomorphisms, without equating the original endpoint functors. It also
+moves the retained forward source transport through actual postcomposition and
+forward factorization onto the first bridge factor. Both counit specializations
+retain the actual restriction equality and are invertible, even of degree zero.
+Assembling the inverse/forward factorizations, cancelling through the remaining
+target transport, and normalizing the external right-leg boundaries remain open,
+as does the full paste-to-direct modification. No strict counit-functor naturality
+or global 2-adjunction is asserted.
 
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
