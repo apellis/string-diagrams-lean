@@ -239,11 +239,17 @@ Integer shifts, parity labels and the existing horizontal signs are preserved.
 (`mapQPiNatTrans`) and supermodifications (`mapQPiSupermodification`), with full-record identity
 and vertical-composition laws. It preserves and reflects the existing degree-zero graded
 transformation predicate and arbitrary parity/integer degree of supermodifications; `mapQPiHom`
-is a linear superfunctor. Naturality includes all 2-morphisms. Supermodification whiskering
-compatibility is currently componentwise, not an equality of transported records.
+is a linear superfunctor. Naturality includes all 2-morphisms.
+`GradedTwoEnvelopeCoherence` proves both supermodification whiskering laws as equalities of
+complete transported records and naturality of the canonical inclusion `J` on actual functors,
+transformations and graded transformation subtypes. `GTwoSCat.envelopeUnit` bundles the inclusion
+as a natural transformation of the existing 1-truncations. The concrete `GSCat ℚ` consumer in
+`GradedTwoEnvelopeCoherenceExamples` checks a nonzero invertible odd probe of degree `-3`, its
+negative horizontal sign, transformation naturality and the transported inclusion square.
 
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
-`-_{q,π} ⊣ ν` after Definition 6.10, including its unit/counit naturality and triangle coherence.
+`-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
+The inclusion naturality just proved does not supply those global structures.
 The categories `2-𝔊𝔖ℭ𝔄𝔗`, `(Q, Π)-2-ℭ𝔄𝔗` and `(Q, Π)-2-𝔊𝔖ℭ𝔄𝔗` are not
 constructed as bicategories with 2-natural transformations as 2-morphisms. Their 1-truncations
 `QPiTwoCat R` and `QPiTwoGSCat R`, composition of `(Q, Π)`-2-functors and `𝔼` are in
