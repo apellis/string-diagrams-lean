@@ -264,8 +264,13 @@ These inverse laws do not yet supply globally bundled adjunction triangle cohere
 `GradedTwoEnvelopeCounitComposition` proves a genuine density-comparison composition
 modification by cancelling the middle density pair, and identity-functor counit coherence
 with explicit boundary normalization. Both directions are even and degree zero. This is
-not yet the arbitrary `F ⋙ G` counit composition law: the identification with the
-functor-whiskered paste still needs the general transformation-whiskering API.
+not yet the arbitrary `F ⋙ G` counit composition law.
+`TwoFunctorPrecomposition` supplies arbitrary precomposition of actual 2-natural
+transformations and supermodifications, functorial on the whole transformation category.
+It retains nontrivial functor coherence and naturality for odd 2-morphisms, preserves
+strongness and grading, and preserves modification parity and degree. This gives the
+left-whiskered leg of the counit paste. General postcomposition and the identification
+of the full functor-whiskered paste with the direct comparison remain open.
 
 Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
