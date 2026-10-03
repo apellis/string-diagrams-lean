@@ -142,6 +142,8 @@ Following Brundan–Ellis, *Monoidal supercategories* ([arXiv:1603.05928v3](http
 
 The printed signs in 1 and 2 are those of the construction applied to `(𝔄, π, β, -ξ)`, which is again a Π-2-category, and `(π, β, ξ) ↦ (π, β, -ξ)` (the identity on Π-2-functors: both sides of the second axiom of Definition 5.2(ii) change sign) is an automorphism of `Π-2-Cat`, and likewise of `Π-Mon`. Hence the statements of Lemma 5.4, Theorem 5.5, Corollary 5.6 and Theorem 1.15 remain true as printed; only the explicit construction of `D₂` (and of the inverse `Π-Mon → Π-SMon`) and the identities `E₂ ∘ D₂ = I` and `𝕋` in the proofs need the corrected signs, which `StringDiagrams.Super.AssociatedTwo` and `StringDiagrams.Super.MonoidalAssociated` use.
 
+**Erratum (§5, Corollary 5.6).** Printed: the 2-supercategories `Π-2-𝔖ℭ𝔞𝔱` and `Π-2-ℭ𝔞𝔱̂` are 2-superequivalent. As defined in §5, `Π-2-𝔖ℭ𝔞𝔱` is a strict 2-category (of Π-2-supercategories), not a 2-supercategory, so the statement is one level too high. The proof (Theorem 5.3 with `E₁`, and Lemma 5.4) establishes the statement one level down: the 2-supercategory `Π-𝔖ℭ𝔞𝔱` is 2-superequivalent to `Π-ℭ𝔞𝔱̂ = D₂(Π-ℭ𝔞𝔱)` (`PiCat.twoSuperequivalent_piSCat_associated2`, `StringDiagrams.Super.PiCatAssociated`). A version at the printed level, a 2-equivalence between the 2-categories of Π-2-supercategories and of Π-2-categories, is not formalized.
+
 `StringDiagrams.Examples.PiEnvelope`: the Π-envelope of the odd Brauer supercategory; the odd cup and cap become even morphisms `Π⁰(n) → Π¹(n+2)` and `Π¹(n+2) → Π⁰(n)` satisfying the zigzag relation.
 
 ### Superspaces, superalgebras and super Karoubi envelopes
