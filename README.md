@@ -346,7 +346,13 @@ Not formalized from §6: the global graded 2-functor packaging and the 2-adjunct
 `-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
 The inclusion naturality and counit comparison records do not supply those global structures.
 The categories `2-𝔊𝔖ℭ𝔄𝔗`, `(Q, Π)-2-ℭ𝔄𝔗` and `(Q, Π)-2-𝔊𝔖ℭ𝔄𝔗` are not
-constructed as bicategories with 2-natural transformations as 2-morphisms. Their 1-truncations
+constructed as bicategories with 2-natural transformations as 2-morphisms: the 2-natural
+transformations of Definition 2.2(iii) are oplax, and for them the interchange law fails (the two
+composites of horizontally composable transformations differ by the 2-cells of the transformations),
+so `2-𝔖ℭ𝔄𝔗` and its variants are not 2-categories in the strict sense (cf. Remark 4.10). Statements
+that "`-_π` (resp. `-_{q,π}`) is left 2-adjoint to `ν`" are formalized as biuniversal arrows: a
+functor on 1-truncations, the strictly natural unit `𝕁`, and a 2-superequivalence
+`ℋom(𝔄, ν𝔅) → ℋom(𝔄_π, 𝔅)` compatible with `𝕁` (Theorem 4.9 above). Their 1-truncations
 `QPiTwoCat R` and `QPiTwoGSCat R`, composition of `(Q, Π)`-2-functors and `𝔼` are in
 `StringDiagrams.Super.QPiTwoSCat`, with `𝔻` in `StringDiagrams.Super.QPiTwoSCatD`.
 The §6 analogue of Theorem 5.5 is formalized on objects, 1-morphisms and 2-morphisms
