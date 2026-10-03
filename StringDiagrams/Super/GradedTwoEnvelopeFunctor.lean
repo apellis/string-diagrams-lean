@@ -15,9 +15,11 @@ laws are consumed by `GTwoSCat.envelope`, a functor of the **1-truncations**.
 This does not construct the action on graded 2-natural transformations or
 supermodifications, or assert the full 2-adjunction.
 
-The identity/composition and map constructions were adapted from the uncompiled
-`TwoEnvelopeFunctoriality` draft at `7ed4eac7bb0613bcb7fc1cb246b42502d9a050c7`;
-only the bounded 1-morphism slice is included here.
+The ungraded case is (4.7): `-_π` preserves identities and composition on the nose
+(`TwoEnvelope.mapPi_id`, `TwoEnvelope.mapPi_comp`) and the canonical 2-superfunctors
+`𝕁 : 𝔄 → 𝔄_π` are strictly natural, `ℝ_π ∘ 𝕁 = 𝕁 ∘ ℝ` (`TwoEnvelope.twoJ_comp_mapPi`). This gives
+the functor of 1-truncations `TwoSCat.envelope : 2-SCat ⥤ Π-2-SCat` and the natural
+transformation `TwoSCat.envelopeUnit : 𝟭 ⟶ -_π ⋙ ν` with components `𝕁`.
 -/
 
 noncomputable section
@@ -69,6 +71,22 @@ theorem mapPi_isGraded [∀ a b : B, GradedSupercategory R (a ⟶ b)]
   map₂_mem_degree hη := hF.map₂_mem_degree hη
   mapComp_hom_mem_degree f g := hF.mapComp_hom_mem_degree f.obj g.obj
   mapId_hom_mem_degree a := hF.mapId_hom_mem_degree a.as
+
+/-- **(4.7).** The canonical 2-superfunctors `𝕁 : 𝔄 → 𝔄_π` are strictly natural:
+`ℝ_π ∘ 𝕁 = 𝕁 ∘ ℝ`. -/
+theorem twoJ_comp_mapPi (F : TwoSuperfunctor R B C) :
+    (twoJ R B).comp (mapPi F) = F.comp (twoJ R C) := by
+  refine twoSuperfunctor_ext rfl HEq.rfl HEq.rfl (heq_of_eq ?_) (heq_of_eq ?_)
+  · funext a b c f g
+    apply Iso.ext
+    apply hom_ext
+    change (F.mapComp f g).hom ≫ F.map₂ (𝟙 (f ≫ g)) = 𝟙 _ ≫ (F.mapComp f g).hom
+    rw [F.map₂_id, Category.comp_id, Category.id_comp]
+  · funext a
+    apply Iso.ext
+    apply hom_ext
+    change (F.mapId a).hom ≫ F.map₂ (𝟙 (𝟙 a)) = 𝟙 _ ≫ (F.mapId a).hom
+    rw [F.map₂_id, Category.comp_id, Category.id_comp]
 
 end TwoEnvelope
 
@@ -244,5 +262,36 @@ def envelope : GTwoSCat.{w, w₁, v₁, u₁} R ⥤ QPiTwoGSCat.{w, w₁, v₁, 
     (envelope.map F).1 = QPiTwoEnvelope.mapQPi F.1 := rfl
 
 end GTwoSCat
+
+namespace TwoSCat
+
+variable {R : Type w} [CommRing R]
+
+/-- **Brundan–Ellis, (4.7).** The functor `-_π : 2-SCat ⥤ Π-2-SCat` of 1-truncations, sending a
+2-supercategory to its Π-envelope (Definition 4.4) and a 2-superfunctor `ℝ` to `ℝ_π`
+(`TwoEnvelope.mapPi`). -/
+def envelope : TwoSCat.{w, w₁, v₁, u₁} R ⥤ PiTwoSCat.{w, w₁, v₁, u₁} R where
+  obj B := PiTwoSCat.of R (TwoEnvelope R B)
+  map F := TwoEnvelope.mapPi F
+  map_id B := TwoEnvelope.mapPi_id R B
+  map_comp F G := TwoEnvelope.mapPi_comp F G
+
+@[simp] theorem envelope_obj (B : TwoSCat.{w, w₁, v₁, u₁} R) :
+    envelope.obj B = PiTwoSCat.of R (TwoEnvelope R B) := rfl
+
+@[simp] theorem envelope_map {B C : TwoSCat.{w, w₁, v₁, u₁} R} (F : B ⟶ C) :
+    envelope.map F = TwoEnvelope.mapPi F := rfl
+
+/-- **Brundan–Ellis, (4.7).** The canonical 2-superfunctors `𝕁 : 𝔄 → 𝔄_π` form a natural
+transformation `𝟭 ⟶ -_π ⋙ ν` of functors of 1-truncations (`TwoEnvelope.twoJ_comp_mapPi`).
+This is not a claim of a global 2-adjunction. -/
+def envelopeUnit : 𝟭 (TwoSCat.{w, w₁, v₁, u₁} R) ⟶ envelope ⋙ PiTwoSCat.forget where
+  app B := TwoEnvelope.twoJ R B
+  naturality _ _ F := (TwoEnvelope.twoJ_comp_mapPi F).symm
+
+@[simp] theorem envelopeUnit_app (B : TwoSCat.{w, w₁, v₁, u₁} R) :
+    envelopeUnit.app B = TwoEnvelope.twoJ R B := rfl
+
+end TwoSCat
 
 end StringDiagrams
