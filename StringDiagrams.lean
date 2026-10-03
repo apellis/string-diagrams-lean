@@ -68,6 +68,8 @@ import StringDiagrams.Super.QTwoEnvelopeUniversal
 import StringDiagrams.Super.GradedTwoEnvelopeUniversal
 import StringDiagrams.Super.GradedTwoEnvelopeFunctor
 import StringDiagrams.Super.GradedTwoEnvelopeTransformation
+import StringDiagrams.Super.GradedTwoHom
+import StringDiagrams.Super.GradedTwoEnvelopeTwoHom
 import StringDiagrams.Super.GradedTwoEnvelopeCoherence
 import StringDiagrams.Super.GradedTwoEnvelopeCoherenceExamples
 import StringDiagrams.Super.GradedTwoEnvelopeCounit

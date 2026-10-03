@@ -227,7 +227,14 @@ Following Brundan–Ellis, *Monoidal supercategories* ([arXiv:1603.05928v3](http
 
 `StringDiagrams.Examples.QPiCompat`: over a ring with `2 ≠ 0`, the data of a `(Q, Π)`-functor in the sense of the printed Definition 6.12(ii) which is not compatible (`QPiCompat.twisted`, `QPiCompat.twisted_not_isCompatible`), hence not isomorphic by a `(Q, Π)`-natural isomorphism to `𝔼(F)` for any graded superfunctor `F` (`QPiCompat.twisted_not_iso_image`); see erratum 4.
 
-Convention for Lemma 6.11: the extension `ℝ̃` sends `Q^mΠ^aF` to `Π^a Q^m (ℝF)` (`π^a_{ℝμ} q^m_{ℝμ} (ℝF)` in a graded `(Q, Π)`-2-supercategory), as `QPiEnvelope.extend` does for Theorem 6.9, whereas the proof of Lemma 6.11 writes `q^m π^a (ℝF)`; the two choices differ by the 2-isomorphisms `γ_π = β_q⁻¹` of Lemma 6.6(ii) and give isomorphic 2-superfunctors.
+| Theorem | Source locator | Declaration (`QPiTwoEnvelope`) | Hypotheses | Status |
+|---|---|---|---|---|
+| Graded oplax hom 2-superequivalence | Lemma 6.11; graded analogue of Remark 4.10 | `extendGradedTwoHom_isLocalTwoSuperequivalence`, `extendGradedTwoHom_isTwoSuperequivalence` | Commutative ring; graded 2-supercategories; target homs carry `(Q, Π)` structures | Proved in `GradedTwoEnvelopeTwoHom`; all graded oplax transformations and all supermodifications |
+| Homogeneous modification transport | Same universal property | `extendGradedTwoHom_map₂_isHomogeneous_iff` | Same; arbitrary parity and integer degree | Preserved and reflected |
+
+These are local hom universal properties, not a global 3-categorical adjunction.
+Extension conventions and the distinction from a direct-sum integer grading on
+all modification families are documented in the source modules.
 
 The graded envelope acts on graded 2-superfunctors and preserves identities and composition
 as equalities of complete 2-superfunctors (`QPiTwoEnvelope.mapQPi`, `mapQPi_isGraded`,
