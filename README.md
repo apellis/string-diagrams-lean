@@ -381,6 +381,76 @@ The §6 analogue of Theorem 5.5 is formalized on objects, 1-morphisms and 2-morp
 
 **Definition (not in the paper): `(Q, Π)`-2-functors.** The paper leaves the §6 analogue of Theorem 5.5 to the reader and does not define the 1- and 2-morphisms between `(Q, Π)`-2-categories (Definition 6.14). We define a `(Q, Π)`-2-functor `𝔄 → 𝔅` (`QPiTwoFunctor`) as a Π-2-functor `(ℝ, j)` (Definition 5.2(ii)) together with 2-isomorphisms `k_λ : q_{ℝλ} ≅ ℝq_λ` such that `ℝγ_F ∘ c ∘ (ℝF)k_μ = c ∘ k_λ(ℝF) ∘ γ_{ℝF}` for every 1-morphism `F : λ → μ` (the analogue for `(q, γ)` of the first axiom of Definition 5.2(ii)), and a `(Q, Π)`-2-natural transformation `(X, x) : ℝ ⇒ 𝕊` (`QPiTwoFunctor.IsQPiTwoNatural`) as a Π-2-natural transformation (Definition 5.2(iii)) with `x_{q_λ} ∘ X_λ k ∘ γ_{X_λ} = k X_λ`. As for erratum 4, a bare isomorphism `q_{ℝλ} ≅ ℝq_λ` would not suffice: the axiom on `k` holds for `𝔼(ℝ)` for every graded 2-superfunctor `ℝ` (`TwoSuperfunctor.kγ_comm`) and is used for the naturality of the coherence maps of `𝔻(ℝ)` with respect to the 2-morphisms `σ`, so it is necessary for `𝔼 ∘ 𝔻 = I`; similarly the condition on `(X, x)` holds for `𝔼(X, x)` (`TwoNatTrans.isQPiTwoNatural`) and is needed for `𝔻(X, x)` to be supernatural. The 2-categorical form of the compatibility adopted in erratum 4 — `k` is Π-natural, i.e. compatible with `j` — is not imposed separately: it follows from the first axiom of Definition 5.2(ii) at `F = q_λ` and the naturality of `β` (`QPiTwoFunctor.j_comm`), and makes the functors `ℋom(λ, μ) → ℋom(ℝλ, ℝμ)` `(Q, Π)`-functors in the adopted sense (`QPiTwoFunctor.homQPi`). As in Definition 6.12(ii), no compatibility of `k` with `ii`, `jj` is required.
 
+### Brundan–Ellis: coverage of the numbered statements
+
+Every numbered statement of J. Brundan, A. P. Ellis, *Monoidal supercategories*
+([arXiv:1603.05928v3](https://arxiv.org/abs/1603.05928)), with the modules (under
+`StringDiagrams.`) where it is formalized; the declarations are listed in the module tables above.
+"Erratum" refers to the errata in the sections above.
+
+| Statement | Subject | Modules | Status |
+|---|---|---|---|
+| Definition 1.1 | supercategories, superfunctors, supernatural transformations, superequivalences | `Super.Functor`, `Super.Supernatural`, `Super.Underlying` | formalized |
+| Examples 1.2 | `SVec`, superalgebras, superbimodules, `⊠`, functor supercategories | `Super.SVec`, `Super.Superalgebra`, `Super.Superbimodule`, `Super.BoxProduct`, `Super.FunctorCategory` | formalized |
+| Remark 1.3 | super-opposite superalgebras, bimodule superfunctors | `Super.SuperOpposite`, `Super.BimoduleFunctor` | formalized |
+| Definition 1.4 | monoidal supercategories, monoidal superfunctors, monoidal supernatural transformations | `Super.Monoidal`, `Super.MonoidalEquivalence`, `Super.Strictification` | formalized |
+| Examples 1.5 | `SVec`, `A-SMod-A`, endo-superfunctors as monoidal supercategories | `Super.SVec`, `Super.BalancedTensor`, `Super.BimoduleMonoidal`, `Super.EndMonoidal` | formalized |
+| Definition 1.6 | Π-categories, Π-functors, Π-natural transformations | `Super.PiCategory`, `Super.PiCatBicategory` | formalized |
+| Definition 1.7 | Π-supercategories | `Super.Pi` | formalized |
+| Example 1.8 | `A-SMod-B` is a Π-supercategory | `Super.Superbimodule`, `Super.GSMod` | formalized |
+| Theorem 1.9 | Π-envelope left 2-adjoint to `ν`; `Π-SCat ≃ Π-Cat` | `Super.EnvelopeAdjunction` (= Theorem 4.3), `Super.PiCat` (= Lemma 5.1) | formalized |
+| Definition 1.10 | Π-envelope of a supercategory | `Super.Envelope` | formalized |
+| Remark 1.11 | comparison with superadditive categories in the literature | — | not formalized (remark on terminology) |
+| Definition 1.12 | monoidal Π-supercategories | `Super.MonoidalPi` | formalized |
+| Examples 1.13 | monoidal Π-supercategories `A-SMod-A`, `SVec` | `Super.SVec`, `Super.BimoduleMonoidal`, `Super.EndMonoidal` | formalized |
+| Definition 1.14 | monoidal Π-categories | `Super.MonoidalPi`, `Super.SKarMonoidalPi` | formalized |
+| Theorem 1.15 | monoidal Π-envelope left 2-adjoint to `ν`; `Π-SMon ≃ Π-Mon` | `Super.MonoidalUniversal`, `Super.MonoidalAssociated`, `Super.MonoidalPiCat` | formalized (corrected construction, erratum to (5.5)) |
+| Definition 1.16 | monoidal Π-envelope | `Super.MonoidalEnvelope` | formalized |
+| Example 1.17 | super Karoubi envelopes of superalgebras and of `I` | `Super.Superalgebra`, `Super.SKarSuperalgebra`, `Super.SKarUnit` | formalized |
+| Theorem 1.18 | odd Temperley–Lieb: `SKar` semisimple, `K₀` | `Examples.OddTemperleyLieb.Semisimple`, `Examples.OddTemperleyLieb.KZero` | formalized |
+| Definition 2.1 | strict 2-supercategories | `Super.Bicategory`, `Super.SCat` | formalized |
+| Definition 2.2 | 2-supercategories, 2-superfunctors, 2-natural transformations, supermodifications, 2-superequivalences (both formulations) | `Super.Bicategory`, `Super.TwoFunctor`, `Super.TwoHom`, `Super.TwoSuperequivalenceWhitehead` | formalized; the "2-category `2-𝔖ℭ𝔄𝔗`" is not a 2-category (oplax transformations), see above |
+| Definition 2.3 | Drinfeld center | `Super.DrinfeldCenter`, `Super.Braided` | formalized |
+| Definition 3.1 | Π-2-supercategories | `Super.PiTwo` | formalized |
+| Lemma 3.2 | the isomorphisms `β` of a Π-2-supercategory | `Super.PiTwo` | formalized |
+| Corollary 3.3 | `ξ`, `β_F` for Π-supercategories and superfunctors | `Super.Pi`, `Super.PiTwo` | formalized |
+| Lemma 4.1 | `J` is a superequivalence iff Π-complete | `Super.Envelope` | formalized |
+| Lemma 4.2 | universal property of the Π-envelope | `Super.Envelope` | formalized |
+| Theorem 4.3 | `ℋom(A, νB) → ℋom(A_π, B)` is a superequivalence | `Super.EnvelopeAdjunction`, `Super.EnvelopeNaturality` | formalized |
+| Definition 4.4 | Π-envelope of a 2-supercategory | `Super.TwoEnvelope` | formalized |
+| Lemma 4.5 | super interchange law in `𝔄_π` | `Super.TwoEnvelope` | formalized |
+| Lemma 4.6 | `𝕁` is a 2-superequivalence iff Π-complete | `Super.TwoEnvelope` | formalized |
+| Lemma 4.7 | universal property of the 2-envelope | `Super.TwoEnvelopeUniversal` | formalized |
+| Example 4.8 | `I_π` and `I_π → SVec` | `Super.UnitEnvelope` | formalized (any commutative ring) |
+| Theorem 4.9 | `-_π ⊣ ν` | `Super.TwoEnvelopeUniversal`, `Super.TwoEnvelopeEquivalence`, `Super.TwoEnvelopeTwoHom`, `Super.GradedTwoEnvelopeFunctor` | formalized as biuniversal arrows (functor of 1-truncations, strictly natural unit, hom 2-superequivalence with `ℝ̃𝕁 = ℝ`) |
+| Remark 4.10 | supermodifications; Drinfeld centers | `Super.TwoEnvelopeTwoHom`, `Super.DrinfeldCenterEnvelope` | formalized, except the 3-superfunctor viewpoint |
+| Lemma 5.1 | `Π-Cat ≃ Π-SCat` | `Super.Associated`, `Super.PiCat` | formalized (corrected sign, erratum) |
+| Definition 5.2 | Π-2-categories, Π-2-functors, Π-2-natural transformations | `Super.PiTwoCategory`, `Super.PiCatBicategory`, `Super.QPiTwoSCat` | formalized |
+| Theorem 5.3 | `𝔻₁`, `𝔼₁` mutually inverse Π-2-equivalences | `Super.AssociatedFunctorial`, `Super.PiCatE1` | formalized componentwise (on objects, 1- and 2-morphisms), not as a bundled Π-2-equivalence |
+| Lemma 5.4 | `D₂`, `E₂` mutually inverse equivalences | `Super.AssociatedTwo`, `Super.AssociatedTwoMap`, `Super.AssociatedTwoLocal`, `Super.AssociatedTwoWhitehead`, `Super.QPiTwoSCatD` | partly: `𝟭 ≅ D₂ ⋙ E₂` (`PiTwoCat.unitNatIso`); `𝕋 : D₂E₂𝔄 → 𝔄` is a 2-superequivalence natural in 1-morphisms, not an isomorphism of functors (corrected construction, erratum) |
+| Theorem 5.5 | `𝔻₂`, `𝔼₂` mutually inverse 2-equivalences | `Super.AssociatedTwoMap`, `Super.AssociatedTwoNat` | on objects, 1- and 2-morphisms; not as a 2-equivalence of bundled 2-categories |
+| Corollary 5.6 | `Π-2-𝔖ℭ𝔞𝔱` and `Π-2-ℭ𝔞𝔱̂` 2-superequivalent | `Super.PiCatAssociated` | formalized one level down (erratum); the printed level is not formalized |
+| Remark 5.7 | the 3-categorical version | — | not formalized |
+| Definition 6.1 | graded supercategories | `Super.Graded`, `Super.GSVec`, `Super.GSCat` | formalized |
+| Definition 6.2 | graded 2-supercategories | `Super.GradedTwo`, `Super.GSCat` | formalized |
+| Definition 6.3 | graded 2-superfunctors | `Super.GradedTwo`, `Super.QPiTwoSCat` | formalized |
+| Definition 6.4 | graded `(Q, Π)`-supercategories | `Super.QPi`, `Super.GSMod` | formalized |
+| Definition 6.5 | graded `(Q, Π)`-2-supercategories | `Super.GradedTwo` | formalized |
+| Lemma 6.6 | the isomorphisms `β`, `γ` of a graded `(Q, Π)`-2-supercategory | `Super.GradedTwo` | formalized |
+| Corollary 6.7 | `(Q, Π)`-supercategory identities | `Super.QPi` | formalized (errata 1, 2) |
+| Definition 6.8 | `(Q, Π)`-envelope of a graded supercategory | `Super.QEnvelope` | formalized |
+| Theorem 6.9 | `-_{q,π} ⊣ ν` for graded supercategories | `Super.QEnvelope`, `Super.QEnvelopeAdjunction`, `Super.QEnvelopeNaturality` | formalized |
+| Definition 6.10 | `(Q, Π)`-envelope of a graded 2-supercategory; (6.2) | `Super.GradedTwoEnvelope`, `Super.GradedTwoEnvelopeFunctor` | formalized (erratum 5) |
+| Lemma 6.11 | universal property of the graded 2-envelope | `Super.QTwoEnvelopeUniversal`, `Super.GradedTwoEnvelopeUniversal` | formalized (erratum 6) |
+| after Lemma 6.11 | `-_{q,π} ⊣ ν` for graded 2-supercategories | `Super.GradedTwoEnvelopeTwoHom`, `Super.GradedTwoEnvelopeBiuniversal` | formalized as biuniversal arrows |
+| Definition 6.12 | `(Q, Π)`-categories and `(Q, Π)`-functors | `Super.QPiCategory`, `Super.QPi` | formalized with the compatibility of `γ_F` and `β` (erratum 4) |
+| Theorem 6.13 | `𝔼` from graded `(Q, Π)`-supercategories to `(Q, Π)`-categories is a 2-equivalence | `Super.QAssociated`, `Super.QPi`, `Examples.QPiCompat` | formalized componentwise (`𝔻` a strict 2-functor, `𝔼𝔻 = I`, `𝔻𝔼 ≅ I` naturally), not as a bundled 2-equivalence; for the corrected Definition 6.12, false for the printed one (errata 3, 4) |
+| Definition 6.14 | `(Q, Π)`-2-categories | `Super.QPiTwoCategory`, `Super.QPiTwoSCat` | formalized; the §6 analogues of Lemma 5.4 / Theorem 5.5 (left to the reader) as for §5: `Super.QAssociatedTwo`, `Super.QPiTwoSCatDUnit` |
+| Lemma A.1 | the representation of the odd Temperley–Lieb supercategory on `V^{⊗n}` | `Examples.OddTemperleyLieb.Representation` | formalized (any commutative ring, unit `q`) |
+| Theorem A.2 | crossingless matchings form a basis | `Examples.OddTemperleyLieb.Independence` | formalized |
+| Theorem A.3 | `SKar(STL(δ))` is semisimple | `Examples.OddTemperleyLieb.SKar`, `Examples.OddTemperleyLieb.Semisimple` | formalized |
+| Theorem A.4, Corollary A.5 | comparison with `U_q(osp(1\|2))` | — | not formalized (relies on Clark–Wang) |
+
 ### Chord diagrams
 
 Planar chord diagrams with all endpoints on one boundary, built from cups and crossings, and a
