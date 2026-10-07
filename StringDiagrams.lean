@@ -110,6 +110,7 @@ import StringDiagrams.Super.PiCat
 import StringDiagrams.Super.TwoSCat
 import StringDiagrams.Super.QPiTwoSCat
 import StringDiagrams.Super.QPiTwoSCatD
+import StringDiagrams.Super.AssociatedTwoEquivalence
 import StringDiagrams.Super.QPiTwoSCatDUnit
 import StringDiagrams.Super.DrinfeldCenterEnvelope
 import StringDiagrams.Super.Braided
