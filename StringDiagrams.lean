@@ -71,6 +71,7 @@ import StringDiagrams.Super.GradedTwoEnvelopeTransformation
 import StringDiagrams.Super.GradedTwoHom
 import StringDiagrams.Super.GradedTwoEnvelopeTwoHom
 import StringDiagrams.Super.GradedTwoEnvelopeCoherence
+import StringDiagrams.Super.GradedTwoEnvelopeBiuniversal
 import StringDiagrams.Super.GradedTwoEnvelopeCoherenceExamples
 import StringDiagrams.Super.GradedTwoEnvelopeCounit
 import StringDiagrams.Super.GradedTwoEnvelopeCounitExamples

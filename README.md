@@ -234,8 +234,17 @@ Following Brundan–Ellis, *Monoidal supercategories* ([arXiv:1603.05928v3](http
 |---|---|---|---|---|
 | Graded oplax hom 2-superequivalence | Lemma 6.11; graded analogue of Remark 4.10 | `extendGradedTwoHom_isLocalTwoSuperequivalence`, `extendGradedTwoHom_isTwoSuperequivalence` | Commutative ring; graded 2-supercategories; target homs carry `(Q, Π)` structures | Proved in `GradedTwoEnvelopeTwoHom`; all graded oplax transformations and all supermodifications |
 | Homogeneous modification transport | Same universal property | `extendGradedTwoHom_map₂_isHomogeneous_iff` | Same; arbitrary parity and integer degree | Preserved and reflected |
+| Restriction along `𝕁` for arbitrary functors out of `𝔄_{q,π}` | Lemma 6.11(ii), Remark 4.10 | `restrictNatTransEquiv`, `liftNatTrans`, `liftSupermodification` | Any 2-supercategory target; no `(Q, Π)` structure needed | 2-natural transformations `𝕋 ⇒ 𝕋'` and supermodifications are determined by, and lift uniquely from, their restrictions along `𝕁` |
+| `-_{q,π} ⊣ ν` as biuniversal arrows | After Lemma 6.11 (analogue of Theorem 4.9) | `restrictGradedTwoHom_isTwoSuperequivalence`, `GTwoSCat.envelopeUnit_isBiuniversal` | Commutative ring; graded 2-supercategories; target homs carry `(Q, Π)` structures | Precomposition with `𝕁` is a 2-superequivalence `ℋom(𝔄_{q,π}, 𝔅) → ℋom(𝔄, ν𝔅)`; proved in `GradedTwoEnvelopeBiuniversal` |
+| Triangle identity `ℝ̃𝕁 = ℝ` | Lemma 6.11(i), (ii) | `restrictGradedTwoHom_obj_extendGradedTwoHom_obj`, `restrictGradedTwoHom_map_extendGradedTwoHom_map`, `restrictGradedTwoHom_map₂_extendGradedTwoHom_map₂`, `GTwoSCat.envelopeUnit_app_comp_extend` | Same | Extension is a strict section of precomposition with `𝕁` |
 
-These are local hom universal properties, not a global 3-categorical adjunction.
+These are local hom universal properties, not a global 3-categorical adjunction. With the
+functor of 1-truncations `GTwoSCat.envelope` and the strictly natural unit
+`GTwoSCat.envelopeUnit : 𝟭 ⟶ -_{q,π} ⋙ ν` (whose components are the `𝕁`), they state that
+`-_{q,π}` is left 2-adjoint to `ν` in the sense of biuniversal arrows: precomposition with
+`𝕁_𝔄` (`GTwoSCat.envelopeUnit_app_comp_val`) is a 2-superequivalence of hom
+2-supercategories for every graded `(Q, Π)`-2-supercategory `𝔅`
+(`GTwoSCat.envelopeUnit_isBiuniversal`), with the extension as a strict section.
 Extension conventions and the distinction from a direct-sum integer grading on
 all modification families are documented in the source modules.
 
@@ -342,8 +351,8 @@ same restriction equality, not the endpoint functors. Higher associativity
 coherence for these modifications, triangle coherence, and the global graded
 2-adjunction remain open; no strict counit-functor naturality is asserted.
 
-Not formalized from §6: the global graded 2-functor packaging and the 2-adjunction
-`-_{q,π} ⊣ ν` after Definition 6.10, including the global unit/counit and triangle coherence.
+Not formalized from §6: a global graded 2-functor packaging of `-_{q,π} ⊣ ν` beyond the
+biuniversal arrows above (a 3-categorical adjunction with global counit and its coherence).
 The inclusion naturality and counit comparison records do not supply those global structures.
 The categories `2-𝔊𝔖ℭ𝔄𝔗`, `(Q, Π)-2-ℭ𝔄𝔗` and `(Q, Π)-2-𝔊𝔖ℭ𝔄𝔗` are not
 constructed as bicategories with 2-natural transformations as 2-morphisms: the 2-natural
