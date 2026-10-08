@@ -32,8 +32,9 @@ of `𝔼₂`: every Π-2-natural transformation `E₂ ℝ ⇒ E₂ 𝕊` between
 2-superfunctors is natural with respect to all 2-morphisms (`TwoNatTrans.ofPiTwoNatural`, via
 `𝕋`), so `𝔼₂` is bijective on 2-morphisms (`TwoNatTrans.toOplaxTransEquiv`,
 `PiTwoSCat.toPiTwoCat_isTwoEquivalence`). The 2-morphisms of the paper's `Π-2-𝔖ℭ𝔄𝔗` are oplax,
-so whiskering them does not satisfy the interchange law and these 2-categories are not formalized
-as Lean bicategories (see the README). Corollary 5.6 is `PiCat.twoSuperequivalent_piSCat_associated2`
+so whiskering them does not satisfy the interchange law and these are sesquicategories rather
+than 2-categories (see the README); compatibility with whiskering is
+`StringDiagrams.Super.TwoNatWhisker`. Corollary 5.6 is `PiCat.twoSuperequivalent_piSCat_associated2`
 (`StringDiagrams.Super.PiCatAssociated`).
 -/
 
