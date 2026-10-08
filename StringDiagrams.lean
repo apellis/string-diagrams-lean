@@ -114,6 +114,7 @@ import StringDiagrams.Super.AssociatedTwoEquivalence
 import StringDiagrams.Super.QPiTwoSCatDUnit
 import StringDiagrams.Super.QAssociatedTwoEquivalence
 import StringDiagrams.Super.AssociatedTwoNatEquiv
+import StringDiagrams.Super.QAssociatedTwoNatEquiv
 import StringDiagrams.Super.DrinfeldCenterEnvelope
 import StringDiagrams.Super.Braided
 import StringDiagrams.Super.DrinfeldCenterBraiding
