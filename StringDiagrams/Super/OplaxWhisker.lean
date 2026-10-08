@@ -139,6 +139,66 @@ def postcomp {F G : Pseudofunctor C D} (η : Oplax.OplaxTrans F.toOplax G.toOpla
         PrelaxFunctor.map₂_id, Category.id_comp, whiskerLeft_id]
     erw [Iso.inv_hom_id_assoc, Iso.inv_hom_id_assoc, Iso.inv_hom_id_assoc, t, Category.comp_id]
 
+/-! ### Compatibility with central families
+
+A family `p_λ : λ → λ` with 2-morphisms `e_F : F p_μ ⟶ p_λ F` (such as `π`, `β` or `q`, `γ`),
+pseudofunctors `F` with isomorphisms `j_F : p_{Fλ} ≅ F p_λ` and an oplax transformation `η`
+with `η_{p_λ} ∘ j_F η_λ ∘ e_{η_λ} = η_λ j_G` (the Π-2-naturality condition of Definition
+5.2(iii) for `(π, β)`). Whiskering preserves this condition, with the composite `j` of
+`PiTwoFunctor.comp`. -/
+
+theorem precomp_central {pB : ∀ a : B, a ⟶ a} {pC : ∀ a : C, a ⟶ a} {pD : ∀ a : D, a ⟶ a}
+    (eD : ∀ {a b : D} (f : a ⟶ b), f ≫ pD b ⟶ pD a ≫ f)
+    (P : Pseudofunctor B C) {F G : Pseudofunctor C D}
+    (jP : ∀ a, pC (P.obj a) ≅ P.map (pB a)) (jF : ∀ a, pD (F.obj a) ≅ F.map (pC a))
+    (jG : ∀ a, pD (G.obj a) ≅ G.map (pC a))
+    (η : Oplax.OplaxTrans F.toOplax G.toOplax)
+    (hη : ∀ a, eD (η.app a) ≫ (jF a).hom ▷ η.app a ≫ η.naturality (pC a) =
+      η.app a ◁ (jG a).hom) (a : B) :
+    eD ((precomp P η).app a) ≫ (jF (P.obj a) ≪≫ F.map₂Iso (jP a)).hom ▷ (precomp P η).app a ≫
+        (precomp P η).naturality (pB a) =
+      (precomp P η).app a ◁ (jG (P.obj a) ≪≫ G.map₂Iso (jP a)).hom := by
+  have h1 := η.naturality_naturality (jP a).hom
+  simp only [Pseudofunctor.toOplax_toPrelaxFunctor] at h1
+  change eD (η.app (P.obj a)) ≫ ((jF (P.obj a)).hom ≫ F.map₂ (jP a).hom) ▷ η.app (P.obj a) ≫
+      η.naturality (P.map (pB a)) = η.app (P.obj a) ◁ ((jG (P.obj a)).hom ≫ G.map₂ (jP a).hom)
+  rw [comp_whiskerRight, Category.assoc, h1, reassoc_of% (hη (P.obj a)),
+    whiskerLeft_comp]
+
+theorem postcomp_central {pC : ∀ a : C, a ⟶ a} {pD : ∀ a : D, a ⟶ a} {pE : ∀ a : E, a ⟶ a}
+    (eD : ∀ {a b : D} (f : a ⟶ b), f ≫ pD b ⟶ pD a ≫ f)
+    (eE : ∀ {a b : E} (f : a ⟶ b), f ≫ pE b ⟶ pE a ≫ f)
+    {F G : Pseudofunctor C D} (H : Pseudofunctor D E)
+    (jF : ∀ a, pD (F.obj a) ≅ F.map (pC a)) (jG : ∀ a, pD (G.obj a) ≅ G.map (pC a))
+    (jH : ∀ a, pE (H.obj a) ≅ H.map (pD a))
+    (hH : ∀ {a b : D} (f : a ⟶ b), H.map f ◁ (jH b).hom ≫ (H.mapComp f (pD b)).inv ≫
+      H.map₂ (eD f) = eE (H.map f) ≫ (jH a).hom ▷ H.map f ≫ (H.mapComp (pD a) f).inv)
+    (η : Oplax.OplaxTrans F.toOplax G.toOplax)
+    (hη : ∀ a, eD (η.app a) ≫ (jF a).hom ▷ η.app a ≫ η.naturality (pC a) =
+      η.app a ◁ (jG a).hom) (a : C) :
+    eE ((postcomp η H).app a) ≫ (jH (F.obj a) ≪≫ H.map₂Iso (jF a)).hom ▷ (postcomp η H).app a ≫
+        (postcomp η H).naturality (pC a) =
+      (postcomp η H).app a ◁ (jH (G.obj a) ≪≫ H.map₂Iso (jG a)).hom := by
+  have e1 : eE (H.map (η.app a)) ≫ (jH (F.obj a)).hom ▷ H.map (η.app a) =
+      H.map (η.app a) ◁ (jH (G.obj a)).hom ≫ (H.mapComp (η.app a) (pD (G.obj a))).inv ≫
+        H.map₂ (eD (η.app a)) ≫ (H.mapComp (pD (F.obj a)) (η.app a)).hom := by
+    have h : H.map (η.app a) ◁ (jH (G.obj a)).hom ≫ (H.mapComp (η.app a) (pD (G.obj a))).inv ≫
+        H.map₂ (eD (η.app a)) = eE (H.map (η.app a)) ≫ (jH (F.obj a)).hom ▷ H.map (η.app a) ≫
+          (H.mapComp (pD (F.obj a)) (η.app a)).inv := hH (η.app a)
+    rw [reassoc_of% h]
+    simp
+  have e2 := congrArg H.map₂ (hη a)
+  simp only [PrelaxFunctor.map₂_comp, Pseudofunctor.map₂_whisker_left,
+    Pseudofunctor.map₂_whisker_right, Category.assoc] at e2
+  change eE (H.map (η.app a)) ≫ ((jH (F.obj a)).hom ≫ H.map₂ (jF a).hom) ▷ H.map (η.app a) ≫
+      (H.mapComp (F.map (pC a)) (η.app a)).inv ≫ H.map₂ (η.naturality (pC a)) ≫
+        (H.mapComp (η.app a) (G.map (pC a))).hom =
+    H.map (η.app a) ◁ ((jH (G.obj a)).hom ≫ H.map₂ (jG a).hom)
+  rw [comp_whiskerRight]
+  simp only [Category.assoc]
+  rw [reassoc_of% e1, reassoc_of% e2]
+  simp [whiskerLeft_comp]
+
 end Oplax.OplaxTrans
 
 end CategoryTheory

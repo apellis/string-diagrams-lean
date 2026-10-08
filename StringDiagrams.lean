@@ -116,6 +116,8 @@ import StringDiagrams.Super.QPiTwoSCatDUnit
 import StringDiagrams.Super.QAssociatedTwoEquivalence
 import StringDiagrams.Super.AssociatedTwoNatEquiv
 import StringDiagrams.Super.QAssociatedTwoNatEquiv
+import StringDiagrams.Super.OplaxWhisker
+import StringDiagrams.Super.TwoNatWhisker
 import StringDiagrams.Super.DrinfeldCenterEnvelope
 import StringDiagrams.Super.DrinfeldCenterPi
 import StringDiagrams.Super.DrinfeldCenterPiCounterexample
