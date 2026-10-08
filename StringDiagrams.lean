@@ -125,6 +125,8 @@ import StringDiagrams.Super.AssociatedTwoWhitehead
 import StringDiagrams.Super.PiCatBicategory
 import StringDiagrams.Super.PiCatE1
 import StringDiagrams.Super.PiCatD1
+import StringDiagrams.Super.QPiCatBicategory
+import StringDiagrams.Super.QPiCatTheorem613
 import StringDiagrams.Super.TwoSuperequivalenceComp
 import StringDiagrams.Super.PiCatAssociated
 import StringDiagrams.Super.SVec
