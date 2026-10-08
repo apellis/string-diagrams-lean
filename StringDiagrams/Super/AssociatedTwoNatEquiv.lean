@@ -30,11 +30,11 @@ With Lemma 5.4 as an equivalence of categories `Π-2-Cat ≌ Π-2-SCat` (`PiTwoC
 with identities and vertical composition (`PiTwoCat.toPiTwoSCat_isTwoEquivalence`). From the side
 of `𝔼₂`: every Π-2-natural transformation `E₂ ℝ ⇒ E₂ 𝕊` between the underlying Π-2-functors of
 2-superfunctors is natural with respect to all 2-morphisms (`TwoNatTrans.ofPiTwoNatural`, via
-`𝕋`), so `𝔼₂` is bijective on 2-morphisms (`TwoNatTrans.toOplaxTransEquiv`); with
-`E₂ : Π-2-SCat ≌ Π-2-Cat` this is Corollary 5.6 read on 1-truncations
-(`PiTwoSCat.toPiTwoCat_isTwoEquivalence`, see its docstring and the README). The 2-morphisms of the
-paper's `Π-2-𝔖ℭ𝔄𝔗` are oplax, so whiskering them does not satisfy the interchange law and these
-2-categories are not formalized as Lean bicategories (see the README).
+`𝕋`), so `𝔼₂` is bijective on 2-morphisms (`TwoNatTrans.toOplaxTransEquiv`,
+`PiTwoSCat.toPiTwoCat_isTwoEquivalence`). The 2-morphisms of the paper's `Π-2-𝔖ℭ𝔄𝔗` are oplax,
+so whiskering them does not satisfy the interchange law and these 2-categories are not formalized
+as Lean bicategories (see the README). Corollary 5.6 is `PiCat.twoSuperequivalent_piSCat_associated2`
+(`StringDiagrams.Super.PiCatAssociated`).
 -/
 
 noncomputable section
@@ -244,7 +244,7 @@ def toOplaxTransEquiv :
 
 end TwoNatTrans
 
-/-! ## Theorem 5.5 and Corollary 5.6 on 1-truncations -/
+/-! ## Theorem 5.5 on 1-truncations -/
 
 namespace PiTwoCat
 
@@ -269,16 +269,12 @@ namespace PiTwoSCat
 
 variable {R : Type w} [CommRing R]
 
-/-- **Brundan–Ellis, Corollary 5.6** at the printed level, read on 1-truncations (as for the
-2-adjunctions of Theorem 4.9 and after Lemma 6.11): the 2-categories `Π-2-𝔖ℭ𝔄𝔗` of
-Π-2-supercategories and `Π-2-ℭ𝔄𝔗` of Π-2-categories are 2-equivalent via `𝔼₂`. That is, `E₂` is an
+/-- **Brundan–Ellis, Theorem 5.5** from the side of `𝔼₂`, read on 1-truncations: `E₂` is an
 equivalence of the 1-truncations `Π-2-SCat ≌ Π-2-Cat` (inverse to `D₂`, Lemma 5.4), and for
 2-superfunctors `ℝ, 𝕊 : 𝔄 → 𝔄'` the map `(X, x) ↦ 𝔼₂(X, x)` is a bijection from 2-natural
 transformations `ℝ ⇒ 𝕊` to Π-2-natural transformations `E₂ ℝ ⇒ E₂ 𝕊`
 (`TwoNatTrans.toOplaxTransEquiv`), compatible with identities and vertical composition
-(`TwoNatTrans.toOplaxTrans_id`, `TwoNatTrans.toOplaxTrans_vcomp`). The 2-morphisms of both
-2-categories are even (Definitions 2.2(iii), 5.2(iii)); see the README for the statement as
-printed. The statement one level down (`Π-𝔖ℭ𝔞𝔱` and `Π-ℭ𝔞𝔱̂` are 2-superequivalent) is
+(`TwoNatTrans.toOplaxTrans_id`, `TwoNatTrans.toOplaxTrans_vcomp`). Corollary 5.6 is
 `PiCat.twoSuperequivalent_piSCat_associated2`. -/
 theorem toPiTwoCat_isTwoEquivalence :
     (toPiTwoCat : PiTwoSCat.{w, w₁, v₁, u₁} R ⥤ PiTwoCat.{w, w₁, v₁, u₁} R).IsEquivalence ∧
