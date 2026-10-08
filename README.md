@@ -381,8 +381,10 @@ functor on 1-truncations, the strictly natural unit `𝕁`, and a 2-superequival
 `QPiTwoCat R` and `QPiTwoGSCat R`, composition of `(Q, Π)`-2-functors and `𝔼` are in
 `StringDiagrams.Super.QPiTwoSCat`, with `𝔻` in `StringDiagrams.Super.QPiTwoSCatD`.
 The §6 analogue of Theorem 5.5 is formalized on objects, 1-morphisms and 2-morphisms
-(`QAssociatedTwo`, `QAssociatedTwoT`, `QAssociatedTwoMap`, `QAssociatedTwoNat`), but not as a
-2-equivalence of bundled 2-categories. On the 1-truncations, `𝔼 ∘ 𝔻 = I` is the natural isomorphism
+(`QAssociatedTwo`, `QAssociatedTwoT`, `QAssociatedTwoMap`, `QAssociatedTwoNat`), with `𝔻`, `𝔼`
+bijective on 2-morphisms (`QPiTwoFunctor.mapQNatEquiv`, `TwoNatTrans.toQPiOplaxTransEquiv`) and
+compatible with whiskering (`QPiTwoGSCat.toQPiTwoCat_isSesquiEquivalence`): the sesquicategory form
+of the erratum to Definition 2.2(iii), there being no bundled 2-categories. On the 1-truncations, `𝔼 ∘ 𝔻 = I` is the natural isomorphism
 `QPiTwoCat.unitNatIso` (`StringDiagrams.Super.QPiTwoSCatDUnit`), and `𝔻`, `𝔼` are mutually inverse
 equivalences of categories (`QPiTwoCat.equivalence`, `StringDiagrams.Super.QAssociatedTwoEquivalence`).
 
