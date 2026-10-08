@@ -2,7 +2,7 @@ import StringDiagrams.Super.QPiTwoSCatDUnit
 import StringDiagrams.Super.QAssociatedTwoNat
 
 /-!
-# The §6 analogue of Lemma 5.4: `𝕋` is an isomorphism, natural in graded 2-superfunctors
+# The §6 analogue of Lemma 5.4 as an equivalence of categories
 
 Following J. Brundan, A. P. Ellis, *Monoidal supercategories*, arXiv:1603.05928v3, §6: after
 Definition 6.14 the paper leaves the analogues of Lemma 5.4 and Theorem 5.5 to the reader. The
@@ -16,16 +16,14 @@ analogue of Lemma 5.4 is that `𝔻 : (Q, Π)-2-Cat → (Q, Π)-2-GSCat` and
 * `𝕋` is natural, as an equality of 2-superfunctors `𝔻(𝔼 ℝ) ≫ 𝕋_𝔅' = 𝕋_𝔅 ≫ ℝ`
   (`QAssociated2.mapQ_comp_T`).
 
-With `𝔼 ∘ 𝔻 = I` (`QPiTwoCat.unitNatIso`, `StringDiagrams.Super.QPiTwoSCatDUnit`) this is the
-mathematical content of the equivalence `(Q, Π)-2-Cat ≌ (Q, Π)-2-GSCat`. Not yet done: the
-natural isomorphism `𝔼 ⋙ 𝔻 ≅ 𝟭` of functors between the bundled categories (and hence the bundled
-`Equivalence`); its naturality square is `QAssociated2.mapQ_comp_T`, but identifying the
-bundled `𝔻(𝔼 ℝ)` with `QPiTwoFunctor.mapQ` of `𝔼 ℝ` by definitional unfolding is too slow to
-elaborate.
+Hence `𝔼 ⋙ 𝔻 ≅ 𝟭` (`QPiTwoGSCat.counitNatIso`), and with `𝔼 ∘ 𝔻 = I` (`QPiTwoCat.unitNatIso`,
+`StringDiagrams.Super.QPiTwoSCatDUnit`) the equivalence of categories
+`(Q, Π)-2-Cat ≌ (Q, Π)-2-GSCat` (`QPiTwoCat.equivalence`).
 
 `(Q, Π)`-2-functors are those of `StringDiagrams.Super.QPiTwoSCat` (with the compatibility axiom
 recorded in the README, as for erratum 4 to Definition 6.12).
 -/
+
 noncomputable section
 
 namespace StringDiagrams
@@ -290,6 +288,124 @@ def TIso (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
   hom_inv_id := THom_comp_TinvHom B
   inv_hom_id := TinvHom_comp_THom B
 
+/-! ### The counit `𝔼 ⋙ 𝔻 ≅ 𝟭`
+
+The objects `𝔻(𝔼 𝔅)` of `(Q, Π)-2-GSCat` carry the instances of the bundled categories, while
+`QAssociated2.T` and `QAssociated2.mapQ_comp_T` are stated for `QAssociated2 R (GUnderlying2 R 𝔅)`
+with directly synthesized instances. Unifying the two in one step is very slow, so the statements
+below pass through `QAssociated2 R (𝔼 𝔅)` (`T'`, `Tinv'`, `mapQ_comp_T'`), which is cheap to
+identify with either. -/
+
+/-- `𝕋_𝔅` with domain `(𝔼 𝔅)^`. -/
+abbrev T' (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
+    TwoSuperfunctor R (QAssociated2 R (toQPiTwoCat.obj B)) B :=
+  QAssociated2.T R B
+
+/-- `𝕋_𝔅⁻¹` with codomain `(𝔼 𝔅)^`. -/
+abbrev Tinv' (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
+    TwoSuperfunctor R B (QAssociated2 R (toQPiTwoCat.obj B)) :=
+  QAssociated2.Tinv R B
+
+theorem mapQ_comp_T' {B C : QPiTwoGSCat.{w, w₁, v₁, u₁} R} (G : B ⟶ C) :
+    ((G.1.toQPiTwoFunctor G.2).mapQ :
+        TwoSuperfunctor R (QAssociated2 R (toQPiTwoCat.obj B))
+          (QAssociated2 R (toQPiTwoCat.obj C))).comp (T' C) = (T' B).comp G.1 :=
+  QAssociated2.mapQ_comp_T G.1 G.2
+
+set_option maxHeartbeats 1000000 in
+theorem T'_comp_Tinv' (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
+    (T' B).comp (Tinv' B) = TwoSuperfunctor.id R (QAssociated2 R (toQPiTwoCat.obj B)) :=
+  QAssociated2.T_comp_Tinv
+
+set_option maxHeartbeats 1000000 in
+theorem Tinv'_comp_T' (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
+    (Tinv' B).comp (T' B) = TwoSuperfunctor.id R B :=
+  QAssociated2.Tinv_comp_T
+
+set_option maxHeartbeats 1000000 in
+theorem T'_isGraded (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) : (T' B).IsGraded :=
+  QAssociated2.T_isGraded
+
+set_option maxHeartbeats 1000000 in
+theorem Tinv'_isGraded (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) : (Tinv' B).IsGraded :=
+  QAssociated2.Tinv_isGraded
+
+/-- The component `𝕋_𝔅 : 𝔻(𝔼 𝔅) → 𝔅` of the counit. -/
+def counitHom (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
+    QPiTwoCat.toQPiTwoGSCat.obj (toQPiTwoCat.obj B) ⟶ B :=
+  ⟨T' B, T'_isGraded B⟩
+
+/-- The inverse `𝕋_𝔅⁻¹ : 𝔅 → 𝔻(𝔼 𝔅)` of the component of the counit. -/
+def counitInv (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
+    B ⟶ QPiTwoCat.toQPiTwoGSCat.obj (toQPiTwoCat.obj B) :=
+  ⟨Tinv' B, Tinv'_isGraded B⟩
+
+/-- `𝔻(𝔼 ℝ)` is `𝔻` of the `(Q, Π)`-2-functor underlying `ℝ`. -/
+theorem mapQ_eq {B C : QPiTwoGSCat.{w, w₁, v₁, u₁} R} (G : B ⟶ C) :
+    ((toQPiTwoCat.map G).toQPiTwoFunctor.mapQ :
+        TwoSuperfunctor R (QAssociated2 R (toQPiTwoCat.obj B))
+          (QAssociated2 R (toQPiTwoCat.obj C))) =
+      ((G.1.toQPiTwoFunctor G.2).mapQ : TwoSuperfunctor R (QAssociated2 R (toQPiTwoCat.obj B))
+        (QAssociated2 R (toQPiTwoCat.obj C))) :=
+  rfl
+
+theorem mapQ_comp_T'' {B C : QPiTwoGSCat.{w, w₁, v₁, u₁} R} (G : B ⟶ C) :
+    ((toQPiTwoCat.map G).toQPiTwoFunctor.mapQ).comp (T' C) = (T' B).comp G.1 := by
+  rw [mapQ_eq]
+  exact mapQ_comp_T' G
+
+/-- **Naturality of `𝕋`** in `(Q, Π)-2-GSCat`: `𝔻(𝔼 ℝ) ≫ 𝕋_𝔅' = 𝕋_𝔅 ≫ ℝ`
+(`QAssociated2.mapQ_comp_T`). -/
+theorem counit_naturality {B C : QPiTwoGSCat.{w, w₁, v₁, u₁} R} (G : B ⟶ C) :
+    QPiTwoCat.toQPiTwoGSCat.map (toQPiTwoCat.map G) ≫ counitHom C = counitHom B ≫ G := by
+  apply Subtype.ext
+  rw [QPiTwoGSCat.comp_val, QPiTwoGSCat.comp_val, QPiTwoCat.toQPiTwoGSCat_map]
+  exact mapQ_comp_T'' G
+
+theorem counitHom_comp_counitInv (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
+    counitHom B ≫ counitInv B = 𝟙 _ := by
+  apply Subtype.ext
+  exact T'_comp_Tinv' B
+
+theorem counitInv_comp_counitHom (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
+    counitInv B ≫ counitHom B = 𝟙 _ := by
+  apply Subtype.ext
+  exact Tinv'_comp_T' B
+
+/-- **The §6 analogue of Lemma 5.4, `𝔻 ∘ 𝔼 ≅ I` on objects**: `𝕋_𝔅 : 𝔻(𝔼 𝔅) ≅ 𝔅`. -/
+def counitIso (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
+    (toQPiTwoCat ⋙ QPiTwoCat.toQPiTwoGSCat).obj B ≅ B where
+  hom := counitHom B
+  inv := counitInv B
+  hom_inv_id := counitHom_comp_counitInv B
+  inv_hom_id := counitInv_comp_counitHom B
+
+/-- **The §6 analogue of Lemma 5.4, `𝔻 ∘ 𝔼 ≅ I`**, as a natural isomorphism `𝔼 ⋙ 𝔻 ≅ 𝟭` of
+endofunctors of `(Q, Π)-2-GSCat`, with components `𝕋`. -/
+def counitNatIso :
+    toQPiTwoCat ⋙ QPiTwoCat.toQPiTwoGSCat ≅ 𝟭 (QPiTwoGSCat.{w, w₁, v₁, u₁} R) :=
+  NatIso.ofComponents counitIso fun G => counit_naturality G
+
 end QPiTwoGSCat
+
+namespace QPiTwoCat
+
+variable {R : Type w} [CommRing R]
+
+/-- **The §6 analogue of Lemma 5.4** (after Definition 6.14). `𝔻 : (Q, Π)-2-Cat → (Q, Π)-2-GSCat`
+and `𝔼 : (Q, Π)-2-GSCat → (Q, Π)-2-Cat` are mutually inverse equivalences of categories, with
+unit `𝔼 ∘ 𝔻 = I` (`QPiTwoCat.unitNatIso`) and counit `𝕋 : 𝔻 ∘ 𝔼 ≅ I`
+(`QPiTwoGSCat.counitNatIso`). -/
+def equivalence : QPiTwoCat.{w, w₁, v₁, u₁} R ≌ QPiTwoGSCat.{w, w₁, v₁, u₁} R :=
+  CategoryTheory.Equivalence.mk toQPiTwoGSCat QPiTwoGSCat.toQPiTwoCat unitNatIso
+    QPiTwoGSCat.counitNatIso
+
+instance : (toQPiTwoGSCat : QPiTwoCat.{w, w₁, v₁, u₁} R ⥤ _).IsEquivalence :=
+  equivalence.isEquivalence_functor
+
+instance : (QPiTwoGSCat.toQPiTwoCat : QPiTwoGSCat.{w, w₁, v₁, u₁} R ⥤ _).IsEquivalence :=
+  equivalence.isEquivalence_inverse
+
+end QPiTwoCat
 
 end StringDiagrams
