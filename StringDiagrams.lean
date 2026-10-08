@@ -164,6 +164,7 @@ import StringDiagrams.Super.MonoidalEquivalence
 import StringDiagrams.Super.MonoidalSuperequivalenceInverse
 import StringDiagrams.Super.Strictification
 import StringDiagrams.Super.TwoStrictification
+import StringDiagrams.Super.TwoStrictificationWhitehead
 import StringDiagrams.Super.SKarUnit
 import StringDiagrams.Super.SKarSuperalgebra
 import StringDiagrams.Super.SKarMonoidalPi
