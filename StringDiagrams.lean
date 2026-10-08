@@ -117,6 +117,8 @@ import StringDiagrams.Super.QAssociatedTwoEquivalence
 import StringDiagrams.Super.AssociatedTwoNatEquiv
 import StringDiagrams.Super.QAssociatedTwoNatEquiv
 import StringDiagrams.Super.DrinfeldCenterEnvelope
+import StringDiagrams.Super.DrinfeldCenterPi
+import StringDiagrams.Super.DrinfeldCenterPiCounterexample
 import StringDiagrams.Super.Braided
 import StringDiagrams.Super.DrinfeldCenterBraiding
 import StringDiagrams.Super.EnvelopeNaturality
