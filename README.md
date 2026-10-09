@@ -1,6 +1,18 @@
 # string-diagrams-lean
 
-A Lean 4 library for diagrammatic reasoning: typed diagram syntax, presentations by generators and relations, interpretations, and Lean-checked diagram rewriting.
+A Lean 4 library for string diagrams and monoidal supercategories.
+
+It has two parts:
+
+- **String diagrams** (the core modules, `LayerMap`, `Biadjunction`, `Chord`, and most of `Examples`): typed diagram
+  syntax, presentations by generators and relations, interpretations, gradings and super-derivations, biadjunctions
+  and pivotal structures in any bicategory, chord-diagram normal forms, and Lean-checked diagram rewriting.
+- **Monoidal supercategories** (`Super`, and the odd Brauer, odd Temperley–Lieb and Π-envelope examples): superspaces and
+  superalgebras, monoidal supercategories and 2-supercategories, Π-supercategories and Π-envelopes, super Karoubi
+  envelopes, and graded (Q, Π)-structures, covering §§1–6 and most of the appendix of J. Brundan, A. P. Ellis, *Monoidal
+  supercategories* ([arXiv:1603.05928v3](https://arxiv.org/abs/1603.05928)). This part is built on the
+  string-diagram layer, which in turn uses only its base modules `Super.Basic` and `Super.Presented` (the
+  supercategory structure of a presented category with parities).
 
 ## Contents
 
