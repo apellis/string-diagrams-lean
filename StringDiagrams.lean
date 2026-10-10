@@ -151,6 +151,8 @@ import StringDiagrams.Super.SVecQuotient
 import StringDiagrams.Super.BalancedTensor
 import StringDiagrams.Super.BimoduleMonoidal
 import StringDiagrams.Super.SBim
+import StringDiagrams.Super.SOp
+import StringDiagrams.Super.SOpPresented
 import StringDiagrams.Super.SuperOpposite
 import StringDiagrams.Super.BoxProduct
 import StringDiagrams.Super.BoxProductMonoidal

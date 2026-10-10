@@ -232,6 +232,33 @@ instance supercategory : Supercategory R (SOp R C) where
 theorem mem_parity_iff {X Y : SOp R C} {p : ZMod 2} {f : X ⟶ Y} :
     f ∈ parity (R := R) X Y p ↔ unsop f ∈ parity (R := R) Y.unop X.unop p := Iff.rfl
 
+/-! ## The super-opposite of the super-opposite -/
+
+/-- `(𝒜^{sop})^{sop} = 𝒜`: the identity on objects and morphisms is a functor
+`SOp R (SOp R C) ⥤ C`, since the two signs cancel. -/
+def unsopUnsop : SOp R (SOp R C) ⥤ C where
+  obj X := X.unop.unop
+  map f := unsop (unsop f)
+  map_id _ := rfl
+  map_comp {X Y Z} f g := by
+    refine induction_on (R := R) f (P := fun f => unsop (unsop (f ≫ g)) =
+        unsop (unsop f) ≫ unsop (unsop g)) ?_ (fun p f hf => ?_) (fun f f' hf hf' => ?_)
+    · simp only [Limits.zero_comp, unsop_zero]
+    · refine induction_on (R := R) g (P := fun g => unsop (unsop (f ≫ g)) =
+          unsop (unsop f) ≫ unsop (unsop g)) ?_ (fun q g hg => ?_) (fun g g' hg hg' => ?_)
+      · simp only [Limits.comp_zero, unsop_zero]
+      · have hf' : unsop f ∈ parity (R := R) Y.unop X.unop p := hf
+        have hg' : unsop g ∈ parity (R := R) Z.unop Y.unop q := hg
+        rw [comp_of_mem hf' hg', unsop_smul, comp_of_mem (X := Z.unop) (Y := Y.unop) (Z := X.unop)
+          (f := unsop g) (g := unsop f) hg hf, smul_smul, mul_comm q p, sign_mul_self, one_smul]
+      · rw [Preadditive.comp_add, unsop_add, unsop_add, hg, hg', unsop_add, unsop_add,
+          Preadditive.comp_add]
+    · rw [Preadditive.add_comp, unsop_add, unsop_add, hf, hf', unsop_add, unsop_add,
+        Preadditive.add_comp]
+
+@[simp] theorem unsopUnsop_map {X Y : SOp R (SOp R C)} (f : X ⟶ Y) :
+    unsopUnsop.map f = unsop (unsop f) := rfl
+
 /-! ## Functoriality -/
 
 variable {D : Type w₃} [Category.{w₄} D] [Preadditive D] [Linear R D] [Supercategory R D]
