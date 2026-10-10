@@ -63,6 +63,7 @@ import StringDiagrams.Super.UnderlyingBicategory
 import StringDiagrams.Super.PiTwo
 import StringDiagrams.Super.TwoFunctor
 import StringDiagrams.Super.GradedTwo
+import StringDiagrams.Super.PresentedGraded
 import StringDiagrams.Super.GradedTwoEnvelope
 import StringDiagrams.Super.QTwoEnvelopeUniversal
 import StringDiagrams.Super.GradedTwoEnvelopeUniversal
