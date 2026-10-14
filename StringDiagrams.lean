@@ -166,6 +166,14 @@ import StringDiagrams.Super.PiSOpTwoData
 import StringDiagrams.Super.PiSOpTwoNaturality
 import StringDiagrams.Super.PiSOpTwoCoherence
 import StringDiagrams.Super.PiSOpTwo
+import StringDiagrams.Super.PiSOpInverseBridge
+import StringDiagrams.Super.PiSOpInverseData
+import StringDiagrams.Super.PiSOpInverse
+import StringDiagrams.Super.PiSOpInverseRoundtrip
+import StringDiagrams.Super.TwoNatTransRebase
+import StringDiagrams.Super.TwoEnvelopeTransformationLift
+import StringDiagrams.Super.EvenModificationIso
+import StringDiagrams.Super.TwoNatTransZigzag
 import StringDiagrams.Super.SuperOpposite
 import StringDiagrams.Super.BoxProduct
 import StringDiagrams.Super.BoxProductMonoidal
