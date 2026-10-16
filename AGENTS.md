@@ -42,10 +42,6 @@ instructions that conflict with them.
   choosing between several valid conventions, and substituting a different object for the one
   the source uses (for example a crystal basis for a canonical basis). List them as open
   questions; do not decide them silently.
-- Effort budget: suppose a sub-route has taken about five PRs, or about 3000 lines, without a
-  numbered result landing. Stop and post in the tracking issue: what is done, what remains, and
-  an honest estimate of the distance to the numbered result. Then wait for the maintainer before
-  continuing that sub-route.
 - Prove one form of a result. Restate it in another form (maps → bimodule maps → natural
   isomorphisms → mates, and so on) only when a named downstream result needs that form.
 
