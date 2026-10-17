@@ -4,14 +4,39 @@ on:
   push:
     branches: [master]
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # A change touching only Markdown files cannot affect the Lean build.
+      - name: Detect documentation-only change
+        id: scope
+        run: |
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+          if files=$(git diff --name-only "$base" HEAD 2>/dev/null) && [ -n "$files" ] \
+              && ! printf '%s\n' "$files" | grep -qvE '\.md$'; then
+            echo "docs_only=true" >> "$GITHUB_OUTPUT"
+            echo "Only Markdown files changed; skipping the Lean build."
+          else
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: leanprover/lean-action@v1
+        if: steps.scope.outputs.docs_only != 'true'
         with:
           use-mathlib-cache: true
       - name: Axiom audit
+        if: steps.scope.outputs.docs_only != 'true'
         run: lake env lean -DwarningAsError=true scripts/AxiomAudit.lean
