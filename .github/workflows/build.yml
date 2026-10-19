@@ -40,3 +40,6 @@ jobs:
       - name: Axiom audit
         if: steps.scope.outputs.docs_only != 'true'
         run: lake env lean -DwarningAsError=true scripts/AxiomAudit.lean
+      - name: Non-vacuity checks
+        if: steps.scope.outputs.docs_only != 'true'
+        run: lake env lean -DwarningAsError=true scripts/NonVacuity.lean
