@@ -206,6 +206,7 @@ import StringDiagrams.Super.ParityBasis
 import StringDiagrams.Super.KrullSchmidtParity
 import StringDiagrams.Super.KrullSchmidtParityExamples
 import StringDiagrams.Super.KrullSchmidtLaurentExamples
+import StringDiagrams.Super.KrullSchmidtLaurentParityExamples
 import StringDiagrams.Super.SKarUnitMonoidal
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation

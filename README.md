@@ -240,8 +240,15 @@ categorical headline. See [ERRATA.md](ERRATA.md) for the parity obstruction.
 The Laurentian graded-envelope theorem now proves freeness over the subring
 `R = ℤ[q,q⁻¹]`, with basis the integer-shift orbits of indecomposables. It requires
 only degreewise finite-dimensional Homs and a lower degree bound, not finite
-total dimension. The decomposition over `ℒ = R[π]/(π²−1)` into type-M free and
-type-Q `ℒ/(π−1)` summands remains separate; general `ℒ`-freeness is not claimed.
+total dimension. `KrullSchmidt.laurentDecomposition` and
+`GSKar.laurentDecomposition` now construct the mixed decomposition over
+`ℒ = R[π]/(π²−1)` into type-M free and type-Q `ℒ/(π−1)` summands.
+`GSKarAlg.laurentDecomposition` supplies the Laurentian superalgebra consumer.
+`laurentParity_fixed_iff` identifies fixed grading-shift orbits with actual
+parity-self-associate indecomposables; no nonzero grading twist survives.
+`CoveringLaurent.typeQEquiv` identifies the fixed coefficient module with the
+quotient, and concrete checks retain a nonzero rational projective class and
+a nonzero type-Q quotient unit. Unconditional `ℒ`-freeness is not claimed.
 `FGProj` uses right supermodules and even retracts of finite
 parity-shifted free modules. The graded envelope has not yet been identified with
 the paper's graded left projectives. These comparisons and the further quotient
