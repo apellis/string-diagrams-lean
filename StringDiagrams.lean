@@ -202,6 +202,9 @@ import StringDiagrams.Karoubi.KrullSchmidt
 import StringDiagrams.Karoubi.KrullSchmidtDecomposition
 import StringDiagrams.Super.KrullSchmidt
 import StringDiagrams.Super.KrullSchmidtExamples
+import StringDiagrams.Super.ParityBasis
+import StringDiagrams.Super.KrullSchmidtParity
+import StringDiagrams.Super.KrullSchmidtParityExamples
 import StringDiagrams.Super.SKarUnitMonoidal
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation
