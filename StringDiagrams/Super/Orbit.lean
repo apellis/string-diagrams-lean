@@ -1,4 +1,5 @@
 import StringDiagrams.Super.QPi
+import StringDiagrams.Karoubi.EquivalencePowers
 
 /-!
 # The orbit supercategory of an auto-equivalence
@@ -72,19 +73,13 @@ theorem counit_inv_mem (X : S) :
 /-! ## Powers of `Q` -/
 
 /-- `Qⁿ`, `n ∈ ℕ` (with `Qⁿ⁺¹ = Qⁿ ⋙ Q`, i.e. `Q` applied last). -/
-def powNat : ℕ → S ⥤ S
-  | 0 => 𝟭 S
-  | n + 1 => powNat n ⋙ d.Q
+abbrev powNat : ℕ → S ⥤ S := EquivalencePowers.powNat d.e
 
 /-- `Q⁻ⁿ`, `n ∈ ℕ` (with `Q⁻ⁿ⁻¹ = Q⁻ⁿ ⋙ Q⁻¹`). -/
-def powNeg : ℕ → S ⥤ S
-  | 0 => 𝟭 S
-  | n + 1 => powNeg n ⋙ d.Qi
+abbrev powNeg : ℕ → S ⥤ S := EquivalencePowers.powNeg d.e
 
 /-- `Qⁱ`, `i ∈ ℤ`. -/
-def pow : ℤ → S ⥤ S
-  | Int.ofNat n => d.powNat n
-  | Int.negSucc n => d.powNeg (n + 1)
+abbrev pow : ℤ → S ⥤ S := EquivalencePowers.pow d.e
 
 instance powNat_additive : ∀ n, (d.powNat n).Additive
   | 0 => inferInstanceAs (𝟭 S).Additive
@@ -131,11 +126,7 @@ instance pow_isSuperfunctor : ∀ i, IsSuperfunctor R (d.pow i)
 
 /-- `Q Qⁱ ≅ Qⁱ⁺¹` (in diagrammatic order `Qⁱ ⋙ Q ≅ Qⁱ⁺¹`): the identity for `i ≥ 0`, the
 counit for `i < 0`. -/
-def succ : ∀ i : ℤ, d.pow i ⋙ d.Q ≅ d.pow (i + 1)
-  | Int.ofNat _ => Iso.refl _
-  | Int.negSucc 0 => d.e.counitIso
-  | Int.negSucc (n + 1) => Functor.associator _ _ _ ≪≫
-      Functor.isoWhiskerLeft (d.powNeg (n + 1)) d.e.counitIso ≪≫ Functor.rightUnitor _
+abbrev succ : ∀ i : ℤ, d.pow i ⋙ d.Q ≅ d.pow (i + 1) := EquivalencePowers.succ d.e
 
 set_option backward.isDefEq.respectTransparency false in
 theorem succ_hom_mem (i : ℤ) (X : S) :

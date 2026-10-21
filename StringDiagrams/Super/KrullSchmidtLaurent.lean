@@ -40,6 +40,14 @@ theorem int_T_smul (n : ℤ) (x : K₀ C) :
     (AddMonoidAlgebra.mapRingHom ℤ (Int.castRingHom Zπ) (T n)) x = _
   rw [T, AddMonoidAlgebra.mapRingHom_single, map_one, ← T, laurentEnd_T]
 
+/-- A degree-one Laurent monomial acts by the chosen grading shift. -/
+theorem int_T_one_smul_mk (X : C) :
+    letI := moduleLaurentInt k C
+    (T 1 : LaurentPolynomial ℤ) • K₀.mk X = K₀.mk ((QPiCategory.Q (R := k)).obj X) := by
+  let := moduleLaurentInt k C
+  rw [int_T_smul, zpow_one]
+  exact map_mk _ _
+
 end K₀
 
 namespace KrullSchmidt
@@ -183,9 +191,13 @@ def laurentBasis (h : ShiftHomBoundedBelow k (C := C)) :
     laurentBasis k h o = K₀.mk o.out.rep := by
   let := K₀.moduleLaurentInt k C
   let := indecShiftAction k (C := C)
-  unfold laurentBasis
-  rw [LaurentBasis.ofOrbits_apply]
-  exact indecBasis_apply k o.out
+  have hb : ∀ (n : ℤ) (i : IndecClass C), (T n : LaurentPolynomial ℤ) • (indecBasis k) i =
+      (indecBasis k) (n +ᵥ i) := by
+    intro n i
+    simp only [indecBasis_apply]
+    exact int_T_smul_indec k n i
+  exact (LaurentBasis.ofOrbits_apply (indecBasis k) hb (indec_shift_free k h) o).trans
+    (indecBasis_apply k o.out)
 
 /-- `R`-freeness needed by BE2 Theorem 11.7, under the categorical Laurentian
 Hom hypotheses, rather than the false general covering-ring freeness claim. -/

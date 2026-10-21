@@ -42,11 +42,19 @@ indecomposable regular projective isomorphic to its parity shift
 `Zπ`-free, and the regular projective gives a nonzero Tate class
 (`typeQ_not_free`, `typeQ_tate_ne_zero`).
 
-**Formalization boundary.** The result above proves the parity-ring
-correction, not the complete Laurent-ring replacement. Integer-shift
-rigidity, a basis modulo integer shifts, specialized `R`-freeness, and
-the identification of the graded envelope with graded left projectives
-remain separate inputs. No proof of Theorem 11.3 is claimed here.
+**Laurentian envelope theorem.** For a graded supercategory with degreewise
+finite-dimensional, bounded-below Homs, `GSKar.k0_free_laurentInt` proves
+`R = ℤ[q,q⁻¹]`-freeness on the existing K₀. `KrullSchmidt.laurentBasis` is the
+basis indexed by integer-shift orbits of indecomposables.
+`GradedSupercategory.qPow_iso_degree_zero` isolates the rigidity argument:
+a nonzero object with bounded-below graded endomorphisms cannot admit a
+degree-zero isomorphism to a nontrivial integer shift. The rational graded
+field supplies a nonzero rank-one example with every hypothesis proved.
+
+**Formalization boundary.** The `ℒ`-module decomposition into type-M free
+summands and type-Q `ℒ/(π−1)` summands and the identification of the graded
+envelope with graded left projectives remain separate inputs. Neither
+Theorem 11.3 nor Theorem 11.7 itself is claimed here.
 
 **Author-ready explanation.** The first preliminary fact in §11 needs to
 separate the integral Krull–Schmidt basis from the covering-ring module

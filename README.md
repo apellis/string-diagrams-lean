@@ -215,7 +215,7 @@ Following Brundan–Ellis, *Monoidal supercategories* ([arXiv:1603.05928v3](http
 
 Integral bases and the parity-ring correction to Brundan–Ellis, *Super Kac–Moody 2-categories*
 ([arXiv:1701.04133v2](https://arxiv.org/abs/1701.04133)), §11's first preliminary
-fact, used in Theorem 11.3:
+fact, used in Theorems 11.3 and 11.7:
 
 | Module | Contents |
 | --- | --- |
@@ -228,13 +228,20 @@ fact, used in Theorem 11.3:
 | `StringDiagrams.Super.KrullSchmidtParity` | Hom-finite idempotent-complete Π-categories: derived parity action on indecomposable classes (`indecParity`, `pi_smul_indec`), `k0_free_zpi_iff`, and the constructed orbit basis `parityBasis`. Finite-dimensional superalgebra and graded-superalgebra consumers: `SKarAlg.k0_free_zpi_iff`, `GSKarAlg.k0_free_zpi_iff`. |
 | `StringDiagrams.Super.KrullSchmidtParityExamples` | Even rational field: free module and constructed paired basis. The odd-generator algebra `ℚ[c]/(c²−1)`: an indecomposable regular projective, its parity isomorphism, nonzero Tate class and nonfree `K₀`. |
 
+| `StringDiagrams.Super.LaurentBasis` | Regroups any integral basis permuted freely by integer shifts into a Laurent basis indexed by shift orbits (`ofOrbits`); a lower bound on stabilizers forces a free action (`free_of_boundedBelow`). |
+| `StringDiagrams.Super.ShiftRigidity` | A homogeneous automorphism of a nonzero object with bounded-below graded endomorphisms has degree zero (`iso_degree_eq_zero`). Thus a degree-zero isomorphism `Q^m X ≅ X` forces `m=0` (`qPow_iso_degree_zero`); indecomposability and finite dimensionality are not needed for this step. |
+| `StringDiagrams.Super.KrullSchmidtLaurent` | Restriction of the existing Laurent action to `ℤ[q,q⁻¹]`, shift rigidity from bounded-below shifted Homs, and the orbit basis (`laurentBasis`, `laurentBasis_apply`, `k0_free_laurentInt`). |
+| `StringDiagrams.Super.GSKarLaurent` | Degreewise Hom-finiteness and lower bounds pass through formal shifts, finite matrices and retracts. `GSKar.k0_free_laurentInt` derives Laurent freeness directly from the original category’s Laurentian Hom hypotheses, with no basis or rigidity assumption. `GSKarAlg.k0_free_laurentInt` specializes it to Laurentian graded superalgebras. Integer powers reuse the autoequivalence core of `Orbit.ShiftData`. |
+| `StringDiagrams.Super.KrullSchmidtLaurentExamples` | Rational graded field: Laurent basis, a nonzero indecomposable rank-one projective and integer-shift rigidity, with every hypothesis discharged. |
+
 **Scope and remaining §11 input.** Integral bases and the corrected `Zπ` criterion
 are proved on the existing `K₀.moduleZπ` action, without assuming a basis at the
 categorical headline. See [ERRATA.md](ERRATA.md) for the parity obstruction.
-No `Zπ[q,q⁻¹]` freeness or specialized `R`-freeness theorem is claimed here.
-The superalgebra application currently assumes finite **total** dimension;
-general Laurentian Hom-finiteness, integer-shift rigidity, a basis modulo integer
-shifts, and the specialized coefficient-ring comparison remain to be proved.
+The Laurentian graded-envelope theorem now proves freeness over the subring
+`R = ℤ[q,q⁻¹]`, with basis the integer-shift orbits of indecomposables. It requires
+only degreewise finite-dimensional Homs and a lower degree bound, not finite
+total dimension. The decomposition over `ℒ = R[π]/(π²−1)` into type-M free and
+type-Q `ℒ/(π−1)` summands remains separate; general `ℒ`-freeness is not claimed.
 `FGProj` uses right supermodules and even retracts of finite
 parity-shifted free modules. The graded envelope has not yet been identified with
 the paper's graded left projectives. These comparisons and the further quotient

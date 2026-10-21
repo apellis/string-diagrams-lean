@@ -106,4 +106,14 @@ example :
       Submodule.Quotient.mk x ≠ (0 : ParityBasis.TateZero (M := K₀ (SKar ℚ QCat))) :=
   typeQ_tate_ne_zero
 
+open StringDiagrams KrullSchmidtLaurentExamples in
+example :
+    letI := K₀.moduleLaurentInt ℚ (GSKar ℚ (UnitSupercat ℚ))
+    Module.Free (LaurentPolynomial ℤ) (K₀ (GSKar ℚ (UnitSupercat ℚ))) := rational_k0_free
+
+open StringDiagrams KrullSchmidtLaurentExamples in
+example : K₀.mk line ≠ 0 := line_class_ne_zero
+
+example := StringDiagrams.KrullSchmidtLaurentExamples.rational_basis
+
 end NonVacuity
