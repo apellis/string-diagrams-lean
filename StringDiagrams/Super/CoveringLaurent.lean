@@ -75,4 +75,70 @@ theorem pair_injective {a b c d : R}
     change a.coeff n + -(b.coeff n) = c.coeff n + -(d.coeff n) at h₂
     omega
 
+/-- Specialization at π = 1. -/
+abbrev augmentation : S →+* R := eval 1 (by norm_num)
+
+/-- The parity-fixed coefficient module. -/
+@[instance_reducible] def typeQModule : Module S R := Module.compHom R augmentation
+
+/-- The only relation in the parity-fixed summand is π − 1. -/
+theorem augmentation_ker : RingHom.ker augmentation = Ideal.span ({pi - 1} : Set S) := by
+  apply le_antisymm
+  · intro z hz
+    change augmentation z = 0 at hz
+    obtain ⟨a, b, rfl⟩ := exists_pair z
+    have hab : a + b = 0 := by simpa only [map_add, map_mul, eval_inclusion,
+      eval_pi, map_one, mul_one] using hz
+    have ha : a = -b := eq_neg_of_add_eq_zero_left hab
+    apply Ideal.mem_span_singleton'.2
+    refine ⟨inclusion b, ?_⟩
+    rw [ha, map_neg]
+    ring
+  · apply Ideal.span_le.2
+    intro z hz
+    obtain rfl : z = pi - 1 := hz
+    change augmentation (pi - 1) = 0
+    simp only [map_sub, eval_pi, map_one, sub_self]
+
+/-- The parity relation generates a two-sided ideal. -/
+instance parityIdeal_twoSided : (Ideal.span ({pi - 1} : Set S)).IsTwoSided where
+  mul_mem_of_left := by
+    intro z w hw
+    rw [mul_comm z w]
+    exact (Ideal.span ({pi - 1} : Set S)).mul_mem_left w hw
+
+/-- Evaluate the parity-fixed quotient in integral Laurent polynomials. -/
+def quotientEval : (S ⧸ Ideal.span ({pi - 1} : Set S)) →+* R :=
+  Ideal.Quotient.lift _ augmentation (by
+    intro z hz
+    exact (show z ∈ RingHom.ker augmentation from by rwa [augmentation_ker]))
+
+/-- The quotient evaluation is bijective. -/
+theorem quotientEval_bijective : Function.Bijective quotientEval := by
+  constructor
+  · intro x y h
+    apply sub_eq_zero.mp
+    obtain ⟨z, hz⟩ := Ideal.Quotient.mk_surjective (x - y)
+    rw [← hz]
+    apply Ideal.Quotient.eq_zero_iff_mem.2
+    rw [← augmentation_ker]
+    change augmentation z = 0
+    change quotientEval (Ideal.Quotient.mk _ z) = 0
+    rw [hz, map_sub, h, sub_self]
+  · intro a
+    refine ⟨Ideal.Quotient.mk _ (inclusion a), ?_⟩
+    exact eval_inclusion 1 (by norm_num) a
+
+/-- The parity-fixed summand is precisely ℒ/(π − 1), as an ℒ-module. -/
+def typeQEquiv :
+    letI := typeQModule
+    (S ⧸ Ideal.span ({pi - 1} : Set S)) ≃ₗ[S] R := by
+  letI := typeQModule
+  refine { (RingEquiv.ofBijective quotientEval quotientEval_bijective).toAddEquiv with
+    map_smul' := ?_ }
+  intro z x
+  obtain ⟨w, rfl⟩ := Ideal.Quotient.mk_surjective x
+  change augmentation (z * w) = augmentation z * augmentation w
+  exact map_mul _ _ _
+
 end StringDiagrams.CoveringLaurent
