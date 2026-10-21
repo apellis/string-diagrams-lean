@@ -211,6 +211,32 @@ Following Brundan–Ellis, *Monoidal supercategories* ([arXiv:1603.05928v3](http
 | `StringDiagrams.Super.GSCatMonoidal` | The category `GSCat` of graded supercategories and graded superfunctors (§6, after Definition 6.1; `GSCat.instCategory`, the underlying category of `𝔊𝔖ℭ𝔞𝔱`) with the faithful forgetful functor `GSCat.forget` to `SCat`. **`(GSCat, ⊠, I)` is a monoidal category** (`GSCat.instMonoidalCategory`), for graded supercategories with morphism modules in the universe of `k` (`GSCat.{u, u, w} k`), with `A ⊗ B := A ⊠ B`, `F ⊗ G := F ⊠ G` and the coherence isomorphisms of `BoxProd`; the forgetful functor to `(SCat, ⊠, I)` is strict monoidal (`GSCat.forget_obj_tensorObj`, `GSCat.forget_map_tensorHom`, `GSCat.forget_map_associator_hom`, …). |
 | `StringDiagrams.Super.BimoduleFunctor` | Remark 1.3: the superfunctor `A ⊠ B^{sop} → SVec` of an `(A, B)`-superbimodule (`SuperBimodule.toSuperfunctor`, `(a ⊗ b)(v) = (-1)^{\|b\|\|v\|} a v b`: `toFunctor_map_tmul_apply`) and the superbimodule `V(⋆)` of a superfunctor, `a v b := (-1)^{\|b\|\|v\|} V(a ⊗ b)(v)` (`SuperBimodule.ofFunctor`, `ofFunctor_lact_ract_apply`); supernatural transformations and superbimodule homomorphisms correspond (`homOfNatTrans`, `natTransOfHom`, `homOfNatTrans_natTransOfHom`, `natTransOfHom_homOfNatTrans`). The isomorphism of supercategories `Hom(A ⊠ B^{sop}, SVec) ≅ A-SMod-B`: superfunctors `evalSuperfunctor`, `bimoduleSuperfunctor` whose composites are the identity superfunctors (`bimodule_comp_eval`, `eval_comp_bimodule`). |
 
+### Hom-finite Krull–Schmidt and integral K₀
+
+The parity-independent part of Brundan–Ellis, *Super Kac–Moody 2-categories*
+([arXiv:1701.04133v2](https://arxiv.org/abs/1701.04133)), §11's first preliminary
+fact, used in Theorem 11.3:
+
+| Module | Contents |
+| --- | --- |
+| `StringDiagrams.Algebra.FiniteDimensionalLocal` | Fitting's lemma: in a finite-dimensional algebra whose idempotents are only `0` and `1`, each element is nilpotent or a unit (`isNilpotent_or_isUnit_of_idempotent`). |
+| `StringDiagrams.Karoubi.KrullSchmidt` | In any Hom-finite, idempotent-complete linear category with binary biproducts, the nonzero indecomposable isomorphism classes form an integral basis of the existing split `StringDiagrams.K₀` (`indecBasis`, `indecBasis_apply`, `free`). Indecomposable endomorphism algebras are local; radical-quotient dimensions prove independence over arbitrary fields, without assuming absolute irreducibility or a K₀ basis. The idempotent and Mathlib biproduct definitions agree (`isIndec_iff_indecomposable`). |
+| `StringDiagrams.Karoubi.KrullSchmidtDecomposition` | With a zero object, finite decompositions exist at the object level (`exists_iso_sumList`) and are unique up to permutation (`nonempty_iso_sumList_iff`). Equality of classes detects isomorphism (`mk_eq_mk_iff`); common summands cancel (`cancel_biprod`). |
+| `StringDiagrams.Super.KrullSchmidt` | For finite-dimensional superalgebras, Hom-finiteness is proved through the parity/degree envelopes, finite matrices and idempotent retracts. Integral bases for `SKar` and `GSKar` (`SKarAlg.indecBasis`, `GSKarAlg.indecBasis`); a basis of `K₀(FGProj)` transported through the existing equivalence (`SKarAlg.fgProjIndecBasis`), with indecomposable projective representatives and object decompositions (`isIndec_fgProj_rep`, `fgProj_exists_iso_sumList`). |
+| `StringDiagrams.Super.KrullSchmidtExamples` | Rational unit superalgebra and graded unit algebra: all hypotheses discharged, object decomposition and cancellation, a nonzero rank-one indecomposable class, and headline axiom checks. |
+
+**Scope and remaining §11 input.** These are integral bases, not bases over
+`Zπ` or `Zπ[q,q⁻¹]`. The printed blanket covering-ring freeness assertion requires
+correction when an indecomposable is isomorphic to its parity shift. No covering-ring
+freeness theorem or parity-orbit decomposition is claimed here. The superalgebra
+application currently assumes finite **total** dimension; general Laurentian
+Hom-finiteness, integer-shift rigidity, and the parity-orbit free criterion remain
+to be proved. `FGProj` uses right supermodules and even retracts of finite
+parity-shifted free modules. The graded envelope has not yet been identified with
+the paper's graded left projectives. These comparisons and the further quotient
+and tensor-product inputs to Theorem 11.3 remain open; Theorem 11.3 itself is not
+claimed by these modules.
+
 ### Graded supercategories and (Q, Π)-structures
 
 Following Brundan–Ellis, *Monoidal supercategories* ([arXiv:1603.05928v3](https://arxiv.org/abs/1603.05928)), §6. Compositions are written in diagrammatic order; the degree conventions are those of Definition 6.4 (`σ : Q ⇒ I` has degree `-1`).

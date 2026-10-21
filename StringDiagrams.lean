@@ -197,6 +197,11 @@ import StringDiagrams.Super.SKarMonoidalPi
 import StringDiagrams.Super.Semisimple
 import StringDiagrams.Super.SKarUnitAbelian
 import StringDiagrams.Super.SKarSuperalgebraK0
+import StringDiagrams.Algebra.FiniteDimensionalLocal
+import StringDiagrams.Karoubi.KrullSchmidt
+import StringDiagrams.Karoubi.KrullSchmidtDecomposition
+import StringDiagrams.Super.KrullSchmidt
+import StringDiagrams.Super.KrullSchmidtExamples
 import StringDiagrams.Super.SKarUnitMonoidal
 import StringDiagrams.Monoidal
 import StringDiagrams.Derivation

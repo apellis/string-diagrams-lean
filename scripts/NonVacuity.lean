@@ -62,4 +62,22 @@ example := StringDiagrams.TemperleyLieb.Rep.respects ℚ
 /-- Non-degeneracy: the image of a generator is nonzero. -/
 example := StringDiagrams.TemperleyLieb.Rep.e_ne_zero (R := ℚ) (m := 2) (i := 1) (by norm_num)
 
+/-! ### BE2 §11: finite-dimensional integral Krull–Schmidt input to Theorem 11.3 -/
+
+open StringDiagrams StringDiagrams.KrullSchmidt in
+example : Module.Free ℤ (K₀ (SKarAlg.FGProj (trivialGrading ℚ))) :=
+  SKarAlg.fgProj_k0_free_int (trivialGrading ℚ)
+
+open StringDiagrams in
+example : Module.Free ℤ
+    (K₀ (GSKar ℚ (SuperalgebraCat KrullSchmidtExamples.rationalGradedAlgebra.parity))) :=
+  GSKarAlg.k0_free_int KrullSchmidtExamples.rationalGradedAlgebra
+
+open StringDiagrams StringDiagrams.KrullSchmidt in
+example (P Q : SKar ℚ (UnitSupercat ℚ)) :
+    K₀.mk P = K₀.mk Q ↔ Nonempty (P ≅ Q) := mk_eq_mk_iff ℚ
+
+open StringDiagrams in
+example : K₀.mk (SKarUnit.obj ℚ 0) ≠ 0 := KrullSchmidtExamples.unitObj_class_ne_zero 0
+
 end NonVacuity
