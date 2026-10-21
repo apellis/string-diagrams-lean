@@ -80,4 +80,30 @@ example (P Q : SKar ℚ (UnitSupercat ℚ)) :
 open StringDiagrams in
 example : K₀.mk (SKarUnit.obj ℚ 0) ≠ 0 := KrullSchmidtExamples.unitObj_class_ne_zero 0
 
+/-! ### BE2 §11: corrected parity-ring criterion, type M and type Q -/
+
+open StringDiagrams KrullSchmidtParityExamples in
+example :
+    letI := K₀.moduleZπ ℚ (SKar ℚ (UnitSupercat ℚ))
+    Module.Free Zπ (K₀ (SKar ℚ (UnitSupercat ℚ))) := typeM_free
+
+open StringDiagrams KrullSchmidtParityExamples in
+example : KrullSchmidt.IsIndec typeQObj := typeQ_indec
+
+open StringDiagrams KrullSchmidtParityExamples in
+example : Nonempty ((PiCategory.pi (R := ℚ)).obj typeQObj ≅ typeQObj) :=
+  ⟨typeQParityIso⟩
+
+open StringDiagrams KrullSchmidtParityExamples in
+example :
+    letI := K₀.moduleZπ ℚ (SKar ℚ QCat)
+    ¬ Module.Free Zπ (K₀ (SKar ℚ QCat)) := typeQ_not_free
+
+open StringDiagrams KrullSchmidtParityExamples in
+example :
+    letI := K₀.moduleZπ ℚ (SKar ℚ QCat)
+    ∃ x : ParityBasis.fixedSubmodule (M := K₀ (SKar ℚ QCat)),
+      Submodule.Quotient.mk x ≠ (0 : ParityBasis.TateZero (M := K₀ (SKar ℚ QCat))) :=
+  typeQ_tate_ne_zero
+
 end NonVacuity

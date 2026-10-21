@@ -211,9 +211,9 @@ Following Brundan–Ellis, *Monoidal supercategories* ([arXiv:1603.05928v3](http
 | `StringDiagrams.Super.GSCatMonoidal` | The category `GSCat` of graded supercategories and graded superfunctors (§6, after Definition 6.1; `GSCat.instCategory`, the underlying category of `𝔊𝔖ℭ𝔞𝔱`) with the faithful forgetful functor `GSCat.forget` to `SCat`. **`(GSCat, ⊠, I)` is a monoidal category** (`GSCat.instMonoidalCategory`), for graded supercategories with morphism modules in the universe of `k` (`GSCat.{u, u, w} k`), with `A ⊗ B := A ⊠ B`, `F ⊗ G := F ⊠ G` and the coherence isomorphisms of `BoxProd`; the forgetful functor to `(SCat, ⊠, I)` is strict monoidal (`GSCat.forget_obj_tensorObj`, `GSCat.forget_map_tensorHom`, `GSCat.forget_map_associator_hom`, …). |
 | `StringDiagrams.Super.BimoduleFunctor` | Remark 1.3: the superfunctor `A ⊠ B^{sop} → SVec` of an `(A, B)`-superbimodule (`SuperBimodule.toSuperfunctor`, `(a ⊗ b)(v) = (-1)^{\|b\|\|v\|} a v b`: `toFunctor_map_tmul_apply`) and the superbimodule `V(⋆)` of a superfunctor, `a v b := (-1)^{\|b\|\|v\|} V(a ⊗ b)(v)` (`SuperBimodule.ofFunctor`, `ofFunctor_lact_ract_apply`); supernatural transformations and superbimodule homomorphisms correspond (`homOfNatTrans`, `natTransOfHom`, `homOfNatTrans_natTransOfHom`, `natTransOfHom_homOfNatTrans`). The isomorphism of supercategories `Hom(A ⊠ B^{sop}, SVec) ≅ A-SMod-B`: superfunctors `evalSuperfunctor`, `bimoduleSuperfunctor` whose composites are the identity superfunctors (`bimodule_comp_eval`, `eval_comp_bimodule`). |
 
-### Hom-finite Krull–Schmidt and integral K₀
+### Hom-finite Krull–Schmidt and parity-orbit K₀
 
-The parity-independent part of Brundan–Ellis, *Super Kac–Moody 2-categories*
+Integral bases and the parity-ring correction to Brundan–Ellis, *Super Kac–Moody 2-categories*
 ([arXiv:1701.04133v2](https://arxiv.org/abs/1701.04133)), §11's first preliminary
 fact, used in Theorem 11.3:
 
@@ -224,14 +224,18 @@ fact, used in Theorem 11.3:
 | `StringDiagrams.Karoubi.KrullSchmidtDecomposition` | With a zero object, finite decompositions exist at the object level (`exists_iso_sumList`) and are unique up to permutation (`nonempty_iso_sumList_iff`). Equality of classes detects isomorphism (`mk_eq_mk_iff`); common summands cancel (`cancel_biprod`). |
 | `StringDiagrams.Super.KrullSchmidt` | For finite-dimensional superalgebras, Hom-finiteness is proved through the parity/degree envelopes, finite matrices and idempotent retracts. Integral bases for `SKar` and `GSKar` (`SKarAlg.indecBasis`, `GSKarAlg.indecBasis`); a basis of `K₀(FGProj)` transported through the existing equivalence (`SKarAlg.fgProjIndecBasis`), with indecomposable projective representatives and object decompositions (`isIndec_fgProj_rep`, `fgProj_exists_iso_sumList`). |
 | `StringDiagrams.Super.KrullSchmidtExamples` | Rational unit superalgebra and graded unit algebra: all hypotheses discharged, object decomposition and cancellation, a nonzero rank-one indecomposable class, and headline axiom checks. |
+| `StringDiagrams.Super.ParityBasis` | For a parity-permuted integral basis of arbitrary cardinality: `Zπ`-freeness iff no fixed indices (`free_iff`), a basis on paired representatives (`pairedBasis`), and the fixed-point-modulo-norm quotient (`TateZero`, `fixed_tate_ne_zero`, `free_iff_norm_surjective`). |
+| `StringDiagrams.Super.KrullSchmidtParity` | Hom-finite idempotent-complete Π-categories: derived parity action on indecomposable classes (`indecParity`, `pi_smul_indec`), `k0_free_zpi_iff`, and the constructed orbit basis `parityBasis`. Finite-dimensional superalgebra and graded-superalgebra consumers: `SKarAlg.k0_free_zpi_iff`, `GSKarAlg.k0_free_zpi_iff`. |
+| `StringDiagrams.Super.KrullSchmidtParityExamples` | Even rational field: free module and constructed paired basis. The odd-generator algebra `ℚ[c]/(c²−1)`: an indecomposable regular projective, its parity isomorphism, nonzero Tate class and nonfree `K₀`. |
 
-**Scope and remaining §11 input.** These are integral bases, not bases over
-`Zπ` or `Zπ[q,q⁻¹]`. The printed blanket covering-ring freeness assertion requires
-correction when an indecomposable is isomorphic to its parity shift. No covering-ring
-freeness theorem or parity-orbit decomposition is claimed here. The superalgebra
-application currently assumes finite **total** dimension; general Laurentian
-Hom-finiteness, integer-shift rigidity, and the parity-orbit free criterion remain
-to be proved. `FGProj` uses right supermodules and even retracts of finite
+**Scope and remaining §11 input.** Integral bases and the corrected `Zπ` criterion
+are proved on the existing `K₀.moduleZπ` action, without assuming a basis at the
+categorical headline. See [ERRATA.md](ERRATA.md) for the parity obstruction.
+No `Zπ[q,q⁻¹]` freeness or specialized `R`-freeness theorem is claimed here.
+The superalgebra application currently assumes finite **total** dimension;
+general Laurentian Hom-finiteness, integer-shift rigidity, a basis modulo integer
+shifts, and the specialized coefficient-ring comparison remain to be proved.
+`FGProj` uses right supermodules and even retracts of finite
 parity-shifted free modules. The graded envelope has not yet been identified with
 the paper's graded left projectives. These comparisons and the further quotient
 and tensor-product inputs to Theorem 11.3 remain open; Theorem 11.3 itself is not
