@@ -51,10 +51,18 @@ a nonzero object with bounded-below graded endomorphisms cannot admit a
 degree-zero isomorphism to a nontrivial integer shift. The rational graded
 field supplies a nonzero rank-one example with every hypothesis proved.
 
-**Formalization boundary.** The `ℒ`-module decomposition into type-M free
-summands and type-Q `ℒ/(π−1)` summands and the identification of the graded
-envelope with graded left projectives remain separate inputs. Neither
-Theorem 11.3 nor Theorem 11.7 itself is claimed here.
+**Mixed Laurent decomposition.** `KrullSchmidt.laurentDecomposition` now gives
+`K₀ ≅ (⨁_M ℒ) ⊕ (⨁_Q ℒ/(π−1))`, where M and Q are paired and fixed parity
+orbits on the integer-shift orbit set. `laurentParity_fixed_iff` identifies the
+fixed orbits with parity-self-associate indecomposables: parity squared and
+integer-shift rigidity eliminate any nonzero grading twist.
+`GSKar.laurentDecomposition` and `GSKarAlg.laurentDecomposition` derive the
+statement from degreewise Hom-finiteness and lower bounds. The rational
+projective has nonzero coordinates, and the type-Q quotient has nonzero unit.
+
+**Formalization boundary.** The identification of the graded envelope with
+graded left projectives remains separate. Neither Theorem 11.3 nor Theorem 11.7
+itself is claimed here.
 
 **Author-ready explanation.** The first preliminary fact in §11 needs to
 separate the integral Krull–Schmidt basis from the covering-ring module

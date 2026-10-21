@@ -116,4 +116,9 @@ example : K₀.mk line ≠ 0 := line_class_ne_zero
 
 example := StringDiagrams.KrullSchmidtLaurentExamples.rational_basis
 
+example := StringDiagrams.KrullSchmidtLaurentParityExamples.rational_decomposition
+example := StringDiagrams.KrullSchmidtLaurentParityExamples.rational_algebra_decomposition
+example := StringDiagrams.KrullSchmidtLaurentParityExamples.rational_coordinates_ne_zero
+example := StringDiagrams.KrullSchmidtLaurentParityExamples.typeQ_unit_ne_zero
+
 end NonVacuity
