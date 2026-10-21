@@ -90,4 +90,70 @@ theorem paritySection_parity (o : Orbit (ι := ι)) :
     rw [ite_eq_right (not_lt_of_gt h), ite_eq_left h, hσ]
 
 end Ordered
+
+/-- Any section of a free shift action gives integer coordinates on each orbit. -/
+def orbitEquivOfSection (r : Orbit (ι := ι) → ι)
+    (hr : ∀ o, Quotient.mk (AddAction.orbitRel ℤ ι) (r o) = o) :
+    Orbit (ι := ι) × ℤ ≃ ι :=
+  Equiv.ofBijective (fun p => p.2 +ᵥ r p.1) (by
+    constructor
+    · rintro ⟨o, m⟩ ⟨p, n⟩ h
+      have hop : o = p := by
+        have := congrArg (Quotient.mk (AddAction.orbitRel ℤ ι)) h
+        simpa only [AddAction.orbitRel.Quotient.quotient_vadd_eq, hr] using this
+      subst p
+      have hmn : m - n = 0 := hf (r o) (m - n) (by
+        have := congrArg (fun i => (-n) +ᵥ i) h
+        simpa only [← add_vadd, neg_add_cancel, zero_vadd, sub_eq_add_neg,
+          add_comm m (-n)] using this)
+      congr 1
+      omega
+    · intro i
+      let o : Orbit (ι := ι) := Quotient.mk _ i
+      have h : AddAction.orbitRel ℤ ι i (r o) := Quotient.exact (hr o).symm
+      obtain ⟨n, hn⟩ := h
+      exact ⟨(o, n), hn⟩)
+
+variable {M : Type*} [AddCommGroup M] [Module (LaurentPolynomial ℤ) M]
+open Module LaurentPolynomial
+
+/-- Laurent basis using a prescribed section, rather than quotient choice. -/
+def ofSection (b : Basis ι ℤ M)
+    (hb : ∀ n i, (T n : LaurentPolynomial ℤ) • b i = b (n +ᵥ i))
+    (r : Orbit (ι := ι) → ι)
+    (hr : ∀ o, Quotient.mk (AddAction.orbitRel ℤ ι) (r o) = o) :
+    Basis (Orbit (ι := ι)) (LaurentPolynomial ℤ) M :=
+  ofProduct (b.reindex (orbitEquivOfSection hf r hr).symm) (by
+    intro o n
+    simp only [Basis.reindex_apply, Equiv.symm_symm]
+    change (T n : LaurentPolynomial ℤ) • b ((0 : ℤ) +ᵥ r o) = b (n +ᵥ r o)
+    simpa only [zero_vadd] using hb n (r o))
+
+@[simp] theorem ofSection_apply (b : Basis ι ℤ M)
+    (hb : ∀ n i, (T n : LaurentPolynomial ℤ) • b i = b (n +ᵥ i))
+    (r : Orbit (ι := ι) → ι)
+    (hr : ∀ o, Quotient.mk (AddAction.orbitRel ℤ ι) (r o) = o)
+    (o : Orbit (ι := ι)) : ofSection hf b hb r hr o = b (r o) := by
+  rw [ofSection, ofProduct_apply]
+  simp only [Basis.reindex_apply, Equiv.symm_symm]
+  change b ((0 : ℤ) +ᵥ r o) = b (r o)
+  rw [zero_vadd]
+
+variable [LinearOrder (Orbit (ι := ι))]
+
+/-- A Laurent basis whose representatives are compatible with parity. -/
+def parityCompatibleBasis (b : Basis ι ℤ M)
+    (hb : ∀ n i, (T n : LaurentPolynomial ℤ) • b i = b (n +ᵥ i)) :
+    Basis (Orbit (ι := ι)) (LaurentPolynomial ℤ) M :=
+  ofSection hf b hb (paritySection σ hc) (paritySection_spec σ hσ hc)
+
+/-- Parity permutes the normalized Laurent basis without grading factors. -/
+theorem parityCompatibleBasis_parity (b : Basis ι ℤ M)
+    (hb : ∀ n i, (T n : LaurentPolynomial ℤ) • b i = b (n +ᵥ i))
+    (p : M → M) (hp : ∀ i, p (b i) = b (σ i)) (o : Orbit (ι := ι)) :
+    p (parityCompatibleBasis σ hσ hc hf b hb o) =
+      parityCompatibleBasis σ hσ hc hf b hb (orbitParity σ hc o) := by
+  simp only [parityCompatibleBasis, ofSection_apply, hp,
+    paritySection_parity σ hσ hc hf]
+
 end StringDiagrams.LaurentBasis
