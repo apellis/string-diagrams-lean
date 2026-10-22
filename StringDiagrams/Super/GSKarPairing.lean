@@ -26,6 +26,8 @@ arXiv:0803.4121v2, §2.5, in the super setting of Brundan–Ellis, *Super Kac–
   `HOM(P, -)` (`coeff_pairing`).
 * `GSKar.pairing_smul`: the pairing is linear over `Zπ[q, q⁻¹]`, acting on `Zπ((q))` through
   `laurentToSeries`.
+* `GSKar.homCoeff_of`, `GSKar.superCoeff_of`: on objects `X, Y` of `C` (as objects `GSKar.of`
+  of the envelope), the coefficient of `qⁿ` is `dim HOM(X, Y)ₙ,₀ + dim HOM(X, Y)ₙ,₁ π`.
 -/
 
 noncomputable section
@@ -286,6 +288,96 @@ theorem pairing_smul (h : HomBoundedBelow (k := k) (C := C)) (P : GSKar k C)
       congr 1
     rw [e, ← mul_assoc]
     exact hmul ih hTm1
+
+/-! ### Coefficients between shifted objects of `C` -/
+
+variable (k) in
+/-- The object `Qⁿ Πᵖ X` of `GSKar k C`, for an object `X` of `C`. -/
+def of (X : C) (n : ℤ) (p : ZMod 2) : GSKar k C :=
+  (toKaroubi _).obj ((Mat_.embedding _).obj (⟨⟨⟨p, ⟨n, X⟩⟩⟩⟩ : ShiftBase k C))
+
+/-- Maps between objects of `C`, viewed in `GSKar k C`, are maps of the base category. -/
+def homOfEquiv (A B : ShiftBase k C) :
+    ((toKaroubi _).obj ((Mat_.embedding _).obj A) ⟶ (toKaroubi _).obj ((Mat_.embedding _).obj B))
+      ≃ₗ[k] (A ⟶ B) where
+  toFun φ := φ.f PUnit.unit PUnit.unit
+  invFun g := (toKaroubi _).map ((Mat_.embedding _).map g)
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+  left_inv φ := by
+    apply Karoubi.hom_ext
+    funext i j
+    cases i; cases j
+    rfl
+  right_inv _ := rfl
+
+/-- Maps `Qᵐ Πᵖ X → Qⁿ Πᵖ' Y` in the base category are the maps `X → Y` of degree `m - n` and
+parity `p + p'`. -/
+def baseHomEquiv (X Y : C) (m n : ℤ) (p p' : ZMod 2) :
+    ((⟨⟨⟨p, ⟨m, X⟩⟩⟩⟩ : ShiftBase k C) ⟶ ⟨⟨⟨p', ⟨n, Y⟩⟩⟩⟩) ≃ₗ[k]
+      ↥(degree (R := k) X Y (m - n) ⊓ Supercategory.parity (R := k) X Y (p + p')) where
+  toFun g := ⟨g.1.1, by
+    have h1 : g.1.1 ∈ degree (R := k) X Y (0 + (m - n)) := g.1.2
+    have h2 : g.1.1 ∈ Supercategory.parity (R := k) X Y (0 + (p + p')) := g.2
+    rw [zero_add] at h1 h2
+    exact ⟨h1, h2⟩⟩
+  invFun g := ⟨⟨g.1, by
+      change g.1 ∈ degree (R := k) X Y (0 + (m - n))
+      rw [zero_add]; exact g.2.1⟩, by
+    change g.1 ∈ Supercategory.parity (R := k) X Y (0 + (p + p'))
+    rw [zero_add]; exact g.2.2⟩
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+  left_inv _ := rfl
+  right_inv _ := rfl
+
+omit [DegreeHomFinite (k := k) (C := C)] in
+/-- `F(X, 1) ≅ (F X, 1)` in the idempotent completion. -/
+def mapFunctorToKaroubiIso {D E : Type*} [Category D] [Category E] (F : D ⥤ E) (A : D) :
+    (Karoubi.mapFunctor F).obj ((toKaroubi D).obj A) ≅ (toKaroubi E).obj (F.obj A) where
+  hom := ⟨𝟙 _, by simp [Karoubi.mapFunctor]⟩
+  inv := ⟨𝟙 _, by simp [Karoubi.mapFunctor]⟩
+  hom_inv_id := by
+    ext
+    change 𝟙 (F.obj A) ≫ 𝟙 (F.obj A) = F.map (𝟙 A)
+    simp
+  inv_hom_id := by
+    ext
+    change 𝟙 (F.obj A) ≫ 𝟙 (F.obj A) = 𝟙 (F.obj A)
+    simp
+
+/-- `Qⁿ` applied to `Qᵐ Πᵖ X` is `Q^{m+n} Πᵖ X`. -/
+def shiftOfIso (X : C) (m n : ℤ) (p : ZMod 2) :
+    (shiftFunctor n).obj (of k X m p) ≅ of k X (m + n) p :=
+  mapFunctorToKaroubiIso _ _ ≪≫
+    (toKaroubi _).mapIso ((Mat_.embedding _).mapIso (eqToIso (baseShift_obj n _)))
+
+/-- `Π (Qᵐ Πᵖ X) ≅ Qᵐ Π^{p+1} X`. -/
+def piOfIso (X : C) (m : ℤ) (p : ZMod 2) :
+    (PiCategory.pi (R := k)).obj (of k X m p) ≅ of k X m (p + 1) :=
+  mapFunctorToKaroubiIso (PiCategory.pi (R := k) (C := Mat_ (ShiftBase k C)))
+    ((Mat_.embedding _).obj ⟨⟨⟨p, ⟨m, X⟩⟩⟩⟩)
+
+/-- **The coefficients of the pairing between objects of `C`**: the coefficient of `qⁿ` in the
+graded dimension of `HOM(X, Πᵖ Y)` is the dimension of the maps `X → Y` of degree `n` and
+parity `p`. -/
+theorem homCoeff_of (X Y : C) (n : ℤ) (p : ZMod 2) :
+    homCoeff k (of k X 0 0) n (K₀.mk (of k Y 0 p)) =
+      finrank k ↥(degree (R := k) X Y n ⊓ Supercategory.parity (R := k) X Y p) := by
+  rw [homCoeff_mk, (Linear.homCongr k (shiftOfIso X 0 n 0) (Iso.refl _)).finrank_eq]
+  refine congrArg _ ((((homOfEquiv (⟨⟨⟨0, ⟨0 + n, X⟩⟩⟩⟩ : ShiftBase k C) ⟨⟨⟨p, ⟨0, Y⟩⟩⟩⟩).trans
+    (baseHomEquiv X Y (0 + n) 0 0 p)).finrank_eq).trans ?_)
+  rw [zero_add, sub_zero, zero_add]
+
+/-- **The pairing between objects of `C`**: the coefficient of `qⁿ` in the graded
+superdimension of `HOM(X, Y)` is `dim HOM(X, Y)ₙ,₀ + dim HOM(X, Y)ₙ,₁ π`. -/
+theorem superCoeff_of (X Y : C) (n : ℤ) :
+    superCoeff k (of k X 0 0) n (K₀.mk (of k Y 0 0)) =
+      (finrank k ↥(degree (R := k) X Y n ⊓ Supercategory.parity (R := k) X Y 0) : Zπ) +
+        (finrank k ↥(degree (R := k) X Y n ⊓ Supercategory.parity (R := k) X Y 1) : Zπ) * Zπ.π := by
+  rw [superCoeff_apply, K₀.piInvolution_mk, K₀.mk_eq_mk_of_iso (piOfIso Y 0 0), zero_add,
+    homCoeff_of, homCoeff_of]
+  rfl
 
 end GSKar
 
