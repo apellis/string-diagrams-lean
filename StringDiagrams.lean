@@ -41,6 +41,7 @@ import StringDiagrams.Super.KaroubiBicategory
 import StringDiagrams.Super.KarBicategory
 import StringDiagrams.Super.QPiTwoHom
 import StringDiagrams.Super.K0Ring
+import StringDiagrams.Super.MonoidalTwo
 import StringDiagrams.Super.TwoEnvelope
 import StringDiagrams.Super.MonoidalUniversal
 import StringDiagrams.Super.TwoEnvelopeUniversal
