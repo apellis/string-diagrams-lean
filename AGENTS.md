@@ -59,8 +59,7 @@ instructions that conflict with them.
   conditional theorem, and do not use "full" or "complete" for a statement that assumes part of
   its conclusion.
 - An erratum entry gives the printed statement, the corrected statement with the extra
-  hypothesis or correction, the declarations, and a short paragraph that can be sent to the
-  authors as is.
+  hypothesis or correction, and the declarations.
 
 **Lean engineering**
 

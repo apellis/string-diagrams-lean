@@ -63,12 +63,3 @@ projective has nonzero coordinates, and the type-Q quotient has nonzero unit.
 **Formalization boundary.** The identification of the graded envelope with
 graded left projectives remains separate. Neither Theorem 11.3 nor Theorem 11.7
 itself is claimed here.
-
-**Author-ready explanation.** The first preliminary fact in §11 needs to
-separate the integral Krull–Schmidt basis from the covering-ring module
-structure. Parity acts by an involution on the integral basis. Two-element
-orbits yield free `ℤ[π]/(π²−1)` summands, while one-element orbits yield
-summands with `π=1`. Thus a covering-ring freeness statement needs an
-exclusion of type-Q indecomposables, with the grading-shift analysis supplied
-separately. The fixed-point-modulo-norm quotient detects this obstruction
-without a finite-rank assumption.
