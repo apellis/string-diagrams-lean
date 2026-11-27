@@ -298,7 +298,6 @@ def ξMonoidalIso : (toKaroubi C).obj 𝛑 ⊗ (toKaroubi C).obj 𝛑 ≅ 𝟙_ 
     rw [Iso.hom_inv_id, id_tensorHom_id])
   inv_hom_id := Idempotents.Karoubi.hom_ext _ _ (Iso.inv_hom_id _)
 
-set_option maxHeartbeats 1000000 in
 /-- **A monoidal Π-category structure extends to the idempotent completion.** -/
 instance instMonoidalPiCategory : MonoidalPiCategory R (Karoubi C) where
   pi := (toKaroubi C).obj 𝛑
