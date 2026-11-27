@@ -225,7 +225,6 @@ theorem mapCompRightNat_compat (c : Associated2 R B) {a b : Associated2 R B} (f 
     simp
 
 set_option backward.isDefEq.respectTransparency false in
-set_option maxHeartbeats 1000000 in
 open Orbit in
 /-- **`𝔻` on 1-morphisms** (the §6 analogue of (5.5); the paper leaves it to the reader): a
 `(Q, Π)`-2-functor `ℝ : 𝔄 → 𝔅` gives the 2-superfunctor `ℝ̂ : 𝔄̂ → 𝔅̂` between the associated

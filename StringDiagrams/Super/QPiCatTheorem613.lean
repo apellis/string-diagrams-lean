@@ -603,7 +603,6 @@ theorem ED_mapComp {A B C : QPiCat.{w, v, u} R} (F : A ⟶ B) (G : B ⟶ C) :
   erw [Iso.trans_hom, PrelaxFunctor.map₂Iso_hom, eqToIso.hom, eqToIso.hom,
     PrelaxFunctor.map₂_eqToHom, eqToHom_trans]
 
-set_option maxHeartbeats 4000000 in
 variable (R) in
 /-- **Theorem 6.13, `𝔼 ∘ 𝔻 = 𝕀`.** The identification `A ≅ E(D A)` as a strong transformation
 `𝕀 ⇒ 𝔼 ∘ 𝔻` with identity naturality 2-morphisms. -/
@@ -691,7 +690,6 @@ theorem DE_mapId (B : GUnderlying2 R (QPiGSCat.{w, v, u} R)) :
   erw [Iso.trans_hom, PrelaxFunctor.map₂Iso_hom, eqToIso.hom, eqToIso.hom,
     PrelaxFunctor.map₂_eqToHom, eqToHom_trans]
 
-set_option maxHeartbeats 4000000 in
 /-- `𝔻 ∘ 𝔼` is strict on composites. -/
 theorem DE_mapComp {A B C : GUnderlying2 R (QPiGSCat.{w, v, u} R)} (F : A ⟶ B) (G : B ⟶ C) :
     ((EPseudo R).comp (DPseudo R)).mapComp F G = eqToIso (DE_map_comp F G) := by

@@ -232,7 +232,6 @@ def counitQPiTwoFunctor : QPiTwoFunctor R (counit R B) where
     erw [Category.comp_id, Category.id_comp]
     exact unitInv₂_eq (γ_hom_unit f.obj.obj.obj.obj)
 
-set_option maxHeartbeats 1000000 in
 set_option backward.isDefEq.respectTransparency false in
 /-- `counit ∘ unit = 𝕀`. -/
 theorem unit_comp_counit : (unit R B).comp (counit R B) = Pseudofunctor.id B := by
@@ -269,28 +268,24 @@ theorem counit_comp_unit :
     erw [PrelaxFunctor.map₂_id, Category.comp_id]
     rfl
 
-set_option maxHeartbeats 1000000 in
 set_option backward.isDefEq.respectTransparency false in
 theorem unitQPiTwoFunctor_comp_counitQPiTwoFunctor_j (a : B) :
     ((unitQPiTwoFunctor.comp (counitQPiTwoFunctor (R := R) (B := B))).j a).hom = 𝟙 _ := by
   change 𝟙 _ ≫ (counit R B).map₂ (𝟙 (PiTwoCategory.pi (R := R) ((unit R B).obj a))) = 𝟙 _
   erw [PrelaxFunctor.map₂_id, Category.comp_id]
 
-set_option maxHeartbeats 1000000 in
 set_option backward.isDefEq.respectTransparency false in
 theorem unitQPiTwoFunctor_comp_counitQPiTwoFunctor_k (a : B) :
     ((unitQPiTwoFunctor.comp (counitQPiTwoFunctor (R := R) (B := B))).k a).hom = 𝟙 _ := by
   change 𝟙 _ ≫ (counit R B).map₂ (𝟙 (QPiTwoCategory.q (R := R) ((unit R B).obj a))) = 𝟙 _
   erw [PrelaxFunctor.map₂_id, Category.comp_id]
 
-set_option maxHeartbeats 1000000 in
 set_option backward.isDefEq.respectTransparency false in
 theorem counitQPiTwoFunctor_comp_unitQPiTwoFunctor_j (a : GUnderlying2 R (QAssociated2 R B)) :
     ((counitQPiTwoFunctor.comp (unitQPiTwoFunctor (R := R) (B := B))).j a).hom = 𝟙 _ := by
   change 𝟙 _ ≫ (unit R B).map₂ (𝟙 (PiTwoCategory.pi (R := R) ((counit R B).obj a))) = 𝟙 _
   erw [PrelaxFunctor.map₂_id, Category.comp_id]
 
-set_option maxHeartbeats 1000000 in
 set_option backward.isDefEq.respectTransparency false in
 theorem counitQPiTwoFunctor_comp_unitQPiTwoFunctor_k (a : GUnderlying2 R (QAssociated2 R B)) :
     ((counitQPiTwoFunctor.comp (unitQPiTwoFunctor (R := R) (B := B))).k a).hom = 𝟙 _ := by

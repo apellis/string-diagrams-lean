@@ -317,16 +317,13 @@ theorem T'_comp_Tinv' (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
     (T' B).comp (Tinv' B) = TwoSuperfunctor.id R (QAssociated2 R (toQPiTwoCat.obj B)) :=
   QAssociated2.T_comp_Tinv
 
-set_option maxHeartbeats 1000000 in
 theorem Tinv'_comp_T' (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) :
     (Tinv' B).comp (T' B) = TwoSuperfunctor.id R B :=
   QAssociated2.Tinv_comp_T
 
-set_option maxHeartbeats 1000000 in
 theorem T'_isGraded (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) : (T' B).IsGraded :=
   QAssociated2.T_isGraded
 
-set_option maxHeartbeats 1000000 in
 theorem Tinv'_isGraded (B : QPiTwoGSCat.{w, w₁, v₁, u₁} R) : (Tinv' B).IsGraded :=
   QAssociated2.Tinv_isGraded
 

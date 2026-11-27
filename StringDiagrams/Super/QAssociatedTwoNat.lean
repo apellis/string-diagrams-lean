@@ -170,7 +170,6 @@ theorem natHomQ_compat (a b : Associated2 R B) (f : a ⟶ b) :
       add_zero, Category.assoc]
 
 set_option backward.isDefEq.respectTransparency false in
-set_option maxHeartbeats 1000000 in
 /-- **`𝔻` on 2-morphisms** (the §6 analogue of (5.6)): a `(Q, Π)`-2-natural transformation
 `(Y, y) : ℝ ⇒ 𝕊` gives the 2-natural transformation `(Ŷ, ŷ) : ℝ̂ ⇒ 𝕊̂` of the associated graded
 `(Q, Π)`-2-supercategories, `Ŷ_λ := Y_λ` and `ŷ_F := (y_F, 0)` in degree zero. Its
@@ -384,7 +383,6 @@ theorem map_DE_comp_TΦ (a b : Associated2 R (GUnderlying2 R B)) :
     rfl
 
 set_option backward.isDefEq.respectTransparency false in
-set_option maxHeartbeats 1000000 in
 /-- **Naturality of `𝕋` in 1-morphisms** (the §6 analogue of Lemma 5.4 / Theorem 5.5): for a
 graded 2-superfunctor `ℝ : 𝔅 → 𝔅'` between graded `(Q, Π)`-2-supercategories,
 `𝕋_{𝔅'} ∘ 𝔻(𝔼 ℝ) = ℝ ∘ 𝕋_𝔅` on 2-morphisms (both are `ℝ` on objects and 1-morphisms). -/
